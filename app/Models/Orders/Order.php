@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Models\Orders;
+
+use App\Models\OrderDelivery;
+use App\Models\OrderItem;
+use App\Models\OrderStatus;
+use App\Models\Payment;
+use App\Models\PaymentStatus;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Order extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'db_orders';
+
+    protected $fillable = [
+        'user_id',
+        'city_id',
+        'comment',
+        'created_by',
+        'payment_id',
+        'amount',
+        'delivery_amount',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(OrderStatus::class,'status_id','id');
+    }
+
+    public function paymentStatus(): BelongsTo
+    {
+        return $this->belongsTo(PaymentStatus::class,'status_id','id');
+    }
+
+    public function deliveryData()
+    {
+        return $this->hasOne(OrderDelivery::class,'order_id','id');
+    }
+}
