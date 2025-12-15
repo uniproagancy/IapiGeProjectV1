@@ -2,7 +2,7 @@
 
 namespace App\Services\Payments;
 
-use App\Models\Orders\OrderTransaction;
+use App\Models\Payments\OrderTransaction;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 

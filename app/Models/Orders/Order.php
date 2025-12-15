@@ -2,12 +2,9 @@
 
 namespace App\Models\Orders;
 
-use App\Models\OrderDelivery;
-use App\Models\OrderItem;
-use App\Models\OrderStatus;
-use App\Models\Payment;
-use App\Models\PaymentStatus;
-use App\Models\User;
+use App\Models\Payments\Payment;
+use App\Models\Payments\PaymentStatus;
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
