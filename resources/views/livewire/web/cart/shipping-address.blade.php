@@ -1,0 +1,169 @@
+<div class="bg-body-tertiary rounded-4 p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="h5 mb-0 font-neue">მიწოდების მისამართი</h2>
+        <div class="d-flex align-items-center text-muted small">
+            <i class="ci-delivery me-2"></i>
+            <span>უფასო მიწოდება თბილისში</span>
+        </div>
+    </div>
+    @if(auth()->check() && $userAddresses->count() > 0)
+        <div class="mb-4">
+            <label class="form-label fw-semibold">შენახული მისამართები</label>
+            <div class="d-flex flex-column gap-2">
+                @foreach($userAddresses as $savedAddress)
+                    <div class="form-check form-check-custom p-3 border rounded-3 {{ $selected_address_id === $savedAddress->id ? 'border-primary bg-primary bg-opacity-10' : '' }}">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="saved_address"
+                               id="address_{{ $savedAddress->id }}"
+                               wire:click="selectAddress({{ $savedAddress->id }})"
+                                {{ $selected_address_id === $savedAddress->id ? 'checked' : '' }}>
+                        <label class="form-check-label w-100 cursor-pointer" for="address_{{ $savedAddress->id }}">
+                            <div class="d-flex align-items-start">
+                                <i class="ci-map-pin text-primary fs-5 me-2 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="fw-semibold">{{ $savedAddress->label }}</span>
+                                        @if($savedAddress->is_default)
+                                            <span class="badge bg-success-subtle text-success ms-2 small">ძირითადი</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-muted small">
+                                        <div>{{ $savedAddress->city }}, {{ $savedAddress->address }}</div>
+                                        @if($savedAddress->notes)
+                                            <div class="mt-1"><i class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                @endforeach
+
+                <!-- Add New Address Option -->
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        wire:click="clearAddressSelection">
+                    <i class="ci-plus me-1"></i>
+                    ახალი მისამართის დამატება
+                </button>
+            </div>
+        </div>
+        @if($selected_address_id)
+            <hr class="my-4">
+        @endif
+    @endif
+    @if(!$selected_address_id)
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label for="city_id" class="form-label">
+                    ქალაქი <span class="text-danger">*</span>
+                </label>
+                <select class="form-select @error('city_id') is-invalid @enderror"
+                        id="city_id"
+                        wire:model.live="city_id">
+                    <option value="">აირჩიეთ ქალაქი</option>
+                    @foreach($cities_list as $city_item)
+                    <option value="{{ $city_item->id }}">{{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}</option>
+                    @endforeach
+                </select>
+                @error('city_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="col-12">
+                <label for="address" class="form-label">
+                    სრული მისამართი <span class="text-danger">*</span>
+                </label>
+                <div class="position-relative">
+                    <textarea class="form-control @error('address') is-invalid @enderror"
+                              id="address"
+                              rows="3"
+                              wire:model="address"
+                              placeholder="ქუჩა, სახლის ნომერი, ბინა, სადარბაზო"></textarea>
+                    <div class="position-absolute top-0 end-0 mt-2 me-2">
+                        <i class="ci-home text-muted"></i>
+                    </div>
+                    @error('address')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="form-text">
+                    <i class="ci-info-circle me-1"></i>
+                    გთხოვთ მიუთითოთ ზუსტი მისამართი სწრაფი მიწოდებისთვის
+                </div>
+            </div>
+            <div class="col-12">
+                <label for="comment" class="form-label d-flex align-items-center">
+                    დამატებითი კომენტარი
+                    <span class="badge bg-secondary ms-2 small">არასავალდებულო</span>
+                </label>
+                <div class="position-relative">
+                    <textarea class="form-control"
+                              id="comment"
+                              rows="2"
+                              wire:model="comment"
+                              placeholder="მაგ: დარეკეთ ჩამოსვლამდე, კოდი 25, მე-3 სართული"></textarea>
+                    <div class="position-absolute top-0 end-0 mt-2 me-2">
+                        <i class="ci-message-square text-muted"></i>
+                    </div>
+                </div>
+                <div class="form-text">
+                    კომენტარი კურიერისთვის (სადარბაზოს კოდი, საკონტაქტო ინფორმაცია და ა.შ.)
+                </div>
+            </div>
+        </div>
+    @endif
+    <div class="row g-3 mt-1">
+        <div class="col-md-6">
+            <div class="border rounded-3 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                            <i class="ci-clock text-success fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <div class="fw-semibold small font-neue">სწრაფი მიწოდება</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            თბილისში - მომდევნო დღეს<br>
+                            რეგიონში - 2-3 დღე
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="border rounded-3 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                            <i class="ci-phone text-primary fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <div class="fw-semibold small font-neue">დაგიკავშირდებით</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            კურიერი დაგირეკავთ<br>
+                            გაგზავნამდე
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .form-check-custom {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .form-check-custom:hover {
+        border-color: var(--bs-primary) !important;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

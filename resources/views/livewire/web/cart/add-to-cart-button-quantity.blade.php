@@ -1,0 +1,34 @@
+<div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-2 gap-xl-3 mb-4">
+    <div class="count-input flex-shrink-0 order-sm-1">
+        <button type="button"
+                class="btn btn-icon btn-lg"
+                wire:click="decrementQuantity"
+                aria-label="რაოდენობის შემცირება">
+            <i class="ci-minus"></i>
+        </button>
+        <input type="number"
+               class="form-control form-control-lg"
+               wire:model="quantity"
+               min="1"
+               readonly>
+        <button type="button"
+                class="btn btn-icon btn-lg"
+                wire:click="incrementQuantity"
+                aria-label="რაოდენობის გაზრდა">
+            <i class="ci-plus"></i>
+        </button>
+    </div>
+    <button type="button"
+            class="btn btn-lg btn-primary w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
+            style="font-size: 14px"
+            wire:click="addProduct"
+            wire:loading.attr="disabled">
+        <span wire:loading.remove wire:target="addProduct">
+            <i class="ci-shopping-cart fs-lg animate-target ms-n1 me-2"></i>
+            კალათაში დამატება
+        </span>
+        <span wire:loading wire:target="addProduct">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        </span>
+    </button>
+</div>

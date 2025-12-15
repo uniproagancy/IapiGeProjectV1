@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" data-pwa="true">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Cartzilla | Electronics Store</title>
+    <meta name="description" content="Cartzilla - Multipurpose Bootstrap E-Commerce HTML Template">
+    <meta name="keywords" content="online shop, e-commerce, online store, market, multipurpose, product landing, cart, checkout, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
+    <meta name="author" content="Coderthemes">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+{{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
+{{--    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">--}}
+
+    <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ asset('web-assets/icons/cartzilla-icons.min.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="{{ asset('web-assets/css/theme.min.css') }}" id="theme-styles">
+    @yield('page_css')
+    @livewireStyles
+
+    <link rel="stylesheet" href="{{ asset('web-assets/css/style.css') }}">
+</head>
+<body>
+@include('livewire.web.partials.header')
+
+{{ $slot }}
+
+<livewire:web.cart.shopping-cart-offcanvas />
+
+
+<style>
+    .countInput {
+        background-color: #fff;
+        border: var(--cz-border-width) solid #cad0d9;
+        border-radius: var(--cz-border-radius);
+        display: inline-flex;
+        overflow: hidden;
+        transform: translateZ(0);
+    }
+
+    .countInput .form-control {
+        -moz-appearance: textfield;
+        -webkit-appearance: textfield;
+        appearance: textfield;
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+        font-weight: 500;
+        padding: 0 .25rem;
+        text-align: center;
+        width: 2.5rem;
+    }
+
+    .countInput .form-control::-webkit-inner-spin-button,
+    .countInput .form-control::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .countInput .btn {
+        border: 0;
+        border-radius: 0;
+    }
+
+    .countInput .btn:not(.btn-primary) {
+        --cz-btn-hover-color: var(--cz-component-hover-color);
+        --cz-btn-hover-bg: var(--cz-secondary-bg);
+        --cz-btn-active-bg: var(--cz-secondary-bg);
+    }
+
+    .countInput .btn-group-sm > .btn + .form-control,
+    .countInput .btn-sm + .form-control {
+        width: 2rem;
+    }
+
+    .countInput .btn-group-lg > .btn + .form-control,
+    .countInput .btn-lg + .form-control {
+        width: 3rem;
+    }
+
+    .countInput.disabled {
+        background-color: var(--cz-tertiary-bg);
+        border-color: var(--cz-border-color);
+        border-style: dashed;
+    }
+
+    .countInput-collapsible.collapsed .form-control,
+    .countInput-collapsible.collapsed [data-decrement] {
+        display: none;
+    }
+
+    /* Dark theme support */
+    [data-bs-theme=dark] .countInput:not([data-bs-theme=light]) {
+        background-color: transparent;
+        border-color: #4e5562;
+    }
+</style>
+@include('livewire.web.partials.footer')
+
+@guest
+    <livewire:web.auth.login-modal />
+    <livewire:web.auth.register-modal />
+{{--    <livewire:auth.forgot-password-modal />--}}
+@endguest
+
+@livewireScripts
+<script src="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+@yield('page_scripts')
+<script src="{{ asset('web-assets/js/theme.min.js') }}"></script>
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('ui:error', (data) => {
+            Toastify({
+                text: data.message,
+                duration: 3000
+            }).showToast();
+        });
+
+        Livewire.on('ui:success', (data) => {
+            Toastify({
+                text: data.message,
+                style: {
+                    background: "linear-gradient(to right, #00b09b, #96c93d)",
+                },
+                duration: 3000
+            }).showToast();
+        });
+    });
+</script>
+<script>
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-icon');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('close-modal', (modalId) => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+            if (modal) {
+                modal.hide();
+            }
+        });
+    });
+
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('close-modal', (modalId) => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+            if (modal) {
+                modal.hide();
+            }
+        });
+    });
+</script>
+<style>
+    .modal-dialog-scrollable .modal-body {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .btn-link {
+        text-decoration: none;
+        padding: 0;
+    }
+
+    .btn-link:hover {
+        text-decoration: none;
+    }
+
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+
+    .position-relative .btn-link {
+        z-index: 10;
+    }
+</style>
+</body>
+</html>

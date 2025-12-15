@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Livewire\Web\Components;
+
+use App\Traits\WithCart;
+use Livewire\Component;
+
+class AddToCartButtonQuantity extends Component
+{
+    use WithCart;
+
+    public $productId;
+    public $quantity = 1;
+
+    public function mount($productId, $quantity = 1)
+    {
+        $this->productId = $productId;
+        $this->quantity = $quantity;
+    }
+
+    public function addProduct()
+    {
+        $this->addToCart($this->productId, $this->quantity);
+        $this->quantity = 1;
+    }
+
+    public function incrementQuantity()
+    {
+        $this->quantity++;
+    }
+
+    public function decrementQuantity()
+    {
+        if ($this->quantity > 1) {
+            $this->quantity--;
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.web.components.add-to-cart-button-quantity');
+    }
+}
