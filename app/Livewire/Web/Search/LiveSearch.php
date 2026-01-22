@@ -25,7 +25,6 @@ class LiveSearch extends Component
             return collect();
         }
         return Product::with(['translations', 'price'])
-            ->where('active', 1)
             ->where('show', 1)
             ->where(function ($query) {
                 $query->where('id', 'like', '%' . $this->query . '%')

@@ -1,5 +1,4 @@
-<section class="container pt-5 mt-2 mt-sm-3 mt-lg-4 overflow-hidden">
-    <!-- Section Header -->
+<section class="container pt-5 mt-2 mt-sm-3 mt-lg-4">
     <div class="d-flex align-items-center justify-content-between border-bottom pb-2 pb-md-2">
         <h2 class="h3 mb-0 font-neue" style="font-size: 16px">
             {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
@@ -14,19 +13,21 @@
             </a>
         </div>
     </div>
-    <div class="my-swiper position-relative" data-section="{{ $category->id }}">
-        <div class="swiper-wrapper">
-            @foreach($products as $product)
-                <div class="swiper-slide" wire:key="home-product-{{ $product->id }}">
-                    @include('livewire.web.product.product-card', ['product' => $product])
-                </div>
-            @endforeach
-        </div>
-        <div class="swiper-prev" data-section="{{ $category->id }}">
-            <i class="ci-chevron-left"></i>
-        </div>
-        <div class="swiper-next" data-section="{{ $category->id }}">
-            <i class="ci-chevron-right"></i>
+    <div class="position-relative">
+        <div class="product-swiper overflow-hidden" data-section="{{ $category->id }}">
+            <div class="swiper-wrapper">
+                @foreach($products as $product)
+                    <div class="swiper-slide" wire:key="home-product-{{ $product->id }}">
+                        @include('livewire.web.product.product-card', ['product' => $product])
+                    </div>
+                @endforeach
+            </div>
+            <div class="swiper-prev" data-section="{{ $category->id }}">
+                <i class="ci-chevron-left"></i>
+            </div>
+            <div class="swiper-next" data-section="{{ $category->id }}">
+                <i class="ci-chevron-right"></i>
+            </div>
         </div>
     </div>
 </section>

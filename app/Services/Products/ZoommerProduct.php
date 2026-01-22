@@ -3,7 +3,7 @@
 
 namespace App\Services\Products;
 
-use App\Jobs\CreateZoommerProductJob;
+use App\Jobs\ZoommerProductJob;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
@@ -14,9 +14,9 @@ class ZoommerProduct
     protected string $api_url = 'https://api.zoommer.ge';
     protected int $concurrent_requests = 50;
     protected int $chunk_size = 500;
-    protected int $timeout = 10;
-    protected int $start_id = 10000;
-    protected int $end_id = 70000;
+    protected int $timeout = 60;
+    protected int $start_id = 49600;
+    protected int $end_id = 49800;
 
     public function scanAllIds(): array
     {
@@ -62,7 +62,7 @@ class ZoommerProduct
                     $stats['null']++;
                     return;
                 }
-                CreateZoommerProductJob::dispatch($data['product'], $data['availabilityInStores'])->onQueue('zoommer');
+                ZoommerProductJob::dispatch($data['product'], $data['availabilityInStores'])->onQueue('zoommer');
                 $stats['queued']++;
             },
             'rejected' => function ($reason, $id) use (&$stats) {

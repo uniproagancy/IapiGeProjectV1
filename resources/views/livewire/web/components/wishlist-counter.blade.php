@@ -1,6 +1,5 @@
 <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-pulse d-none d-md-inline-flex position-relative"
    href="{{ route('web.user.index', ['page' => 'wishlist']) }}"
-   wire:navigate
    aria-label="სურვილების სია">
     <i class="ci-heart animate-target"></i>
     @if($wishlistCount > 0)

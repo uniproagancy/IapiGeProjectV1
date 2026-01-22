@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Web\Checkout;
 
-use App\Models\City;
-use App\Models\Order;
-use App\Models\OrderDelivery;
-use App\Models\OrderItem;
-use App\Models\Payment;
-use App\Models\Product;
+use App\Models\Delivery\City;
+use App\Models\Order\Order;
+use App\Models\Order\OrderDelivery;
+use App\Models\Order\OrderItem;
+use App\Models\Payments\Payment;
+use App\Models\Product\Product;
 use App\Services\Payments\BOGPayment;
 use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
@@ -25,9 +25,6 @@ class Checkout extends Component
     public $email = '';
     public $phone = '';
     public $verify_phone = '';
-
-    // Shipping Address
-    public $selected_address_id = null;
     public $city_id = null;
     public $address = '';
     public $comment = '';
@@ -37,7 +34,6 @@ class Checkout extends Component
 
     // Payment
     public $payment_id = '';
-    public $payment_provider_id = null;
 
     // Direct Purchase
     #[Url(as: 'product_id')]
@@ -53,6 +49,15 @@ class Checkout extends Component
 
     public function mount()
     {
+
+        if(count(Cart::getContent()) > 0 OR !empty($this->product_id)) {
+            $this->loadOrderItems();
+            $this->calculateShippingCost();
+            $this->calculateTotals();
+        } else {
+            return $this->redirect(route('web.products.index'));
+        }
+
         if ($this->quantity < 1) {
             $this->quantity = 1;
         }
@@ -72,9 +77,6 @@ class Checkout extends Component
                 $this->selectAddress($defaultAddress->id);
             }
         }
-        $this->loadOrderItems();
-        $this->calculateShippingCost();
-        $this->calculateTotals();
     }
 
 
@@ -94,8 +96,8 @@ class Checkout extends Component
                     ->where('show', 1)
                     ->findOrFail($this->product_id);
                 if ($product->in_stock !== 1) {
-                    $this->dispatch('notify', message: 'პროდუქტი არ არის მარაგში', type: 'error');
-                    return $this->redirect(route('web.products.index'), navigate: true);
+                    $this->dispatch('ui:error', message: 'პროდუქტი არ არის მარაგში', type: 'error');
+                    return $this->redirect(route('web.products.index'));
                 }
                 $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
                 $price = $product->price->discount_price ?? $product->price->regular_price;
@@ -111,15 +113,15 @@ class Checkout extends Component
                     ]
                 ]);
             } catch (\Exception $e) {
-                $this->dispatch('notify', message: 'პროდუქტი ვერ მოიძებნა', type: 'error');
+                $this->dispatch('ui:error', message: 'პროდუქტი ვერ მოიძებნა');
                 return redirect()->route('web.main.index');
             }
         } else {
             $this->loadCartFromDatabase();
             $cartItems = Cart::getContent();
             if ($cartItems->isEmpty()) {
-                $this->dispatch('notify', message: 'თქვენი კალათა ცარიელია', type: 'warning');
-                return $this->redirect(route('web.cart.index'), navigate: true);
+                $this->dispatch('ui:error', message: 'თქვენი კალათა ცარიელია');
+                return $this->redirect(route('web.main.index'));
             }
             $this->orderItems = $cartItems->map(function ($item) {
                 return [
@@ -184,12 +186,13 @@ class Checkout extends Component
             OrderDelivery::create([
                 'order_id' => $order->id,
                 'address' => $this->address,
+                'city_id' => $this->city_id,
             ]);
         }
         Cart::clear();
         switch ($this->payment_id) {
             case '3':
-                return $this->redirect((new \App\Services\Payments\BOGPayment)->createPaymentOrder($order));
+                return $this->redirect((new BOGPayment)->createPaymentOrder($order));
             break;
             case '4':
                 if($order->amount < 100) {
@@ -205,8 +208,12 @@ class Checkout extends Component
                     $this->dispatch('bog:installment-part', amount: $order->amount + $order->delivery_amount, url: route('bog.part-installment', $order->id));
                 }
             break;
+            case '2':
+                // TODO INVOICE SEND
+                redirect()->route('web.checkout.success');
+            break;
             default:
-                redirect()->route('web.main.index');
+                redirect()->route('web.checkout.success');
             break;
         }
     }

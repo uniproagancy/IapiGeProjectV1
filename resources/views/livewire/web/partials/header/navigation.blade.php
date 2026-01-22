@@ -12,10 +12,10 @@
             <div class="container px-0 px-lg-3">
                 <div class="row">
                     <div class="col-lg-3">
-                        @include('livewire.web.partials.categories-dropdown')
+                        @include('livewire.web.partials.header.categories-dropdown')
                     </div>
                     <div class="col-lg-9 d-lg-flex pt-3 pt-lg-0 ps-lg-0">
-                        @include('livewire.web.partials.main-menu')
+                        @include('livewire.web.partials.header.main-menu')
                     </div>
                 </div>
             </div>

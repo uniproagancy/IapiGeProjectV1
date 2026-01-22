@@ -1,23 +1,17 @@
 @section('page_css')
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
 @endsection
-
 <div>
     <main class="content-wrapper">
-        <!-- Breadcrumb -->
         <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">მთავარი</a></li>
                 <li class="breadcrumb-item active" aria-current="page">კატალოგი</li>
             </ol>
         </nav>
-
-        <!-- Page Title -->
         <h1 class="h3 container mb-4 font-neue">
             {{ $currentCategory?->translation('ka')->title ?? 'პროდუქციის ჩამონათვალი' }}
         </h1>
-
-        <!-- Products Count -->
         <section class="container mb-4">
             <div class="row">
                 <div class="col-lg-9">
@@ -30,12 +24,10 @@
             </div>
             <hr class="d-lg-none my-3">
         </section>
-
-        <!-- Main Content -->
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
-                <!-- Sidebar Filters -->
                 <aside class="col-lg-3">
+                    <!-- ✅ PRICE FILTER -->
                     <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                         <h4 class="h6 mb-3 font-neue">ფასი</h4>
                         <div class="d-flex gap-2 mb-3">
@@ -51,12 +43,13 @@
                                    min="0">
                         </div>
                         @if($priceMin || $priceMax)
-                            <button wire:click="$set('priceMin', null); $set('priceMax', null)"
+                            <button wire:click="clearPriceFilter"
                                     class="btn btn-sm btn-outline-secondary w-100">
                                 ფასის გასუფთავება
                             </button>
                         @endif
                     </div>
+
                     <div class="offcanvas-lg offcanvas-start" id="filterSidebar">
                         <div class="offcanvas-header py-3">
                             <h5 class="offcanvas-title">კატეგორიები</h5>
@@ -64,13 +57,12 @@
                         </div>
 
                         <div class="offcanvas-body flex-column pt-2 py-lg-0">
-                            <!-- Category Filter -->
+                            <!-- CATEGORY FILTER -->
                             <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                                 <h4 class="h6 mb-2 font-neue">
                                     {{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}
                                 </h4>
                                 @if(!$selectedParent)
-                                    <!-- Parent Categories -->
                                     <ul class="list-unstyled d-block m-0">
                                         @foreach($parentCategories as $category)
                                             <li class="nav d-block pt-2 mt-1">
@@ -85,7 +77,6 @@
                                         @endforeach
                                     </ul>
                                 @else
-                                    <!-- Sub Categories -->
                                     <ul class="list-unstyled d-block m-0">
                                         @foreach($subCategories as $subCategory)
                                             <li class="nav d-block pt-2 mt-1">
@@ -99,7 +90,6 @@
                                                 </a>
                                             </li>
                                         @endforeach
-
                                         <li class="pt-3">
                                             <a href="#"
                                                wire:click.prevent="resetCategories"
@@ -111,12 +101,11 @@
                                     </ul>
                                 @endif
                             </div>
+
+                            <!-- BRAND FILTER -->
                             <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                                 <h4 class="h6 mb-0 font-neue">
                                     ბრენდი
-                                    @if(count($this->selectedBrands) > 0)
-                                        <span class="badge bg-danger ms-2">{{ count($this->selectedBrands) }}</span>
-                                    @endif
                                 </h4>
                                 <div class="expanded" id="brandsList">
                                     @if($brands->count() > 0)
@@ -155,94 +144,45 @@
                                     @endif
                                 </div>
                             </div>
-
-                            <style>
-                                .btn-link:focus {
-                                    outline: none;
-                                    box-shadow: none;
-                                }
-
-                                .btn-link .ci-chevron-down {
-                                    transition: transform 0.3s ease;
-                                }
-
-                                .btn-link[aria-expanded="false"] .ci-chevron-down {
-                                    transform: rotate(-90deg);
-                                }
-                            </style>
-
-                            <script>
-                                function toggleAllBrands() {
-                                    const btn = document.getElementById('showMoreBtn');
-                                    const items = document.querySelectorAll('.brand-item-shown');
-                                    const isShowing = btn.textContent.includes('დაიმალოს');
-
-                                    items.forEach((item, index) => {
-                                        if (index >= 12) {
-                                            item.style.display = isShowing ? 'none' : 'block';
-                                        }
-                                    });
-
-                                    // ტექსტი ცვალეთ
-                                    const totalCount = {{ $brands->count() }};
-                                    if (isShowing) {
-                                        btn.textContent = `ყველას ნახვა (${totalCount - 12} მეტი)`;
-                                    } else {
-                                        btn.textContent = `გაკეცე`;
-                                    }
-                                }
-                            </script>
                         </div>
                     </div>
                 </aside>
-                <!-- Products Grid -->
                 <div class="col-lg-9">
-                    <div x-data="{
-                        init() {
-                            window.addEventListener('scroll', () => {
-                                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 400) {
-                                    $wire.loadMore()
-                                }
-                            });
-                        }
-                    }" x-init="init()">
-                        @if($this->products->count() > 0)
-                            <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
-                                @foreach($this->products as $product)
-                                    <div class="col" wire:key="product-{{ $product->id }}">
-                                        @include('livewire.web.product.product-card', ['product' => $product])
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div wire:loading class="text-center py-3 d-flex justify-content-center">
-                                <span class="spinner-border text-primary"></span>
-                            </div>
-                        @else
-                            <div class="text-center py-5">
-                                <svg class="w-25 h-25 mx-auto text-muted mb-4" fill="none" stroke="currentColor"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                                    </path>
-                                </svg>
-                                <h3 class="h5 mb-2">პროდუქტები არ მოიძებნა</h3>
-                                <p class="text-muted">სცადეთ სხვა ფილტრების გამოყენება</p>
-
-                                @if($selectedBrands || $priceMin || $priceMax)
-                                    <button wire:click="$set('selectedBrands', []); $set('priceMin', null); $set('priceMax', null)"
-                                            class="btn btn-primary mt-3">
-                                        ყველა ფილტრის გასუფთავება
-                                    </button>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
+                    @if($this->products->count() > 0)
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
+                            @foreach($this->products as $product)
+                                <div class="col" wire:key="product-{{ $product->id }}">
+                                    @include('livewire.web.product.product-card', ['product' => $product])
+                                </div>
+                            @endforeach
+                        </div>
+                        <div wire:click="loadMore" wire:loading.attr="disabled" class="btn btn-primary py-3 d-flex justify-content-center">
+                            <span wire:loading.remove class="font-neue">მეტის ნახვა</span>
+                            <span wire:loading class="spinner-border"></span>
+                        </div>
+                    @else
+                        <div class="text-center py-5">
+                            <svg class="w-25 h-25 mx-auto text-muted mb-4" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                </path>
+                            </svg>
+                            <h3 class="h5 mb-2">პროდუქტები არ მოიძებნა</h3>
+                            <p class="text-muted">სცადეთ სხვა ფილტრების გამოყენება</p>
+                            @if($selectedBrands || $priceMin || $priceMax || $selectedSpecs)
+                                <button wire:click="resetAllFilters"
+                                        class="btn btn-primary mt-3">
+                                    ყველა ფილტრის გასუფთავება
+                                </button>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </section>
     </main>
 </div>
-
 @section('page_scripts')
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
 @endsection

@@ -3,7 +3,7 @@
 namespace App\Models\User;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Order;
+use App\Models\Order\Order;
 use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +19,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'lastname', 'email', 'phone', 'password', 'role_id', 'google_id', 'facebook_id', 'avatar', 'email_verified_at',
     ];
+
+    public function notifications()
+    {
+        return $this->hasMany(\App\Models\User\Notification::class, 'notifiable_id')
+            ->latest();
+    }
 
     public function role()
     {

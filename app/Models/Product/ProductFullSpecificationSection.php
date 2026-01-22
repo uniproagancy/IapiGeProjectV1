@@ -18,4 +18,9 @@ class ProductFullSpecificationSection extends Model
         return $this->hasMany(ProductFullSpecificationItem::class, 'section_id', 'id');
     }
 
+    public function filter()
+    {
+        return $this->hasMany(ProductFullSpecificationItem::class, 'section_id', 'id')->where('filter', 1);
+    }
+
 }

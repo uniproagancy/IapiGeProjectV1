@@ -50,17 +50,17 @@
         <div class="d-flex align-items-center justify-content-between">
             @if(!empty($product->price->discount_price))
                 <div class="h5 lh-1 mb-0">
-                    {{ number_format($product->price->discount_price, 2) }} ₾
+                    <span style="color: rgba(253,57,14, 0.7); font-size: 16px">{{ number_format($product->price->discount_price, 2) }} ₾</span>
                     <del class="text-body-tertiary fs-sm fw-normal">
                         {{ number_format($product->price->regular_price, 2) }}
                     </del>
                 </div>
             @else
-                <div class="h5 lh-1 mb-0">
+                <div class="h5 lh-1 mb-0" style="color: rgba(253,57,14, 0.7); font-size: 16px">
                     {{ number_format($product->price->regular_price, 2) }} ₾
                 </div>
             @endif
-            <livewire:web.cart.add-to-cart-button :productId="$product->id" />
+            <livewire:web.components.add-to-cart-button :productId="$product->id" />
         </div>
     </div>
 </div>

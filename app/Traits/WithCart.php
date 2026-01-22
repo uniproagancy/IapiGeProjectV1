@@ -139,7 +139,6 @@ trait WithCart
             $sessionId = session()->getId();
             $cartContent = Cart::getContent();
             if (empty($cartContent)) {
-                // ✅ Delete cart if empty
                 if ($userId) {
                     ShoppingCart::where('user_id', $userId)->delete();
                 } else {
@@ -161,7 +160,6 @@ trait WithCart
                     ]);
                 }
             } else {
-                // ✅ Guest user
                 ShoppingCart::where('session_id', $sessionId)->delete();
                 foreach ($cartContent as $item) {
                     ShoppingCart::create([
@@ -182,6 +180,8 @@ trait WithCart
     public function loadCartFromDatabase()
     {
         try {
+            if(!Cart::getContent()->isEmpty()) {
+
             Cart::clear();
             $userId = auth()->id();
             $sessionId = session()->getId();
@@ -203,8 +203,9 @@ trait WithCart
                 ]);
             }
             $this->dispatch('cartUpdated');
+            }
+
         } catch (\Exception $e) {
-            $this->dispatch('ui:error', message: 'შეცდომა კალათის ჩატვირთვისას!', type: 'error');
         }
     }
 }

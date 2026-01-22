@@ -34,10 +34,10 @@ class Product extends Model
         return $this->translations->where('locale', $locale)->first();
     }
 
-    public function brand() {
+    public function brand()
+    {
         return $this->hasOne(ProductBrand::class, 'id', 'brand_id');
     }
-
 
     public function category() {
         return $this->hasOne(ProductCategory::class, 'id', 'category_id');
@@ -69,5 +69,10 @@ class Product extends Model
     public function fullSpecifications()
     {
         return $this->hasMany(ProductFullSpecificationSection::class);
+    }
+
+    public function specificationSections()
+    {
+        return $this->hasMany(ProductFullSpecificationSection::class, 'product_id');
     }
 }

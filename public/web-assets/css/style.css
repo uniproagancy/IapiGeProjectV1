@@ -1,0 +1,22 @@
+@font-face {
+    font-family: 'HelveticaRegular';
+    src: url('../fonts/Linotype-HelveticaNeueLTGEO55Roman.ttf');
+}
+
+@font-face {
+    font-family: 'HelveticaBold';
+    src: url('../fonts/Linotype-HelveticaNeueLTGEO75Bold.ttf');
+}
+
+@font-face {
+    font-family: 'HelveticaGeoCaps';
+    src: url('../fonts/helvetica-neue-lt-geo-55-roman-caps.ttf');
+}
+
+.font-neue {
+    font-family: 'HelveticaGeoCaps';
+}
+
+body, .font-helvetica {
+    font-family: 'HelveticaRegular';
+}

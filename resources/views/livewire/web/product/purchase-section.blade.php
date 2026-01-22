@@ -12,7 +12,6 @@
                 {{ number_format($product->price->regular_price, 2) }} ₾
             </div>
         @endif
-
         @if($product->in_stock === 1)
             <div class="d-flex align-items-center text-success fs-sm ms-auto font-neue">
                 <i class="ci-check-circle fs-base me-2"></i>
@@ -20,13 +19,14 @@
             </div>
         @endif
     </div>
-    <livewire:web.cart.add-to-cart-button-quantity :productId="$product->id" />
+    <livewire:web.components.add-to-cart-button-quantity :productId="$product->id" />
     <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
-        <a href="{{ route('web.cart.checkout', ['product_id' => $product->id]) }}"
-                class="btn btn-lg btn-outline-info w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
-                style="font-size: 14px">
+        <button type="button"
+                class="btn btn-lg btn-outline-info w-100 animate-slide-end font-neue"
+                style="font-size: 14px"
+                @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
             ყიდვა
-        </a>
+        </button>
         <button type="button" id="installmentBtn"
                 class="btn btn-lg btn-outline-warning w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
                 style="font-size: 14px">
@@ -43,7 +43,7 @@
             @foreach($variation->items as $item)
                 @if(!empty($item->product))
                     @php
-                        $slug = \App\Models\ProductTranslation::where('product_id', $item->product->id)->where('locale', 'ka')->first();
+                        $slug = \App\Models\Product\ProductTranslation::where('product_id', $item->product->id)->where('locale', 'ka')->first();
                     @endphp
                     @if($item->is_color === 0)
                     <a href="{{ route('web.products.view', $slug->slug) }}" class="btn btn-outline-secondary @if($item->supplier_product_id === $product->supplier_product_id) active @endif">{{ $item->value }}</a>

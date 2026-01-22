@@ -25,22 +25,11 @@
             'page' => 'cart'
         ],
         [
-            'title' => 'გადახდის მეთოდები',
-            'icon' => 'ci-credit-card',
-            'route' => 'web.user.index',
-            'page' => 'payment'
-        ],
-        [
-            'title' => 'მისამართები',
-            'icon' => 'ci-map-pin',
-            'route' => 'web.user.index',
-            'page' => 'addresses'
-        ],
-        [
             'title' => 'შეტყობინებები',
             'icon' => 'ci-bell',
             'route' => 'web.user.index',
-            'page' => 'notifications'
+            'page' => 'notifications',
+            'badge' => auth()->user()->unreadNotifications->count()
         ],
     ];
 @endphp
@@ -60,9 +49,9 @@
 <nav class="list-group list-group-borderless pt-3">
     <form method="POST" action="">
         @csrf
-        <button type="submit" class="list-group-item list-group-item-action d-flex align-items-center border-0 bg-transparent w-100 text-start">
+        <a href="{{ route('web.logout') }}" class="list-group-item list-group-item-action d-flex align-items-center border-0 bg-transparent w-100 text-start">
             <i class="ci-log-out fs-base opacity-75 me-2"></i>
             გასვლა
-        </button>
+        </a>
     </form>
 </nav>

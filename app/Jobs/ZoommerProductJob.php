@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Product\Product;
+use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductImage;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\Translation\GoogleTranslation;
 
 class ZoommerProductJob implements ShouldQueue
 {
@@ -27,6 +29,8 @@ class ZoommerProductJob implements ShouldQueue
 
     protected array $productData;
     protected array $productAvailability;
+    public int $tries = 10;
+    public int $timeout = 120;
 
     public function __construct(array $productData, array $productAvailability = [])
     {
@@ -49,7 +53,9 @@ class ZoommerProductJob implements ShouldQueue
         if (Product::where('supplier_product_id', $productData['id'])->exists()) {
             $this->updateExistingProduct($productData, $hasStock);
         } else {
-            $this->createNewProduct($productData, $hasStock);
+            if($hasStock) {
+                $this->createNewProduct($productData, $hasStock);
+            }
         }
     }
 
@@ -81,10 +87,21 @@ class ZoommerProductJob implements ShouldQueue
     private function createNewProduct(array $productData, bool $hasStock): void
     {
         DB::transaction(function () use ($productData, $hasStock) {
+            $brand = collect($productData['specificationGroup'])
+                ->firstWhere('groupName', 'Brand')
+            ['specifications'][0]['specificationMeaning'];
+            if(!empty($brand)) {
+                $get_brand = ProductBrand::whereHas('translations', function ($subQuery) use($brand) {
+                    $subQuery->where('title', 'like', $brand);
+                })->first();
+                $brand_id = $get_brand->id;
+            } else {
+                $brand_id = 6;
+            }
             $product = Product::create([
                 'supplier_product_id' => $productData['id'],
-                'brand_id' => 6,  // ✅ Hardcoded
-                'category_id' => 4,  // ✅ Hardcoded
+                'brand_id' => $brand_id,
+                'category_id' => 4,
                 'sku' => $productData['barCode'],
                 'supplier_id' => 4,
                 'main_image' => 1,
@@ -134,28 +151,6 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    private function createFullSpecifications(Product $product, array $productData): void
-    {
-        if (empty($productData['specificationGroup'])) {
-            return;
-        }
-        foreach ($productData['specificationGroup'] as $specificationGroup) {
-            $section = ProductFullSpecificationSection::create([
-                'product_id' => $product->id,
-                'name' => $specificationGroup['groupName'],
-            ]);
-            if (!empty($specificationGroup['specifications'])) {
-                foreach ($specificationGroup['specifications'] as $spec) {
-                    ProductFullSpecificationItem::create([
-                        'section_id' => $section->id,
-                        'name' => $spec['specificationName'],
-                        'value' => $spec['specificationMeaning'],
-                    ]);
-                }
-            }
-        }
-    }
-
     private function createVariations(Product $product, array $productData): void
     {
         if (empty($productData['keySpecification'])) {
@@ -174,6 +169,36 @@ class ZoommerProductJob implements ShouldQueue
                         'is_color' => $item['isColor'] ? 1 : 0,
                         'supplier_product_id' => $item['productId'] ?? null,
                         'value' => $item['value'],
+                    ]);
+                }
+            }
+        }
+    }
+
+    private function createFullSpecifications(Product $product, array $productData): void
+    {
+        if (empty($productData['specificationGroup'])) {
+            return;
+        }
+        foreach ($productData['specificationGroup'] as $specificationGroup) {
+            $section = ProductFullSpecificationSection::create([
+                'product_id' => $product->id,
+                'name' => (new GoogleTranslation)->translateToGeorgian($specificationGroup['groupName']),
+            ]);
+            if (!empty($specificationGroup['specifications'])) {
+                foreach ($specificationGroup['specifications'] as $spec) {
+                    if(!empty($spec['specificationLinkedUrl'])) {
+                        $filter = true;
+                    } else {
+                        $filter = false;
+                    }
+                    $specification_name = (new GoogleTranslation)->translateToGeorgian($spec['specificationName']);
+                    $specification_value = $spec['specificationMeaning'];
+                    ProductFullSpecificationItem::create([
+                        'section_id' => $section->id,
+                        'name' => $specification_name,
+                        'value' => $specification_value,
+                        'filter' => $filter,
                     ]);
                 }
             }
@@ -217,8 +242,8 @@ class ZoommerProductJob implements ShouldQueue
         foreach ($productData['mainSpecification'] as $spec) {
             ProductShortSpecification::create([
                 'product_id' => $product->id,
-                'name' => $spec['specificationName'],
-                'value' => $spec['specificationMeaning'],
+                'name' => (new GoogleTranslation)->translateToGeorgian($spec['specificationName']),
+                'value' => (new GoogleTranslation)->translateToGeorgian($spec['specificationMeaning']),
             ]);
         }
     }

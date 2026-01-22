@@ -3,7 +3,6 @@
          open: @entangle('isOpen'),
          handleKeydown(e) {
              if (!this.open) return;
-
              if (e.key === 'ArrowDown') {
                  e.preventDefault();
                  $wire.navigateDown();
@@ -20,21 +19,16 @@
      }"
      @click.outside="$wire.closeSearch()"
      @keydown.window="handleKeydown($event)">
-
-    <!-- Search Input -->
     <div class="position-relative">
         <i class="ci-search position-absolute top-50 start-0 translate-middle-y d-flex fs-lg text-white ms-3"
            style="z-index: 5; pointer-events: none;"></i>
-
         <input type="search"
                class="form-control form-control-lg form-icon-start border-white rounded-pill pe-5"
-               placeholder="მოძებნე სასურველი პროდუქტი"
+               placeholder="{{ trans('trans.search_your_product') }}"
                wire:model.live.debounce.300ms="query"
                @focus="$wire.set('isOpen', true)"
                autocomplete="off"
                style="font-size: 14px; padding-left: 2.8rem;">
-
-        <!-- Clear Button -->
         @if($query)
             <button type="button"
                     class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-white-50 p-0 me-3"
@@ -48,7 +42,7 @@
     <!-- Search Results Dropdown -->
     @if($isOpen && strlen($query) >= 2)
         <div class="position-absolute top-100 start-0 w-100 bg-white shadow-lg rounded-3 mt-2 overflow-hidden px-3 p-2"
-             style="max-height: 450px; z-index: 1050;"
+             style="max-height: 470px; z-index: 1050;"
              x-show="open"
              x-transition>
             @if($this->results->count() > 0)
@@ -108,8 +102,7 @@
                 @if($this->results->count() >= 10)
                     <div>
                         <a href="{{ route('web.products.index', ['search' => $query]) }}"
-                           class="d-block text-center py-3 text-decoration-none fw-semibold"
-                           wire:navigate
+                           class="d-block text-center py-3 text-decoration-none fw-semibold font-neue"
                            wire:click="closeSearch">
                             ყველა შედეგის ნახვა
                             <i class="ci-arrow-right ms-1"></i>
@@ -125,7 +118,6 @@
                     </p>
                     <a href="{{ route('web.products.index') }}"
                        class="btn btn-sm btn-outline-primary"
-                       wire:navigate
                        wire:click="closeSearch">
                         ყველა პროდუქტის ნახვა
                     </a>

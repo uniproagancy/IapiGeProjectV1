@@ -94,15 +94,23 @@
                 <span class="h6 mb-0">{{ number_format($cartSubTotal, 2) }} ₾</span>
             </div>
             <div class="d-flex w-100 gap-3">
+                @auth
                 <a class="btn btn-lg btn-secondary w-100 font-neue"
-                   href=""
-                   data-bs-dismiss="offcanvas">
+                   href="{{ route('web.user.index', ['page' => 'cart']) }}">
                     კალათის ნახვა
                 </a>
                 <a class="btn btn-lg btn-primary w-100 font-neue"
-                   href="{{ route('web.cart.checkout') }}">
+                   href="{{ route('web.checkout.index') }}">
                     შეკვეთა
                 </a>
+                @else
+                <a class="btn btn-lg btn-primary w-100 font-neue"
+                   data-bs-toggle="modal"
+                   data-bs-target="#loginModal"
+                >
+                    შეკვეთა
+                </a>
+                @endif
             </div>
         </div>
     @endif

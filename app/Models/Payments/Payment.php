@@ -2,7 +2,7 @@
 
 namespace App\Models\Payments;
 
-use App\Models\Orders\PaymentTranslation;
+use App\Models\Payments\PaymentTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

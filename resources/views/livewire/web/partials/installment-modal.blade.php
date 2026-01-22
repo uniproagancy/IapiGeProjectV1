@@ -8,34 +8,21 @@
 
             <div class="modal-body">
                 <div class="d-flex flex-column gap-3">
-                    <!-- Option 1 -->
+                    @foreach($installments as $installment)
                     <label class="border rounded px-3 py-1 cursor-pointer" style="cursor: pointer;">
                         <div class="d-flex align-items-center gap-3">
                             <input type="radio" name="installment" value="georgian_bank" class="form-check-input">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="fs-1">🦊</span>
-                                <span class="text-body-emphasis font-neue" style="font-size: 13px">საქართველოს ბანკი</span>
+                                <span class="fs-1">
+                                    <img src="{{ asset('storage/uploads/payments/'.$installment->icon) }}" width="160" alt="">
+                                </span>
+                                <span class="text-body-emphasis font-neue" style="font-size: 13px">
+                                    {{ $installment->translations->where('locale', app()->getLocale())->first()->title ?? '' }}
+                                </span>
                             </div>
                         </div>
                     </label>
-                    <label class="border rounded px-3 py-1 cursor-pointer" style="cursor: pointer;">
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="radio" name="installment" value="credit_bank" class="form-check-input">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="fs-1">🌍</span>
-                                <span class="text-body-emphasis font-neue" style="font-size: 13px">კრედიტო ბანკი</span>
-                            </div>
-                        </div>
-                    </label>
-                    <label class="border rounded px-3 py-1 cursor-pointer" style="cursor: pointer;">
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="radio" name="installment" value="ametebi_bank" class="form-check-input">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="fs-1">⚠️</span>
-                                <span class="text-body-emphasis font-neue" style="font-size: 13px">ამეთან ბანკი</span>
-                            </div>
-                        </div>
-                    </label>
+                    @endforeach
                 </div>
             </div>
             <div class="modal-footer border-0 gap-2">

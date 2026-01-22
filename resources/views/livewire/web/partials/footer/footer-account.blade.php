@@ -18,21 +18,29 @@
             @php
                 $accountLinks = [
                     ['title' => 'თქვენი ანგარიში', 'url' => route('web.user.index')],
-                    ['title' => 'მიწოდების პირობები', 'url' => '#!'],
-                    ['title' => 'დაბრუნება და გაცვლა', 'url' => '#!'],
-                    ['title' => 'მიწოდების ინფორმაცია', 'url' => '#!'],
-                    ['title' => 'შეკვეთის თვალთვალი', 'url' => '#!'],
-                    ['title' => 'გადასახადები', 'url' => '#!'],
+                    ['title' => 'შეკვეთები', 'url' => route('web.user.index', 'orders')],
+                    ['title' => 'სურვილების სია', 'url' => route('web.user.index', 'wishlist')],
+                    ['title' => 'ჩემი კალათა', 'url' => route('web.user.index', 'cart')],
+                    ['title' => 'შეტყობინებები', 'url' => route('web.user.index', 'notifications')],
                 ];
             @endphp
-
             @foreach($accountLinks as $link)
+                @auth
                 <li class="d-flex w-100 pt-1">
                     <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"
                        href="{{ $link['url'] }}">
                         {{ $link['title'] }}
                     </a>
                 </li>
+                @else
+                    <li class="d-flex w-100 pt-1">
+                        <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"
+                           data-bs-toggle="modal"
+                           data-bs-target="#loginModal">
+                            {{ $link['title'] }}
+                        </a>
+                    </li>
+                @endif
             @endforeach
         </ul>
     </div>

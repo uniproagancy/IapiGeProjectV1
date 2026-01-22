@@ -17,14 +17,11 @@
         <ul class="nav flex-column gap-2 pt-sm-3 pb-3 mt-n1 mb-1">
             @php
                 $companyLinks = [
-                    ['title' => 'ჩვენ შესახებ', 'url' => '#!'],
-                    ['title' => 'ჩვენი გუნდი', 'url' => '#!'],
-                    ['title' => 'კარიერა', 'url' => '#!'],
-                    ['title' => 'დაგვიკავშირდით', 'url' => '#!'],
-                    ['title' => 'სიახლები', 'url' => '#!'],
+                    ['title' => 'ჩვენ შესახებ', 'url' => '/about-us'],
+                    ['title' => 'კონტაქტი', 'url' => '/contact'],
+//                    ['title' => 'ბლოგი', 'url' => '/blog'],
                 ];
             @endphp
-
             @foreach($companyLinks as $link)
                 <li class="d-flex w-100 pt-1">
                     <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\ApiControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Orders\Order;
+use App\Models\Order\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

@@ -7,7 +7,7 @@
                 პროფილი
             </a>
             <a class="nav-link font-neue"
-               href="{{ route('web.user.wishlist') }}">
+               href="{{ route('web.user.index', ['page' => 'wishlist']) }}">
                 <i class="ci-heart fs-lg opacity-60 me-2"></i>
                 სურვილების სია
             </a>

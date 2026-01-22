@@ -6,27 +6,21 @@
             </aside>
             <div class="col-lg-9">
                 <div class="ps-lg-3 ps-xl-0">
-                    @switch(request()->page)
+                    @switch($page)
                         @case('orders')
-                            @include('livewire.web.user.partials.orders')
+                            @include('livewire.web.user.orders')
                             @break;
                         @case('wishlist')
-                            @include('livewire.web.user.partials.wishlist')
+                            @include('livewire.web.user.wishlist')
                             @break;
                         @case('cart')
-                            @include('livewire.web.user.partials.cart')
-                            @break;
-                        @case('payment')
-                            {{ request()->page }}
-                            @break;
-                        @case('addresses')
-                            {{ request()->page }}
+                            @include('livewire.web.user.cart')
                             @break;
                         @case('notifications')
-                            {{ request()->page }}
+                            @include('livewire.web.user.notifications')
                             @break;
                         @default
-                            @include('livewire.web.user.partials.profile')
+                            @include('livewire.web.user.profile')
                             @break
                     @endswitch
                 </div>

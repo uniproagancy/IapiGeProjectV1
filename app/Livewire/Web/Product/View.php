@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Web\Product;
 
+use App\Models\Payments\Payment;
 use Livewire\Component;
 use App\Models\Product\Product;
 use App\Traits\WithCart;
@@ -41,10 +42,16 @@ class View extends Component
             ->get();
     }
 
+    public function getInstallments()
+    {
+        return Payment::where('type', 3)->where('active', 1)->get();
+    }
+
     public function render()
     {
         return view('livewire.web.product.view', [
-            'similarProducts' => $this->getSimilarProducts()
+            'similarProducts' => $this->getSimilarProducts(),
+            'installments' =>$this->getInstallments(),
         ])->layout('livewire.web.layout');
     }
 }

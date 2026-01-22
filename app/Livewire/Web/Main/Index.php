@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Web\Main;
 
-use App\Models\Slider;
+use App\Models\Product\ProductBrand;
+use App\Services\Sender\SmsOffice;
 use Livewire\Component;
-use App\Models\ProductCategory;
-use App\Models\Promotion;
 use Livewire\Attributes\Computed;
+
+use App\Models\Content\Slider;
+use App\Models\Product\ProductCategory;
+use App\Models\Product\Promotion;
 
 class Index extends Component
 {
@@ -34,12 +37,20 @@ class Index extends Component
             ->orderBy('sortable')
             ->get();
     }
+    #[Computed]
+    public function brands()
+    {
+        return ProductBrand::where('active', 1)
+            ->where('show', 1)
+            ->orderBy('sortable')
+            ->get();
+    }
 
     public function render()
     {
         return view('livewire.web.main.index', [
-            'sliders'
-        ])
-            ->layout('livewire.web.layout');
+            'sliders',
+            'brands'
+        ])->layout('livewire.web.layout');
     }
 }

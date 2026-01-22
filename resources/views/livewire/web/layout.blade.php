@@ -1,14 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light" data-pwa="true">
 <head>
+    @section('seo')
+        <title>Iapi.Ge - იაფი მაღაზია</title>
+        <meta name="description" content="Iapi.Ge">
+        <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    @show
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Cartzilla | Electronics Store</title>
-    <meta name="description" content="Cartzilla - Multipurpose Bootstrap E-Commerce HTML Template">
-    <meta name="keywords" content="online shop, e-commerce, online store, market, multipurpose, product landing, cart, checkout, ui kit, light and dark mode, bootstrap, html5, css3, javascript, gallery, slider, mobile, pwa">
-    <meta name="author" content="Coderthemes">
-
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
 {{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
@@ -27,7 +26,7 @@
     <link rel="stylesheet" href="{{ asset('web-assets/css/style.css') }}">
 </head>
 <body>
-@include('livewire.web.partials.header')
+@include('livewire.web.partials.header.header')
 
 {{ $slot }}
 
@@ -101,7 +100,8 @@
         border-color: #4e5562;
     }
 </style>
-@include('livewire.web.partials.footer')
+@include('livewire.web.partials.footer.footer')
+@include('livewire.web.partials.cookies')
 
 @guest
     <livewire:web.auth.login-modal />
@@ -156,15 +156,9 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
             if (modal) {
                 modal.hide();
-            }
-        });
-    });
-
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('close-modal', (modalId) => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
-            if (modal) {
-                modal.hide();
+                if(modalId[0] === 'loginModal') {
+                    location.reload();
+                }
             }
         });
     });

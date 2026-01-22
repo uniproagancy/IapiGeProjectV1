@@ -40,22 +40,45 @@
 </div>
 
 <style>
-    .product-gallery { align-items: flex-start; }
-    .thumbs-swiper { width: 80px; height: 460px; }
+    .product-gallery {
+        align-items: flex-start;
+    }
+
+    .thumbs-swiper {
+        width: 80px;
+        height: 460px;
+    }
+
     .thumbs-swiper .swiper-slide {
         border-radius: 10px;
         padding: 5px;
         cursor: pointer;
         opacity: .5;
     }
+
     .thumbs-swiper .swiper-slide-thumb-active {
         opacity: 1;
         border: 2px solid #f2223b;
         border-radius: 10px;
     }
-    .thumb-img { width: 100%; height: 100%; object-fit: cover; }
-    .main-swiper { width: 480px; position: relative; }
-    .main-img { width: 100%; height: auto; border-radius: 16px; }
+
+    .thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .main-swiper {
+        width: 480px;
+        position: relative;
+    }
+
+    .main-img {
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+    }
+
     .slider-prev, .slider-next {
         position: absolute;
         top: 50%;
@@ -65,8 +88,14 @@
         border-radius: 50%;
         padding: 8px 10px;
     }
-    .slider-prev { left: 10px; }
-    .slider-next { right: 10px; }
+
+    .slider-prev {
+        left: 10px;
+    }
+
+    .slider-next {
+        right: 10px;
+    }
 </style>
 @section('page_scripts')
     <script>
@@ -88,5 +117,5 @@
             }
         });
     </script>
-    @include('livewire.web.partials.swiper-init')
+    @include('livewire.web.product.swiper-init')
 @endsection

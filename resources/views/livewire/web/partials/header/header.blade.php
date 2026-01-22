@@ -13,17 +13,17 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <a href="{{ route('web.main.index') }}" class="navbar-brand me-0">
-                    @include('livewire.web.partials.logo')
+                    @include('livewire.web.partials.header.logo')
                     IAPI.GE
                 </a>
             </div>
             <div class="col col-lg-9 d-flex align-items-center justify-content-end">
-                @include('livewire.web.partials.search-desktop')
+                @include('livewire.web.partials.header.search-desktop')
                 @include('livewire.web.components.action-buttons')
             </div>
         </div>
         <div class="navbar-stuck-hide pb-1"></div>
     </div>
-    @include('livewire.web.partials.search-mobile')
-    @include('livewire.web.partials.navigation')
+    @include('livewire.web.partials.header.search-mobile')
+    @include('livewire.web.partials.header.navigation')
 </header>

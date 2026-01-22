@@ -15,6 +15,8 @@ class ProductFullSpecificationItem extends Model
     protected $fillable = [
         'section_id',
         'name',
-        'value'
+        'value',
+        'filter',
     ];
+
 }

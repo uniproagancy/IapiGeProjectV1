@@ -27,7 +27,6 @@ trait WithWishlist
                 $wishlist->delete();
                 $this->dispatch('wishlistUpdated');
                 $this->dispatch('notify', message: 'პროდუქტი წაიშალა სურვილების სიიდან', type: 'info');
-                Log::info("Product removed from wishlist: user={$userId}, product={$productId}");
             } else {
                 Wishlist::create([
                     'user_id' => $userId,
@@ -35,16 +34,12 @@ trait WithWishlist
                 ]);
                 $this->dispatch('wishlistUpdated');
                 $this->dispatch('notify', message: 'პროდუქტი დაემატა სურვილების სიაში!', type: 'success');
-                Log::info("Product added to wishlist: user={$userId}, product={$productId}");
             }
         } catch (\Exception $e) {
             $this->dispatch('notify', message: 'შეცდომა სურვილების სიის განახლებისას!', type: 'error');
         }
     }
 
-    /**
-     * ✅ Remove product from wishlist
-     */
     public function removeFromWishlist($productId)
     {
         try {

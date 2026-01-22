@@ -25,39 +25,37 @@
                 @include('livewire.web.product.purchase-section')
             </div>
             @if(!empty($product->fullSpecifications))
-                <div class="col-12">
+            <div class="col-12">
                 <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h3 mb-0 font-neue mx-1" style="font-size: 16px">მახასიათებელები</h2>
-                    </div>
-                    <div id="specs-wrapper" class="specs-collapsed masonry-grid">
-                        @foreach($product->fullSpecifications as $full_specification_item)
-                            <div class="masonry-item p-1 rounded mb-3">
-                                <h3 class="h6 mb-3">{{ $full_specification_item->name }}</h3>
-                                <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
-                                    @foreach($full_specification_item->list as $list_item)
-                                    <li class="d-flex align-items-center position-relative pe-4">
-                                        <span>{{ $list_item->name }}:</span>
-                                        <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
-                                        <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
-                                    </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endforeach
-                    </div>
+                <div id="specs-wrapper" class="specs-collapsed masonry-grid">
+                    @foreach($product->fullSpecifications as $full_specification_item)
+                        <div class="masonry-item p-1 rounded mb-3">
+                            <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>
+                            <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
+                                @foreach($full_specification_item->list as $list_item)
+                                <li class="d-flex align-items-center position-relative pe-4">
+                                    <span>{{ $list_item->name }}:</span>
+                                    <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
+                                    <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
                 </div>
+            </div>
                 <div class="d-flex justify-content-center">
-                <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center" id="specs-toggle-btn">
-                    სრული მახასიათებლები
-                    <i class="ci-chevron-down ms-1"></i>
-                </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center" id="specs-toggle-btn">
+                        სრული მახასიათებლები
+                        <i class="ci-chevron-down ms-1"></i>
+                    </button>
                 </div>
-                </div>
+            </div>
             @endif
             <div class="col-12">
                 @include('livewire.web.product.similar-products')
                 @include('livewire.web.partials.installment-modal')
+                <livewire:web.product.checkout-modal>
             </div>
         </div>
     </section>
