@@ -56,19 +56,19 @@ class Index extends Component
     public function render()
     {
 
-        $this->google = new GoogleSheet();
-        $this->spreadsheetId = '1YvGwk6pilN_S4O9ZYP4-CRxgygPLSjPS';
-        $this->sheetData = $this->google->getValues(
-            $this->spreadsheetId,
-            $this->range
-        ) ?? [];
-
-        if (empty($this->sheetData)) {
-            dd(123);
-        } else {
-            $this->dispatch('ui:success', message: 'Data loaded successfully! Rows: ' . count($this->sheetData));
-        }
-        dd($this->google);
+//        $this->google = new GoogleSheet();
+//        $this->spreadsheetId = '1YvGwk6pilN_S4O9ZYP4-CRxgygPLSjPS';
+//        $this->sheetData = $this->google->getValues(
+//            $this->spreadsheetId,
+//            $this->range
+//        ) ?? [];
+//
+//        if (empty($this->sheetData)) {
+//            dd(123);
+//        } else {
+//            $this->dispatch('ui:success', message: 'Data loaded successfully! Rows: ' . count($this->sheetData));
+//        }
+//        dd($this->google);
 
         return view('livewire.web.main.index', [
             'sliders',
