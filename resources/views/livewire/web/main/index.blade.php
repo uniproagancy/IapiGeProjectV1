@@ -10,7 +10,7 @@
              @endif
         @endforeach
         @if(count($this->productCategories->where('parent_id', 0)) / 2 === $index)
-        <div style="background: rgba(253,57,14, 0.7)">
+        <div style="background: #ff6900">
             <section class="container py-4 mt-sm-3 mt-lg-5">
                 <div class="position-relative">
                     <div class="product-swiper overflow-hidden" data-section="brand-{{$index}}">
