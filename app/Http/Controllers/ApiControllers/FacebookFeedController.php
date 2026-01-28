@@ -35,7 +35,7 @@ class FacebookFeedController extends Controller
             $item->addChild('g:title', $product->translation('ka')->title);
             $item->addChild('g:description', $this->sanitize($product->translation('ka')->description));
             $item->addChild('g:link', route('web.products.view', $product->translation('ka')->slug));
-            $item->addChild('g:image_link', url($product->main_image));
+            $item->addChild('g:image_link', asset('storage/' . $product->main_image));
             $item->addChild('g:brand', $product->brand->translation('ka')->title);
             $item->addChild('g:condition', 'new');
             $item->addChild('g:availability', $stock);
