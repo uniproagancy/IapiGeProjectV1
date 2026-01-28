@@ -16,3 +16,7 @@ Route::prefix('bog')->group(function () {
     Route::post('/installment/callback', '\App\Http\Controllers\ApiControllers\BogController@installment')->name('bog.installment.callback');
     Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BogController@partInstallment')->name('bog.part-installment');
 });
+
+Route::prefix('facebook')->group(function () {
+    Route::get('/feed', '\App\Http\Controllers\ApiControllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
+});
