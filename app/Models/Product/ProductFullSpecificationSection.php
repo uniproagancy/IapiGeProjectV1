@@ -14,7 +14,8 @@ class ProductFullSpecificationSection extends Model
 
     protected $fillable = ['name', 'product_id'];
 
-    public function list() {
+    public function list()
+    {
         return $this->hasMany(ProductFullSpecificationItem::class, 'section_id', 'id');
     }
 

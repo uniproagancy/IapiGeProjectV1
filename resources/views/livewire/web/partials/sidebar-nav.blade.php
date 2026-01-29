@@ -49,7 +49,8 @@
 <nav class="list-group list-group-borderless pt-3">
     <form method="POST" action="">
         @csrf
-        <a href="{{ route('web.logout') }}" class="list-group-item list-group-item-action d-flex align-items-center border-0 bg-transparent w-100 text-start">
+        <a href="{{ route('web.logout') }}"
+           class="list-group-item list-group-item-action d-flex align-items-center border-0 bg-transparent w-100 text-start">
             <i class="ci-log-out fs-base opacity-75 me-2"></i>
             გასვლა
         </a>

@@ -1,5 +1,6 @@
 <div>
-    <div wire:ignore.self class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div wire:ignore.self class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -10,7 +11,8 @@
                             ტელეფონის ნომრის დადასტურება
                         @endif
                     </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @if($step === 'otp') disabled @endif></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                            @if($step === 'otp') disabled @endif></button>
                 </div>
                 <div class="modal-body">
                     @if($step === 'checkout')
@@ -44,7 +46,8 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label font-neue" style="font-size: 12px">სახელი</label>
+                                    <label for="name" class="form-label font-neue"
+                                           style="font-size: 12px">სახელი</label>
                                     <input type="text"
                                            class="form-control @error('name') is-invalid @enderror"
                                            id="name"
@@ -55,7 +58,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="lastname" class="form-label font-neue" style="font-size: 12px">გვარი</label>
+                                    <label for="lastname" class="form-label font-neue"
+                                           style="font-size: 12px">გვარი</label>
                                     <input type="text"
                                            class="form-control @error('lastname') is-invalid @enderror"
                                            id="lastname"
@@ -68,7 +72,8 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label font-neue" style="font-size: 12px">ელ-ფოსტა</label>
+                                    <label for="email" class="form-label font-neue"
+                                           style="font-size: 12px">ელ-ფოსტა</label>
                                     <input type="email"
                                            class="form-control @error('email') is-invalid @enderror"
                                            id="email"
@@ -80,7 +85,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="phone" class="form-label font-neue" style="font-size: 12px">ტელეფონის ნომერი</label>
+                                    <label for="phone" class="form-label font-neue" style="font-size: 12px">ტელეფონის
+                                        ნომერი</label>
                                     <input type="tel"
                                            class="form-control @error('phone') is-invalid @enderror"
                                            id="phone"
@@ -96,7 +102,8 @@
                                 <h5 class="font-neue mb-0" style="font-size: 15px">მიწოდების მისამართი</h5>
                             </div>
                             <div class="mb-3">
-                                <label for="address" class="form-label font-neue" style="font-size: 12px">მისამართი</label>
+                                <label for="address" class="form-label font-neue"
+                                       style="font-size: 12px">მისამართი</label>
                                 <input type="text"
                                        class="form-control @error('address') is-invalid @enderror"
                                        id="address"
@@ -108,7 +115,8 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="comment" class="form-label font-neue" style="font-size: 12px">კომენტარი (არასავალდებულო)</label>
+                                <label for="comment" class="form-label font-neue" style="font-size: 12px">კომენტარი
+                                    (არასავალდებულო)</label>
                                 <textarea class="form-control"
                                           id="comment"
                                           wire:model.blur="comment"
@@ -130,8 +138,10 @@
                                         <label class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4"
                                                for="payment_{{ $payment->id }}"
                                                style="height: 90px !important; font-size: 12px">
-                                            <img src="{{ asset('storage/uploads/payments/'.$payment->icon) }}" width="160">
-                                            <span class="fw-semibold mb-1 font-neue" style="word-break: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; max-width: 100%">
+                                            <img src="{{ asset('storage/uploads/payments/'.$payment->icon) }}"
+                                                 width="160">
+                                            <span class="fw-semibold mb-1 font-neue"
+                                                  style="word-break: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; max-width: 100%">
                                             {{ $payment->translations->where('locale', app()->getLocale())->first()->title ?? '' }}
                                         </span>
                                         </label>
@@ -144,7 +154,8 @@
                                         wire:loading.attr="disabled">
                                     <span wire:loading.remove>გადახდა</span>
                                     <span wire:loading>
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status"
+                                      aria-hidden="true"></span>
                                 შედეგს ელოდება...
                             </span>
                                 </button>
@@ -159,7 +170,8 @@
                                 <small class="text-muted">შედის 5 წუთი</small>
                             </div>
                             <div class="mb-4">
-                                <label for="otp_code" class="form-label font-neue" style="font-size: 13px">დასტური კოდი</label>
+                                <label for="otp_code" class="form-label font-neue" style="font-size: 13px">დასტური
+                                    კოდი</label>
                                 <input type="text"
                                        class="form-control form-control-lg @error('otp_code') is-invalid @enderror text-center"
                                        id="otp_code"
@@ -188,7 +200,8 @@
                                         კოდის ხელახლა გაგზავნა
                                     </button>
                                 @else
-                                    <small class="text-muted">კოდის ხელახლა გაგზავნა შეგიძლია {{ $otp_resend_timer }}s-ში</small>
+                                    <small class="text-muted">კოდის ხელახლა გაგზავნა შეგიძლია {{ $otp_resend_timer }}
+                                        s-ში</small>
                                 @endif
                             </div>
                             <div class="d-grid gap-2">
@@ -197,7 +210,8 @@
                                         wire:loading.attr="disabled">
                                     <span wire:loading.remove>დასტური</span>
                                     <span wire:loading>
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status"
+                                      aria-hidden="true"></span>
                                 შედეგს ელოდება...
                             </span>
                                 </button>

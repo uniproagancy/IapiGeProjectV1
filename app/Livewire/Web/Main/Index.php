@@ -37,6 +37,7 @@ class Index extends Component
             ->orderBy('position')
             ->get();
     }
+
     #[Computed]
     public function sliders()
     {
@@ -44,6 +45,7 @@ class Index extends Component
             ->orderBy('sortable')
             ->get();
     }
+
     #[Computed]
     public function brands()
     {

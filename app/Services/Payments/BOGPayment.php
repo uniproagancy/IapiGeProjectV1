@@ -22,7 +22,7 @@ class BOGPayment
     {
         $token = Http::asForm()
             ->withHeaders([
-                'Authorization' => 'Basic ' . base64_encode( '10003075'.':'.'sziq796zJImm')
+                'Authorization' => 'Basic ' . base64_encode('10003075' . ':' . 'sziq796zJImm')
             ])
             ->post('https://oauth2.bog.ge/auth/realms/bog/protocol/openid-connect/token', [
                 'grant_type' => 'client_credentials'
@@ -55,7 +55,7 @@ class BOGPayment
         ];
         $create_order = Http::withToken($this->getToken())
             ->post("https://api.bog.ge/payments/v1/ecommerce/orders", $payload)->json();
-        if($create_order) {
+        if ($create_order) {
             OrderTransaction::create([
                 'order_id' => $order->id,
                 'payment_order_id' => $create_order['id'],

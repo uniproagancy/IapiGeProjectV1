@@ -35,7 +35,7 @@ class View extends Component
         return [
             'name' => 'required|string|min:2',
             'lastname' => 'nullable|string|min:2',
-            'email' => 'required|email|unique:db_users,email,'.$this->user->id,
+            'email' => 'required|email|unique:db_users,email,' . $this->user->id,
             'phone' => 'nullable|string|max:30|unique:db_users,phone,' . $this->user->id,
             'birthday_date' => 'nullable|date',
             'role_id' => 'required|exists:db_roles,id',

@@ -4,7 +4,7 @@
             <div class="d-flex flex-column gap-2">
                 <livewire:web.components.wishlist-button
                         :productId="$product->id"
-                        class="btn-secondary animate-pulse" />
+                        class="btn-secondary animate-pulse"/>
             </div>
         </div>
         <div class="dropdown d-lg-none position-absolute top-0 end-0 z-2 mt-2 me-2">
@@ -60,7 +60,7 @@
                     {{ number_format($product->price->regular_price, 2) }} ₾
                 </div>
             @endif
-            <livewire:web.components.add-to-cart-button :productId="$product->id" />
+            <livewire:web.components.add-to-cart-button :productId="$product->id"/>
         </div>
     </div>
 </div>

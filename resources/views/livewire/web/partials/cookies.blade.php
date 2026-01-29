@@ -1,5 +1,7 @@
 {{-- ✅ Cookie Consent Modal --}}
-<div id="cookieConsent" class="cookie-consent position-fixed bottom-0 start-0 end-0 bg-dark text-white p-3 p-md-4 shadow-lg" style="z-index: 9999; display: none;">
+<div id="cookieConsent"
+     class="cookie-consent position-fixed bottom-0 start-0 end-0 bg-dark text-white p-3 p-md-4 shadow-lg"
+     style="z-index: 9999; display: none;">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8 mb-3 mb-lg-0">
@@ -57,7 +59,7 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const cookieConsent = document.getElementById('cookieConsent');
         const acceptBtn = document.getElementById('cookieAccept');
         const declineBtn = document.getElementById('cookieDecline');
@@ -70,7 +72,7 @@
         }
 
         // ✅ Accept cookies
-        acceptBtn.addEventListener('click', function() {
+        acceptBtn.addEventListener('click', function () {
             localStorage.setItem('cookieConsent', 'accepted');
             hideCookieConsent();
 
@@ -79,7 +81,7 @@
         });
 
         // ✅ Decline cookies
-        declineBtn.addEventListener('click', function() {
+        declineBtn.addEventListener('click', function () {
             localStorage.setItem('cookieConsent', 'declined');
             hideCookieConsent();
         });

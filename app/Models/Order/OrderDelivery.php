@@ -24,6 +24,6 @@ class OrderDelivery extends Model
 
     public function delivery_company()
     {
-        return $this->hasOne(DeliveryCompany::class,'id', 'delivery_id');
+        return $this->hasOne(DeliveryCompany::class, 'id', 'delivery_id');
     }
 }

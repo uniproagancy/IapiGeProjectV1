@@ -34,8 +34,7 @@ class Index extends Component
     public $subcategories = [];
 
     public $category_id = null;
-
-    public int $brand_id;
+    public $brand_id = null;
 
     protected $listeners = [
         'delete',
@@ -47,17 +46,18 @@ class Index extends Component
 
     protected $queryString = [
         'search_query' => ['except' => ''],
-        'order_dir'    => ['except' => 'desc'],
-        'per_page'     => ['except' => 10],
-        'brand_id'     => ['except' => 0],
-        'category_id'     => ['except' => 0],
-        'with_trashed'  => ['except' => false],
-        'show_web'  => ['except' => false],
-        'status_active'  => ['except' => false],
-        'no_stock'  => ['except' => false],
+        'order_dir' => ['except' => 'desc'],
+        'per_page' => ['except' => 10],
+        'brand_id' => ['except' => 0],
+        'category_id' => ['except' => 0],
+        'with_trashed' => ['except' => false],
+        'show_web' => ['except' => false],
+        'status_active' => ['except' => false],
+        'no_stock' => ['except' => false],
     ];
 
-    public function mount() {
+    public function mount()
+    {
         $this->categories = ProductCategory::where('parent_id', 0)->where('active', 1)->get();
     }
 
@@ -70,8 +70,7 @@ class Index extends Component
     {
         $product = Product::findOrFail($productId);
         $product->active = !$product->active;
-        if($product->active == 0)
-        {
+        if ($product->active == 0) {
             $product->show = 0;
         }
         $product->save();
@@ -97,6 +96,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($productId)
     {
         $this->dispatch('swal:restoreModal', [
@@ -167,7 +167,7 @@ class Index extends Component
             'required' => 'გთხოვთ აირჩიოთ კატეგორია',
             'db_exists' => 'დაფიქსირდა შეცდომა!',
         ]);
-        if(empty($this->selectedSubcategory)) {
+        if (empty($this->selectedSubcategory)) {
             $update_category = $this->selectedCategory;
         } else {
             $update_category = $this->selectedSubcategory;
@@ -183,28 +183,24 @@ class Index extends Component
     public function render()
     {
         $query = Product::with(['translations'])
-            ->when($this->search_query, fn($q) =>
-                $q->whereHas('translations', fn($subQuery) =>
-                    $subQuery->where('title', 'like', "%{$this->search_query}%")
-                )
+            ->when($this->search_query, fn($q) => $q->whereHas('translations', fn($subQuery) => $subQuery->where('title', 'like', "%{$this->search_query}%")
             )
-            ->when($this->show_web === true, fn($q) =>
-                $q->where('show', $this->show_web)
             )
-            ->when($this->category_id, fn($q) =>
-                $q->where('category_id', $this->category_id)
+            ->when($this->show_web === true, fn($q) => $q->where('show', $this->show_web)
             )
-            ->when($this->status_active === true, fn($q) =>
-                $q->where('active', $this->status_active)
+            ->when($this->category_id, fn($q) => $q->where('category_id', $this->category_id)
             )
-            ->when($this->no_stock === true, fn($q) =>
-                $q->where('in_stock', 0)
+            ->when($this->brand_id, fn($q) => $q->where('brand_id', $this->brand_id)
+            )
+            ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
+            )
+            ->when($this->no_stock === true, fn($q) => $q->where('in_stock', 0)
             )
             ->when($this->with_trashed, fn($q) => $q->withTrashed())
             ->orderBy('id', $this->order_dir);
         $products = $query->paginate($this->per_page);
 
-        $this->currentPageIds = $products->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->currentPageIds = $products->pluck('id')->map(fn($id) => (string)$id)->toArray();
 
         return view('livewire.dashboard.product.index', [
             'products' => $products,

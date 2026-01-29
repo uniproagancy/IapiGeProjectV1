@@ -42,17 +42,17 @@
     @if($notifications->count() > 0)
         <div class="row row-cols-1 g-3">
             @foreach($notifications as $notification)
-            <div class="d-md-flex align-items-center justify-content-between gap-4 border-bottom py-3">
-                <div class="d-flex fs-sm pt-2 pt-md-0 ps-3 ps-md-0 mb-2 mb-md-0 align-items-center">
+                <div class="d-md-flex align-items-center justify-content-between gap-4 border-bottom py-3">
+                    <div class="d-flex fs-sm pt-2 pt-md-0 ps-3 ps-md-0 mb-2 mb-md-0 align-items-center">
                     <span class="d-flex align-items-center fs-sm fw-medium text-body-emphasis px-1">
                         <span class="btn btn-outline-{{ $notification->data['color'] ?? 'primary' }} btn-sm font-neue ">
                             <span class="bg-{{ $notification->data['color'] ?? 'primary' }} rounded-circle p-1 me-2"></span>
                             {{ $notification->data['title'] }}
                         </span>
                     </span>
-                    <span class="mx-1">{{ $notification->data['message'] }}</span>
+                        <span class="mx-1">{{ $notification->data['message'] }}</span>
+                    </div>
                 </div>
-            </div>
             @endforeach
         </div>
         <div class="mt-4">

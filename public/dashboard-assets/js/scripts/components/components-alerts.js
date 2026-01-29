@@ -6,18 +6,18 @@
     Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
 (function (window, document, $) {
-  'use strict';
+    'use strict';
 
-  var alertValidationInput = $('.alert-validation'),
-    alertRegex = /^[0-9]+$/,
-    alertValidationMsg = $('.alert-validation-msg');
+    var alertValidationInput = $('.alert-validation'),
+        alertRegex = /^[0-9]+$/,
+        alertValidationMsg = $('.alert-validation-msg');
 
-  /* validation with alert */
-  alertValidationInput.on('input', function () {
-    if (alertValidationInput.val().match(alertRegex)) {
-      alertValidationMsg.css('display', 'none');
-    } else {
-      alertValidationMsg.css('display', 'block');
-    }
-  });
+    /* validation with alert */
+    alertValidationInput.on('input', function () {
+        if (alertValidationInput.val().match(alertRegex)) {
+            alertValidationMsg.css('display', 'none');
+        } else {
+            alertValidationMsg.css('display', 'block');
+        }
+    });
 })(window, document, jQuery);

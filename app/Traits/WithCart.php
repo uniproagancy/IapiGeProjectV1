@@ -180,29 +180,29 @@ trait WithCart
     public function loadCartFromDatabase()
     {
         try {
-            if(!Cart::getContent()->isEmpty()) {
+            if (!Cart::getContent()->isEmpty()) {
 
-            Cart::clear();
-            $userId = auth()->id();
-            $sessionId = session()->getId();
-            if ($userId) {
-                $items = ShoppingCart::where('user_id', $userId)->get();
-            } else {
-                $items = ShoppingCart::where('session_id', $sessionId)->get();
-            }
-            if ($items->isEmpty()) {
-                return;
-            }
-            foreach ($items as $item) {
-                Cart::add([
-                    'id' => $item->product_id,
-                    'name' => $item->name,
-                    'price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'attributes' => $item->attributes,
-                ]);
-            }
-            $this->dispatch('cartUpdated');
+                Cart::clear();
+                $userId = auth()->id();
+                $sessionId = session()->getId();
+                if ($userId) {
+                    $items = ShoppingCart::where('user_id', $userId)->get();
+                } else {
+                    $items = ShoppingCart::where('session_id', $sessionId)->get();
+                }
+                if ($items->isEmpty()) {
+                    return;
+                }
+                foreach ($items as $item) {
+                    Cart::add([
+                        'id' => $item->product_id,
+                        'name' => $item->name,
+                        'price' => $item->price,
+                        'quantity' => $item->quantity,
+                        'attributes' => $item->attributes,
+                    ]);
+                }
+                $this->dispatch('cartUpdated');
             }
 
         } catch (\Exception $e) {

@@ -9,24 +9,26 @@
             <div class="modal-body">
                 <div class="d-flex flex-column gap-3">
                     @foreach($installments as $installment)
-                    <label class="border rounded px-3 py-1 cursor-pointer" style="cursor: pointer;">
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="radio" name="installment" value="georgian_bank" class="form-check-input">
-                            <div class="d-flex align-items-center gap-2">
+                        <label class="border rounded px-3 py-1 cursor-pointer" style="cursor: pointer;">
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="radio" name="installment" value="georgian_bank" class="form-check-input">
+                                <div class="d-flex align-items-center gap-2">
                                 <span class="fs-1">
-                                    <img src="{{ asset('storage/uploads/payments/'.$installment->icon) }}" width="160" alt="">
+                                    <img src="{{ asset('storage/uploads/payments/'.$installment->icon) }}" width="160"
+                                         alt="">
                                 </span>
-                                <span class="text-body-emphasis font-neue" style="font-size: 13px">
+                                    <span class="text-body-emphasis font-neue" style="font-size: 13px">
                                     {{ $installment->translations->where('locale', app()->getLocale())->first()->title ?? '' }}
                                 </span>
+                                </div>
                             </div>
-                        </div>
-                    </label>
+                        </label>
                     @endforeach
                 </div>
             </div>
             <div class="modal-footer border-0 gap-2">
-                <button type="button" class="btn btn-outline-secondary font-neue" data-bs-dismiss="modal">დახურვა</button>
+                <button type="button" class="btn btn-outline-secondary font-neue" data-bs-dismiss="modal">დახურვა
+                </button>
                 <button type="button" class="btn btn-primary font-neue" onclick="selectInstallment()">გადასვლა</button>
             </div>
         </div>
@@ -53,7 +55,7 @@
 
 <script>
     // Open modal on button click
-    document.getElementById('installmentBtn')?.addEventListener('click', function() {
+    document.getElementById('installmentBtn')?.addEventListener('click', function () {
         const modal = new bootstrap.Modal(document.getElementById('installmentModal'));
         modal.show();
     });
@@ -70,6 +72,6 @@
         const installmentType = selected.value;
         {{--const checkoutUrl = `{{ route('web.checkout.index') }}?installment=${installmentType}`;--}}
 
-        window.location.href = checkoutUrl;
+            window.location.href = checkoutUrl;
     }
 </script>

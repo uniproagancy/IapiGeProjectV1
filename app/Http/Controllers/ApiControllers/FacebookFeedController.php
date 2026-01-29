@@ -17,14 +17,14 @@ class FacebookFeedController extends Controller
         $channel->addChild('title', 'Test Store');
         $channel->addChild('link', 'http://www.example.com');
         $channel->addChild('description', 'An example store');
-        foreach($products as $product) {
-            if($product->in_stock == 1) {
+        foreach ($products as $product) {
+            if ($product->in_stock == 1) {
                 $stock = 'in stock';
             } else {
                 $stock = 'out of stock';
             }
 
-            if(!empty($product->price->discount_price)) {
+            if (!empty($product->price->discount_price)) {
                 $price = $product->price->discount_price;
             } else {
                 $price = $product->price->regular_price;
@@ -42,8 +42,8 @@ class FacebookFeedController extends Controller
 //            $item->addChild('g:google_product_category', $product->id);
             $item->addChild('g:price', $product->price->regular_price);
             $item->addChild('g:sale_price', $product->price->discount_price);
-            if($item->price->regular_price > 150) {
-                $item->addChild('g:custom_label_0', 'თვეში '. $price / 24 .' -დან');
+            if ($item->price->regular_price > 150) {
+                $item->addChild('g:custom_label_0', 'თვეში ' . $price / 24 . ' -დან');
             }
         }
         return response($xml->asXML(), 200)
@@ -58,12 +58,12 @@ class FacebookFeedController extends Controller
         $text = html_entity_decode($text, ENT_HTML5 | ENT_QUOTES, 'UTF-8');
         $text = strip_tags($text);
         $replacements = [
-            '&nbsp;'  => ' ',
-            '&amp;'   => '&',
-            '&quot;'  => '"',
-            '&apos;'  => "'",
-            '&lt;'    => '<',
-            '&gt;'    => '>',
+            '&nbsp;' => ' ',
+            '&amp;' => '&',
+            '&quot;' => '"',
+            '&apos;' => "'",
+            '&lt;' => '<',
+            '&gt;' => '>',
             '&ldquo;' => '"',
             '&rdquo;' => '"',
             '&lsquo;' => "'",
@@ -71,18 +71,18 @@ class FacebookFeedController extends Controller
             '&ndash;' => '-',
             '&mdash;' => '-',
             '&hellip;' => '...',
-            '&copy;'  => '©',
-            '&reg;'   => '®',
+            '&copy;' => '©',
+            '&reg;' => '®',
             '&trade;' => '™',
-            '&euro;'  => '€',
+            '&euro;' => '€',
             '&pound;' => '£',
-            '&yen;'   => '¥',
-            '<br>'    => ' ',
-            '<br/>'   => ' ',
-            '<br />'  => ' ',
-            '\n'      => ' ',
-            '\r'      => ' ',
-            '\t'      => ' ',
+            '&yen;' => '¥',
+            '<br>' => ' ',
+            '<br/>' => ' ',
+            '<br />' => ' ',
+            '\n' => ' ',
+            '\r' => ' ',
+            '\t' => ' ',
         ];
         foreach ($replacements as $entity => $replacement) {
             $text = str_ireplace($entity, $replacement, $text);

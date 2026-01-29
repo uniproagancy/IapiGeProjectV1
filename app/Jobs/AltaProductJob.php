@@ -66,6 +66,7 @@ class AltaProductJob implements ShouldQueue
             'discount_percent' => $productData['discountPercent'] ?? 0,
         ]);
     }
+
     private function createNewProduct(array $productData): void
     {
         DB::transaction(function () use ($productData) {

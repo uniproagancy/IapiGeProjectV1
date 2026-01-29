@@ -8,10 +8,12 @@
                     <div class="card-header">
                         <h4 class="card-title">კომპანიების ჩამონათვალი</h4>
                         <div>
-                            <button type="button" class="btn btn-icon btn-success mx-50" data-bs-toggle="modal" data-bs-target="#createCompanyModal">
+                            <button type="button" class="btn btn-icon btn-success mx-50" data-bs-toggle="modal"
+                                    data-bs-target="#createCompanyModal">
                                 <i data-feather="user-plus"></i>
                             </button>
-                            <button type="button" class="btn btn-icon btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterCompanyModal">
+                            <button type="button" class="btn btn-icon btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#filterCompanyModal">
                                 <i data-feather="search"></i>
                             </button>
                         </div>
@@ -22,7 +24,7 @@
                                 <thead>
                                 <tr class="text-center">
                                     <th>ID</th>
-                                    <th>დასახელება -  საიდენტიფიკაციო კოდი</th>
+                                    <th>დასახელება - საიდენტიფიკაციო კოდი</th>
                                     <th>წარმომადგენელი</th>
                                     <th>ელ-ფოსტა</th>
                                     <th>ტელეფონის ნომერი</th>
@@ -34,9 +36,13 @@
                                 @foreach($companies as $company)
                                     <tr class="text-center">
                                         <td>{{ $company->id }}</td>
-                                        <td><span @if($company->trashed()) class="badge badge-light-danger" @endif>{{ $company->legal->name }} {{ $company->name }} - <span class="badge badge-light-success">{{ $company->code }}</span></span></td>
                                         <td>
-                                            <a href="{{ route('dashboard.user.view', $company->user_id) }}" class="badge @if($company->user->trashed()) badge-light-danger @else badge-light-info @endif">
+                                            <span @if($company->trashed()) class="badge badge-light-danger" @endif>{{ $company->legal->name }} {{ $company->name }} - <span
+                                                        class="badge badge-light-success">{{ $company->code }}</span></span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('dashboard.user.view', $company->user_id) }}"
+                                               class="badge @if($company->user->trashed()) badge-light-danger @else badge-light-info @endif">
                                                 {{ $company->user->name }} {{ $company->user->lastname }}
                                             </a>
                                         </td>
@@ -48,15 +54,19 @@
                                         </td>
                                         <td>
                                             @if(!$company->trashed() && !$company->user->trashed())
-                                            <div class="d-flex justify-content-center">
-                                                <div class="form-check form-switch form-check-success">
-                                                    <input type="checkbox" class="form-check-input" id="company_active_{{ $company->id }}" wire:click="toggleActive({{ $company->id }})" @checked($company->active) />
-                                                    <label class="form-check-label" for="company_active_{{ $company->id }}">
-                                                        <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                        <span class="switch-icon-right"><i data-feather="x"></i></span>
-                                                    </label>
+                                                <div class="d-flex justify-content-center">
+                                                    <div class="form-check form-switch form-check-success">
+                                                        <input type="checkbox" class="form-check-input"
+                                                               id="company_active_{{ $company->id }}"
+                                                               wire:click="toggleActive({{ $company->id }})" @checked($company->active) />
+                                                        <label class="form-check-label"
+                                                               for="company_active_{{ $company->id }}">
+                                                            <span class="switch-icon-left"><i data-feather="check"></i></span>
+                                                            <span class="switch-icon-right"><i
+                                                                        data-feather="x"></i></span>
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             @endif
                                         </td>
                                         <td>
@@ -65,11 +75,13 @@
                                             </a>
                                             @if(!$company->user->trashed())
                                                 @if($company->trashed())
-                                                    <a href="#" class="text-body" wire:click="restoreModal({{ $company->id }})">
+                                                    <a href="#" class="text-body"
+                                                       wire:click="restoreModal({{ $company->id }})">
                                                         <i class="text-success" data-feather="rotate-ccw"></i>
                                                     </a>
                                                 @else
-                                                    <a href="#" class="text-body" wire:click="deleteModal({{ $company->id }})">
+                                                    <a href="#" class="text-body"
+                                                       wire:click="deleteModal({{ $company->id }})">
                                                         <i class="text-danger" data-feather="trash"></i>
                                                     </a>
                                                 @endif
@@ -105,15 +117,16 @@
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
                         <label class="form-label">საძიებო სიტყვა</label>
-                        <input type="text" class="form-control" placeholder="დასახელება, საიდენტიფიკაციო კოდი, წარმომადგენელი, ელ-ფოსტა, ტელეფონის ნომერი"
-                               wire:model.lazy="search_query" />
+                        <input type="text" class="form-control"
+                               placeholder="დასახელება, საიდენტიფიკაციო კოდი, წარმომადგენელი, ელ-ფოსტა, ტელეფონის ნომერი"
+                               wire:model.lazy="search_query"/>
                     </div>
                     <div class="mb-1">
                         <label class="form-label">სამართლებრივი ფორმა</label>
                         <select class="form-select" wire:model.lazy="legal_id">
                             <option value="0">ყველა ფორმა</option>
                             @foreach($legal_forms as $legal_form)
-                            <option value="{{ $legal_form->id }}">{{ $legal_form->name }}</option>
+                                <option value="{{ $legal_form->id }}">{{ $legal_form->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -139,7 +152,8 @@
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
-                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება</button>
+                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
+                        </button>
                     </div>
                 </div>
             </form>
@@ -158,7 +172,7 @@
                 cancelButtonText: data[0].cancelButtonText,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Livewire.dispatch('delete', { id: data[0].id });
+                    Livewire.dispatch('delete', {id: data[0].id});
                 }
             });
         });
@@ -172,7 +186,7 @@
                 cancelButtonText: data[0].cancelButtonText,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Livewire.dispatch('restore', { id: data[0].id });
+                    Livewire.dispatch('restore', {id: data[0].id});
                 }
             });
         });
@@ -180,7 +194,7 @@
         Livewire.on('filter_modal_close', () => {
             const modalEl = document.getElementById('filterCompanyModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if(modal) {
+            if (modal) {
                 modal.hide();
             }
         });
@@ -188,7 +202,7 @@
         Livewire.on('create_modal_close', () => {
             const modalEl = document.getElementById('createCompanyModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if(modal) {
+            if (modal) {
                 modal.hide();
             }
         });

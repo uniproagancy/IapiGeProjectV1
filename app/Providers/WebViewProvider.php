@@ -17,7 +17,7 @@ class WebViewProvider extends ServiceProvider
 
     public function boot(): void
     {
-        View::composer('*', function($view) {
+        View::composer('*', function ($view) {
             $menu_list = WebMenu::where('active', 1)->get();
             $product_categories = ProductCategory::where([
                 'active' => 1,

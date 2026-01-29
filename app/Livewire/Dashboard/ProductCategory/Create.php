@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Dashboard\ProductCategory;
 
-use App\Models\ProductCategory;
-use App\Models\ProductCategoryTranslation;
+use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductCategoryTranslation;
 use Illuminate\Support\Str;
 use Livewire\Component;
 

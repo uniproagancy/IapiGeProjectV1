@@ -16,8 +16,13 @@
         transition: color .25s ease-in-out, background-color .25s ease-in-out;
     }
 
-    .swiper-prev { left: -50px; }
-    .swiper-next { right: -50px; }
+    .swiper-prev {
+        left: -50px;
+    }
+
+    .swiper-next {
+        right: -50px;
+    }
 
     .swiper-prev:hover,
     .swiper-next:hover {
@@ -42,11 +47,11 @@
                     prevEl: `.swiper-prev[data-section="${id}"]`,
                 },
                 breakpoints: {
-                    0: { slidesPerView: 2 },
-                    576: { slidesPerView: 3 },
-                    768: { slidesPerView: 4 },
-                    992: { slidesPerView: 5 },
-                    1200: { slidesPerView: 6 },
+                    0: {slidesPerView: 2},
+                    576: {slidesPerView: 3},
+                    768: {slidesPerView: 4},
+                    992: {slidesPerView: 5},
+                    1200: {slidesPerView: 6},
                 }
             });
         });
@@ -62,11 +67,11 @@
                     prevEl: `.swiper-prev[data-section="${id}"]`,
                 },
                 breakpoints: {
-                    0: { slidesPerView: 2 },
-                    576: { slidesPerView: 3 },
-                    768: { slidesPerView: 4 },
-                    992: { slidesPerView: 5 },
-                    1200: { slidesPerView: 5 },
+                    0: {slidesPerView: 2},
+                    576: {slidesPerView: 3},
+                    768: {slidesPerView: 4},
+                    992: {slidesPerView: 5},
+                    1200: {slidesPerView: 5},
                 }
             });
         });

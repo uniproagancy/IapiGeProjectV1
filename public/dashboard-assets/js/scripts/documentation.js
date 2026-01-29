@@ -8,7 +8,7 @@
 ==========================================================================================*/
 
 $(function () {
-  'use strict';
+    'use strict';
 
-  $('body').scrollspy({ target: '#sidebar-page-navigation' });
+    $('body').scrollspy({target: '#sidebar-page-navigation'});
 });

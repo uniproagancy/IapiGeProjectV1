@@ -6,7 +6,7 @@ use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
-    Route::name('web.')->group(function() {
+    Route::name('web.')->group(function () {
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
 
@@ -15,12 +15,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
         });
 
-        Route::prefix('/products')->name('products.')->group(function() {
+        Route::prefix('/products')->name('products.')->group(function () {
             Route::get('/{category_slug?}', App\Livewire\Web\Product\Index::class)->name('index');
             Route::get('/view/{slug?}', App\Livewire\Web\Product\View::class)->name('view');
         });
 
-        Route::prefix('/static')->name('static.')->group(function() {
+        Route::prefix('/static')->name('static.')->group(function () {
             Route::get('/{page?}', App\Livewire\Web\Main\StaticPages::class)->name('index');
         });
 
@@ -37,7 +37,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     });
 
 //    Route::prefix('auth')->name('auth.')->group(function () {
-        // Google
+    // Google
 //        Route::get('google', [SocialLoginController::class, 'redirectToGoogle'])->name('google');
 //        Route::get('google/callback', [SocialLoginController::class, 'handleGoogleCallback'])->name('google.callback');
 //
@@ -47,7 +47,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 //    });
 });
 
-Route::prefix('/dashboard')->name('dashboard.')->group(function() {
+Route::prefix('/dashboard')->name('dashboard.')->group(function () {
     // AUTH ROUTES
     Route::middleware('guest')->group(function () {
         Route::get('/login', App\Livewire\Dashboard\Login::class)->name('login');

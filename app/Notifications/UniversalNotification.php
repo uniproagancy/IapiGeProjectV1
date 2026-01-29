@@ -45,7 +45,7 @@ class UniversalNotification extends Notification implements ShouldQueue
 
     protected function getIcon(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'order' => 'ci-package',
             'payment' => 'ci-credit-card',
             'product' => 'ci-shopping-bag',
@@ -59,7 +59,7 @@ class UniversalNotification extends Notification implements ShouldQueue
 
     protected function getColor(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'order' => 'primary',
             'payment' => 'success',
             'product' => 'info',

@@ -27,7 +27,7 @@ class View extends Component
         ])->whereHas('translations', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })
-        ->firstOrFail();
+            ->firstOrFail();
         $this->loadCartFromDatabase();
     }
 
@@ -51,7 +51,7 @@ class View extends Component
     {
         return view('livewire.web.product.view', [
             'similarProducts' => $this->getSimilarProducts(),
-            'installments' =>$this->getInstallments(),
+            'installments' => $this->getInstallments(),
         ])->layout('livewire.web.layout');
     }
 }

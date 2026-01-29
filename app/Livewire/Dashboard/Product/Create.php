@@ -31,6 +31,7 @@ class Create extends Component
     public $keywords_ka, $keywords_en, $keywords_ru;
 
     use WithFileUploads;
+
     public function rules(): array
     {
         return [
@@ -81,7 +82,7 @@ class Create extends Component
             }
         }
         $main_image = $this->main_image;
-        $path = $main_image->store('uploads/products/'.$product->id, 'public');
+        $path = $main_image->store('uploads/products/' . $product->id, 'public');
         Product::find($product->id)->update([
             'main_image' => $path,
         ]);
@@ -91,7 +92,7 @@ class Create extends Component
     {
         return view('livewire.dashboard.product.create', [
             'suppliers' => ProductSupplier::where('active', 1)->get(),
-            'categories' => ProductCategory::where('parent_id', 0)->where('active', '!=', 0)->where('id', '!=', 1   )->get(),
+            'categories' => ProductCategory::where('parent_id', 0)->where('active', '!=', 0)->where('id', '!=', 1)->get(),
             'brands' => ProductBrand::where('active', 1)->get(),
         ])->layout('livewire.dashboard.layout');
     }

@@ -12,7 +12,8 @@ class Promotion extends Model
 
     protected $table = 'db_promotions';
 
-    public function products() {
+    public function products()
+    {
         return $this->hasMany(PromotionProduct::class, 'promotion_id', 'id');
     }
 

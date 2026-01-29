@@ -44,7 +44,7 @@
                     <td class="py-3 pe-0">
                         <span class="d-flex align-items-center justify-content-end position-relative gap-1 gap-sm-2 ms-n2 ms-sm-0">
                             @foreach($order->items->take(3) as $item)
-                            <span>
+                                <span>
                                 <img src="{{ asset('storage/' . $item->product->main_image) }}"
                                      width="64"
                                      alt="{{ $item->product->translation(app()->getLocale())->title ?? $item->product->translation('ka')->title }}"

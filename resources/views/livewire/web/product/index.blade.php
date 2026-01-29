@@ -156,7 +156,8 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div wire:click="loadMore" wire:loading.attr="disabled" class="btn btn-primary py-3 d-flex justify-content-center">
+                        <div wire:click="loadMore" wire:loading.attr="disabled"
+                             class="btn btn-primary py-3 d-flex justify-content-center">
                             <span wire:loading.remove class="font-neue">მეტის ნახვა</span>
                             <span wire:loading class="spinner-border"></span>
                         </div>

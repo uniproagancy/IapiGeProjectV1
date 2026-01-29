@@ -24,7 +24,7 @@ class Create extends Component
 
     private function resetForm()
     {
-        $this->reset(['name', 'lastname','phone', 'email', 'role_id']);
+        $this->reset(['name', 'lastname', 'phone', 'email', 'role_id']);
     }
 
     protected function rules(): array
@@ -54,7 +54,7 @@ class Create extends Component
     public function save()
     {
         $this->validate();
-        $password = Str::password(8,true,true,false);
+        $password = Str::password(8, true, true, false);
         $user = User::create([
             'name' => $this->name,
             'lastname' => $this->lastname,

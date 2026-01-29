@@ -62,11 +62,11 @@
                                 prevEl: `.swiper-prev[data-section="${section}"]`,
                             },
                             breakpoints: {
-                                0: { slidesPerView: 2 },
-                                576: { slidesPerView: 3 },
-                                768: { slidesPerView: 4 },
-                                992: { slidesPerView: 5 },
-                                1200: { slidesPerView: 6 },
+                                0: {slidesPerView: 2},
+                                576: {slidesPerView: 3},
+                                768: {slidesPerView: 4},
+                                992: {slidesPerView: 5},
+                                1200: {slidesPerView: 6},
                             }
                         });
                     }
@@ -74,6 +74,7 @@
             }
         }
     }
+
     document.addEventListener("DOMContentLoaded", function () {
         initProductGallery();
     });

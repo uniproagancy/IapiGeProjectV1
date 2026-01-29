@@ -14,7 +14,7 @@ class Login extends Component
     public $password;
     public $remember_me = false;
 
-    public function rules():array
+    public function rules(): array
     {
         return [
             'email' => 'required|exists:db_users,email',
@@ -33,7 +33,7 @@ class Login extends Component
     public function login()
     {
         $this->validate();
-        if(!Auth::attempt([
+        if (!Auth::attempt([
             'email' => $this->email,
             'password' => $this->password,
         ], $this->remember_me)) {

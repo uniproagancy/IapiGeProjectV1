@@ -17,6 +17,7 @@ class Index extends Component
     public bool $with_trashed = false;
     public bool $show_web = false;
     public bool $status_active = false;
+
     public function paginationView()
     {
         return 'livewire.dashboard.partials._pagination';
@@ -32,11 +33,11 @@ class Index extends Component
 
     protected $queryString = [
         'search_query' => ['except' => ''],
-        'order_dir'    => ['except' => 'desc'],
-        'per_page'     => ['except' => 10],
-        'with_trashed'  => ['except' => false],
-        'show_web'  => ['except' => false],
-        'status_active'  => ['except' => false],
+        'order_dir' => ['except' => 'desc'],
+        'per_page' => ['except' => 10],
+        'with_trashed' => ['except' => false],
+        'show_web' => ['except' => false],
+        'status_active' => ['except' => false],
     ];
 
     public function deleteModal($brandId)
@@ -50,6 +51,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($brandId)
     {
         $this->dispatch('swal:restoreModal', [
@@ -61,6 +63,7 @@ class Index extends Component
             'type' => 'restore'
         ]);
     }
+
     public function restore($id)
     {
         ProductBrand::withTrashed()->findOrFail($id)->restore();
@@ -79,8 +82,7 @@ class Index extends Component
     {
         $brand = ProductBrand::findOrFail($brandId);
         $brand->active = !$brand->active;
-        if($brand->active == 0)
-        {
+        if ($brand->active == 0) {
             $brand->show = 0;
         }
         $brand->save();
@@ -111,17 +113,13 @@ class Index extends Component
     public function render()
     {
         $query = ProductBrand::with(['translations'])
-            ->when($this->search_query, fn($q) =>
-                $q->whereHas('translations', fn($subQuery) =>
-                $subQuery->where('title', 'like', "%{$this->search_query}%")
-                    ->orWhere('slug', 'like', "%{$this->search_query}%")
-                )
+            ->when($this->search_query, fn($q) => $q->whereHas('translations', fn($subQuery) => $subQuery->where('title', 'like', "%{$this->search_query}%")
+                ->orWhere('slug', 'like', "%{$this->search_query}%")
             )
-            ->when($this->show_web === true, fn($q) =>
-                $q->where('show', $this->show_web)
             )
-            ->when($this->status_active === true, fn($q) =>
-                $q->where('active', $this->status_active)
+            ->when($this->show_web === true, fn($q) => $q->where('show', $this->show_web)
+            )
+            ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
             )
             ->when($this->with_trashed, fn($q) => $q->withTrashed())
             ->orderBy('id', $this->order_dir);

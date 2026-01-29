@@ -26,7 +26,7 @@ class InvoiceController extends Controller
             'delivery_amount' => $order->delivery_amount
         ];
         $pdf = Pdf::loadView('livewire.dashboard.invoices.order', $data);
-        return $pdf->download('order_invoice_'.$order->id.'.pdf');
+        return $pdf->download('order_invoice_' . $order->id . '.pdf');
     }
 
     public function invoiceSend(Request $request)

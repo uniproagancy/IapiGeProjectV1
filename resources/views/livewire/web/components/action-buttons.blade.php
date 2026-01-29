@@ -23,12 +23,13 @@
            aria-label="პროფილი">
             <i class="ci-user animate-target"></i>
             @if(auth()->user()->unreadNotifications->count() > 0)
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25em 0.5em;">
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style="font-size: 0.65rem; padding: 0.25em 0.5em;">
                     {{ auth()->user()->unreadNotifications->count() }}
                 </span>
             @endif
         </a>
-        <livewire:web.components.wishlist-counter />
+        <livewire:web.components.wishlist-counter/>
     @else
         <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-shake d-none d-md-inline-flex"
            aria-label="ავტორიზაცია"
@@ -38,5 +39,5 @@
             <i class="ci-user animate-target"></i>
         </a>
     @endauth
-    <livewire:web.components.cart-counter />
+    <livewire:web.components.cart-counter/>
 </div>

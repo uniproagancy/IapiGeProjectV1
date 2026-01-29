@@ -43,16 +43,16 @@ class Order extends Model
 
     public function status(): BelongsTo
     {
-        return $this->belongsTo(OrderStatus::class,'status_id','id');
+        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
     }
 
     public function paymentStatus(): BelongsTo
     {
-        return $this->belongsTo(PaymentStatus::class,'status_id','id');
+        return $this->belongsTo(PaymentStatus::class, 'status_id', 'id');
     }
 
     public function deliveryData()
     {
-        return $this->hasOne(OrderDelivery::class,'order_id','id');
+        return $this->hasOne(OrderDelivery::class, 'order_id', 'id');
     }
 }

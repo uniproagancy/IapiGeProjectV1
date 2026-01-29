@@ -1,9 +1,11 @@
 @section('og_tags')
 
-    <meta property="og:url" content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}" />
-    <meta property="og:type" content="article" />
-    <meta property="og:title" content="{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}" />
-    <meta property="og:image" content="{{ asset('storage/'.$product->main_image) }}" />
+    <meta property="og:url"
+          content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}"/>
+    <meta property="og:type" content="article"/>
+    <meta property="og:title"
+          content="{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}"/>
+    <meta property="og:image" content="{{ asset('storage/'.$product->main_image) }}"/>
 
 @endsection
 
@@ -19,7 +21,7 @@
                         </h1>
                         <livewire:web.components.wishlist-button
                                 :productId="$product->id"
-                                class="btn-secondary animate-pulse" />
+                                class="btn-secondary animate-pulse"/>
                     </div>
                     <div class="col-md-8">
                         <span class="font-neue" style="font-size: 14px">SKU: {{ $product->sku }}</span>
@@ -34,32 +36,33 @@
                 @include('livewire.web.product.purchase-section')
             </div>
             @if(!empty($product->fullSpecifications))
-            <div class="col-12">
-                <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
-                <div id="specs-wrapper" class="specs-collapsed masonry-grid">
-                    @foreach($product->fullSpecifications as $full_specification_item)
-                        <div class="masonry-item p-1 rounded mb-3">
-                            <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>
-                            <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
-                                @foreach($full_specification_item->list as $list_item)
-                                <li class="d-flex align-items-center position-relative pe-4">
-                                    <span>{{ $list_item->name }}:</span>
-                                    <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
-                                    <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
-                                </li>
-                                @endforeach
-                            </ul>
+                <div class="col-12">
+                    <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
+                        <div id="specs-wrapper" class="specs-collapsed masonry-grid">
+                            @foreach($product->fullSpecifications as $full_specification_item)
+                                <div class="masonry-item p-1 rounded mb-3">
+                                    <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>
+                                    <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
+                                        @foreach($full_specification_item->list as $list_item)
+                                            <li class="d-flex align-items-center position-relative pe-4">
+                                                <span>{{ $list_item->name }}:</span>
+                                                <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
+                                                <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endforeach
                         </div>
-                    @endforeach
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center"
+                                id="specs-toggle-btn">
+                            სრული მახასიათებლები
+                            <i class="ci-chevron-down ms-1"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-                <div class="d-flex justify-content-center">
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center" id="specs-toggle-btn">
-                        სრული მახასიათებლები
-                        <i class="ci-chevron-down ms-1"></i>
-                    </button>
-                </div>
-            </div>
             @endif
             <div class="col-12">
                 @include('livewire.web.product.similar-products')

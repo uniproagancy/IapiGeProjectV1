@@ -95,21 +95,21 @@
             </div>
             <div class="d-flex w-100 gap-3">
                 @auth
-                <a class="btn btn-lg btn-secondary w-100 font-neue"
-                   href="{{ route('web.user.index', ['page' => 'cart']) }}">
-                    კალათის ნახვა
-                </a>
-                <a class="btn btn-lg btn-primary w-100 font-neue"
-                   href="{{ route('web.checkout.index') }}">
-                    შეკვეთა
-                </a>
+                    <a class="btn btn-lg btn-secondary w-100 font-neue"
+                       href="{{ route('web.user.index', ['page' => 'cart']) }}">
+                        კალათის ნახვა
+                    </a>
+                    <a class="btn btn-lg btn-primary w-100 font-neue"
+                       href="{{ route('web.checkout.index') }}">
+                        შეკვეთა
+                    </a>
                 @else
-                <a class="btn btn-lg btn-primary w-100 font-neue"
-                   data-bs-toggle="modal"
-                   data-bs-target="#loginModal"
-                >
-                    შეკვეთა
-                </a>
+                    <a class="btn btn-lg btn-primary w-100 font-neue"
+                       data-bs-toggle="modal"
+                       data-bs-target="#loginModal"
+                    >
+                        შეკვეთა
+                    </a>
                 @endif
             </div>
         </div>
@@ -117,7 +117,7 @@
 </div>
 
 <script>
-    document.addEventListener('livewire:updated', function() {
+    document.addEventListener('livewire:updated', function () {
         // Offcanvas მოდალი იხურება update-ის დროს
         const offcanvasElement = document.getElementById('shoppingCart');
         const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);

@@ -26,12 +26,12 @@
             @endphp
             @foreach($accountLinks as $link)
                 @auth
-                <li class="d-flex w-100 pt-1">
-                    <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"
-                       href="{{ $link['url'] }}">
-                        {{ $link['title'] }}
-                    </a>
-                </li>
+                    <li class="d-flex w-100 pt-1">
+                        <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"
+                           href="{{ $link['url'] }}">
+                            {{ $link['title'] }}
+                        </a>
+                    </li>
                 @else
                     <li class="d-flex w-100 pt-1">
                         <a class="nav-link animate-underline animate-target d-inline fw-normal text-truncate p-0"

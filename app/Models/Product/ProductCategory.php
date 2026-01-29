@@ -39,7 +39,8 @@ class ProductCategory extends Model
         return $this->hasMany(ProductCategory::class, 'parent_id');
     }
 
-    public function products() {
+    public function products()
+    {
         return $this->hasMany(Product::class, 'category_id');
     }
 

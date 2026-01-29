@@ -50,7 +50,7 @@ class Checkout extends Component
     public function mount()
     {
 
-        if(count(Cart::getContent()) > 0 OR !empty($this->product_id)) {
+        if (count(Cart::getContent()) > 0 or !empty($this->product_id)) {
             $this->loadOrderItems();
             $this->calculateShippingCost();
             $this->calculateTotals();
@@ -145,7 +145,7 @@ class Checkout extends Component
 
     public function calculateShippingCost()
     {
-        if(!empty($this->city_id)) {
+        if (!empty($this->city_id)) {
             $city_data = City::where('id', $this->city_id)->first();
             $this->shipping_cost = $city_data->delivery_amount;
         }
@@ -165,7 +165,7 @@ class Checkout extends Component
             'address' => 'required|string',
             'payment_id' => 'required',
         ]);
-        if(Auth::check()) {
+        if (Auth::check()) {
             $city = City::find($this->city_id);
             $order = Order::create([
                 'user_id' => Auth::user()->id,
@@ -193,28 +193,28 @@ class Checkout extends Component
         switch ($this->payment_id) {
             case '3':
                 return $this->redirect((new BOGPayment)->createPaymentOrder($order));
-            break;
+                break;
             case '4':
-                if($order->amount < 100) {
+                if ($order->amount < 100) {
                     $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
                 } else {
                     $this->dispatch('bog:installment', amount: $order->amount + ($order->amount * 0.05), url: route('bog.installment', $order->id));
                 }
-            break;
+                break;
             case '5':
-                if($order->amount < 100) {
+                if ($order->amount < 100) {
                     $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
                 } else {
                     $this->dispatch('bog:installment-part', amount: $order->amount + $order->delivery_amount, url: route('bog.part-installment', $order->id));
                 }
-            break;
+                break;
             case '2':
                 // TODO INVOICE SEND
                 redirect()->route('web.checkout.success');
-            break;
+                break;
             default:
                 redirect()->route('web.checkout.success');
-            break;
+                break;
         }
     }
 

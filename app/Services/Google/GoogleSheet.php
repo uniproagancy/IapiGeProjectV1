@@ -36,6 +36,7 @@ class GoogleSheet
             throw $e;
         }
     }
+
     public function getValues($spreadsheetId, $range)
     {
         try {

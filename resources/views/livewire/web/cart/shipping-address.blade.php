@@ -31,7 +31,8 @@
                                     <div class="text-muted small">
                                         <div>{{ $savedAddress->city }}, {{ $savedAddress->address }}</div>
                                         @if($savedAddress->notes)
-                                            <div class="mt-1"><i class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
+                                            <div class="mt-1"><i
+                                                        class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
                                         @endif
                                     </div>
                                 </div>
@@ -64,7 +65,7 @@
                         wire:model.live="city_id">
                     <option value="">აირჩიეთ ქალაქი</option>
                     @foreach($cities_list as $city_item)
-                    <option value="{{ $city_item->id }}">{{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}</option>
+                        <option value="{{ $city_item->id }}">{{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}</option>
                     @endforeach
                 </select>
                 @error('city_id')
@@ -119,7 +120,8 @@
             <div class="border rounded-3 p-3">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
-                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                        <div class="d-flex justify-content-center align-items-center"
+                             style="width: 40px; height: 40px; border-radius: 20px">
                             <i class="ci-clock text-success fs-5"></i>
                         </div>
                     </div>
@@ -137,7 +139,8 @@
             <div class="border rounded-3 p-3">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
-                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                        <div class="d-flex justify-content-center align-items-center"
+                             style="width: 40px; height: 40px; border-radius: 20px">
                             <i class="ci-phone text-primary fs-5"></i>
                         </div>
                     </div>

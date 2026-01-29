@@ -65,7 +65,8 @@
                                      loading="lazy">
                             </div>
                             <div class="flex-grow-1 ms-3 min-w-0">
-                                <div class="fw-semibold text-truncate font-neue" style="font-size: 15px; padding: 0 0 0 3px">
+                                <div class="fw-semibold text-truncate font-neue"
+                                     style="font-size: 15px; padding: 0 0 0 3px">
                                     {{ $translation->title }}
                                 </div>
                                 @if($product->sku)
@@ -129,16 +130,20 @@
         .search-item:hover {
             background-color: var(--bs-light) !important;
         }
-         .search-item-container::-webkit-scrollbar {
-             width: 6px;
-         }
+
+        .search-item-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
         .search-item-container::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
+
         .search-item-container::-webkit-scrollbar-thumb {
             background-color: #b5b5b5;
             border-radius: 10px;
         }
+
         .search-item-container::-webkit-scrollbar-thumb:hover {
             background-color: #8c8c8c;
         }

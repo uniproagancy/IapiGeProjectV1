@@ -12,7 +12,7 @@ class BOGInstallmentController extends Controller
     //
     public function createInstallment(Request $request)
     {
-        if(empty($request->order_id)) {
+        if (empty($request->order_id)) {
             Log::error('BOGInstallment: missing order_id');
         }
         $order = Order::find($request->order_id);
@@ -21,7 +21,7 @@ class BOGInstallmentController extends Controller
 
     public function createPartInstallment(Request $request)
     {
-        if(empty($request->order_id)) {
+        if (empty($request->order_id)) {
             Log::error('BOGPartInstallment: missing order_id');
         }
         $order = Order::find($request->order_id);
@@ -30,17 +30,18 @@ class BOGInstallmentController extends Controller
 
     public function callbackSuccess(Request $request)
     {
-        if($request->isMethod('POST')) {
+        if ($request->isMethod('POST')) {
 
-        } else{
+        } else {
             return false;
         }
     }
+
     public function callbackError(Request $request)
     {
-        if($request->isMethod('POST')) {
+        if ($request->isMethod('POST')) {
 
-        } else{
+        } else {
             return false;
         }
     }

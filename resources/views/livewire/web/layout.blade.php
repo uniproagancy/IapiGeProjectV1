@@ -4,18 +4,22 @@
     @section('seo')
         <title>Iapi.Ge - იაფი მაღაზია</title>
         <meta name="description" content="Iapi.Ge">
-        <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+        <meta name="keywords"
+              content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
     @show
     @yield('og_tags')
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-{{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
-{{--    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">--}}
+    {{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
+    {{--    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">--}}
 
-    <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2"
+          crossorigin>
+    <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2"
+          crossorigin>
     <link rel="stylesheet" href="{{ asset('web-assets/icons/cartzilla-icons.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.css') }}">
@@ -25,13 +29,20 @@
     @livewireStyles
 
     <link rel="stylesheet" href="{{ asset('web-assets/css/style.css') }}">
+
+
+    
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TT3974BN"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 @include('livewire.web.partials.header.header')
 
 {{ $slot }}
 
-<livewire:web.cart.shopping-cart-offcanvas />
+<livewire:web.cart.shopping-cart-offcanvas/>
 
 
 <style>
@@ -105,9 +116,9 @@
 @include('livewire.web.partials.cookies')
 
 @guest
-    <livewire:web.auth.login-modal />
-    <livewire:web.auth.register-modal />
-{{--    <livewire:auth.forgot-password-modal />--}}
+    <livewire:web.auth.login-modal/>
+    <livewire:web.auth.register-modal/>
+    {{--    <livewire:auth.forgot-password-modal />--}}
 @endguest
 
 @livewireScripts
@@ -157,7 +168,7 @@
             const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
             if (modal) {
                 modal.hide();
-                if(modalId[0] === 'loginModal') {
+                if (modalId[0] === 'loginModal') {
                     location.reload();
                 }
             }

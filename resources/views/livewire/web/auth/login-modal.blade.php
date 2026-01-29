@@ -25,7 +25,8 @@
                         </div>
                         <div class="mb-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label for="login-password" class="form-label mb-0" style="font-size: 12px">პაროლი</label>
+                                <label for="login-password" class="form-label mb-0"
+                                       style="font-size: 12px">პაროლი</label>
                                 <a href="#"
                                    style="font-size: 12px"
                                    class="small text-primary text-decoration-none"

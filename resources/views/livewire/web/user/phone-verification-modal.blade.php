@@ -85,7 +85,7 @@
 
 <!-- ✅ JavaScript -->
 <script>
-    document.addEventListener('livewire:initialized', function() {
+    document.addEventListener('livewire:initialized', function () {
         console.log('Livewire initialized - Phone modal ready');
 
         // ✅ Open modal
@@ -155,7 +155,7 @@
             timeLeft--;
 
             // ✅ Update Livewire every second
-            Livewire.dispatch('updatePhoneResendTimer', { timeLeft: timeLeft });
+            Livewire.dispatch('updatePhoneResendTimer', {timeLeft: timeLeft});
 
             console.log('Timer: ' + timeLeft);
 

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Dashboard\Order;
 
-use App\Models\Order;
+use App\Models\Order\Order;
 use Livewire\Component;
 
 class Index extends Component
@@ -27,6 +27,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($orderId)
     {
         $this->dispatch('swal:restoreModal', [

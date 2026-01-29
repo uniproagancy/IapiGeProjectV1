@@ -43,7 +43,7 @@ class Create extends Component
 
     private function resetForm()
     {
-        $this->reset(['name', 'code','phone', 'email', 'user', 'legal_id']);
+        $this->reset(['name', 'code', 'phone', 'email', 'user', 'legal_id']);
     }
 
     public function save()
@@ -51,12 +51,12 @@ class Create extends Component
         $this->validate();
         $user = User::where('email', $this->user)->first();
         Company::create([
-             'user_id' => $user->id,
-             'code' => $this->code,
-             'name' => $this->name,
-             'legal_form_id' => $this->legal_id,
-             'email' => $this->email,
-             'phone' => $this->phone,
+            'user_id' => $user->id,
+            'code' => $this->code,
+            'name' => $this->name,
+            'legal_form_id' => $this->legal_id,
+            'email' => $this->email,
+            'phone' => $this->phone,
         ]);
         $this->dispatch('ui:success', message: 'კომპანია წარმატებით დაემატა!', title: 'შეტყობინება');
         $this->dispatch('create_modal_close');

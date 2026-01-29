@@ -17,11 +17,11 @@ class Company extends Model
 
     public function legal()
     {
-        return $this->hasOne(CompanyLegalForm::class, 'id','legal_form_id');
+        return $this->hasOne(CompanyLegalForm::class, 'id', 'legal_form_id');
     }
 
     public function user()
     {
-        return $this->hasOne(User::class,'id','user_id')->withTrashed();
+        return $this->hasOne(User::class, 'id', 'user_id')->withTrashed();
     }
 }

@@ -67,7 +67,8 @@
                                                     {{ number_format($item->price, 2) }} ₾
                                                     @if($item->attributes['discount_percent'] ?? false)
                                                         <del class="text-body-tertiary fs-sm fw-normal">
-                                                            {{ number_format($item->attributes['regular_price'] ?? $item->price, 2) }} ₾
+                                                            {{ number_format($item->attributes['regular_price'] ?? $item->price, 2) }}
+                                                            ₾
                                                         </del>
                                                     @endif
                                                 </div>
@@ -118,8 +119,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            @else
+        </div>
+        @else
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ps-lg-13 ps-xl-0">
@@ -136,104 +137,104 @@
                     </div>
                 </div>
             </div>
-            @endif
-        </div>
+        @endif
     </div>
-    <style>
-        .countInput {
-            display: flex;
-            align-items: center;
-            border: 1px solid #e9ecef;
-            border-radius: 0.375rem;
-            background: #f8f9fa;
-            overflow: hidden;
+</div>
+<style>
+    .countInput {
+        display: flex;
+        align-items: center;
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem;
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+
+    .countInput input {
+        border: none;
+        background: transparent;
+        text-align: center;
+        padding: 0.25rem 0.5rem;
+        flex: 1;
+    }
+
+    .countInput input:focus {
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .countInput .btn {
+        padding: 0.25rem 0.5rem;
+        border: none;
+        margin: 0;
+        background: transparent;
+        color: inherit;
+    }
+
+    .countInput .btn:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .countInput .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .product-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .product-card img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 0.35rem 0.6rem;
+    }
+
+    @media (max-width: 992px) {
+        .product-card .ratio {
+            --cz-aspect-ratio: calc(200 / 220 * 100%);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .row-cols-md-3 {
+            --bs-columns: 2;
         }
 
-        .countInput input {
-            border: none;
-            background: transparent;
-            text-align: center;
-            padding: 0.25rem 0.5rem;
-            flex: 1;
+        .position-sticky {
+            position: relative !important;
+            top: auto !important;
+            margin-top: 2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .ps-lg-13 {
+            padding-left: 0 !important;
         }
 
-        .countInput input:focus {
-            box-shadow: none;
-            background: transparent;
-        }
-
-        .countInput .btn {
-            padding: 0.25rem 0.5rem;
-            border: none;
-            margin: 0;
-            background: transparent;
-            color: inherit;
-        }
-
-        .countInput .btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .countInput .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .row-cols-sm-2 {
+            --bs-columns: 1;
         }
 
         .product-card {
-            transition: all 0.3s ease;
-            overflow: hidden;
+            margin-bottom: 1rem;
         }
 
-        .product-card:hover {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+        .d-flex.gap-2 {
+            flex-wrap: wrap;
         }
-
-        .product-card img {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-        }
-
-        .badge {
-            font-size: 11px;
-            padding: 0.35rem 0.6rem;
-        }
-
-        @media (max-width: 992px) {
-            .product-card .ratio {
-                --cz-aspect-ratio: calc(200 / 220 * 100%);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .row-cols-md-3 {
-                --bs-columns: 2;
-            }
-
-            .position-sticky {
-                position: relative !important;
-                top: auto !important;
-                margin-top: 2rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .ps-lg-13 {
-                padding-left: 0 !important;
-            }
-
-            .row-cols-sm-2 {
-                --bs-columns: 1;
-            }
-
-            .product-card {
-                margin-bottom: 1rem;
-            }
-
-            .d-flex.gap-2 {
-                flex-wrap: wrap;
-            }
-        }
-    </style>
+    }
+</style>
 </div>

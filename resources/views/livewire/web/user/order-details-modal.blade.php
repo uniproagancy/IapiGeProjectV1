@@ -24,7 +24,8 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-2 text-center">
-                                    <b class="text-muted d-block font-neue" style="font-size: 13px;">შეკვეთის სტატუსი</b>
+                                    <b class="text-muted d-block font-neue" style="font-size: 13px;">შეკვეთის
+                                        სტატუსი</b>
                                     <span class="badge {{ $selectedOrder->status->badge_class }}">
                                         {{ $selectedOrder->status->translations->where('locale', 'ka')->first()->title  }}
                                     </span>
@@ -38,7 +39,8 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-2 text-center">
-                                    <b class="text-muted d-block font-neue" style="font-size: 13px;">გადახდის სტატუსი</b>
+                                    <b class="text-muted d-block font-neue" style="font-size: 13px;">გადახდის
+                                        სტატუსი</b>
                                     <span class="badge {{ $selectedOrder->status->badge_class }}">
                                         {{ $selectedOrder->paymentStatus->translations->where('locale', 'ka')->first()->title  }}
                                     </span>
@@ -52,7 +54,8 @@
                             <div class="col-md-12">
                                 <div class="row">
                                     <div class="mb-3 col-md-4">
-                                        <b class="text-muted d-block font-neue" style="font-size: 13px;">მომხმარებელი</b>
+                                        <b class="text-muted d-block font-neue"
+                                           style="font-size: 13px;">მომხმარებელი</b>
                                         <span style="font-size: 14px">{{ $selectedOrder->user->name }} {{ $selectedOrder->user->lastname }}</span>
                                     </div>
                                     <div class="mb-3 col-md-4">
@@ -72,12 +75,12 @@
                                 </div>
                             </div>
                             @if($selectedOrder->comment)
-                            <div class="col-md-12">
-                                <div class="border-top pt-4 mt-4">
-                                    <b class="text-muted d-block font-neue mb-2">კომენტარი</b>
-                                    <p class="mb-0">{{ $selectedOrder->comment }}</p>
+                                <div class="col-md-12">
+                                    <div class="border-top pt-4 mt-4">
+                                        <b class="text-muted d-block font-neue mb-2">კომენტარი</b>
+                                        <p class="mb-0">{{ $selectedOrder->comment }}</p>
+                                    </div>
                                 </div>
-                            </div>
                             @endif
                         </div>
                     </div>
@@ -85,40 +88,41 @@
                         <h6 class="font-neue mb-3">პროდუქტები</h6>
                         <div class="list-group list-group-flush">
                             @foreach($selectedOrder->items as $item)
-                            <div class="list-group-item px-0 py-1">
-                                <div class="row align-items-center g-3">
-                                    <div class="col-auto">
-                                        <img src="{{ asset('storage/' . $item->product->main_image) }}"
-                                             alt="{{ $item->product->translation(app()->getLocale())->title ?? $item->product->translation('ka')->title }}"
-                                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
-                                    </div>
-                                    <div class="col">
-                                        <div>
-                                            <h6 class="mb-1 font-neue" style="font-size: 14px">
-                                                {{ $item->product->translation(app()->getLocale())->title ?? $item->product->translation('ka')->title }}
-                                            </h6>
-                                            <b class="text-muted d-block" style="font-size: 12px">SKU: {{ $item->product->sku }}</b>
+                                <div class="list-group-item px-0 py-1">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-auto">
+                                            <img src="{{ asset('storage/' . $item->product->main_image) }}"
+                                                 alt="{{ $item->product->translation(app()->getLocale())->title ?? $item->product->translation('ka')->title }}"
+                                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;">
                                         </div>
-                                    </div>
-                                    <div class="col-auto text-end">
-                                        <div class="mb-2">
-                                            <strong class="d-block">
-                                                ({{ $item->quantity }}) X {{ number_format($item->price, 2) }} ₾
-                                            </strong>
+                                        <div class="col">
+                                            <div>
+                                                <h6 class="mb-1 font-neue" style="font-size: 14px">
+                                                    {{ $item->product->translation(app()->getLocale())->title ?? $item->product->translation('ka')->title }}
+                                                </h6>
+                                                <b class="text-muted d-block"
+                                                   style="font-size: 12px">SKU: {{ $item->product->sku }}</b>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto text-end">
+                                            <div class="mb-2">
+                                                <strong class="d-block">
+                                                    ({{ $item->quantity }}) X {{ number_format($item->price, 2) }} ₾
+                                                </strong>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     @if($selectedOrder->payment_id === 2)
-                    <button type="button"
-                            class="btn btn-warning font-neue">
-                        ინვოისის გადმოწერა
-                    </button>
+                        <button type="button"
+                                class="btn btn-warning font-neue">
+                            ინვოისის გადმოწერა
+                        </button>
                     @endif
                     <button type="button"
                             class="btn btn-secondary font-neue"

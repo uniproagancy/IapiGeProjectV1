@@ -32,10 +32,10 @@ class Index extends Component
 
     protected $queryString = [
         'search_query' => ['except' => ''],
-        'order_dir'    => ['except' => 'desc'],
-        'per_page'     => ['except' => 10],
-        'with_trashed'  => ['except' => false],
-        'legal_id'      => ['except' => null],
+        'order_dir' => ['except' => 'desc'],
+        'per_page' => ['except' => 10],
+        'with_trashed' => ['except' => false],
+        'legal_id' => ['except' => null],
     ];
 
     public function updating($field)
@@ -77,6 +77,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($companyId)
     {
         $this->dispatch('swal:restoreModal', [
@@ -117,8 +118,7 @@ class Index extends Component
                             ->orWhereHas('user', function ($userQuery) use ($term) {
                                 $userQuery->where('name', 'like', "%{$term}%")
                                     ->orWhere('lastname', 'like', "%{$term}%");
-                            });
-                        ;
+                            });;
                     }
                 });
             })

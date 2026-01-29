@@ -7,7 +7,8 @@
             <div class="col-sm-6">
                 <div class="d-flex align-items-center p-3 bg-white rounded-3 h-100">
                     <div class="flex-shrink-0">
-                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                        <div class="d-flex justify-content-center align-items-center"
+                             style="width: 40px; height: 40px; border-radius: 20px">
                             <i class="ci-user text-primary fs-5"></i>
                         </div>
                     </div>
@@ -20,7 +21,8 @@
             <div class="col-sm-6">
                 <div class="d-flex align-items-center p-3 bg-white rounded-3 h-100">
                     <div class="flex-shrink-0">
-                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                        <div class="d-flex justify-content-center align-items-center"
+                             style="width: 40px; height: 40px; border-radius: 20px">
                             <i class="ci-mail text-success fs-5"></i>
                         </div>
                     </div>
@@ -33,7 +35,8 @@
             <div class="col-sm-12">
                 <div class="d-flex align-items-center p-3 bg-white rounded-3 h-100 position-relative">
                     <div class="flex-shrink-0">
-                        <div class="d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; border-radius: 20px">
+                        <div class="d-flex justify-content-center align-items-center"
+                             style="width: 40px; height: 40px; border-radius: 20px">
                             <i class="ci-phone text-info fs-5"></i>
                         </div>
                     </div>

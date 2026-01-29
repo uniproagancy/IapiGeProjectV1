@@ -1,6 +1,8 @@
 @section('page_css')
-<link rel="stylesheet" type="text/css" href="{{ asset('dashboard-assets/vendors/css/file-uploaders/dropzone.min.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ asset('dashboard-assets/css/plugins/forms/form-file-uploader.css') }}">
+    <link rel="stylesheet" type="text/css"
+          href="{{ asset('dashboard-assets/vendors/css/file-uploaders/dropzone.min.css') }}">
+    <link rel="stylesheet" type="text/css"
+          href="{{ asset('dashboard-assets/css/plugins/forms/form-file-uploader.css') }}">
 @endsection
 
 <div class="app-content content ">
@@ -24,7 +26,8 @@
                                                 wire:model="category_id">
                                             <option value="">აირჩიეთ კატეგორია</option>
                                             @foreach($categories as $category)
-                                                <optgroup label="{{ $category->translations->where('locale','ka')->first()->title }}">
+                                                <optgroup
+                                                        label="{{ $category->translations->where('locale','ka')->first()->title }}">
                                                     @foreach($category->children as $child)
                                                         <option value="{{ $child->id }}">
                                                             {{ $child->translations->where('locale','ka')->first()->title }}
@@ -33,11 +36,13 @@
                                                 </optgroup>
                                             @endforeach
                                         </select>
-                                        @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        @error('category_id')
+                                        <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-12 mb-1">
                                         <label class="form-label">ბრენდი <span class="text-danger">*</span></label>
-                                        <select class="form-select @error('brand_id') border-danger is-invalid @enderror" wire:model="brand_id">
+                                        <select class="form-select @error('brand_id') border-danger is-invalid @enderror"
+                                                wire:model="brand_id">
                                             <option value="">აირჩიეთ ბრენდი</option>
                                             @foreach($brands as $brand)
                                                 <option value="{{ $brand->id }}">
@@ -45,11 +50,13 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('brand_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        @error('brand_id')
+                                        <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-12 mb-1">
                                         <label class="form-label">მომწოდებელი <span class="text-danger">*</span></label>
-                                        <select class="form-select @error('supplier_id') border-danger is-invalid @enderror" wire:model="supplier_id">
+                                        <select class="form-select @error('supplier_id') border-danger is-invalid @enderror"
+                                                wire:model="supplier_id">
                                             <option value="">აირჩიეთ მომწოდებელი</option>
                                             @foreach($suppliers as $supplier)
                                                 <option value="{{ $supplier->id }}">
@@ -57,7 +64,8 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('supplier_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        @error('supplier_id')
+                                        <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-12 mb-1">
                                         <label class="form-label">SKU</label>
@@ -88,7 +96,8 @@
                                                        type="checkbox"
                                                        id="preorder"
                                                        wire:model="preorder">
-                                                <label class="form-check-label" for="preorder">წინასწარი შეკვეთით</label>
+                                                <label class="form-check-label" for="preorder">წინასწარი
+                                                    შეკვეთით</label>
                                             </div>
                                         </div>
                                     </div>
@@ -107,7 +116,8 @@
                                     <div class="col-12">
                                         <ul class="nav nav-tabs" role="tablist">
                                             <li class="nav-item">
-                                                <a class="nav-link active" data-bs-toggle="tab" href="#description_ka">KA <span class="text-danger">*</span></a>
+                                                <a class="nav-link active" data-bs-toggle="tab" href="#description_ka">KA
+                                                    <span class="text-danger">*</span></a>
                                             </li>
                                             <li class="nav-item">
                                                 <a class="nav-link" data-bs-toggle="tab" href="#description_en">EN</a>
@@ -120,23 +130,29 @@
                                             <div class="tab-pane active" id="description_ka">
                                                 <div class="row">
                                                     <div class="col-md-12 mb-1">
-                                                        <label class="form-label">დასახელება (ქართულად) <span class="text-danger">*</span></label>
+                                                        <label class="form-label">დასახელება (ქართულად) <span
+                                                                    class="text-danger">*</span></label>
                                                         <input type="text" class="form-control"
                                                                wire:model="title_ka">
                                                     </div>
                                                     <div class="col-md-12 mb-1">
-                                                        <label class="form-label">აღწერა (ქართულად) <span class="text-danger">*</span></label>
+                                                        <label class="form-label">აღწერა (ქართულად) <span
+                                                                    class="text-danger">*</span></label>
                                                         <div class="textarea-wrapper">
                                                             <textarea class="form-control" rows="6"
                                                                       wire:model="description_ka"></textarea>
                                                             <div class="buttons">
-                                                                <button type="button" class="btn btn-outline-success">ავტომატური თარგმნა</button>
+                                                                <button type="button" class="btn btn-outline-success">
+                                                                    ავტომატური თარგმნა
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-12">
-                                                        <label class="form-label">Meta Keywords (ქართულად) <span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control" wire:model="keywords_ka">
+                                                        <label class="form-label">Meta Keywords (ქართულად) <span
+                                                                    class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control"
+                                                               wire:model="keywords_ka">
                                                     </div>
                                                 </div>
                                             </div>
@@ -154,7 +170,8 @@
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">Meta Keywords (ინგლისურად)</label>
-                                                        <input type="text" class="form-control" wire:model="keywords_en">
+                                                        <input type="text" class="form-control"
+                                                               wire:model="keywords_en">
                                                     </div>
                                                 </div>
                                             </div>
@@ -172,7 +189,8 @@
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">Meta Keywords (რუსულად)</label>
-                                                        <input type="text" class="form-control" wire:model="keywords_ru">
+                                                        <input type="text" class="form-control"
+                                                               wire:model="keywords_ru">
                                                     </div>
                                                 </div>
                                             </div>
@@ -186,8 +204,11 @@
                             <div class="card-body">
                                 <div class="col-md-12 mb-1" wire:ignore.self>
                                     <label class="form-label">მთავარი სურათი <span class="text-danger">*</span></label>
-                                    <input type="file" class="form-control @error('main_image') border-danger is-invalid @enderror" wire:model="main_image">
-                                    @error('main_image') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <input type="file"
+                                           class="form-control @error('main_image') border-danger is-invalid @enderror"
+                                           wire:model="main_image">
+                                    @error('main_image')
+                                    <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12" wire:ignore>
                                     <label class="form-label">დამატებითი სურათები</label>
@@ -208,25 +229,41 @@
     </div>
 </div>
 @section('page_scripts')
-<style>
-    .textarea-wrapper { position: relative; }
-    .textarea-wrapper textarea { width: 100%; padding-bottom: 40px; }
-    .textarea-wrapper .buttons { position: absolute; bottom: 8px; right: 10px; }
-    .dropzone .dz-message:before { width: 45px; height: 45px; top: 9rem; }
-</style>
-<script src="{{ asset('dashboard-assets/vendors/js/file-uploaders/dropzone.min.js') }}"></script>
-<script>
-    document.addEventListener('livewire:init', function () {
-        const dropzone = new Dropzone("#productDropzone", {
-            url: "#",
-            paramName: "file",
-            maxFilesize: 5,
-            acceptedFiles: "image/*",
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            success: function (file, response) {
-                Livewire.dispatch('dzUploaded', { path: response.path });
-            }
+    <style>
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        .textarea-wrapper textarea {
+            width: 100%;
+            padding-bottom: 40px;
+        }
+
+        .textarea-wrapper .buttons {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+        }
+
+        .dropzone .dz-message:before {
+            width: 45px;
+            height: 45px;
+            top: 9rem;
+        }
+    </style>
+    <script src="{{ asset('dashboard-assets/vendors/js/file-uploaders/dropzone.min.js') }}"></script>
+    <script>
+        document.addEventListener('livewire:init', function () {
+            const dropzone = new Dropzone("#productDropzone", {
+                url: "#",
+                paramName: "file",
+                maxFilesize: 5,
+                acceptedFiles: "image/*",
+                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                success: function (file, response) {
+                    Livewire.dispatch('dzUploaded', {path: response.path});
+                }
+            });
         });
-    });
-</script>
+    </script>
 @endsection

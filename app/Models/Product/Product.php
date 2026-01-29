@@ -39,11 +39,13 @@ class Product extends Model
         return $this->hasOne(ProductBrand::class, 'id', 'brand_id');
     }
 
-    public function category() {
+    public function category()
+    {
         return $this->hasOne(ProductCategory::class, 'id', 'category_id');
     }
 
-    public function images() {
+    public function images()
+    {
         return $this->hasMany(ProductImage::class);
     }
 
@@ -57,7 +59,8 @@ class Product extends Model
         return $this->hasOne(ProductSupplier::class);
     }
 
-    public function variations() {
+    public function variations()
+    {
         return $this->hasMany(ProductVariation::class)->orderBy('name', 'DESC');
     }
 

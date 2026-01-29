@@ -16,7 +16,7 @@ class Index extends Component
 
     public string $search_query = '';
     public string $order_dir = 'desc';
-    public int $per_page = 10   ;
+    public int $per_page = 10;
     public bool $with_trashed = false;
     public ?int $role_id = null;
 
@@ -35,10 +35,10 @@ class Index extends Component
 
     protected $queryString = [
         'search_query' => ['except' => ''],
-        'order_dir'    => ['except' => 'desc'],
-        'per_page'     => ['except' => 10],
-        'with_trashed'  => ['except' => false],
-        'role_id'      => ['except' => null],
+        'order_dir' => ['except' => 'desc'],
+        'per_page' => ['except' => 10],
+        'with_trashed' => ['except' => false],
+        'role_id' => ['except' => null],
     ];
 
     public function updating($field)
@@ -80,6 +80,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($userId)
     {
         $this->dispatch('swal:restoreModal', [
@@ -128,7 +129,7 @@ class Index extends Component
             ->orderBy('id', $this->order_dir)
             ->paginate($this->per_page);
         $roles = Role::where('active', 1)->get();
-        return view('livewire.dashboard.user.index',[
+        return view('livewire.dashboard.user.index', [
             'users' => $users,
             'roles' => $roles,
         ])->layout('livewire.dashboard.layout');

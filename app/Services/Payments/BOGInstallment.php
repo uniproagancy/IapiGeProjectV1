@@ -33,7 +33,7 @@ class BOGInstallment
     public function getToken()
     {
         $token = Http::asForm()->withHeaders([
-                'Authorization' => 'Basic ' .base64_encode( $this->clientId.':'.$this->clientSecret)
+            'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret)
         ])->post($this->tokenUrl, ['grant_type' => 'client_credentials']);
         return $token->json()['access_token'];
     }
@@ -74,7 +74,7 @@ class BOGInstallment
         $create_order = Http::withToken($this->getToken())
             ->post($this->orderUrl, $payload)
             ->json();
-        if($create_order['status'] === 'CREATED') {
+        if ($create_order['status'] === 'CREATED') {
             OrderTransaction::create([
                 'order_id' => $order->id,
                 'payment_order_id' => $create_order['order_id'],
@@ -125,7 +125,7 @@ class BOGInstallment
         ];
         $create_order = Http::withToken($this->getToken())
             ->post($this->orderUrl, $payload)->json();
-        if($create_order['status'] === 'CREATED') {
+        if ($create_order['status'] === 'CREATED') {
             OrderTransaction::create([
                 'order_id' => $order->id,
                 'payment_order_id' => $create_order['order_id'],

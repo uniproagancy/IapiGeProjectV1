@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Dashboard\ProductCategory;
 
-use App\Models\ProductCategory;
+use App\Models\Product\ProductCategory;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,6 +17,7 @@ class Index extends Component
     public bool $with_trashed = false;
     public bool $show_web = false;
     public bool $status_active = false;
+
     public function paginationView()
     {
         return 'livewire.dashboard.partials._pagination';
@@ -32,19 +33,18 @@ class Index extends Component
 
     protected $queryString = [
         'search_query' => ['except' => ''],
-        'order_dir'    => ['except' => 'desc'],
-        'per_page'     => ['except' => 10],
-        'with_trashed'  => ['except' => false],
-        'show_web'  => ['except' => false],
-        'status_active'  => ['except' => false],
+        'order_dir' => ['except' => 'desc'],
+        'per_page' => ['except' => 10],
+        'with_trashed' => ['except' => false],
+        'show_web' => ['except' => false],
+        'status_active' => ['except' => false],
     ];
 
     public function toggleActive($categoryId)
     {
         $category = ProductCategory::findOrFail($categoryId);
         $category->active = !$category->active;
-        if($category->active == 0)
-        {
+        if ($category->active == 0) {
             ProductCategory::where('parent_id', $category->id)->update([
                 'show' => 0,
                 'active' => 0,
@@ -82,6 +82,7 @@ class Index extends Component
             'type' => 'delete'
         ]);
     }
+
     public function restoreModal($categoryId)
     {
         $this->dispatch('swal:restoreModal', [
@@ -135,17 +136,13 @@ class Index extends Component
     {
         $query = ProductCategory::with(['translations', 'parent'])
             ->where('parent_id', 0)
-            ->when($this->search_query, fn($q) =>
-                $q->whereHas('translations', fn($subQuery) =>
-                    $subQuery->where('title', 'like', "%{$this->search_query}%")
-                        ->orWhere('slug', 'like', "%{$this->search_query}%")
-                )
+            ->when($this->search_query, fn($q) => $q->whereHas('translations', fn($subQuery) => $subQuery->where('title', 'like', "%{$this->search_query}%")
+                ->orWhere('slug', 'like', "%{$this->search_query}%")
             )
-            ->when($this->show_web === true, fn($q) =>
-                $q->where('show', $this->show_web)
             )
-            ->when($this->status_active === true, fn($q) =>
-                $q->where('active', $this->status_active)
+            ->when($this->show_web === true, fn($q) => $q->where('show', $this->show_web)
+            )
+            ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
             )
             ->when($this->with_trashed, fn($q) => $q->withTrashed())
             ->orderBy('id', $this->order_dir);

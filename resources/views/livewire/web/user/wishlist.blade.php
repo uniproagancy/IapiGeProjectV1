@@ -32,7 +32,7 @@
                             <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
                                 <h3 class="pb-1 mb-2">
                                     <a class="d-block fs-sm fw-medium text-truncate"
-                                        href="{{ route('web.products.view', $product->translation('ka')->slug) }}">
+                                       href="{{ route('web.products.view', $product->translation('ka')->slug) }}">
                                         <span class="animate-target">
                                             {{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}
                                         </span>
@@ -61,7 +61,7 @@
                                             <i class="ci-shopping-cart fs-base animate-target me-1"></i>
                                             დამატება
                                         </span>
-                                        <span wire:loading wire:target="moveToCart({{ $product->id }})">
+                                    <span wire:loading wire:target="moveToCart({{ $product->id }})">
                                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                         </span>
                                 </button>
@@ -72,7 +72,8 @@
             </div>
         @else
             <div class="text-center py-5">
-                <svg class="text-muted mb-4" width="120" height="120" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="text-muted mb-4" width="120" height="120" fill="none" stroke="currentColor"
+                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                 </svg>

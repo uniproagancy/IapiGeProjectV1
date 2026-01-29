@@ -68,7 +68,7 @@ class Index extends Component
                 : [];
         }
 
-        $this->selectedBrands = array_map('intval', (array) $this->selectedBrands);
+        $this->selectedBrands = array_map('intval', (array)$this->selectedBrands);
         $this->selectedBrands = array_filter($this->selectedBrands);
     }
 
@@ -406,12 +406,12 @@ class Index extends Component
 
         $query->whereHas('price', function ($priceQuery) {
             if (!empty($this->priceMin)) {
-                $minPrice = round((float) $this->priceMin, 2);
+                $minPrice = round((float)$this->priceMin, 2);
                 $priceQuery->where('regular_price', '>=', $minPrice);
             }
 
             if (!empty($this->priceMax)) {
-                $maxPrice = round((float) $this->priceMax, 2);
+                $maxPrice = round((float)$this->priceMax, 2);
                 $priceQuery->where('regular_price', '<=', $maxPrice);
             }
         });

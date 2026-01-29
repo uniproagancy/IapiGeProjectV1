@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Dashboard\Order;
 
-use App\Models\DeliveryCompany;
-use App\Models\Order;
-use App\Models\OrderDelivery;
-use App\Models\OrderStatus;
-use App\Models\PaymentStatus;
+use App\Models\Delivery\DeliveryCompany;
+use App\Models\Order\Order;
+use App\Models\Order\OrderDelivery;
+use App\Models\Order\OrderStatus;
+use App\Models\Payments\PaymentStatus;
 use Livewire\Component;
 
 class View extends Component
@@ -27,8 +27,8 @@ class View extends Component
 
     public function mount()
     {
-        $this->order = Order::with('status','paymentStatus')->findOrFail($this->order_id);
-        if($this->order->status_id === 1) {
+        $this->order = Order::with('status', 'paymentStatus')->findOrFail($this->order_id);
+        if ($this->order->status_id === 1) {
             $this->order->update([
                 'status_id' => 2,
             ]);
@@ -59,11 +59,11 @@ class View extends Component
             'required' => 'გთხოვთ აირჩიოთ საკურიერო კომპანია!',
             'exists' => 'საკურიერო კომპანია ვერ მოიძებნა!',
         ]);
-        if($this->order->payment_status_id != 2) {
+        if ($this->order->payment_status_id != 2) {
             $this->dispatch('ui:error', message: 'შეკვეთა არ არის გადახდილი!', title: 'შეტყობინება');
             return;
         }
-        if($this->order->status_id === 4) {
+        if ($this->order->status_id === 4) {
             $this->dispatch('ui:error', message: 'შეკვეთა გაუქმებულია!', title: 'შეტყობინება');
             return;
         }

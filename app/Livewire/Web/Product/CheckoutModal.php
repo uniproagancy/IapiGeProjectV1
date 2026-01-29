@@ -42,7 +42,7 @@ class CheckoutModal extends Component
 
     public function mount()
     {
-        if(Auth::check()) {
+        if (Auth::check()) {
             $this->name = Auth::user()->name;
             $this->lastname = Auth::user()->lastname;
             $this->email = Auth::user()->email;
@@ -53,7 +53,7 @@ class CheckoutModal extends Component
 
     private function loadPaymentMethods()
     {
-         $this->payment_list = Payment::where('active', 1)->orderBy('sortable','ASC')->get();
+        $this->payment_list = Payment::where('active', 1)->orderBy('sortable', 'ASC')->get();
     }
 
     // ============================================

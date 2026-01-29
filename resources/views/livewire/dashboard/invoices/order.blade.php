@@ -8,17 +8,55 @@
             font-size: 12px;
         }
 
-        .header { width: 100%; display: table; margin-bottom: 20px; }
-        .logo { display: table-cell; width: 50%; vertical-align: middle; }
-        .logo img { width: 160px; }
-        .invoice-info { display: table-cell; width: 50%; text-align: right; vertical-align: middle; }
+        .header {
+            width: 100%;
+            display: table;
+            margin-bottom: 20px;
+        }
 
-        .info-block { width: 100%; display: table; margin-bottom: 20px; }
-        .info-left, .info-right { display: table-cell; width: 50%; vertical-align: top; }
+        .logo {
+            display: table-cell;
+            width: 50%;
+            vertical-align: middle;
+        }
 
-        table { width:100%; border-collapse: collapse; margin-top:20px; }
-        th, td { border:1px solid #ddd; padding:6px; }
-        th { background:#f5f5f5; }
+        .logo img {
+            width: 160px;
+        }
+
+        .invoice-info {
+            display: table-cell;
+            width: 50%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .info-block {
+            width: 100%;
+            display: table;
+            margin-bottom: 20px;
+        }
+
+        .info-left, .info-right {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
 
         .totals-table {
             width: 250px;
@@ -71,13 +109,13 @@
 </div>
 <table>
     <thead>
-        <tr>
-            <th style="width: 70px; text-align:center;">სურათი</th>
-            <th>პროდუქტი</th>
-            <th style="text-align:center;">რაოდენობა</th>
-            <th style="text-align:center;">ფასი</th>
-            <th style="text-align:center;">ჯამი</th>
-        </tr>
+    <tr>
+        <th style="width: 70px; text-align:center;">სურათი</th>
+        <th>პროდუქტი</th>
+        <th style="text-align:center;">რაოდენობა</th>
+        <th style="text-align:center;">ფასი</th>
+        <th style="text-align:center;">ჯამი</th>
+    </tr>
     </thead>
     <tbody>
     @php
