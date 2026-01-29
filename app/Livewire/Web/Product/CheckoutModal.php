@@ -62,6 +62,7 @@ class CheckoutModal extends Component
 
     public function submitCheckout()
     {
+        //
         $validated = $this->validate([
             'name' => 'required|string|min:2|max:50',
             'lastname' => 'required|string|min:2|max:50',
