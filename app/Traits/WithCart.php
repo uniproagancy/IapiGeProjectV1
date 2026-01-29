@@ -21,7 +21,7 @@ trait WithCart
                 return;
             }
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-			if($product->price->discount_price != '0.0') {
+			if($product->price->discount_price != '0.0' AND $product->price->discount_price != null) {
 				$price = $product->price->discount_price;
 			} else {
 				$price = $product->price->regular_price;
