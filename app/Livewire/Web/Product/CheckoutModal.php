@@ -66,7 +66,7 @@ class CheckoutModal extends Component
             'name' => 'required|string|min:2|max:50',
             'lastname' => 'required|string|min:2|max:50',
             'email' => 'required|email',
-            'phone' => 'required|regex:/^(\+995|995)?[0-9]{9}$/',
+            'phone' => 'required|regex:/^(\+?995)?5[0-9]{8}$/',
             'address' => 'required|string|min:5|max:200',
             'payment_id' => 'required|exists:payment_methods,id',
             'selectedProduct' => 'required',
