@@ -28,16 +28,6 @@
                     <span style="font-size: 12px">ღირებულება: </span>
                     <span class="fw-medium">{{ number_format($subtotal, 2) }} ₾</span>
                 </li>
-                <li class="d-flex justify-content-between">
-                    <span style="font-size: 12px">მიწოდების ღირებულება:</span>
-                    <span class="fw-medium">
-                    @if($shipping_cost > 0)
-                            {{ number_format($shipping_cost, 2) }} ₾
-                        @else
-                            <span class="text-success">უფასო</span>
-                        @endif
-                </span>
-                </li>
             </ul>
             <div class="border-top pt-3 mt-3">
                 <div class="d-flex justify-content-between mb-3">

@@ -12,8 +12,10 @@ use App\Services\Payments\BOGPayment;
 use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Exception;
 
 class Checkout extends Component
 {
@@ -46,62 +48,96 @@ class Checkout extends Component
     public $subtotal = 0;
     public $total = 0;
     public $userAddresses = [];
-    public $selected_address_id = [];
+    public $selected_address_id;
 
     public function mount()
     {
-
-        if (count(Cart::getContent()) > 0 or !empty($this->product_id)) {
-            $this->loadOrderItems();
-            $this->calculateShippingCost();
-            $this->calculateTotals();
-        } else {
-            return $this->redirect(route('web.products.index'));
-        }
-
-        if ($this->quantity < 1) {
-            $this->quantity = 1;
-        }
-
-        if (auth()->check()) {
-            $user = auth()->user();
-            $this->name = $user->name ?? '';
-            $this->lastname = $user->lastname ?? '';
-            $this->email = $user->email;
-            $this->phone = $user->phone ?? '';
-            $this->verify_phone = $user->verify_phone ?? '';
-
-            $this->loadUserAddresses();
-
-            $defaultAddress = $user->defaultAddress;
-            if ($defaultAddress) {
-                $this->selectAddress($defaultAddress->id);
+        try {
+            if (count(Cart::getContent()) > 0 or !empty($this->product_id)) {
+                $this->loadOrderItems();
+                $this->calculateShippingCost();
+                $this->calculateTotals();
+            } else {
+                return $this->redirect(route('web.products.index'));
             }
+
+            if ($this->quantity < 1) {
+                $this->quantity = 1;
+            }
+
+            if (auth()->check()) {
+                $user = auth()->user();
+                $this->name = $user->name ?? '';
+                $this->lastname = $user->lastname ?? '';
+                $this->email = $user->email;
+                $this->phone = $user->phone ?? '';
+                $this->verify_phone = $user->verify_phone ?? '';
+
+                $this->loadUserAddresses();
+
+                $defaultAddress = $user->defaultAddress;
+                if ($defaultAddress) {
+                    $this->selectAddress($defaultAddress->id);
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('Checkout mount error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'გვერდის ჩატვირთვა ვერ მოხერხდა');
         }
     }
 
-
     public function loadUserAddresses()
     {
-        if (auth()->check()) {
-            $this->userAddresses = auth()->user()->addresses()->latest()->get();
+        try {
+            if (auth()->check()) {
+                $this->userAddresses = auth()->user()->addresses()->latest()->get();
+            }
+        } catch (Exception $e) {
+            Log::error('Error loading user addresses: ' . $e->getMessage());
         }
+    }
+
+    public function selectAddress($addressId)
+    {
+        $this->selected_address_id = $addressId;
+
+        // ✅ Load address data
+        $address = auth()->user()->addresses()->find($addressId);
+        if ($address) {
+            $this->city_id = $address->city_id;
+            $this->address = $address->address;
+            $this->comment = $address->notes ?? '';
+            $this->calculateShippingCost();
+            $this->calculateTotals();
+        }
+    }
+
+    public function clearAddressSelection()
+    {
+        $this->selected_address_id = null;
+        $this->city_id = null;
+        $this->address = '';
+        $this->comment = '';
+        $this->calculateTotals();
     }
 
     public function loadOrderItems()
     {
-        if ($this->product_id) {
-            try {
+        try {
+            if ($this->product_id) {
                 $product = Product::with(['translations', 'price'])
                     ->where('active', 1)
                     ->where('show', 1)
                     ->findOrFail($this->product_id);
+
                 if ($product->in_stock !== 1) {
                     $this->dispatch('ui:error', message: 'პროდუქტი არ არის მარაგში', type: 'error');
                     return $this->redirect(route('web.products.index'));
                 }
+
                 $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
                 $price = $product->price->discount_price ?? $product->price->regular_price;
+
                 $this->orderItems = collect([
                     [
                         'id' => $product->id,
@@ -113,28 +149,31 @@ class Checkout extends Component
                         'total' => $price * $this->quantity,
                     ]
                 ]);
-            } catch (\Exception $e) {
-                $this->dispatch('ui:error', message: 'პროდუქტი ვერ მოიძებნა');
-                return redirect()->route('web.main.index');
+            } else {
+                $this->loadCartFromDatabase();
+                $cartItems = Cart::getContent();
+
+                if ($cartItems->isEmpty()) {
+                    $this->dispatch('ui:error', message: 'თქვენი კალათა ცარიელია');
+                    return $this->redirect(route('web.main.index'));
+                }
+
+                $this->orderItems = $cartItems->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'sku' => $item->attributes->sku ?? null,
+                        'image' => $item->attributes->image ?? null,
+                        'price' => $item->price,
+                        'quantity' => $item->quantity,
+                        'total' => $item->getPriceSum(),
+                    ];
+                });
             }
-        } else {
-            $this->loadCartFromDatabase();
-            $cartItems = Cart::getContent();
-            if ($cartItems->isEmpty()) {
-                $this->dispatch('ui:error', message: 'თქვენი კალათა ცარიელია');
-                return $this->redirect(route('web.main.index'));
-            }
-            $this->orderItems = $cartItems->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'sku' => $item->attributes->sku ?? null,
-                    'image' => $item->attributes->image ?? null,
-                    'price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'total' => $item->getPriceSum(),
-                ];
-            });
+        } catch (Exception $e) {
+            Log::error('Error loading order items: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'ჩვენების ошибка');
+            return redirect()->route('web.main.index');
         }
     }
 
@@ -146,76 +185,165 @@ class Checkout extends Component
 
     public function calculateShippingCost()
     {
-        if (!empty($this->city_id)) {
-            $city_data = City::where('id', $this->city_id)->first();
-            $this->shipping_cost = $city_data->delivery_amount;
+        try {
+            if (!empty($this->city_id)) {
+                $city_data = City::where('id', $this->city_id)->first();
+                $this->shipping_cost = $city_data->delivery_amount ?? 0;
+            }
+        } catch (Exception $e) {
+            Log::error('Error calculating shipping: ' . $e->getMessage());
+            $this->shipping_cost = 0;
         }
     }
 
     public function calculateTotals()
     {
-        $this->subtotal = $this->orderItems->sum('total');
-        $this->tax = 0;
-        $this->total = $this->subtotal + $this->shipping_cost + $this->tax;
+        try {
+            $this->subtotal = $this->orderItems->sum('total');
+            $this->tax = 0;
+            $this->total = $this->subtotal + $this->shipping_cost + $this->tax;
+        } catch (Exception $e) {
+            Log::error('Error calculating totals: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * ✅ Place order with validation and scroll to error
+     */
     public function placeOrder()
     {
-        $this->validate([
-            'city_id' => 'required|string|max:255|exists:db_cities,id',
-            'address' => 'required|string',
-            'payment_id' => 'required',
-        ]);
-        if (Auth::check()) {
-            $city = City::find($this->city_id);
-            $order = Order::create([
-                'user_id' => Auth::user()->id,
-                'payment_id' => $this->payment_id,
-                'comment' => $this->comment,
-                'created_by' => Auth::user()->id,
-                'delivery_amount' => $city->delivery_amount,
-                'amount' => $this->subtotal,
+        try {
+            // ✅ Validation rules
+            $validated = $this->validate([
+                'city_id' => 'required|string|max:255|exists:db_cities,id',
+                'address' => 'required|string|max:255',
+                'payment_id' => 'required',
+            ], [
+                'city_id.required' => 'ქალაქი აუცილებელია',
+                'city_id.exists' => 'არჩეული ქალაქი ვერ მოიძებნა',
+                'address.required' => 'მისამართი აუცილებელია',
+                'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
+                'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
-            foreach ($this->orderItems as $orderItem) {
-                OrderItem::create([
-                    'product_id' => $orderItem['id'],
-                    'quantity' => $orderItem['quantity'],
-                    'price' => $orderItem['price'],
-                    'order_id' => $order->id,
-                ]);
-            }
-            OrderDelivery::create([
-                'order_id' => $order->id,
-                'address' => $this->address,
+
+            Log::info('Checkout form validated', [
+                'email' => $this->email,
                 'city_id' => $this->city_id,
             ]);
+
+            // ✅ Track checkout initiation (Facebook Pixel)
+
+            // ✅ Create order
+            if (Auth::check()) {
+                $city = City::find($this->city_id);
+
+                $order = Order::create([
+                    'user_id' => Auth::user()->id,
+                    'payment_id' => $this->payment_id,
+                    'comment' => $this->comment,
+                    'created_by' => Auth::user()->id,
+                    'delivery_amount' => $city->delivery_amount,
+                    'amount' => $this->subtotal,
+                ]);
+
+                // ✅ Add order items
+                foreach ($this->orderItems as $orderItem) {
+                    OrderItem::create([
+                        'product_id' => $orderItem['id'],
+                        'quantity' => $orderItem['quantity'],
+                        'price' => $orderItem['price'],
+                        'order_id' => $order->id,
+                    ]);
+                }
+
+                // ✅ Add delivery info
+                OrderDelivery::create([
+                    'order_id' => $order->id,
+                    'address' => $this->address,
+                    'city_id' => $this->city_id,
+                ]);
+
+                Log::info('Order created successfully', [
+                    'order_id' => $order->id,
+                    'amount' => $order->amount,
+                ]);
+
+                // ✅ Track purchase (Facebook Pixel)
+
+
+                // ✅ Clear cart
+                Cart::clear();
+
+                // ✅ Process payment
+                $this->processPayment($order);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // ✅ Get first error field
+            $errorField = array_key_first($e->errors());
+
+            Log::warning('Validation error in checkout', [
+                'error_field' => $errorField,
+                'errors' => $e->errors(),
+            ]);
+
+            // ✅ Dispatch event to scroll to error field
+            $this->dispatch('scrollToError', field: $errorField);
+
+            // ✅ Show error message
+            $this->dispatch('ui:error', message: 'გთხოვთ შეამოწმეთ ფორმა');
+
+        } catch (Exception $e) {
+            Log::error('Order creation error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
         }
-        Cart::clear();
-        switch ($this->payment_id) {
-            case '3':
-                return $this->redirect((new BOGPayment)->createPaymentOrder($order));
-                break;
-            case '4':
-                if ($order->amount < 100) {
-                    $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
-                } else {
-                    $this->dispatch('bog:installment', amount: $order->amount + ($order->amount * 0.05), url: route('bog.installment', $order->id));
-                }
-                break;
-            case '5':
-                if ($order->amount < 100) {
-                    $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
-                } else {
-                    $this->dispatch('bog:installment-part', amount: $order->amount + $order->delivery_amount, url: route('bog.part-installment', $order->id));
-                }
-                break;
-            case '2':
-                // TODO INVOICE SEND
-                redirect()->route('web.checkout.success');
-                break;
-            default:
-                redirect()->route('web.checkout.success');
-                break;
+    }
+
+    /**
+     * ✅ Process payment based on method
+     */
+    private function processPayment($order)
+    {
+        try {
+            switch ($this->payment_id) {
+                case '3':
+                    // BOG Payment
+                    return $this->redirect((new BOGPayment)->createPaymentOrder($order));
+
+                case '4':
+                    // Installment
+                    if ($order->amount < 100) {
+                        $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
+                    } else {
+                        $this->dispatch('bog:installment',
+                            amount: $order->amount + ($order->amount * 0.05),
+                            url: route('bog.installment', $order->id)
+                        );
+                    }
+                    break;
+
+                case '5':
+                    // Part Installment
+                    if ($order->amount < 100) {
+                        $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
+                    } else {
+                        $this->dispatch('bog:installment-part',
+                            amount: $order->amount + $order->delivery_amount,
+                            url: route('bog.part-installment', $order->id)
+                        );
+                    }
+                    break;
+
+                case '2':
+                    // Invoice
+                    return $this->redirect(route('web.checkout.success'));
+
+                default:
+                    return $this->redirect(route('web.checkout.success'));
+            }
+        } catch (Exception $e) {
+            Log::error('Payment processing error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'გადახდის დამუშავება ვერ მოხერხდა');
         }
     }
 

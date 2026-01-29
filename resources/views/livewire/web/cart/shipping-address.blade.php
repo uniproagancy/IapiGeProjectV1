@@ -1,4 +1,4 @@
-<div class="bg-body-tertiary rounded-4 p-4 mb-4">
+<div class="bg-body-tertiary rounded-4 p-4 mb-4" id="checkout-form">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h2 class="h5 mb-0 font-neue">მიწოდების მისამართი</h2>
         <div class="d-flex align-items-center text-muted small">
@@ -6,6 +6,7 @@
             <span>უფასო მიწოდება თბილისში</span>
         </div>
     </div>
+
     @if(auth()->check() && $userAddresses->count() > 0)
         <div class="mb-4">
             <label class="form-label fw-semibold">შენახული მისამართები</label>
@@ -54,8 +55,10 @@
             <hr class="my-4">
         @endif
     @endif
+
     @if(!$selected_address_id)
         <div class="row g-3">
+            <!-- City Selection -->
             <div class="col-md-12">
                 <label for="city_id" class="form-label">
                     ქალაქი <span class="text-danger">*</span>
@@ -65,13 +68,19 @@
                         wire:model.live="city_id">
                     <option value="">აირჩიეთ ქალაქი</option>
                     @foreach($cities_list as $city_item)
-                        <option value="{{ $city_item->id }}">{{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}</option>
+                        <option value="{{ $city_item->id }}">
+                            {{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}
+                        </option>
                     @endforeach
                 </select>
                 @error('city_id')
-                <div class="invalid-feedback">{{ $message }}</div>
+                <div class="invalid-feedback d-block">
+                    <i class="ci-info-circle me-1"></i>{{ $message }}
+                </div>
                 @enderror
             </div>
+
+            <!-- Address Input -->
             <div class="col-12">
                 <label for="address" class="form-label">
                     სრული მისამართი <span class="text-danger">*</span>
@@ -86,7 +95,9 @@
                         <i class="ci-home text-muted"></i>
                     </div>
                     @error('address')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">
+                        <i class="ci-info-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div class="form-text">
@@ -94,6 +105,8 @@
                     გთხოვთ მიუთითოთ ზუსტი მისამართი სწრაფი მიწოდებისთვის
                 </div>
             </div>
+
+            <!-- Comment -->
             <div class="col-12">
                 <label for="comment" class="form-label d-flex align-items-center">
                     დამატებითი კომენტარი
@@ -115,6 +128,8 @@
             </div>
         </div>
     @endif
+
+    <!-- Delivery Info -->
     <div class="row g-3 mt-1">
         <div class="col-md-6">
             <div class="border rounded-3 p-3">
@@ -156,6 +171,68 @@
         </div>
     </div>
 </div>
+
+<!-- ✅ Script for scroll to error -->
+<script>
+    // Listen for scrollToError event
+    document.addEventListener('livewire:navigated', function() {
+        Livewire.on('scrollToError', ({ field }) => {
+            scrollToErrorField(field);
+        });
+    });
+
+    /**
+     * ✅ Scroll to error field with smooth animation
+     */
+    function scrollToErrorField(fieldName) {
+        console.log('📍 Scrolling to error field:', fieldName);
+
+        // Map field names to HTML IDs
+        const fieldMap = {
+            'city_id': 'city_id',
+            'address': 'address',
+            'comment': 'comment',
+            'payment_id': 'payment_method',
+        };
+
+        const elementId = fieldMap[fieldName] || fieldName;
+        const element = document.getElementById(elementId);
+
+        if (element) {
+            // ✅ Scroll with smooth behavior
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            // ✅ Add focus and highlight animation
+            element.focus({ preventScroll: true });
+            element.classList.add('field-error-highlight');
+
+            // ✅ Remove highlight after 3 seconds
+            setTimeout(() => {
+                element.classList.remove('field-error-highlight');
+            }, 3000);
+
+            console.log('✅ Scrolled to:', fieldName);
+        } else {
+            console.warn('⚠️  Field not found:', fieldName);
+            // Fallback: scroll to form top
+            const form = document.getElementById('checkout-form');
+            if (form) {
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    // ✅ Initial event listener setup
+    document.addEventListener('DOMContentLoaded', function() {
+        Livewire.on('scrollToError', ({ field }) => {
+            scrollToErrorField(field);
+        });
+    });
+</script>
+
 <style>
     .form-check-custom {
         transition: all 0.2s ease;
@@ -168,5 +245,45 @@
 
     .cursor-pointer {
         cursor: pointer;
+    }
+
+    /* ✅ Highlight error field */
+    .field-error-highlight {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+        border-color: #dc3545 !important;
+        animation: pulse-error 0.6s ease-in-out;
+    }
+
+    @keyframes pulse-error {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+    }
+
+    /* ✅ Invalid input styling */
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='12 12 24 24'%3e%3ccircle cx='24' cy='24' r='11' fill='none' stroke='%23dc3545' stroke-width='2'/%3e%3cpath fill='%23dc3545' d='M24 16v8M24 28a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(1.5em + 0.75rem) calc(1.5em + 0.75rem);
+    }
+
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .form-control.is-invalid ~ .invalid-feedback,
+    .form-select.is-invalid ~ .invalid-feedback {
+        display: block;
     }
 </style>
