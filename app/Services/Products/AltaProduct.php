@@ -2,7 +2,7 @@
 
 namespace App\Services\Products;
 
-use App\Jobs\CreateAltaProductJob;
+use App\Jobs\AltaProductJob;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
@@ -15,8 +15,8 @@ class AltaProduct
     protected int $concurrent_requests = 50;
     protected int $chunk_size = 500;
     protected int $timeout = 10;
-    protected int $start_id = 45755;
-    protected int $end_id = 45770;
+    protected int $start_id = 1;
+    protected int $end_id = 60000;
 
     public function scanAllIds(): array
     {
@@ -63,7 +63,7 @@ class AltaProduct
                     $stats['null']++;
                     return;
                 }
-                CreateAltaProductJob::dispatch($data['product'])->onQueue('alta');
+                AltaProductJob::dispatch($data['product'])->onQueue('alta');
                 $stats['queued']++;
             },
             'rejected' => function ($reason, $id) use (&$stats) {

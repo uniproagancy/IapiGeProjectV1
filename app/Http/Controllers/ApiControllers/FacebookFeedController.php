@@ -40,7 +40,11 @@ class FacebookFeedController extends Controller
             $item->addChild('g:condition', 'new');
             $item->addChild('g:availability', $stock);
 //            $item->addChild('g:google_product_category', $product->id);
-            $item->addChild('g:price', $price);
+            $item->addChild('g:price', $product->price->regular_price);
+            $item->addChild('g:sale_price', $product->price->discount_price);
+            if($item->price->regular_price > 150) {
+                $item->addChild('g:custom_label_0', 'თვეში '. $price / 24 .' -დან');
+            }
         }
         return response($xml->asXML(), 200)
             ->header('Content-Type', 'application/xml');

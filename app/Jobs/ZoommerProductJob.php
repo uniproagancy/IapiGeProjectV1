@@ -183,7 +183,7 @@ class ZoommerProductJob implements ShouldQueue
         foreach ($productData['specificationGroup'] as $specificationGroup) {
             $section = ProductFullSpecificationSection::create([
                 'product_id' => $product->id,
-                'name' => (new GoogleTranslation)->translateToGeorgian($specificationGroup['groupName']),
+                'name' => $specificationGroup['groupName'],
             ]);
             if (!empty($specificationGroup['specifications'])) {
                 foreach ($specificationGroup['specifications'] as $spec) {
@@ -192,7 +192,7 @@ class ZoommerProductJob implements ShouldQueue
                     } else {
                         $filter = false;
                     }
-                    $specification_name = (new GoogleTranslation)->translateToGeorgian($spec['specificationName']);
+                    $specification_name = $spec['specificationName'];
                     $specification_value = $spec['specificationMeaning'];
                     ProductFullSpecificationItem::create([
                         'section_id' => $section->id,
