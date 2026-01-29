@@ -21,7 +21,11 @@ trait WithCart
                 return;
             }
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-            $price = $product->price->discount_price ?? $product->price->regular_price;
+			if($product->price->discount_price != '0.0') {
+				$price = $product->price->discount_price;
+			} else {
+				$price = $product->price->regular_price;
+			}
             $existingItem = Cart::get($product->id);
             if ($existingItem) {
                 $this->updateCartQuantity($product->id, $existingItem->quantity + $quantity);
