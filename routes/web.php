@@ -9,6 +9,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     Route::name('web.')->group(function () {
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
+        Route::get('/about-us', App\Livewire\Web\Main\AboutUs::class)->name('main.contact');
 
         Route::group(['middleware' => 'auth'], function () {
             Route::get('/user/{page?}', App\Livewire\Web\User\Index::class)->name('user.index');
