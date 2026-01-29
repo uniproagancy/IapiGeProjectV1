@@ -4,7 +4,7 @@
             $features = [
                 [
                     'icon' => 'ci-delivery',
-                    'title' => 'უფასო მიწოდება',
+                    'title' => 'მიწოდება',
                     'description' => 'მთელი საქართველოს მასშტაბით'
                 ],
                 [

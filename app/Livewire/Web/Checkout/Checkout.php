@@ -46,6 +46,7 @@ class Checkout extends Component
     public $subtotal = 0;
     public $total = 0;
     public $userAddresses = [];
+    public $selected_address_id = [];
 
     public function mount()
     {
