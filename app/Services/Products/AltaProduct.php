@@ -18,11 +18,11 @@ class AltaProduct
     // ✅ Performance Settings
     protected int $concurrent_requests = 50;
     protected int $chunk_size = 500;
-    protected int $timeout = 10;
+    protected int $timeout = 60;
     
     // ✅ Product ID Range
-    protected int $start_id = 45491;
-    protected int $end_id = 45495;
+    protected int $start_id = 38010;
+    protected int $end_id = 38010;
 
     /**
      * ✅ Constructor - Load API key from config
@@ -174,7 +174,6 @@ class AltaProduct
                     try {
                         $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
                         $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrows_api_key}&url=".$targetUrl;
-						dd($zenrowsUrl);
                         yield $id => new Request('GET', $zenrowsUrl);
 
                     } catch (Exception $e) {

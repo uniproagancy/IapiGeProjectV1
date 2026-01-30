@@ -58,7 +58,7 @@
 
     .thumbs-swiper .swiper-slide-thumb-active {
         opacity: 1;
-        border: 2px solid #f2223b;
+        border: 2px solid #ff6900;
         border-radius: 10px;
     }
 

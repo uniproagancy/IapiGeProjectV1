@@ -41,15 +41,15 @@
 
     label.border:hover {
         background-color: #f8f9fa;
-        border-color: #6f42c1 !important;
+        border-color: #ff6900 !important;
     }
 
     label.border input[type="radio"]:checked {
-        border-color: #6f42c1;
+        border-color: #ff6900;
     }
 
     label.border input[type="radio"]:checked ~ .d-flex {
-        color: #6f42c1;
+        color: #ff6900;
     }
 </style>
 

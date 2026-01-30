@@ -29,7 +29,7 @@ class AltaProductJob implements ShouldQueue
     public int $tries = 3;
     public int $timeout = 300;
 
-    protected string $zenrowsApiKey = '720dd891d818c11518c803e250b7f62b9f887d9b';
+    protected string $zenrowsApiKey = '605bcf65ed76816fc6305e7f1eb1c612ec31fd62';
 
     public function __construct(array $productData)
     {
