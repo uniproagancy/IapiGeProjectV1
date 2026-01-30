@@ -49,8 +49,8 @@ class BOGPayment
                 'basket' => $basket
             ],
             'redirect_urls' => [
-                'fail' => 'https://example.com/fail',
-                'success' => 'https://example.com/success'
+                'fail' => 'https://iapi.ge/',
+                'success' => 'https://iapi.ge/'
             ]
         ];
         $create_order = Http::withToken($this->getToken())

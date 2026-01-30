@@ -25,12 +25,7 @@
                 class="btn btn-lg btn-outline-info w-100 animate-slide-end font-neue"
                 style="font-size: 14px"
                 @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
-            ყიდვა
-        </button>
-        <button type="button" id="installmentBtn"
-                class="btn btn-lg btn-outline-warning w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
-                style="font-size: 14px">
-            განვადება
+            სწრაფი შეძენა
         </button>
     </div>
     @foreach($product->variations as $variation)

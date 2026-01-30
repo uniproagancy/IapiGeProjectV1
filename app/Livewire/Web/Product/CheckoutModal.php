@@ -63,110 +63,90 @@ class CheckoutModal extends Component
     public function submitCheckout()
     {
         //
-        $validated = $this->validate([
-            'name' => 'required|string|min:2|max:50',
-            'lastname' => 'required|string|min:2|max:50',
-            'email' => 'required|email',
-            'phone' => 'required|regex:/^(\+?995)?5[0-9]{8}$/',
-            'address' => 'required|string|min:5|max:200',
-            'payment_id' => 'required|exists:payment_methods,id',
-            'selectedProduct' => 'required',
-        ]);
-
-        // ✅ Send OTP to phone
-        $this->sendOTP($this->phone);
-
-        // ✅ Move to OTP step
-        $this->step = 'otp';
-    }
-
-    // ============================================
-    // OTP Verification Logic
-    // ============================================
-
-    private function sendOTP($phone)
-    {
         try {
-            // ✅ Normalize phone number
-            $normalizedPhone = $this->normalizePhoneNumber($phone);
-
-            // ✅ Generate OTP code
-            $otpCode = rand(100000, 999999);
-
-            // ✅ Store in session/cache (expires in 5 minutes)
-            session([
-                'otp_code' => $otpCode,
-                'otp_phone' => $normalizedPhone,
-                'otp_created_at' => now(),
-                'otp_attempts' => 0,
+            // ✅ Validation rules
+            $validated = $this->validate([
+                'city_id' => 'required|string|max:255|exists:db_cities,id',
+                'address' => 'required|string|max:255',
+                'payment_id' => 'required',
+            ], [
+                'city_id.required' => 'ქალაქი აუცილებელია',
+                'city_id.exists' => 'არჩეული ქალაქი ვერ მოიძებნა',
+                'address.required' => 'მისამართი აუცილებელია',
+                'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
+                'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
 
-            // ✅ Send SMS via smsoffice.ge or similar service
-            // SMS::send($normalizedPhone, "თქვენი დასტური კოდი: {$otpCode}");
+            Log::info('Checkout form validated', [
+                'email' => $this->email,
+                'city_id' => $this->city_id,
+            ]);
 
-            // For demo (remove in production)
-            \Log::info("OTP Code: {$otpCode} for phone: {$normalizedPhone}");
+            // ✅ Track checkout initiation (Facebook Pixel)
 
-            // ✅ Enable resend after 30 seconds
-            $this->otp_resend_available = false;
-            $this->otp_resend_timer = 30;
+            // ✅ Create order
+            if (Auth::check()) {
+                $city = City::find($this->city_id);
 
-            // ✅ Start countdown timer
-            $this->dispatchBrowserEvent('startOTPTimer');
+                $order = Order::create([
+                    'user_id' => Auth::user()->id,
+                    'payment_id' => $this->payment_id,
+                    'comment' => $this->comment,
+                    'created_by' => Auth::user()->id,
+                    'delivery_amount' => $city->delivery_amount,
+                    'amount' => $this->subtotal,
+                ]);
 
-        } catch (\Exception $e) {
-            $this->addError('phone', 'SMS გაგზავნა ვერ მოხერხდა. სცადეთ ისევ.');
-            \Log::error('OTP Send Error: ' . $e->getMessage());
-        }
-    }
+                // ✅ Add order items
+                foreach ($this->orderItems as $orderItem) {
+                    OrderItem::create([
+                        'product_id' => $orderItem['id'],
+                        'quantity' => $orderItem['quantity'],
+                        'price' => $orderItem['price'],
+                        'order_id' => $order->id,
+                    ]);
+                }
 
-    public function verifyOTP()
-    {
-        // ✅ Validate OTP input
-        $this->validate([
-            'otp_code' => 'required|numeric|digits:6',
-        ]);
+                // ✅ Add delivery info
+                OrderDelivery::create([
+                    'order_id' => $order->id,
+                    'address' => $this->address,
+                    'city_id' => $this->city_id,
+                ]);
 
-        // ✅ Get stored OTP from session
-        $storedOTP = session('otp_code');
-        $otpCreatedAt = session('otp_created_at');
-        $otpAttempts = session('otp_attempts', 0);
+                Log::info('Order created successfully', [
+                    'order_id' => $order->id,
+                    'amount' => $order->amount,
+                ]);
 
-        // ✅ Check if OTP expired (5 minutes)
-        if (now()->diffInMinutes($otpCreatedAt) > 5) {
-            $this->otp_error = 'დასტური კოდი ვადაგასულია. სცადეთ ხელახლა.';
-            session()->forget(['otp_code', 'otp_phone', 'otp_created_at']);
-            return;
-        }
+                // ✅ Track purchase (Facebook Pixel)
 
-        // ✅ Check attempts (max 3)
-        if ($otpAttempts >= 3) {
-            $this->otp_error = 'ძალიან ბევრი მცდელობა. სცადეთ ისევ 5 წუთში.';
-            return;
-        }
 
-        // ✅ Verify OTP code
-        if ((int)$this->otp_code !== (int)$storedOTP) {
-            $otpAttempts++;
-            session(['otp_attempts' => $otpAttempts]);
-            $this->otp_error = "დასტური კოდი არასწორია. დარჩა " . (3 - $otpAttempts) . " მცდელობა.";
-            $this->otp_code = '';
-            return;
-        }
+                // ✅ Clear cart
+                Cart::clear();
 
-        // ✅ OTP Verified! Create order
-        $this->createOrder();
+                // ✅ Process payment
+                $this->processPayment($order);
+            }
 
-        // ✅ Clear session
-        session()->forget(['otp_code', 'otp_phone', 'otp_created_at', 'otp_attempts']);
-    }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // ✅ Get first error field
+            $errorField = array_key_first($e->errors());
 
-    public function resendOTP()
-    {
-        if ($this->otp_resend_available) {
-            $this->sendOTP($this->phone);
-            $this->otp_code = '';
-            $this->otp_error = '';
+            Log::warning('Validation error in checkout', [
+                'error_field' => $errorField,
+                'errors' => $e->errors(),
+            ]);
+
+            // ✅ Dispatch event to scroll to error field
+            $this->dispatch('scrollToError', field: $errorField);
+
+            // ✅ Show error message
+            $this->dispatch('ui:error', message: 'გთხოვთ შეამოწმეთ ფორმა');
+
+        } catch (Exception $e) {
+            Log::error('Order creation error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
         }
     }
 
