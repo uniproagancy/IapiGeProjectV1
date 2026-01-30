@@ -2,11 +2,11 @@
 	<section class="container pt-5">
         <div class="row pt-2 pt-sm-3 pt-md-4 pt-lg-5">
           <div class="col-md-5 col-lg-6 pb-1 pb-sm-2 pb-md-0 mb-4 mb-md-0">
-            <div class="ratio ratio-1x1">
+            <div>
               <img src="{{ asset('web-assets/img/about.png') }}" class="rounded-5" alt="Image">
             </div>
           </div>
-          <div class="col-md-7 col-lg-6 pt-md-3 pt-xl-4 pt-xxl-5">
+          <div class="col-md-7 col-lg-6">
             <div class="ps-md-3 ps-lg-4 ps-xl-5 ms-xxl-4">
                 <h3 class="h1 font-neue">ჩვენ შესახებ</h3>
                     <p>
