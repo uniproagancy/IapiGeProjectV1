@@ -114,6 +114,7 @@
 </style>
 @include('livewire.web.partials.footer.footer')
 @include('livewire.web.partials.cookies')
+@include('livewire.web.partials.bottom-menu')
 
 @guest
     <livewire:web.auth.login-modal/>
