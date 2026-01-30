@@ -20,7 +20,7 @@
                 <hr class="text-dark-emphasis opacity-50 my-3 my-md-4">
                 <ul class="list-unstyled">
                     <li>{{ __('trans.address_city') }}</li>
-                    <li>{{ __('trans.address_street') }}</li>
+                    <li>ქ. თბილისი, შარტავას ქ. №3</li>
                 </ul>
             </div>
             <div class="col">
