@@ -34,12 +34,10 @@
     
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TT3974BN"
                   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 @include('livewire.web.partials.header.header')
-
 {{ $slot }}
 
 <livewire:web.cart.shopping-cart-offcanvas/>

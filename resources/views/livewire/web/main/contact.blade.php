@@ -1,6 +1,6 @@
 <div>
 	<section class="position-relative bg-body-tertiary py-4">
-		<img src="assets/img/contact/title-bg.png" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rtl-flip" alt="Background image">
+		<img src="{{ asset('web-assets/img/contact.png') }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rtl-flip" alt="Background image">
 		<div class="container position-relative z-2 py-4 py-md-5 my-lg-3 my-xl-4 my-xxl-5">
 		  <div class="row pt-lg-2 pb-2 pb-sm-3 pb-lg-4">
 			<div class="col-9 col-md-8 col-lg-6">
@@ -43,7 +43,10 @@
                 </div>
                 <hr class="text-dark-emphasis opacity-50 my-3 my-md-4">
                 <ul class="list-unstyled">
-                    <li class="text-center"><a href="mailto:info@iapige">info@iapi.ge</a></li>
+                    <li class="d-flex justify-content-between">
+                        <span>ელ-ფოსტა:</span>
+                        <span><a href="mailto:info@iapige">info@iapi.ge</a></span>
+                    </li>
                 </ul>
             </div>
             <div class="col">
@@ -53,7 +56,10 @@
                 </div>
                 <hr class="text-dark-emphasis opacity-50 my-3 my-md-4">
                 <ul class="list-unstyled">
-                    <li>ყოველდღე: 10:00 - 00:00</li>
+                    <li class="d-flex justify-content-between">
+                        <span>ყოველდღე:</span>
+                        <span>10:00 - 00:00</span>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -27,6 +27,6 @@
         <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4"><i
                     class="ci-phone"></i></p>
         <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4 text-uppercase">
-            asdasd</p>
+            +995 555 700 720</p>
     </div>
 </div>
