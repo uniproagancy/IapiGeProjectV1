@@ -9,7 +9,7 @@
         <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4"><i
                     class="ci-copy"></i></p>
         <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4 text-uppercase">
-            შპს „უნიპრო“ ს/კ 416353635</p>
+            შპს „უნიპრო“</p>
     </div>
     <div class="d-flex">
         <p class="text-body fs-sm text-sm-end text-md-start mb-sm-0 mb-md-3 ms-0 ms-sm-auto ms-md-0 me-4"><i
