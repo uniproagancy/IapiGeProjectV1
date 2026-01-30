@@ -27,7 +27,6 @@
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
                 <aside class="col-lg-3">
-                    <!-- ✅ PRICE FILTER -->
                     <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                         <h4 class="h6 mb-3 font-neue">ფასი</h4>
                         <div class="d-flex gap-2 mb-3">
@@ -49,15 +48,8 @@
                             </button>
                         @endif
                     </div>
-
-                    <div class="offcanvas-lg offcanvas-start" id="filterSidebar">
-                        <div class="offcanvas-header py-3">
-                            <h5 class="offcanvas-title">კატეგორიები</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-                        </div>
-
+                    <div class="offcanvas-start" id="filterSidebar">
                         <div class="offcanvas-body flex-column pt-2 py-lg-0">
-                            <!-- CATEGORY FILTER -->
                             <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                                 <h4 class="h6 mb-2 font-neue">
                                     {{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}
