@@ -28,7 +28,7 @@
                wire:model.live.debounce.300ms="query"
                @focus="$wire.set('isOpen', true)"
                autocomplete="off"
-               style="font-size: 14px; padding-left: 2.8rem;">
+               style="font-size: 14px; padding-left: 2.8rem; background: white;">
         @if($query)
             <button type="button"
                     class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-white-50 p-0 me-3"
