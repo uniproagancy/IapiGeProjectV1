@@ -1,4 +1,6 @@
-<div class="collapse navbar-stuck-hide" id="stuckNav">
+<div class="collapse navbar-stuck-hide" id="stuckNav" style="
+    background: #e85f00;
+    border-top: 1px solid rgba(0,0,0,0.1);">
     <nav class="offcanvas offcanvas-start" id="navbarNav" tabindex="-1" aria-labelledby="navbarNavLabel"
          style="z-index: 1050;">
         <div class="offcanvas-header py-3">
