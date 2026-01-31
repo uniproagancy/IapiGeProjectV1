@@ -14,14 +14,12 @@ class BOGPaymentController extends Controller
     public function callback(Request $request)
     {
         if(!empty($request)) {
-            $transaction = OrderTransaction::where('payment_order_id', $request->body->order_id)->first();
+            $transaction = OrderTransaction::where('payment_order_id', $request->body['order_id'])->first();
             $transaction->update(['response' => $request]);
-            Log::info($request->order_status->key);
-            Log::warning($request->order_status['key']);
             if(!empty($transaction)){
-                $order = Order::where('id', $transaction->order_id)->first();
+                $order = Order::where('id', $request->body['order_id'])->first();
                 if(!empty($order)){
-                    if($request->order_status->key === 'completed'){
+                    if($request->body['order_status']['key'] === 'completed'){
                         $order->update(['payment_status' => 2]);
                     }
                 }
