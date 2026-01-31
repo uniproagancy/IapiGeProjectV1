@@ -45,7 +45,7 @@ class BOGPayment
             'external_order_id' => $order->id,
             'purchase_units' => [
                 'currency' => 'GEL',
-                'total_amount' => $order->amount + $order->delivery_amount,
+                'total_amount' => 0.1 + $order->delivery_amount,
                 'basket' => $basket
             ],
             'redirect_urls' => [
