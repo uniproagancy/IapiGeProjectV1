@@ -18,6 +18,7 @@ class OrderTransaction extends Model
         'url',
         'amount',
         'status',
+        'response',
         'type'
     ];
 }
