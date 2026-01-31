@@ -14,6 +14,7 @@ class BOGPaymentController extends Controller
     public function callback(Request $request)
     {
         if(!empty($request)) {
+            Log::info($request['body']);
             $transaction = OrderTransaction::where('payment_order_id', $request->body['order_id'])->first();
             $transaction->update(['response' => $request]);
             if(!empty($transaction)){
