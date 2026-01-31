@@ -11,6 +11,6 @@ class BOGPaymentController extends Controller
     //
     public function callback(Request $request)
     {
-        Log::info('test');
+        Log::info($request);
     }
 }

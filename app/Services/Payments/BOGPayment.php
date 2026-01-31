@@ -41,7 +41,7 @@ class BOGPayment
             ];
         }
         $payload = [
-            'callback_url' => 'https://iapi.ge/bog/api/payment/callback',
+            'callback_url' => 'https://iapi.ge/api/bog/payment/callback',
             'external_order_id' => $order->id,
             'purchase_units' => [
                 'currency' => 'GEL',
