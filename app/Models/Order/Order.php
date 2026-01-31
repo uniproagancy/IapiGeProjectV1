@@ -49,7 +49,7 @@ class Order extends Model
 
     public function paymentStatus(): BelongsTo
     {
-        return $this->belongsTo(PaymentStatus::class, 'status_id', 'id');
+        return $this->belongsTo(PaymentStatus::class, 'payment_status_id', 'id');
     }
 
     public function deliveryData()
