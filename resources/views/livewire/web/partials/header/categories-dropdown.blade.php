@@ -8,7 +8,7 @@
                 <span class="visually-hidden font-neue">{{ trans('trans.categories') }}</span>
             </a>
             <button type="button"
-                    class="btn btn-lg btn-secondary dropdown-toggle w-100 rounded-bottom-0 justify-content-start pe-none">
+                    class="btn btn-lg btn-secondary dropdown-toggle w-100 rounded-bottom-0 justify-content-start pe-none" style="background: #e85f00; border: none;">
                 <i class="ci-grid fs-lg"></i>
                 <span class="ms-2 me-auto font-neue">{{ trans('trans.categories') }}</span>
             </button>
