@@ -22,6 +22,7 @@ class Order extends Model
         'comment',
         'created_by',
         'payment_id',
+        'payment_status_id',
         'amount',
         'delivery_amount',
     ];
