@@ -1,4 +1,4 @@
-<footer class="footer position-relative bg-dark" style="margin-top: 50px">
+<footer class="footer position-relative bg-dark" style="margin-top: 50px; border-top: 4px solid #ff6900">
     <span class="position-absolute top-0 start-0 w-100 h-100 bg-body d-none d-block-dark"></span>
     <div class="container position-relative z-1 pt-sm-2 pt-md-3 pt-lg-4" data-bs-theme="dark">
         <div class="accordion py-5" id="footerLinks">
