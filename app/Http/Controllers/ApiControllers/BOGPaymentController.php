@@ -19,8 +19,9 @@ class BOGPaymentController extends Controller
             if(!empty($transaction)){
                 $order = Order::where('id', $request->body['order_id'])->first();
                 if(!empty($order)){
-                    if($request->body['payment_status_id']['key'] === 'completed'){
-                        $order->update(['payment_status' => 2]);
+                    if($request->body['order_status']['key'] === 'completed'){
+                        $order->update(['payment_status_id' => 2]);
+                        Log::info("Payment Completed");
                     }
                 }
             }
