@@ -36,7 +36,7 @@ class BOGPayment
         foreach ($order->items as $item) {
             $basket[] = [
                 'quantity' => $item->quantity,
-                'unit_price' => $item->price,
+                'unit_price' => 0.1,
                 'product_id' => $item->product->id,
             ];
         }
