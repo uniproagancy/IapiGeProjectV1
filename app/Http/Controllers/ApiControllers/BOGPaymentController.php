@@ -15,6 +15,8 @@ class BOGPaymentController extends Controller
     {
         if(!empty($request)) {
             $transaction = OrderTransaction::where('payment_order_id', $request->get('order_id'))->first();
+            Log::info($request->order_status->key);
+            Log::warning($request->order_status['key']);
             if(!empty($transaction)){
                 $order = Order::where('id', $transaction->order_id)->first();
                 if(!empty($order)){
