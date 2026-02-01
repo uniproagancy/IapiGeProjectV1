@@ -50,5 +50,6 @@ class AltaProductJob implements ShouldQueue
     public function handle(): void
     {
         Log::info($this->productData);
+        Log::info($this->productAvailability);
     }
 }
