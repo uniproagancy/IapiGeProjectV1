@@ -19,8 +19,7 @@ class CheckRole
             return redirect('https://iapi.ge');
         }
         $roleId = auth()->user()->role_id;
-        dd($roleId);
-        if ($roleId === 1 && $roleId === 5) {
+        if ($roleId === 1 OR $roleId === 5) {
             return redirect('https://iapi.ge');
         }
         return $next($request);
