@@ -17,6 +17,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +27,18 @@ use Illuminate\Support\Str;
 use App\Services\Translation\GoogleTranslation;
 use Exception;
 
+/**
+ * ✅ Improved ALTA Product Job
+ *
+ * Optimizations:
+ * - Brand lookup caching
+ * - Config-based hardcoded values
+ * - Fixed image download duplication
+ * - Image size validation
+ * - Translation caching
+ * - Bulk image inserts
+ * - Better error handling
+ */
 class AltaProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -34,9 +48,14 @@ class AltaProductJob implements ShouldQueue
 
     // ✅ Improved retry settings
     public int $tries = 3;
-    public int $timeout = 300;  // ✅ Increased to 5 minutes
+    public int $timeout = 300;
     public int $maxExceptions = 3;
     public int $backoffMultiplier = 2;
+
+    // ✅ Configuration
+    private const CACHE_DURATION_BRAND = 24 * 60;  // 24 hours
+    private const CACHE_DURATION_TRANSLATION = 30 * 24 * 60;  // 30 days
+    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024;  // 5MB
 
     public function __construct(array $productData, array $productAvailability = [])
     {
@@ -50,7 +69,7 @@ class AltaProductJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info("🔄 Processing Alta product: {$this->productData['id']}", [
+            Log::info("🔄 Processing ALTA product: {$this->productData['id']}", [
                 'attempt' => $this->attempts(),
             ]);
 
@@ -61,14 +80,16 @@ class AltaProductJob implements ShouldQueue
         } catch (Exception $e) {
             Log::error("❌ Error processing product {$this->productData['id']}: {$e->getMessage()}", [
                 'attempt' => $this->attempts(),
-                'error' => $e,
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // ✅ Retry with exponential backoff
             if ($this->attempts() < $this->tries) {
                 $this->release($this->getRetryDelay());
             } else {
-                Log::critical("🚫 Job failed after {$this->tries} attempts: {$this->productData['id']}");
+                Log::critical("🚫 Job permanently failed: {$this->productData['id']}", [
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
     }
@@ -78,7 +99,7 @@ class AltaProductJob implements ShouldQueue
      */
     private function getRetryDelay(): int
     {
-        return pow($this->backoffMultiplier, $this->attempts()) * 60;  // 2m, 4m, 8m
+        return pow($this->backoffMultiplier, $this->attempts()) * 60;
     }
 
     /**
@@ -93,11 +114,10 @@ class AltaProductJob implements ShouldQueue
     }
 
     /**
-     * ✅ Main logic - check stock and save
+     * ✅ Main logic
      */
     public function saveProductWithVariants(array $productData, array $productAvailability): void
     {
-        // ✅ Validate required data
         if (empty($productData['id'])) {
             throw new Exception('Product ID is required');
         }
@@ -116,7 +136,7 @@ class AltaProductJob implements ShouldQueue
     }
 
     /**
-     * ✅ Check if product has stock in Tbilisi
+     * ✅ Check Tbilisi stock
      */
     private function checkTbilisiStock(array $availability): bool
     {
@@ -130,7 +150,7 @@ class AltaProductJob implements ShouldQueue
     }
 
     /**
-     * ✅ Update existing product price and stock
+     * ✅ Update existing product
      */
     private function updateExistingProduct(array $productData, bool $hasStock): void
     {
@@ -140,7 +160,6 @@ class AltaProductJob implements ShouldQueue
             $productPrice = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            // ✅ Update price
             $product->price()->update([
                 'dealer_price' => $productPrice,
                 'regular_price' => $productPrice,
@@ -148,7 +167,6 @@ class AltaProductJob implements ShouldQueue
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);
 
-            // ✅ Update stock
             $product->update([
                 'quantity' => $hasStock ? 5 : 0,
                 'in_stock' => $hasStock ? 1 : 0,
@@ -158,28 +176,28 @@ class AltaProductJob implements ShouldQueue
             Log::info("✏️  Updated product: {$product->id}");
 
         } catch (Exception $e) {
-            Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
+            Log::error("❌ Error updating product {$productData['id']}: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Create new product with all relationships
+     * ✅ Create new product
      */
     private function createNewProduct(array $productData, bool $hasStock): void
     {
         DB::transaction(function () use ($productData, $hasStock) {
             try {
-                // ✅ Get or create brand
-                $brand_id = $this->getBrandId($productData);
+                // ✅ Get brand ID (cached)
+                $brandId = $this->getBrandId($productId);
 
                 // ✅ Create product
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
-                    'brand_id' => $brand_id,
-                    'category_id' => 3,
-                    'sku' => 'ALTA-' . $productData['barCode'] ?? null,
-                    'supplier_id' => 2,
+                    'brand_id' => $brandId,
+                    'category_id' => Config::get('services.alta.category_id', 3),
+                    'sku' => 'ALTA-' . ($productData['barCode'] ?? null),
+                    'supplier_id' => Config::get('services.alta.supplier_id', 2),
                     'main_image' => 1,
                     'active' => 1,
                     'quantity' => $hasStock ? 5 : 0,
@@ -192,51 +210,59 @@ class AltaProductJob implements ShouldQueue
                 $this->createTranslations($product, $productData);
                 $this->createFullSpecifications($product, $productData);
                 $this->createVariations($product, $productData);
-                $this->downloadImages($product, $productData);
+                $this->downloadAndSaveImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
                 Log::info("✨ Created new product: {$product->id}");
 
             } catch (Exception $e) {
-                Log::error("Error creating product {$productData['id']}: {$e->getMessage()}");
+                Log::error("❌ Error creating product: {$e->getMessage()}");
                 throw $e;
             }
         });
     }
 
     /**
-     * ✅ Get brand ID - improved with error handling
+     * ✅ Get brand ID (with caching)
      */
     private function getBrandId(array $productData): int
     {
         try {
-            // Find brand from specifications
+            // Find brand name from specifications
             $specGroup = collect($productData['specificationGroup'] ?? [])
                 ->firstWhere('groupName', 'Brand');
 
-            if (!empty($specGroup) && !empty($specGroup['specifications'][0]['specificationMeaning'])) {
-                $brandName = $specGroup['specifications'][0]['specificationMeaning'];
-
-                $brand = ProductBrand::whereHas('translations', function ($query) use ($brandName) {
-                    $query->where('title', 'like', $brandName);
-                })->first();
-
-                if ($brand) {
-                    return $brand->id;
-                }
+            if (empty($specGroup) || empty($specGroup['specifications'][0])) {
+                return Config::get('services.alta.default_brand_id', 6);
             }
 
-            // ✅ Default brand if not found
-            return 6;
+            $brandName = $specGroup['specifications'][0]['specificationMeaning'] ?? null;
+
+            if (empty($brandName)) {
+                return Config::get('services.alta.default_brand_id', 6);
+            }
+
+            // ✅ Cache brand lookup (24 hours)
+            return Cache::remember(
+                'alta_brand_' . md5($brandName),
+                now()->addMinutes(self::CACHE_DURATION_BRAND),
+                function () use ($brandName) {
+                    $brand = ProductBrand::whereHas('translations',
+                        fn($q) => $q->where('title', 'like', $brandName)
+                    )->first();
+
+                    return $brand->id ?? Config::get('services.alta.default_brand_id', 6);
+                }
+            );
 
         } catch (Exception $e) {
-            Log::warning("Error finding brand: {$e->getMessage()}");
-            return 6;  // Default brand
+            Log::warning("⚠️  Error finding brand: {$e->getMessage()}");
+            return Config::get('services.alta.default_brand_id', 6);
         }
     }
 
     /**
-     * ✅ Create product price
+     * ✅ Create price
      */
     private function createPrice(Product $product, array $productData): void
     {
@@ -253,40 +279,39 @@ class AltaProductJob implements ShouldQueue
             ]);
 
         } catch (Exception $e) {
-            Log::error("Error creating price for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error creating price: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Create product translations
+     * ✅ Create translations
      */
     private function createTranslations(Product $product, array $productData): void
     {
         try {
             $locales = ['ka', 'en', 'ru'];
-            $baseSlug = Str::slug($productData['name'] ?? 'product', '-');
-            $slugWithId = "{$baseSlug}-{$product->id}";
+            $productName = $this->sanitizeString($productData['name']) ?: 'Unnamed Product';
 
             foreach ($locales as $locale) {
                 ProductTranslation::create([
                     'product_id' => $product->id,
                     'locale' => $locale,
-                    'title' => $productData['name'] ?? 'Unnamed Product',
-                    'slug' => $slugWithId,
-                    'description' => $locale === 'ka' ? ($productData['description'] ?? null) : null,
+                    'title' => $productName,
+                    'slug' => Str::slug($productName) . "-{$product->id}",
+                    'description' => $locale === 'ka' ? $this->sanitizeString($productData['description']) : null,
                     'keywords' => null,
                 ]);
             }
 
         } catch (Exception $e) {
-            Log::error("Error creating translations for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error creating translations: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Create product variations
+     * ✅ Create variations
      */
     private function createVariations(Product $product, array $productData): void
     {
@@ -306,7 +331,6 @@ class AltaProductJob implements ShouldQueue
                     'value' => $specification['specificationMeaning'] ?? null,
                 ]);
 
-                // ✅ Create variation items
                 if (!empty($specification['specificationMeaningsList'])) {
                     foreach ($specification['specificationMeaningsList'] as $item) {
                         ProductVariationItem::create([
@@ -320,7 +344,7 @@ class AltaProductJob implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error("Error creating variations for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error creating variations: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -345,92 +369,111 @@ class AltaProductJob implements ShouldQueue
                     'name' => $specificationGroup['groupName'],
                 ]);
 
-                // ✅ Create specification items
                 if (!empty($specificationGroup['specifications'])) {
                     foreach ($specificationGroup['specifications'] as $spec) {
                         if (empty($spec['specificationName'])) {
                             continue;
                         }
 
-                        $isFilter = !empty($spec['specificationLinkedUrl']);
-
                         ProductFullSpecificationItem::create([
                             'section_id' => $section->id,
                             'name' => $spec['specificationName'],
-                            'value' => $spec['specificationMeaning'] ?? null,
-                            'filter' => $isFilter ? 1 : 0,
+                            'value' => $this->sanitizeString($spec['specificationMeaning']),
+                            'filter' => !empty($spec['specificationLinkedUrl']) ? 1 : 0,
                         ]);
                     }
                 }
             }
 
         } catch (Exception $e) {
-            Log::error("Error creating specifications for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error creating specifications: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Download and save product images
+     * ✅ Download and save images (FIXED - no duplication)
      */
-    private function downloadImages(Product $product, array $productData): void
+    private function downloadAndSaveImages(Product $product, array $productData): void
     {
         try {
             if (empty($productData['images'])) {
                 return;
             }
 
-            foreach ($productData['images'] as $index => $imageUrl) {
-                try {
-                    $scrape_url = "https://api.scrape.do/?url=".$imageUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
-                    $imageUrl = Http::timeout(30)->get($scrape_url);
-                    // ✅ Skip invalid URLs
-                    if (empty($imageUrl)) {
-                        continue;
-                    }
+            $images = [];
+            $processedUrls = [];
 
-                    // ✅ Download image with timeout
-                    $response = Http::timeout(30)->get($imageUrl);
+            foreach ($productData['images'] as $index => $imageUrl) {
+                // ✅ Skip duplicates
+                if (in_array($imageUrl, $processedUrls)) {
+                    Log::debug("⏭️  Skipping duplicate image: {$imageUrl}");
+                    continue;
+                }
+
+                $processedUrls[] = $imageUrl;
+
+                try {
+                    // ✅ Download image (FIXED - single HTTP call)
+                    $imageUrll = "https://api.scrape.do/?url=" . urlencode($imageUrl) .
+                    "&token={$this->scrape_token}";
+                    $response = Http::timeout(30)
+                        ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                        ->get($imageUrll);
 
                     if (!$response->successful()) {
-                        Log::warning("Failed to download image for product {$product->id}: {$imageUrl}");
+                        Log::warning("⚠️  Failed to download image: {$imageUrll}");
                         continue;
                     }
 
-                    // ✅ Get extension
-                    $ext = $this->getImageExtension($imageUrl);
+                    // ✅ Check image size
+                    $imageSize = strlen($response->body());
+                    if ($imageSize > self::MAX_IMAGE_SIZE) {
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrll}");
+                        continue;
+                    }
+
+                    // ✅ Save image
+                    $ext = $this->getImageExtension($imageUrll);
                     $filename = Str::random(40) . '.' . $ext;
                     $path = "uploads/products/{$product->id}/{$filename}";
 
-                    // ✅ Save image
                     Storage::disk('public')->put($path, $response->body());
 
-                    // ✅ Set main image or create product image
+                    // ✅ Set main image or collect for bulk insert
                     if ($index === 0) {
                         $product->update(['main_image' => $path]);
                     } else {
-                        ProductImage::create([
+                        $images[] = [
                             'product_id' => $product->id,
                             'path' => $path,
-                        ]);
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
                     }
 
-                    Log::info("✅ Downloaded image for product {$product->id}: {$filename}");
+                    Log::info("✅ Downloaded image: {$filename}");
 
                 } catch (Exception $e) {
-                    Log::warning("Error downloading image {$imageUrl}: {$e->getMessage()}");
-                    continue;  // ✅ Continue with next image instead of returning
+                    Log::warning("⚠️  Error downloading {$imageUrll}: {$e->getMessage()}");
+                    continue;
                 }
             }
 
+            // ✅ Bulk insert images (faster than loop)
+            if (!empty($images)) {
+                ProductImage::insert($images);
+                Log::info("📦 Bulk inserted " . count($images) . " images");
+            }
+
         } catch (Exception $e) {
-            Log::error("Error downloading images for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error downloading images: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Create short specifications
+     * ✅ Create short specifications (with translation caching)
      */
     private function createShortSpecifications(Product $product, array $productData): void
     {
@@ -440,27 +483,68 @@ class AltaProductJob implements ShouldQueue
             }
 
             $translator = new GoogleTranslation();
+            $specs = [];
 
             foreach ($productData['mainSpecification'] as $spec) {
                 if (empty($spec['specificationName'])) {
                     continue;
                 }
 
-                ProductShortSpecification::create([
+                $name = $this->sanitizeString($spec['specificationName']);
+                $value = $this->sanitizeString($spec['specificationMeaning']);
+
+                if (empty($name)) {
+                    continue;
+                }
+
+                // ✅ Cache translations (30 days)
+                $translatedName = Cache::remember(
+                    'alta_translation_' . md5($name),
+                    now()->addMinutes(self::CACHE_DURATION_TRANSLATION),
+                    fn() => $translator->translateToGeorgian($name)
+                );
+
+                $translatedValue = empty($value) ? '' : Cache::remember(
+                    'alta_translation_' . md5($value),
+                    now()->addMinutes(self::CACHE_DURATION_TRANSLATION),
+                    fn() => $translator->translateToGeorgian($value)
+                );
+
+                $specs[] = [
                     'product_id' => $product->id,
-                    'name' => $translator->translateToGeorgian($spec['specificationName']),
-                    'value' => $translator->translateToGeorgian($spec['specificationMeaning'] ?? ''),
-                ]);
+                    'name' => $translatedName,
+                    'value' => $translatedValue,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            // ✅ Bulk insert specs
+            if (!empty($specs)) {
+                ProductShortSpecification::insert($specs);
             }
 
         } catch (Exception $e) {
-            Log::error("Error creating short specifications for product {$product->id}: {$e->getMessage()}");
+            Log::error("❌ Error creating short specifications: {$e->getMessage()}");
             throw $e;
         }
     }
 
     /**
-     * ✅ Get image extension from URL
+     * ✅ Sanitize string input
+     */
+    private function sanitizeString(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        return !empty($trimmed) ? $trimmed : null;
+    }
+
+    /**
+     * ✅ Get image extension
      */
     protected function getImageExtension(string $url): string
     {
@@ -469,12 +553,11 @@ class AltaProductJob implements ShouldQueue
             $path = $parsed['path'] ?? '';
             $ext = pathinfo($path, PATHINFO_EXTENSION);
 
-            // ✅ Validate extension
             $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
 
         } catch (Exception $e) {
-            Log::warning("Error getting image extension from {$url}: {$e->getMessage()}");
+            Log::warning("⚠️  Error getting image extension: {$e->getMessage()}");
             return 'jpg';
         }
     }
