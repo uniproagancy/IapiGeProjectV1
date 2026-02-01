@@ -49,7 +49,7 @@ class AltaProduct
         $this->start_id = Config::get('services.alta.start_id', 44200);
         $this->end_id = Config::get('services.alta.end_id', 44400);
         $this->scrape_token = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
-        $this->use_scraper = Config::get('services.alta.use_scraper', false);
+        $this->use_scraper = Config::get('services.alta.use_scraper', true);
     }
 
     // ============================================
