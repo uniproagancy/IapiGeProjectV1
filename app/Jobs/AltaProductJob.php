@@ -256,14 +256,10 @@ class AltaProductJob implements ShouldQueue
             $productPrice = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            // ✅ Calculate markup
-            $markup = $productPrice > 1000 ? 0.05 : 0.10;
-            $finalPrice = $productPrice * (1 + $markup);
-
             ProductPrice::create([
                 'product_id' => $product->id,
-                'dealer_price' => $finalPrice,
-                'regular_price' => $finalPrice,
+                'dealer_price' => $productPrice,
+                'regular_price' => $productPrice,
                 'discount_price' => $discountPrice,
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);
