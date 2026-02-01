@@ -84,11 +84,14 @@ class AltaProduct
                 'concurrency' => $this->concurrent_requests,
                 'fulfilled' => function ($response, $id) use (&$stats) {
                     try {
+                        // ✅ Check response status
                         if ($response->getStatusCode() !== 200) {
+                            Log::warning("Product {$id} returned status {$response->getStatusCode()}");
                             $stats['errors']++;
                             return;
                         }
 
+                        // ✅ Parse JSON response
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
 
@@ -118,16 +121,19 @@ class AltaProduct
                         $stats['queued']++;
 
                     } catch (Exception $e) {
-                        Log::error("Error processing product {$id}: " . $e->getMessage());
+                        Log::error("Error processing product {$id}: {$e->getMessage()}");
                         $stats['errors']++;
                     }
                 },
+
+                // ✅ Handle failed request
                 'rejected' => function ($reason, $id) use (&$stats) {
+                    Log::warning("Request failed for product {$id}: {$reason}");
                     $stats['errors']++;
-                    Log::warning("Request failed for ID {$id}: " . $reason);
                 },
             ]);
 
+            // ✅ Wait for all requests to complete
             $pool->promise()->wait();
 
         } catch (Exception $e) {
