@@ -73,10 +73,13 @@ class AltaProduct
 
             $requests = function ($ids) {
                 foreach ($ids as $id) {
-                    yield $id => new Request(
-                        'GET',
-                        $this->api_url . "/v1/Products/details?productId={$id}"
-                    );
+                    try {
+                        $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
+                        $crapeUrl = "https://api.scrape.do/?url=".$targetUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
+                        yield $id => new Request('GET', $crapeUrl);
+                    } catch (Exception $e) {
+                        Log::warning("Error creating request for product {$id}: {$e->getMessage()}");
+                    }
                 }
             };
 
