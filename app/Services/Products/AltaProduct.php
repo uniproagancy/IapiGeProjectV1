@@ -96,29 +96,18 @@ class AltaProduct
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
 
-                        if (!is_array($data)) {
-                            Log::warning("Invalid JSON response for product {$id}");
-                            $stats['errors']++;
-                            return;
-                        }
-
-                        // ✅ Check if product exists
-                        if (!isset($data['product']) || empty($data['product'])) {
-                            Log::debug("No product data for ID {$id}");
+                        if (!isset($data['product']) ||
+                            $data['product'] === null ||
+                            !($data['product']['isInStock'] ?? false)) {
                             $stats['null']++;
                             return;
                         }
 
-                        // ✅ Validate product data
-                        if (empty($product['id'])) {
-                            Log::warning("Product {$id} has no ID in response");
-                            $stats['errors']++;
-                            return;
-                        }
                         AltaProductJob::dispatch(
                             $data['product'],
                             $data['availabilityInStores'] ?? []
                         )->onQueue('alta');
+
                         $stats['queued']++;
 
                     } catch (Exception $e) {

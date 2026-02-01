@@ -89,7 +89,8 @@ class ZoommerProduct
                             return;
                         }
 
-                        $data = json_decode($response->getBody(), true);
+                        $body = $response->getBody()->getContents();
+                        $data = json_decode($body, true);
 
                         if (!isset($data['product']) ||
                             $data['product'] === null ||
