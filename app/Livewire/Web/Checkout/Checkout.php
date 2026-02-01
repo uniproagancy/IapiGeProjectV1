@@ -347,6 +347,7 @@ class Checkout extends Component
                         ];
                     }
                     Log::info($products);
+                    Log::info($order->amount + ($order->amount + 0.1));
                     $tbcInstallment->addProducts($products);
                     $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount + 0.1));
                     Log::info($response);
