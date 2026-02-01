@@ -15,8 +15,8 @@ class AltaProduct
     protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
     protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
     protected int $timeout = 30;
-    protected int $start_id = 47343;
-    protected int $end_id = 47344;
+    protected int $start_id = 1;
+    protected int $end_id = 100000;
 
     public function scanAllIds(): array
     {
@@ -74,9 +74,7 @@ class AltaProduct
             $requests = function ($ids) {
                 foreach ($ids as $id) {
                     $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
-                    Log::info($targetUrl);
                     $crapeUrl = "https://api.scrape.do/?url=".$targetUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
-                    Log::info($crapeUrl);
                     yield $id => new Request('GET', $crapeUrl);
                 }
             };
