@@ -20,7 +20,7 @@ Route::prefix('bog')->group(function () {
 });
 
 Route::prefix('credo')->group(function () {
-    Route::post('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('create-create-order');
+    Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('create-create-order');
 });
 
 Route::prefix('facebook')->group(function () {
