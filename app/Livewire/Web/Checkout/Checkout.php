@@ -9,6 +9,7 @@ use App\Models\Order\OrderItem;
 use App\Models\Payments\Payment;
 use App\Models\Product\Product;
 use App\Services\Payments\BOGPayment;
+use App\Services\Payments\TBCInstallment;
 use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
@@ -332,7 +333,11 @@ class Checkout extends Component
                     }
                     break;
                 case '7':
-                  // TBC GANVADEBA
+                  if($order->amount < 100) {
+                     $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
+                  } else {
+                       return $this->redirect((new TBCInstallment())->getToken());
+                  }
                 break;
                 case '9':
                       if($order->amount < 150) {
