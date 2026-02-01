@@ -28,38 +28,9 @@ class BOGInstallmentController extends Controller
         return (new \App\Services\Payments\BOGInstallment)->createPartInstallmentOrder($order, intval($request->month));
     }
 
-    public function callbackSuccess(Request $request)
+
+    public function installmentRedirect(Request $request): void
     {
-        if ($request->isMethod('POST')) {
-
-        } else {
-            return false;
-        }
-    }
-
-    public function callbackError(Request $request)
-    {
-        if ($request->isMethod('POST')) {
-
-        } else {
-            return false;
-        }
-    }
-
-    public function redirectSuccess()
-    {
-
-    }
-
-
-    public function redirectReject()
-    {
-
-    }
-
-
-    public function redirectFail()
-    {
-
+        Log::info($request);
     }
 }

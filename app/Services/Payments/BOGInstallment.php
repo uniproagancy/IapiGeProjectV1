@@ -143,8 +143,4 @@ class BOGInstallment
         ];
     }
 
-    public function installmentRedirect(Request $request)
-    {
-        Log::info($request);
-    }
 }
