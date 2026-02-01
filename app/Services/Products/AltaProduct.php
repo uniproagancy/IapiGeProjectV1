@@ -173,8 +173,8 @@ class AltaProduct
                 foreach ($ids as $id) {
                     try {
                         $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
-                        $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrows_api_key}&url=".$targetUrl;
-                        yield $id => new Request('GET', $zenrowsUrl);
+//                        $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrows_api_key}&url=".$targetUrl;
+                        yield $id => new Request('GET', $targetUrl);
 
                     } catch (Exception $e) {
                         Log::warning("Error creating request for product {$id}: {$e->getMessage()}");
