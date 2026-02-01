@@ -189,7 +189,7 @@ class ZoommerProductJob implements ShouldQueue
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id' => $brand_id,
-                    'category_id' => 3,
+                    'category_id' => 4,
                     'sku' => $productData['barCode'] ?? null,
                     'supplier_id' => 4,
                     'main_image' => 1,
@@ -256,14 +256,22 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            // ✅ Calculate markup
-            $markup = $productPrice > 1000 ? 0.05 : 0.10;
-            $finalPrice = $productPrice * (1 + $markup);
+            if($productPrice > 1000) {
+                $productPrice = $productPrice + ($productPrice / 100 * 5);
+            } else {
+                $productPrice = $productPrice + ($productPrice / 100 * 10);
+            }
+
+            if($discountPrice > 1000) {
+                $discountPrice = $discountPrice + ($discountPrice / 100 * 5);
+            } else {
+                $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
+            }
 
             ProductPrice::create([
                 'product_id' => $product->id,
-                'dealer_price' => $finalPrice,
-                'regular_price' => $finalPrice,
+                'dealer_price' => $productPrice,
+                'regular_price' => $productPrice,
                 'discount_price' => $discountPrice,
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);

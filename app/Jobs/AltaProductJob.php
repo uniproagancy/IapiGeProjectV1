@@ -103,6 +103,7 @@ class AltaProductJob implements ShouldQueue
         }
 
         $hasStock = $this->checkTbilisiStock($productAvailability);
+        Log::info($hasStock.'stockkkkk');
 
         if (Product::where('supplier_product_id', $productData['id'])->exists()) {
             $this->updateExistingProduct($productData, $hasStock);
@@ -139,18 +140,6 @@ class AltaProductJob implements ShouldQueue
 
             $productPrice = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
-
-            if($productPrice > 1000) {
-                $productPrice = $productPrice + ($productPrice / 100 * 5);
-            } else {
-                $productPrice = $productPrice + ($productPrice / 100 * 10);
-            }
-
-            if($discountPrice > 1000) {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 5);
-            } else {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
-            }
 
             // ✅ Update price
             $product->price()->update([
@@ -191,7 +180,7 @@ class AltaProductJob implements ShouldQueue
                     'brand_id' => $brand_id,
                     'category_id' => 3,
                     'sku' => $productData['barCode'] ?? null,
-                    'supplier_id' => 4,
+                    'supplier_id' => 2,
                     'main_image' => 1,
                     'active' => 1,
                     'quantity' => $hasStock ? 5 : 0,
