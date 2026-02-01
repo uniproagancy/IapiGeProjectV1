@@ -16,7 +16,7 @@ Route::prefix('bog')->group(function () {
 
     Route::post('/installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createInstallment')->name('bog.create-installment-order');
 
-    Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BogController@partInstallment')->name('bog.part-installment');
+    Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createPartInstallment')->name('bog.create-part-installment-order');
 });
 
 Route::prefix('facebook')->group(function () {

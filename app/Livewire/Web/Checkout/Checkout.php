@@ -334,7 +334,6 @@ class Checkout extends Component
                 case '2':
                     // Invoice
                     return $this->redirect(route('web.checkout.success'));
-
                 default:
                     return $this->redirect(route('web.checkout.success'));
             }
@@ -349,7 +348,6 @@ class Checkout extends Component
         return view('livewire.web.cart.checkout', [
             'cities_list' => City::where('active', 1)->get(),
             'payment_list' => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
-        ])
-            ->layout('livewire.web.layout');
+        ])->layout('livewire.web.layout');
     }
 }
