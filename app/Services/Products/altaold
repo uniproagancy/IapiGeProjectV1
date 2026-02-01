@@ -13,33 +13,22 @@ class AltaProduct
 {
     // ✅ API Configuration
     protected string $api_url = 'https://api.alta.ge';
-    protected string $zenrows_api_key;
+    protected string $scrape_api_key;
 
     // ✅ Performance Settings
-    protected int $concurrent_requests = 50;
-    protected int $chunk_size = 500;
-    protected int $timeout = 60;
+    protected int $concurrent_requests = 20;
+    protected int $chunk_size = 100;
+    protected int $timeout = 30;
 
     // ✅ Product ID Range
-    protected int $start_id = 38010;
-    protected int $end_id = 38010;
+    protected int $start_id = 45760;
+    protected int $end_id = 45763;
 
-    /**
-     * ✅ Constructor - Load API key from config
-     */
     public function __construct()
     {
-        // ✅ Get from config instead of hardcoded
-        $this->zenrows_api_key = '605bcf65ed76816fc6305e7f1eb1c612ec31fd62';
-
-        if (empty($this->zenrows_api_key)) {
-            Log::warning('⚠️  Zenrows API key not configured in config/services.php');
-        }
+        $this->scrape_api_key = '54ca3e2868ca407893b3316c254d6db6c146439c5b3';
     }
 
-    /**
-     * ✅ Set custom ID range
-     */
     public function setIdRange(int $startId, int $endId): self
     {
         if ($startId < 1 || $endId < $startId) {
@@ -51,9 +40,6 @@ class AltaProduct
         return $this;
     }
 
-    /**
-     * ✅ Set concurrency
-     */
     public function setConcurrency(int $concurrent): self
     {
         if ($concurrent < 1 || $concurrent > 100) {
@@ -82,11 +68,6 @@ class AltaProduct
      */
     public function scanAllIds(): array
     {
-        // ✅ Validate API key before starting
-        if (empty($this->zenrows_api_key)) {
-            throw new Exception('Zenrows API key is not configured');
-        }
-
         $startTime = microtime(true);
 
         Log::info('🔄 Starting Alta product scan', [
@@ -173,9 +154,8 @@ class AltaProduct
                 foreach ($ids as $id) {
                     try {
                         $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
-                        $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrows_api_key}&url=".$targetUrl;
-                        yield $id => new Request('GET', $targetUrl);
-
+                        $crapeUrl = "https://api.scrape.do/?url=".$targetUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
+                        yield $id => new Request('GET', $crapeUrl);
                     } catch (Exception $e) {
                         Log::warning("Error creating request for product {$id}: {$e->getMessage()}");
                     }
