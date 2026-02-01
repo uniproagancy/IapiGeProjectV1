@@ -40,6 +40,7 @@ class AltaProductJob implements ShouldQueue
 
     public function __construct(array $productData, array $productAvailability = [])
     {
+        Log::info($productData);
         $this->productData = $productData;
         $this->productAvailability = $productAvailability;
     }
