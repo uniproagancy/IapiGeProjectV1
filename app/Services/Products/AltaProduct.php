@@ -15,8 +15,8 @@ class AltaProduct
     protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
     protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
     protected int $timeout = 300;
-    protected int $start_id = 45763;
-    protected int $end_id = 45770;
+    protected int $start_id = 45765;
+    protected int $end_id = 45765;
 
     public function scanAllIds(): array
     {
@@ -110,15 +110,14 @@ class AltaProduct
                         }
 
                         // ✅ Validate product data
-                        $product = $data['product'];
                         if (empty($product['id'])) {
                             Log::warning("Product {$id} has no ID in response");
                             $stats['errors']++;
                             return;
                         }
                         AltaProductJob::dispatch(
-                            $product,
-                            $product['availabilityInStores'] ?? []
+                            $data['product'],
+                            $data['availabilityInStores'] ?? []
                         )->onQueue('alta');
                         $stats['queued']++;
 
