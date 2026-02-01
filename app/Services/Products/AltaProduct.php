@@ -118,9 +118,10 @@ class AltaProduct
                             $stats['errors']++;
                             return;
                         }
-
-                        // ✅ Queue job
-                        AltaProductJob::dispatch($product)->onQueue('alta');
+                        AltaProductJob::dispatch(
+                            $product,
+                            $product['availabilityInStores'] ?? []
+                        )->onQueue('alta');
                         $stats['queued']++;
 
                     } catch (Exception $e) {
@@ -128,8 +129,6 @@ class AltaProduct
                         $stats['errors']++;
                     }
                 },
-
-                // ✅ Handle failed request
                 'rejected' => function ($reason, $id) use (&$stats) {
                     Log::warning("Request failed for product {$id}: {$reason}");
                     $stats['errors']++;
