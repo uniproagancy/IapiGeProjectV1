@@ -62,8 +62,8 @@ class AltaProduct
         // ✅ NEW: Retry delay when 429 (wait X seconds)
         $this->retry_delay = Config::get('services.alta.retry_delay', 5);
 
-        $this->start_id = Config::get('services.alta.start_id', 1);
-        $this->end_id = Config::get('services.alta.end_id', 100000);
+        $this->start_id = Config::get('services.alta.start_id', 37000);
+        $this->end_id = Config::get('services.alta.end_id', 50000);
         $this->scrape_token = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
         $this->use_scraper = Config::get('services.alta.use_scraper', true);
     }
