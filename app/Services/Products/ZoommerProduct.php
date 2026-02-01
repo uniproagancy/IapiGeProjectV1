@@ -15,8 +15,8 @@ class ZoommerProduct
     protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
     protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
     protected int $timeout = 30;
-    protected int $start_id = 1;
-    protected int $end_id = 100000;
+    protected int $start_id = 35000;
+    protected int $end_id = 70000;
 
     public function scanAllIds(): array
     {
@@ -123,9 +123,6 @@ class ZoommerProduct
             Log::error('ZoommerProduct scanChunk error: ' . $e->getMessage());
             $stats['errors'] += count($ids);
         }
-
-
-
 
         return $stats;
     }
