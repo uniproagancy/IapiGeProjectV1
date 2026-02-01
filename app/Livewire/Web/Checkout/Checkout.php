@@ -323,7 +323,7 @@ class Checkout extends Component
                 case '5':
                     // Part installment
                     if ($order->amount < 100) {
-                        $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
+                        $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს!');
                     } else {
                         $this->dispatch('bog:installment-part',
                             amount: $order->amount + $order->delivery_amount,
@@ -335,7 +335,11 @@ class Checkout extends Component
                   // TBC GANVADEBA
                 break;
                 case '9':
-                      return $this->redirect(route('credo-create-order',['order_id' => $order['id']]));
+                      if($order->amount < 150) {
+                        $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
+                      } else {
+                        return $this->redirect(route('credo-create-order',['order_id' => $order['id']]));
+                      }
                 break;
                 case '2':
                     // Invoice
