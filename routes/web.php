@@ -37,6 +37,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         });
     });
 
+    Route::get('/bog/installment/redirect', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@installmentRedirect')->name('bog.installment-redirect');
+
 //    Route::prefix('auth')->name('auth.')->group(function () {
     // Google
 //        Route::get('google', [SocialLoginController::class, 'redirectToGoogle'])->name('google');

@@ -320,9 +320,7 @@ class Checkout extends Component
                         );
                     }
                     break;
-
                 case '5':
-                    // Part Installment
                     if ($order->amount < 100) {
                         $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
                     } else {

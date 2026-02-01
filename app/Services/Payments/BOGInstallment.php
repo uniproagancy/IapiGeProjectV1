@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\Order\OrderTransaction;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class BOGInstallment
 {
@@ -56,9 +57,9 @@ class BOGInstallment
             'installment_month' => $installment_month,
             'installment_type' => 'STANDARD',
             'shop_order_id' => $order->id,
-            'success_redirect_url' => $this->installmentSuccess,
-            'fail_redirect_url' => $this->installmentFail,
-            'reject_redirect_url' => $this->installmentReject,
+            'success_redirect_url' => 'https://iapi.ge/bog/installment/redirect?status=1',
+            'fail_redirect_url' => 'https://iapi.ge/bog/installment/redirect?status=2',
+            'reject_redirect_url' => 'https://iapi.ge/bog/installment/redirect?status=3',
             'validate_items' => true,
             'locale' => 'ka',
             'purchase_units' => [
@@ -139,5 +140,10 @@ class BOGInstallment
             'redirectUrl' => $create_order['links'][1]['href'],
             'orderId' => $create_order['order_id'],
         ];
+    }
+
+    public function installmentRedirect(Request $request)
+    {
+        Log::info($request);
     }
 }
