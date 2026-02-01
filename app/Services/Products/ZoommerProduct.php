@@ -124,6 +124,9 @@ class ZoommerProduct
             $stats['errors'] += count($ids);
         }
 
+
+
+
         return $stats;
     }
 }

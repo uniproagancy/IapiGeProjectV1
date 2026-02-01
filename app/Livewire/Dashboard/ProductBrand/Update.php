@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Dashboard\ProductBrand;
 
-use App\Models\ProductBrand;
-use App\Models\ProductBrandTranslation;
+use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductBrandTranslation;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
