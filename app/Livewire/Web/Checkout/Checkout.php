@@ -346,8 +346,9 @@ class Checkout extends Component
                             'quantity' => $product->quantity,
                         ];
                     }
-                    Log::info($tbcInstallment->getProducts());
                     $tbcInstallment->addProducts($products);
+                    Log::info($tbcInstallment->getProducts());
+                    
                     $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount + 0.1));
                     Log::info($response);
                     if($response['status_code'] === 200) {
