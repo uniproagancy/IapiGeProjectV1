@@ -29,13 +29,13 @@ class CredoController extends Controller
             }
             $check = md5($checkString);
             $payload = [
-                'merchantId' => '',
+                'merchantId' => '21400',
                 'orderCode'  => '17407',
                 'check'      => $check,
                 'products'   => $products,
             ];
             $data = json_encode($payload);
-            dd($data);
+//            dd($data);
             return view('credo', ['data' => $data]);
         }
     }
