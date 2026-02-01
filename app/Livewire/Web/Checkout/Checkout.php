@@ -326,11 +326,10 @@ class Checkout extends Component
                     } else {
                         $this->dispatch('bog:installment-part',
                             amount: $order->amount + $order->delivery_amount,
-                            url: route('bog.part-installment', $order->id)
+                            url: route('bog.create-part-installment-order', $order->id)
                         );
                     }
                     break;
-
                 case '2':
                     // Invoice
                     return $this->redirect(route('web.checkout.success'));
