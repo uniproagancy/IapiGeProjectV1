@@ -177,9 +177,9 @@ class AltaProductJob implements ShouldQueue
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id' => $brand_id,
-                    'category_id' => 4,
-                    'sku' => $productData['barCode'] ?? null,
-                    'supplier_id' => 4,
+                    'category_id' => 3,
+                    'sku' => 'ALTA-' . $productData['barCode'] ?? null,
+                    'supplier_id' => 2,
                     'main_image' => 1,
                     'active' => 1,
                     'quantity' => $hasStock ? 5 : 0,
