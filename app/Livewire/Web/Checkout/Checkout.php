@@ -336,6 +336,7 @@ class Checkout extends Component
                   if($order->amount < 100) {
                      $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                   } else {
+                      Log::info(1);
                     $tbcInstallment = new LaravelTbcInstallment();
                     $products = [];
                     foreach ($order->items as $product) {
@@ -345,6 +346,7 @@ class Checkout extends Component
                             'quantity' => $product->quantity,
                         ];
                     }
+                    Log::info($products);
                     $tbcInstallment->addProducts($products);
                     $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount + 0.1));
                     Log::info($response);
