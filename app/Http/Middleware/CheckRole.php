@@ -15,6 +15,7 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next): Response
     {
+        dd(123);
         if (!auth()->check()) {
             return redirect('https://iapi.ge');
         }
