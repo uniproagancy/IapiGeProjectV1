@@ -347,10 +347,7 @@ class Checkout extends Component
                         ];
                     }
                     $tbcInstallment->addProducts($products);
-                    Log::info($tbcInstallment->getProducts());
-                    
-                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount + 0.1));
-                    Log::info($response);
+                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.1));
                     if($response['status_code'] === 200) {
                         $redirectUri = $tbcInstallment->getRedirectUri();
                         return redirect($redirectUri);
