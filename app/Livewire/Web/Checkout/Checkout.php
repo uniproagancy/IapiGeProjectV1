@@ -335,7 +335,7 @@ class Checkout extends Component
                   // TBC GANVADEBA
                 break;
                 case '9':
-                      // CREDO
+                      return $this->redirect(route('credo-create-order',['order_id' => $order['id']]));
                 break;
                 case '2':
                     // Invoice
