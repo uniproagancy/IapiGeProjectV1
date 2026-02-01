@@ -15,8 +15,8 @@ class AltaProduct
     protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
     protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
     protected int $timeout = 300;
-    protected int $start_id = 45765;
-    protected int $end_id = 45765;
+    protected int $start_id = 44294;
+    protected int $end_id = 44294;
 
     public function scanAllIds(): array
     {
@@ -95,7 +95,6 @@ class AltaProduct
 
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
-                        Log::info($data['product']);
                         if (!isset($data['product']) ||
                             $data['product'] === null ||
                             !($data['product']['isInStock'] ?? false)) {
