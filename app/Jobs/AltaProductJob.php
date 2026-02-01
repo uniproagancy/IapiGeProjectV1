@@ -29,11 +29,12 @@ class AltaProductJob implements ShouldQueue
     public int $tries = 3;
     public int $timeout = 300;
 
-    protected string $zenrowsApiKey = '605bcf65ed76816fc6305e7f1eb1c612ec31fd62';
+    protected string $scrape_api_key;
 
     public function __construct(array $productData)
     {
         $this->productData = $productData;
+        $this->scrape_api_key = '54ca3e2868ca407893b3316c254d6db6c146439c5b3';
     }
 
     public function handle(): void
@@ -180,8 +181,8 @@ class AltaProductJob implements ShouldQueue
 
         foreach ($productData['images'] as $index => $imageUrl) {
             try {
-                $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrowsApiKey}&url=" . urlencode($imageUrl);
-                $get_image = Http::timeout(30)->get($zenrowsUrl);
+                $scrape_url = "https://api.scrape.do/?url=".$imageUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
+                $get_image = Http::timeout(30)->get($scrape_url);
                 if (!$get_image->successful()) {
                     continue;
                 }
