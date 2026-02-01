@@ -16,26 +16,25 @@ class CredoController extends Controller
             $products = [];
             foreach ($order->items as $item) {
                 $products[] = [
-                    'id' => $item->id,
-                    'title' => 'PHILIPS HP6549/00',
+                    'id' => $item->product_id,
+                    'title' => 'PHILIPS TV',
                     'amount' => $item->quantity,
-                    'price' => $item->price + ($item->price * 0.1), // თეთრებში
+                    'price' => ($item->price + ($item->price * 0.1)) * 100, // თეთრებში
                     'type' => '0',
                 ];
             }
-            $checkString = '12545';
+            $checkString = ' ';
             foreach ($products as $p) {
                 $checkString .= $p['id'] . $p['title'] . $p['amount'] . $p['price'] . $p['type'];
             }
             $check = md5($checkString);
             $payload = [
-                'merchantId' => '21400',
+                'merchantId' => '12545',
                 'orderCode'  => '17407',
                 'check'      => $check,
                 'products'   => $products,
             ];
             $data = json_encode($payload);
-            dd($data);
             return view('credo', ['data' => $data]);
         }
     }
