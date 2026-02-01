@@ -17,7 +17,7 @@ class CredoController extends Controller
             foreach ($order->items as $item) {
                 $products[] = [
                     'id' => $item->product_id,
-                    'title' => 'PHILIPS TV',
+                    'title' => $item->product->translation('ka')->title,
                     'amount' => $item->quantity,
                     'price' => ($item->price + ($item->price * 0.1)) * 100, // თეთრებში
                     'type' => '0',
