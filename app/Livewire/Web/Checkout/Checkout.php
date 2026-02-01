@@ -321,6 +321,7 @@ class Checkout extends Component
                     }
                     break;
                 case '5':
+                    // Part installment
                     if ($order->amount < 100) {
                         $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს');
                     } else {
@@ -330,6 +331,12 @@ class Checkout extends Component
                         );
                     }
                     break;
+                case '7':
+                  // TBC GANVADEBA
+                break;
+                case '9':
+                      // CREDO
+                break;
                 case '2':
                     // Invoice
                     return $this->redirect(route('web.checkout.success'));

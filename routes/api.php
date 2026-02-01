@@ -19,6 +19,10 @@ Route::prefix('bog')->group(function () {
     Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createPartInstallment')->name('bog.create-part-installment-order');
 });
 
+Route::prefix('credo')->group(function () {
+    Route::post('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('create-create-order');
+});
+
 Route::prefix('facebook')->group(function () {
     Route::get('/feed', '\App\Http\Controllers\ApiControllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
 });
