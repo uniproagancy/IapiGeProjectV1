@@ -189,7 +189,7 @@ class ZoommerProductJob implements ShouldQueue
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id' => $brand_id,
-                    'category_id' => 4,
+                    'category_id' => 3,
                     'sku' => $productData['barCode'] ?? null,
                     'supplier_id' => 4,
                     'main_image' => 1,
