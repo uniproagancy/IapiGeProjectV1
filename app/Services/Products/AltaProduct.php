@@ -21,8 +21,8 @@ class AltaProduct
     protected int $timeout = 30;
 
     // ✅ Product ID Range
-    protected int $start_id = 40000;
-    protected int $end_id = 40010;
+    protected int $start_id = 161581;
+    protected int $end_id = 161584;
 
     public function __construct()
     {
