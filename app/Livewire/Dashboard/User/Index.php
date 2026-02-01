@@ -3,8 +3,8 @@
 namespace App\Livewire\Dashboard\User;
 
 use App\Models\Company;
-use App\Models\User;
-use App\Models\Role;
+use App\Models\User\User;
+use App\Models\User\Role;
 
 use Livewire\Component;
 use Livewire\WithPagination;
