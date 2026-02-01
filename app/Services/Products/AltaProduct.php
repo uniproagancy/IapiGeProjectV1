@@ -74,7 +74,9 @@ class AltaProduct
             $requests = function ($ids) {
                 foreach ($ids as $id) {
                     $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
+                    Log::info($targetUrl);
                     $crapeUrl = "https://api.scrape.do/?url=".$targetUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
+                    Log::info($crapeUrl);
                     yield $id => new Request('GET', $crapeUrl);
                 }
             };
