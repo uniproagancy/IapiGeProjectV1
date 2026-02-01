@@ -15,8 +15,8 @@ class ZoommerProduct
     protected int $concurrent_requests = 50;
     protected int $chunk_size = 500;
     protected int $timeout = 60;
-    protected int $start_id = 60000;
-    protected int $end_id = 61000;
+    protected int $start_id = 51554;
+    protected int $end_id = 51560;
 
     public function scanAllIds(): array
     {
