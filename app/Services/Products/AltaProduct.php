@@ -95,6 +95,7 @@ class AltaProduct
 
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
+                        Log::info($data['product']['isInStock'], $data);
                         if (!isset($data['product']) ||
                             !($data['product']['isStock'] ?? false)) {
                             $stats['null']++;
