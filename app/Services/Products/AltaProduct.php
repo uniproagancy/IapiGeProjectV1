@@ -46,8 +46,8 @@ class AltaProduct
         $this->concurrent_requests = Config::get('services.alta.concurrent_requests', 20);
         $this->chunk_size = Config::get('services.alta.chunk_size', 100);
         $this->timeout = Config::get('services.alta.timeout', 300);
-        $this->start_id = Config::get('services.alta.start_id', 44200);
-        $this->end_id = Config::get('services.alta.end_id', 44400);
+        $this->start_id = Config::get('services.alta.start_id', 1);
+        $this->end_id = Config::get('services.alta.end_id', 100000);
         $this->scrape_token = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
         $this->use_scraper = Config::get('services.alta.use_scraper', true);
     }
