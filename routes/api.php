@@ -13,8 +13,9 @@ Route::prefix('alta')->group(function () {
 
 Route::prefix('bog')->group(function () {
     Route::post('/payment/callback', '\App\Http\Controllers\ApiControllers\BOGPaymentController@callback')->name('bog.payment-callback');
-    Route::post('/installment/callback', '\App\Http\Controllers\ApiControllers\BogController@installment')->name('bog.installment-callback');
-    Route::post('/installment/{order_id}', '\App\Http\Controllers\ApiControllers\BogController@installment')->name('bog.installment');
+
+    Route::post('/installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createInstallmentOrder')->name('bog.create-installment-order');
+
     Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BogController@partInstallment')->name('bog.part-installment');
 });
 
