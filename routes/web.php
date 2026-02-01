@@ -60,7 +60,8 @@ Route::prefix('/dashboard')->name('dashboard.')->group(function () {
 
     Route::middleware('auth')->group(function () {
         // MAIN
-        Route::get('/', App\Livewire\Dashboard\Main\Index::class)->name('main');
+        Route::middleware(['check.role'])->group(function () {
+            Route::get('/', App\Livewire\Dashboard\Main\Index::class)->name('main');
 
         //USERS
         Route::prefix('users')->group(function () {
@@ -100,5 +101,6 @@ Route::prefix('/dashboard')->name('dashboard.')->group(function () {
             return \Illuminate\Support\Facades\Redirect::route('dashboard.login');
         })->name('logout');
 
+        });
     });
 });
