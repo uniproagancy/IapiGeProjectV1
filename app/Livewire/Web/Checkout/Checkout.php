@@ -9,7 +9,7 @@ use App\Models\Order\OrderItem;
 use App\Models\Payments\Payment;
 use App\Models\Product\Product;
 use App\Services\Payments\BOGPayment;
-use App\Services\Payments\TBCInstallment;
+use Giorgijorji\LaravelTbcInstallment\LaravelTbcInstallment;
 use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
@@ -327,16 +327,30 @@ class Checkout extends Component
                         $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს!');
                     } else {
                         $this->dispatch('bog:installment-part',
-                            amount: $order->amount + $order->delivery_amount,
+                            amount: $order->amount,
                             url: route('bog.create-part-installment-order', $order->id)
                         );
                     }
                     break;
                 case '7':
                   if($order->amount < 100) {
-                     $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
+                     $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                   } else {
-                       return $this->redirect((new TBCInstallment())->getToken());
+                    $tbcInstallment = new LaravelTbcInstallment();
+                    $products = [];
+                    foreach ($order->items as $product) {
+                        $products[] = [
+                            'name' => $product->product->translation('ka')->title,
+                            'price' => $product->price + ($product->price * 0.1),
+                            'quantity' => $product->quantity,
+                        ];
+                    }
+                    $tbcInstallment->addProducts($products);
+                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount + 0.1));
+                    if($response['status_code'] === 200) {
+                        $redirectUri = $tbcInstallment->getRedirectUri();
+                        return redirect($redirectUri);
+                    }
                   }
                 break;
                 case '9':

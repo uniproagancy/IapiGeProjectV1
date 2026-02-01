@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa86ba99141e8724bb0a5879507b2678",
+    "content-hash": "f0bcd7e80441f5fe26faf0647bb128b6",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -936,6 +936,63 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "giorgijorji/laravel-tbc-installment",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/giorgijorji/laravel-tbc-installment.git",
+                "reference": "d0adb5d01f91672cc3582a0abe513524e9c04128"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/giorgijorji/laravel-tbc-installment/zipball/d0adb5d01f91672cc3582a0abe513524e9c04128",
+                "reference": "d0adb5d01f91672cc3582a0abe513524e9c04128",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^7.2",
+                "php": "^7.1 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Giorgijorji\\LaravelTbcInstallment\\TbcInstallmentServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Giorgijorji\\LaravelTbcInstallment\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Z3R0",
+                    "email": "giorgi.jorji@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "TBC installment for laravel",
+            "homepage": "https://github.com/giorgijorji/laravel-tbc-installment",
+            "keywords": [
+                "giorgijorji",
+                "installment",
+                "laravel",
+                "tbc"
+            ],
+            "support": {
+                "issues": "https://github.com/giorgijorji/laravel-tbc-installment/issues",
+                "source": "https://github.com/giorgijorji/laravel-tbc-installment/tree/2.0.2"
+            },
+            "time": "2024-12-23T17:41:00+00:00"
         },
         {
             "name": "google/apiclient",
@@ -11128,5 +11185,5 @@
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
