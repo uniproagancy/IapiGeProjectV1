@@ -28,16 +28,20 @@ use App\Services\Translation\GoogleTranslation;
 use Exception;
 
 /**
- * ✅ Improved ALTA Product Job
+ * ✅ FIXED ALTA Product Job
  *
- * Optimizations:
- * - Brand lookup caching
- * - Config-based hardcoded values
- * - Fixed image download duplication
- * - Image size validation
- * - Translation caching
+ * Bugs Fixed:
+ * 1. ✅ $productId → $productData (undefined variable)
+ * 2. ✅ $this->scrape_token → Config::get() (missing property)
+ * 3. ✅ $imageUrll → $scrapeUrl (typo)
+ *
+ * Features:
+ * - Brand lookup caching (24 hours)
+ * - Translation caching (30 days)
+ * - Image size validation (5MB max)
  * - Bulk image inserts
- * - Better error handling
+ * - Exponential backoff retry
+ * - Comprehensive error handling
  */
 class AltaProductJob implements ShouldQueue
 {
@@ -46,13 +50,13 @@ class AltaProductJob implements ShouldQueue
     protected array $productData;
     protected array $productAvailability;
 
-    // ✅ Improved retry settings
+    // ✅ Retry settings
     public int $tries = 3;
     public int $timeout = 300;
     public int $maxExceptions = 3;
     public int $backoffMultiplier = 2;
 
-    // ✅ Configuration
+    // ✅ Cache and limit settings
     private const CACHE_DURATION_BRAND = 24 * 60;  // 24 hours
     private const CACHE_DURATION_TRANSLATION = 30 * 24 * 60;  // 30 days
     private const MAX_IMAGE_SIZE = 5 * 1024 * 1024;  // 5MB
@@ -83,7 +87,6 @@ class AltaProductJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // ✅ Retry with exponential backoff
             if ($this->attempts() < $this->tries) {
                 $this->release($this->getRetryDelay());
             } else {
@@ -182,16 +185,15 @@ class AltaProductJob implements ShouldQueue
     }
 
     /**
-     * ✅ Create new product
+     * ✅ Create new product (FIXED: $productData not $productId)
      */
     private function createNewProduct(array $productData, bool $hasStock): void
     {
         DB::transaction(function () use ($productData, $hasStock) {
             try {
-                // ✅ Get brand ID (cached)
-                $brandId = $this->getBrandId($productId);
+                // ✅ FIX #1: Pass $productData, not $productId
+                $brandId = $this->getBrandId($productData);
 
-                // ✅ Create product
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id' => $brandId,
@@ -205,7 +207,6 @@ class AltaProductJob implements ShouldQueue
                     'show' => $hasStock ? 1 : 0,
                 ]);
 
-                // ✅ Create related data
                 $this->createPrice($product, $productData);
                 $this->createTranslations($product, $productData);
                 $this->createFullSpecifications($product, $productData);
@@ -228,7 +229,6 @@ class AltaProductJob implements ShouldQueue
     private function getBrandId(array $productData): int
     {
         try {
-            // Find brand name from specifications
             $specGroup = collect($productData['specificationGroup'] ?? [])
                 ->firstWhere('groupName', 'Brand');
 
@@ -242,7 +242,6 @@ class AltaProductJob implements ShouldQueue
                 return Config::get('services.alta.default_brand_id', 6);
             }
 
-            // ✅ Cache brand lookup (24 hours)
             return Cache::remember(
                 'alta_brand_' . md5($brandName),
                 now()->addMinutes(self::CACHE_DURATION_BRAND),
@@ -392,7 +391,7 @@ class AltaProductJob implements ShouldQueue
     }
 
     /**
-     * ✅ Download and save images (FIXED - no duplication)
+     * ✅ Download and save images (FIXED: proper scraper URL handling)
      */
     private function downloadAndSaveImages(Product $product, array $productData): void
     {
@@ -405,7 +404,7 @@ class AltaProductJob implements ShouldQueue
             $processedUrls = [];
 
             foreach ($productData['images'] as $index => $imageUrl) {
-                // ✅ Skip duplicates
+                // Skip duplicates
                 if (in_array($imageUrl, $processedUrls)) {
                     Log::debug("⏭️  Skipping duplicate image: {$imageUrl}");
                     continue;
@@ -414,33 +413,33 @@ class AltaProductJob implements ShouldQueue
                 $processedUrls[] = $imageUrl;
 
                 try {
-                    // ✅ Download image (FIXED - single HTTP call)
-                    $imageUrll = "https://api.scrape.do/?url=" . urlencode($imageUrl) .
-                    "&token={$this->scrape_token}";
+                    // ✅ FIX #2 & #3: Get scraper URL properly
+                    $urlToFetch = $this->getScrapeUrl($imageUrl);
+
                     $response = Http::timeout(30)
                         ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
-                        ->get($imageUrll);
+                        ->get($urlToFetch);
 
                     if (!$response->successful()) {
-                        Log::warning("⚠️  Failed to download image: {$imageUrll}");
+                        Log::warning("⚠️  Failed to download image: {$urlToFetch}");
                         continue;
                     }
 
-                    // ✅ Check image size
+                    // Check image size
                     $imageSize = strlen($response->body());
                     if ($imageSize > self::MAX_IMAGE_SIZE) {
-                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrll}");
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$urlToFetch}");
                         continue;
                     }
 
-                    // ✅ Save image
-                    $ext = $this->getImageExtension($imageUrll);
+                    // Save image
+                    $ext = $this->getImageExtension($imageUrl);
                     $filename = Str::random(40) . '.' . $ext;
                     $path = "uploads/products/{$product->id}/{$filename}";
 
                     Storage::disk('public')->put($path, $response->body());
 
-                    // ✅ Set main image or collect for bulk insert
+                    // Set main image or collect for bulk insert
                     if ($index === 0) {
                         $product->update(['main_image' => $path]);
                     } else {
@@ -455,12 +454,12 @@ class AltaProductJob implements ShouldQueue
                     Log::info("✅ Downloaded image: {$filename}");
 
                 } catch (Exception $e) {
-                    Log::warning("⚠️  Error downloading {$imageUrll}: {$e->getMessage()}");
+                    Log::warning("⚠️  Error downloading image: {$e->getMessage()}");
                     continue;
                 }
             }
 
-            // ✅ Bulk insert images (faster than loop)
+            // Bulk insert images
             if (!empty($images)) {
                 ProductImage::insert($images);
                 Log::info("📦 Bulk inserted " . count($images) . " images");
@@ -470,6 +469,21 @@ class AltaProductJob implements ShouldQueue
             Log::error("❌ Error downloading images: {$e->getMessage()}");
             throw $e;
         }
+    }
+
+    /**
+     * ✅ Get scrape URL (NEW: helper method)
+     */
+    private function getScrapeUrl(string $imageUrl): string
+    {
+        $token = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
+
+        if (empty($token)) {
+            return $imageUrl;  // Use direct URL if no token
+        }
+
+        return "https://api.scrape.do/?url=" . urlencode($imageUrl) .
+            "&token={$token}";
     }
 
     /**
@@ -497,7 +511,7 @@ class AltaProductJob implements ShouldQueue
                     continue;
                 }
 
-                // ✅ Cache translations (30 days)
+                // Cache translations (30 days)
                 $translatedName = Cache::remember(
                     'alta_translation_' . md5($name),
                     now()->addMinutes(self::CACHE_DURATION_TRANSLATION),
@@ -519,7 +533,7 @@ class AltaProductJob implements ShouldQueue
                 ];
             }
 
-            // ✅ Bulk insert specs
+            // Bulk insert specs
             if (!empty($specs)) {
                 ProductShortSpecification::insert($specs);
             }
