@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Dashboard\User;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Models\User\Role;
+use App\Models\User\User;
 use Livewire\Component;
 
 class View extends Component
