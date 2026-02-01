@@ -309,7 +309,6 @@ class Checkout extends Component
                 case '3':
                     // BOG Payment
                     return $this->redirect((new BOGPayment)->createPaymentOrder($order));
-
                 case '4':
                     // Installment
                     if ($order->amount < 100) {
@@ -317,7 +316,7 @@ class Checkout extends Component
                     } else {
                         $this->dispatch('bog:installment',
                             amount: $order->amount + ($order->amount * 0.05),
-                            url: route('bog.installment', $order->id)
+                            url: route('bog.create-installment-order', $order->id)
                         );
                     }
                     break;
