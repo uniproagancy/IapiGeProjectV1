@@ -31,6 +31,6 @@ class CredoController extends Controller
             'products'   => $products,
         ];
         $data = json_encode($payload, JSON_UNESCAPED_UNICODE);
-        return view('credo', $data);
+        return view('credo', ['data' => $data]);
     }
 }
