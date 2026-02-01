@@ -81,6 +81,7 @@ class AltaProduct
                 foreach ($ids as $id) {
                     try {
                         $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
+                        Log::info($targetUrl);
 //                        $zenrowsUrl = "https://api.zenrows.com/v1/?apikey={$this->zenrows_api_key}&url=".$targetUrl;
                         yield $id => new Request('GET', $targetUrl);
 
