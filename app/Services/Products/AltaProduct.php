@@ -68,13 +68,13 @@ class AltaProduct
                 'timeout' => $this->timeout,
                 'connect_timeout' => 10,
                 'http_errors' => false,
-                'verify' => false, // SSL verification (production-ში true უნდა იყოს)
+                'verify' => false,
             ]);
 
             $requests = function ($ids) {
                 foreach ($ids as $id) {
                     try {
-                        $targetUrl = $this->api_url . "/v1/Products/details?productId={$id}";
+                        $targetUrl = $this->api_url."/v1/Products/details?productId={$id}";
                         $crapeUrl = "https://api.scrape.do/?url=".$targetUrl."&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
                         yield $id => new Request('GET', $crapeUrl);
                     } catch (Exception $e) {
@@ -87,14 +87,12 @@ class AltaProduct
                 'concurrency' => $this->concurrent_requests,
                 'fulfilled' => function ($response, $id) use (&$stats) {
                     try {
-                        // ✅ Check response status
                         if ($response->getStatusCode() !== 200) {
                             Log::warning("Product {$id} returned status {$response->getStatusCode()}");
                             $stats['errors']++;
                             return;
                         }
 
-                        // ✅ Parse JSON response
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
 

@@ -40,7 +40,6 @@ class AltaProductJob implements ShouldQueue
 
     public function __construct(array $productData, array $productAvailability = [])
     {
-        Log::info($productData);
         $this->productData = $productData;
         $this->productAvailability = $productAvailability;
     }
@@ -256,19 +255,6 @@ class AltaProductJob implements ShouldQueue
         try {
             $productPrice = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
-
-            if($productPrice > 1000) {
-                $productPrice = $productPrice + ($productPrice / 100 * 5);
-            } else {
-                $productPrice = $productPrice + ($productPrice / 100 * 10);
-            }
-
-            if($discountPrice > 1000) {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 5);
-            } else {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
-            }
-
             ProductPrice::create([
                 'product_id' => $product->id,
                 'dealer_price' => $productPrice,
