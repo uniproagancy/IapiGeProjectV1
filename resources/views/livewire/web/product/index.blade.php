@@ -117,7 +117,6 @@
                                                     </label>
                                                 </div>
                                             @endforeach
-
                                             @if($brands->count() > 12)
                                                 <button class="btn btn-sm btn-outline-secondary w-100 mt-3"
                                                         type="button"

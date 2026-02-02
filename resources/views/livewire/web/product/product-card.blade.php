@@ -31,11 +31,19 @@
                     -{{ $product->price->discount_percent }}%
                 </span>
             @endif
+            @if($product->main_image === 1)
             <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                 <img src="{{ asset('storage/' . $product->main_image) }}"
                      alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
                      loading="lazy">
             </div>
+            @else
+            <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
+                <img src="{{ asset('storage/' . $product->images[0]->path) }}"
+                     alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
+                     loading="lazy">
+            </div>
+            @endif
         </a>
     </div>
     <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
