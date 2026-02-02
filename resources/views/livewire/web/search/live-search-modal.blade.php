@@ -22,13 +22,13 @@
     <div class="position-relative">
         <i class="ci-search position-absolute top-50 start-0 translate-middle-y d-flex fs-lg text-white ms-3"
            style="z-index: 5; pointer-events: none;"></i>
-        <input type="search"
+        <input type="search" style="color: #252525; border-radius: 10px !important"
                class="form-control form-control-lg form-icon-start border-white rounded-pill pe-5"
                placeholder="{{ trans('trans.search_your_product') }}"
                wire:model.live.debounce.300ms="query"
                @focus="$wire.set('isOpen', true)"
                autocomplete="off"
-               style="font-size: 14px; padding-left: 2.8rem; background: white; border-radius: 10px !important; color: #252525">
+               style="font-size: 14px; padding-left: 2.8rem; background: white;">
         @if($query)
             <button type="button"
                     class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-white-50 p-0 me-3"

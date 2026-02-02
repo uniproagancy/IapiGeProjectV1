@@ -38,6 +38,7 @@
                   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 @include('livewire.web.partials.header.header')
+@include('livewire.web.search.search-offcanvas')
 {{ $slot }}
 
 <livewire:web.cart.shopping-cart-offcanvas/>

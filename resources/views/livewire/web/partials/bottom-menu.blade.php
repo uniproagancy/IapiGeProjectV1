@@ -20,7 +20,10 @@
             </button>
             <button type="button"
                     class="nav-link-custom text-center text-white-50 border-0 bg-transparent position-relative"
-                    wire:click="openCheckoutModal"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#searchOffcanvas"
+                    aria-controls="searchOffcanvas"
+                    aria-label="Toggle navigation"
                     title="ძებნა">
                 <i class="ci-search fs-5 mb-1"></i>
                 <div class="nav-label font-neue">ძებნა</div>
