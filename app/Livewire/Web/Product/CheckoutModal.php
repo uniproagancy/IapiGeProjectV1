@@ -150,47 +150,11 @@ class CheckoutModal extends Component
         }
     }
 
-    public function backToCheckout()
-    {
-        $this->step = 'checkout';
-        $this->otp_code = '';
-        $this->otp_error = '';
-        session()->forget(['otp_code', 'otp_phone', 'otp_created_at', 'otp_attempts']);
-    }
 
     // ============================================
     // Order Creation
     // ============================================
 
-    private function createOrder()
-    {
-        try {
-            // ✅ Create order in database
-            // $order = Order::create([
-            //     'name' => $this->name,
-            //     'lastname' => $this->lastname,
-            //     'email' => $this->email,
-            //     'phone' => $this->phone,
-            //     'address' => $this->address,
-            //     'comment' => $this->comment,
-            //     'payment_method_id' => $this->payment_id,
-            //     'product_id' => $this->selectedProduct->id,
-            // ]);
-
-            // ✅ Process payment
-            // $this->processPayment($order);
-
-            // ✅ Close modal and show success
-            $this->dispatch('checkoutSuccess', orderId: 'ORDER-12345');
-
-            // ✅ Reset form
-            $this->resetCheckout();
-
-        } catch (\Exception $e) {
-            $this->addError('general', 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
-            \Log::error('Order Creation Error: ' . $e->getMessage());
-        }
-    }
 
     // ============================================
     // Helper Methods
@@ -222,8 +186,6 @@ class CheckoutModal extends Component
         $this->address = '';
         $this->comment = '';
         $this->payment_id = null;
-        $this->otp_code = '';
-        $this->otp_error = '';
         $this->step = 'checkout';
         $this->selectedProduct = null;
     }
