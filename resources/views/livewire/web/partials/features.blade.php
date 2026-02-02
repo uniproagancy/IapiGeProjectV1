@@ -13,18 +13,12 @@
                     'description' => 'გადახდის უსაფრთხოება გარანტირებულია'
                 ],
                 [
-                    'icon' => 'ci-refresh-cw',
-                    'title' => 'ფულის უკან დაბრუნება',
-                    'description' => '30 დღიანი გარანტია'
-                ],
-                [
                     'icon' => 'ci-chat',
                     'title' => '24/7 მხარდაჭერა',
                     'description' => 'მეგობრული მომხმარებლის მხარდაჭერა'
                 ]
             ];
         @endphp
-
         @foreach($features as $feature)
             <div class="col">
                 <div class="d-flex flex-column flex-xxl-row align-items-center">

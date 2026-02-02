@@ -59,7 +59,7 @@ class Index extends Component
     public function render()
     {
         return view('livewire.dashboard.order.index', [
-            'orders' => Order::withTrashed()->get()
+            'orders' => Order::withTrashed()->orderBy('id', 'DESC')->get()
         ])->layout('livewire.dashboard.layout');
     }
 }

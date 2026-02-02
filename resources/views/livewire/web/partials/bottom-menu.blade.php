@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="nav-pills d-flex justify-content-around w-100 gap-2">	
             <a href="{{ route('web.main.index') }}" class="nav-link text-center py-3" style="flex: 1;">
-                <div class="d-flex flex-column align-items-center">
+                <div class="d-flex flex-column align-items-center w-100">
                     <i class="ci-home fs-5 mb-1"></i>
                 </div>
             </a>
@@ -12,12 +12,12 @@
 				aria-controls="navbarNav"
 				aria-label="Toggle navigation"
 			>
-                <div class="d-flex flex-column align-items-center">
+                <div class="d-flex flex-column align-items-center w-100">
                     <i class="ci-menu fs-5 mb-1"></i>
                 </div>
             </a>
             <button class="nav-link text-center py-3" data-bs-toggle="modal" data-bs-target="#searchModal" style="flex: 1;">
-                <div class="d-flex flex-column align-items-center">
+                <div class="d-flex flex-column align-items-center w-100">
                     <i class="ci-search fs-5 mb-1"></i>
                 </div>
             </button>
@@ -35,7 +35,7 @@
             </a>
 			@else
 			<button class="nav-link text-center py-3" data-bs-toggle="modal" data-bs-target="#loginModal" style="flex: 1;">
-                <div class="d-flex flex-column align-items-center">
+                <div class="d-flex flex-column align-items-center w-100">
                     <i class="ci-user fs-5 mb-1"></i>
                 </div>
             </button>
