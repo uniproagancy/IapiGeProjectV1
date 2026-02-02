@@ -1,12 +1,14 @@
 <div class="product-gallery d-flex gap-3">
     <div class="swiper thumbs-swiper" id="thumbs" style="margin: 10px 0 0 0">
         <div class="swiper-wrapper">
+            @if($product->main_image != 1)
             <div class="swiper-slide">
                 <img src="{{ asset('storage/'.$product->main_image) }}"
                      class="thumb-img"
                      loading="lazy"
                      style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </div>
+            @endif
             @foreach($product->images as $image)
                 <div class="swiper-slide">
                     <img src="{{ asset('storage/'.$image->path) }}"
