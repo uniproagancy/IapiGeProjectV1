@@ -117,7 +117,6 @@ class CheckoutModal extends Component
                 'order_id' => $order->id,
                 'amount' => $order->amount,
             ]);
-            Cart::clear();
             $this->processPayment($order);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
