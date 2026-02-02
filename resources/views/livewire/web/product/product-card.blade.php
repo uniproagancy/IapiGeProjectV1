@@ -43,6 +43,12 @@
                      alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
                      loading="lazy">
             </div>
+            @else
+            <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
+                <img src="{{ asset('web-assets/img/no-product.png') }}"
+                     alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
+                     loading="lazy">
+            </div>
             @endif
         </a>
     </div>
