@@ -293,9 +293,9 @@ class Checkout extends Component
                 break;
                 case '2':
                     // Invoice
-                    return $this->redirect('/checkout/success');
+                    $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
                 default:
-                    return $this->redirect('/checkout/success');
+                    $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
             }
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());

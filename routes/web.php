@@ -16,9 +16,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
         });
 
-        Route::get('/checkout/success', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.success');
-        Route::get('/checkout/declined', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.declined');
-
         Route::prefix('/products')->name('products.')->group(function () {
             Route::get('/{category_slug?}', App\Livewire\Web\Product\Index::class)->name('index');
             Route::get('/view/{slug?}', App\Livewire\Web\Product\View::class)->name('view');
