@@ -6,6 +6,51 @@
             <span>უფასო მიწოდება თბილისში</span>
         </div>
     </div>
+    <div class="row g-3">
+        <div class="col-12">
+            <label for="address" class="form-label">
+                მისამართი <span class="text-danger">*</span>
+            </label>
+            <div class="position-relative">
+                <textarea class="form-control @error('address') is-invalid @enderror"
+                          id="address"
+                          rows="3"
+                          wire:model="address"
+                          placeholder="ქალაქი, ქუჩა, სახლის ნომერი, ბინა, სადარბაზო"></textarea>
+                <div class="position-absolute top-0 end-0 mt-2 me-2">
+                    <i class="ci-home text-muted"></i>
+                </div>
+                @error('address')
+                <div class="invalid-feedback d-block">
+                    <i class="ci-info-circle me-1"></i>{{ $message }}
+                </div>
+                @enderror
+            </div>
+            <div class="form-text">
+                <i class="ci-info-circle me-1"></i>
+                გთხოვთ მიუთითოთ ზუსტი მისამართი სწრაფი მიწოდებისთვის
+            </div>
+        </div>
+        <div class="col-12">
+            <label for="comment" class="form-label d-flex align-items-center">
+                დამატებითი კომენტარი
+                <span class="badge bg-secondary ms-2 small">არასავალდებულო</span>
+            </label>
+            <div class="position-relative">
+                <textarea class="form-control"
+                          id="comment"
+                          rows="2"
+                          wire:model="comment"
+                          placeholder="მაგ: დარეკეთ ჩამოსვლამდე, კოდი 25, მე-3 სართული"></textarea>
+                <div class="position-absolute top-0 end-0 mt-2 me-2">
+                    <i class="ci-message-square text-muted"></i>
+                </div>
+            </div>
+            <div class="form-text">
+                კომენტარი კურიერისთვის (სადარბაზოს კოდი, საკონტაქტო ინფორმაცია და ა.შ.)
+            </div>
+        </div>
+    </div>
     <div class="row g-3 mt-1">
         <div class="col-md-6">
             <div class="border rounded-3 p-3">
@@ -65,6 +110,7 @@
 
         // Map field names to HTML IDs
         const fieldMap = {
+            'city_id': 'city_id',
             'address': 'address',
             'comment': 'comment',
             'payment_id': 'payment_method',
