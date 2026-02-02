@@ -46,8 +46,6 @@ class Checkout extends Component
     public $orderItems = [];
     public $subtotal = 0;
     public $total = 0;
-    public $userAddresses = [];
-    public $selected_address_id;
 
     public function mount()
     {
@@ -171,9 +169,6 @@ class Checkout extends Component
                 'email' => $this->email,
             ]);
 
-            // ✅ Track checkout initiation (Facebook Pixel)
-
-            // ✅ Create order
             if (Auth::check()) {
                 $order = Order::create([
                     'user_id' => Auth::user()->id,
