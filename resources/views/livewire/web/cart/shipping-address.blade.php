@@ -6,91 +6,18 @@
             <span>უფასო მიწოდება თბილისში</span>
         </div>
     </div>
-
-    @if(auth()->check() && $userAddresses->count() > 0)
-        <div class="mb-4">
-            <label class="form-label fw-semibold">შენახული მისამართები</label>
-            <div class="d-flex flex-column gap-2">
-                @foreach($userAddresses as $savedAddress)
-                    <div class="form-check form-check-custom p-3 border rounded-3 {{ $selected_address_id === $savedAddress->id ? 'border-primary bg-primary bg-opacity-10' : '' }}">
-                        <input class="form-check-input"
-                               type="radio"
-                               name="saved_address"
-                               id="address_{{ $savedAddress->id }}"
-                               wire:click="selectAddress({{ $savedAddress->id }})"
-                                {{ $selected_address_id === $savedAddress->id ? 'checked' : '' }}>
-                        <label class="form-check-label w-100 cursor-pointer" for="address_{{ $savedAddress->id }}">
-                            <div class="d-flex align-items-start">
-                                <i class="ci-map-pin text-primary fs-5 me-2 mt-1"></i>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center mb-1">
-                                        <span class="fw-semibold">{{ $savedAddress->label }}</span>
-                                        @if($savedAddress->is_default)
-                                            <span class="badge bg-success-subtle text-success ms-2 small">ძირითადი</span>
-                                        @endif
-                                    </div>
-                                    <div class="text-muted small">
-                                        <div>{{ $savedAddress->city }}, {{ $savedAddress->address }}</div>
-                                        @if($savedAddress->notes)
-                                            <div class="mt-1"><i
-                                                        class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                @endforeach
-
-                <!-- Add New Address Option -->
-                <button type="button"
-                        class="btn btn-outline-secondary btn-sm"
-                        wire:click="clearAddressSelection">
-                    <i class="ci-plus me-1"></i>
-                    ახალი მისამართის დამატება
-                </button>
-            </div>
-        </div>
-        @if($selected_address_id)
-            <hr class="my-4">
-        @endif
-    @endif
-
     @if(!$selected_address_id)
         <div class="row g-3">
-            <!-- City Selection -->
-            <div class="col-md-12">
-                <label for="city_id" class="form-label">
-                    ქალაქი <span class="text-danger">*</span>
-                </label>
-                <select class="form-select @error('city_id') is-invalid @enderror"
-                        id="city_id"
-                        wire:model.live="city_id">
-                    <option value="">აირჩიეთ ქალაქი</option>
-                    @foreach($cities_list as $city_item)
-                        <option value="{{ $city_item->id }}">
-                            {{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('city_id')
-                <div class="invalid-feedback d-block">
-                    <i class="ci-info-circle me-1"></i>{{ $message }}
-                </div>
-                @enderror
-            </div>
-
-            <!-- Address Input -->
             <div class="col-12">
                 <label for="address" class="form-label">
-                    სრული მისამართი <span class="text-danger">*</span>
+                    მისამართი <span class="text-danger">*</span>
                 </label>
                 <div class="position-relative">
                     <textarea class="form-control @error('address') is-invalid @enderror"
                               id="address"
                               rows="3"
                               wire:model="address"
-                              placeholder="ქუჩა, სახლის ნომერი, ბინა, სადარბაზო"></textarea>
+                              placeholder="ქალაქი, ქუჩა, სახლის ნომერი, ბინა, სადარბაზო"></textarea>
                     <div class="position-absolute top-0 end-0 mt-2 me-2">
                         <i class="ci-home text-muted"></i>
                     </div>
@@ -105,8 +32,6 @@
                     გთხოვთ მიუთითოთ ზუსტი მისამართი სწრაფი მიწოდებისთვის
                 </div>
             </div>
-
-            <!-- Comment -->
             <div class="col-12">
                 <label for="comment" class="form-label d-flex align-items-center">
                     დამატებითი კომენტარი
@@ -128,8 +53,6 @@
             </div>
         </div>
     @endif
-
-    <!-- Delivery Info -->
     <div class="row g-3 mt-1">
         <div class="col-md-6">
             <div class="border rounded-3 p-3">
@@ -143,8 +66,8 @@
                     <div class="ms-3">
                         <div class="fw-semibold small font-neue">სწრაფი მიწოდება</div>
                         <div class="text-muted" style="font-size: 0.8rem;">
-                            თბილისში - მომდევნო დღეს<br>
-                            რეგიონში - 2-3 დღე
+                            თბილისში - 1-2 სამუშაო დღე<br>
+                            რეგიონში - 3-5 სამუშაო დღე
                         </div>
                     </div>
                 </div>
