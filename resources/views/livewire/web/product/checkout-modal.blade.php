@@ -139,7 +139,7 @@
                                                for="payment_{{ $payment->id }}"
                                                style="height: 90px !important; font-size: 12px">
                                             <img src="{{ asset('storage/uploads/payments/'.$payment->icon) }}"
-                                                 width="160">
+                                                 @if($payment->id === 1 OR $payment->id === 2) width="45" @else width="160" @endif>
                                             <span class="fw-semibold mb-1 font-neue"
                                                   style="word-break: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; max-width: 100%">
                                             {{ $payment->translations->where('locale', app()->getLocale())->first()->title ?? '' }}
@@ -158,68 +158,6 @@
                                       aria-hidden="true"></span>
                                 შედეგს ელოდება...
                             </span>
-                                </button>
-                            </div>
-                        </form>
-                    @endif
-                    @if($step === 'otp')
-                        <form wire:submit.prevent="verifyOTP">
-                            <div class="text-center mb-4">
-                                <p class="text-muted mb-2">ყოს დასტური კოდი იყო გაგზავნილი ტელეფონზე:</p>
-                                <p class="fw-semibold font-neue" style="font-size: 16px">{{ $phone }}</p>
-                                <small class="text-muted">შედის 5 წუთი</small>
-                            </div>
-                            <div class="mb-4">
-                                <label for="otp_code" class="form-label font-neue" style="font-size: 13px">დასტური
-                                    კოდი</label>
-                                <input type="text"
-                                       class="form-control form-control-lg @error('otp_code') is-invalid @enderror text-center"
-                                       id="otp_code"
-                                       wire:model.live="otp_code"
-                                       placeholder="0 0 0 0 0 0"
-                                       maxlength="6"
-                                       inputmode="numeric"
-                                       autocomplete="one-time-code"
-                                       required>
-                                @error('otp_code')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            @if($otp_error)
-                                <div class="alert alert-danger" role="alert">
-                                    {{ $otp_error }}
-                                </div>
-                            @endif
-
-                            <div class="text-center mb-4">
-                                @if($otp_resend_available)
-                                    <button type="button"
-                                            class="btn btn-link btn-sm p-0"
-                                            wire:click="resendOTP">
-                                        კოდის ხელახლა გაგზავნა
-                                    </button>
-                                @else
-                                    <small class="text-muted">კოდის ხელახლა გაგზავნა შეგიძლია {{ $otp_resend_timer }}
-                                        s-ში</small>
-                                @endif
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit"
-                                        class="btn btn-lg btn-primary font-neue"
-                                        wire:loading.attr="disabled">
-                                    <span wire:loading.remove>დასტური</span>
-                                    <span wire:loading>
-                                <span class="spinner-border spinner-border-sm me-2" role="status"
-                                      aria-hidden="true"></span>
-                                შედეგს ელოდება...
-                            </span>
-                                </button>
-                                <button type="button"
-                                        class="btn btn-outline-secondary font-neue"
-                                        wire:click="backToCheckout"
-                                        wire:loading.attr="disabled">
-                                    უკან დაბრუნება
                                 </button>
                             </div>
                         </form>
