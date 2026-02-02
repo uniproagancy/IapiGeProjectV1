@@ -236,8 +236,6 @@ class Checkout extends Component
 
             // ✅ Create order
             if (Auth::check()) {
-                $city = City::find($this->city_id);
-
                 $order = Order::create([
                     'user_id' => Auth::user()->id,
                     'payment_id' => $this->payment_id,
@@ -261,7 +259,6 @@ class Checkout extends Component
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
-//                    'city_id' => $this->city_id,
                 ]);
 
                 Log::info('Order created successfully', [
