@@ -84,39 +84,6 @@ class Checkout extends Component
         }
     }
 
-    public function loadUserAddresses()
-    {
-        try {
-            if (auth()->check()) {
-                $this->userAddresses = auth()->user()->addresses()->latest()->get();
-            }
-        } catch (Exception $e) {
-            Log::error('Error loading user addresses: ' . $e->getMessage());
-        }
-    }
-
-    public function selectAddress($addressId)
-    {
-        $this->selected_address_id = $addressId;
-
-        // ✅ Load address data
-        $address = auth()->user()->addresses()->find($addressId);
-        if ($address) {
-            $this->address = $address->address;
-            $this->comment = $address->notes ?? '';
-            $this->calculateShippingCost();
-            $this->calculateTotals();
-        }
-    }
-
-    public function clearAddressSelection()
-    {
-        $this->selected_address_id = null;
-        $this->address = '';
-        $this->comment = '';
-        $this->calculateTotals();
-    }
-
     public function loadOrderItems()
     {
         try {

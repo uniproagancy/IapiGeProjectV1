@@ -10,7 +10,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form wire:submit.prevent="submitCheckout">
+                    <form wire:submit.prevent="placeOrder">
                         <div class="section-title mb-3">
                             <h5 class="font-neue mb-0" style="font-size: 15px">პირადი ინფორმაცია</h5>
                         </div>
