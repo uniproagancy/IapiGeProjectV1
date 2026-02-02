@@ -6,9 +6,80 @@
             <span>უფასო მიწოდება თბილისში</span>
         </div>
     </div>
-    
+
+    @if(auth()->check() && $userAddresses->count() > 0)
+        <div class="mb-4">
+            <label class="form-label fw-semibold">შენახული მისამართები</label>
+            <div class="d-flex flex-column gap-2">
+                @foreach($userAddresses as $savedAddress)
+                    <div class="form-check form-check-custom p-3 border rounded-3 {{ $selected_address_id === $savedAddress->id ? 'border-primary bg-primary bg-opacity-10' : '' }}">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="saved_address"
+                               id="address_{{ $savedAddress->id }}"
+                               wire:click="selectAddress({{ $savedAddress->id }})"
+                                {{ $selected_address_id === $savedAddress->id ? 'checked' : '' }}>
+                        <label class="form-check-label w-100 cursor-pointer" for="address_{{ $savedAddress->id }}">
+                            <div class="d-flex align-items-start">
+                                <i class="ci-map-pin text-primary fs-5 me-2 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="fw-semibold">{{ $savedAddress->label }}</span>
+                                        @if($savedAddress->is_default)
+                                            <span class="badge bg-success-subtle text-success ms-2 small">ძირითადი</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-muted small">
+                                        <div>{{ $savedAddress->city }}, {{ $savedAddress->address }}</div>
+                                        @if($savedAddress->notes)
+                                            <div class="mt-1"><i
+                                                        class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                @endforeach
+
+                <!-- Add New Address Option -->
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        wire:click="clearAddressSelection">
+                    <i class="ci-plus me-1"></i>
+                    ახალი მისამართის დამატება
+                </button>
+            </div>
+        </div>
+        @if($selected_address_id)
+            <hr class="my-4">
+        @endif
+    @endif
+
     @if(!$selected_address_id)
         <div class="row g-3">
+            <!-- City Selection -->
+            <div class="col-md-12">
+                <label for="city_id" class="form-label">
+                    ქალაქი <span class="text-danger">*</span>
+                </label>
+                <select class="form-select @error('city_id') is-invalid @enderror"
+                        id="city_id"
+                        wire:model.live="city_id">
+                    <option value="">აირჩიეთ ქალაქი</option>
+                    @foreach($cities_list as $city_item)
+                        <option value="{{ $city_item->id }}">
+                            {{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('city_id')
+                <div class="invalid-feedback d-block">
+                    <i class="ci-info-circle me-1"></i>{{ $message }}
+                </div>
+                @enderror
+            </div>
+
             <!-- Address Input -->
             <div class="col-12">
                 <label for="address" class="form-label">
@@ -118,6 +189,7 @@
 
         // Map field names to HTML IDs
         const fieldMap = {
+            'city_id': 'city_id',
             'address': 'address',
             'comment': 'comment',
             'payment_id': 'payment_method',
