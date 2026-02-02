@@ -52,7 +52,6 @@ class CheckoutModal extends Component
     public function openCheckoutModal($productId)
     {
         $this->productId = $productId;
-        dd($this->productId);
     }
 
     private function loadPaymentMethods()
@@ -99,18 +98,23 @@ class CheckoutModal extends Component
                 $order_user_id = $user->id;
             }
             $product = Product::find(9);
+            if(!empty($product->price->discount_price)) {
+                $price = $product->price->discount_price;
+            } else {
+                $price = $product->price->regular_price;
+            }
             $order = Order::create([
                 'user_id' => $order_user_id,
                 'payment_id' => $this->payment_id,
                 'comment' => $this->comment,
                 'created_by' => $order_user_id,
                 'delivery_amount' => 0,
-                'amount' => $this->subtotal,
+                'amount' => $price,
             ]);
             OrderItem::create([
                 'product_id' => $product->id,
                 'quantity' => 1,
-                'price' => $product->price->discount_price ?? $product->price->regular_price,
+                'price' => $price,
                 'order_id' => $order->id,
             ]);
             OrderDelivery::create([
