@@ -34,7 +34,7 @@
                 </div>
             </a>
 			@else
-			<button class="nav-link text-center py-3" data-bs-toggle="modal" data-bs-target="#loginModal" style="flex: 1;">
+			<button class="nav-link text-center py-3 w-100" data-bs-toggle="modal" data-bs-target="#loginModal" style="flex: 1;">
                 <div class="d-flex flex-column align-items-center w-100">
                     <i class="ci-user fs-5 mb-1"></i>
                 </div>
