@@ -3,18 +3,17 @@
     <div class="container-fluid px-0">
         <div class="d-flex w-100 justify-content-around align-items-center">
             <a class="nav-link-custom text-center text-white-50"
-               data-bs-toggle="offcanvas"
-               data-bs-target="#navbarNav"
-               aria-controls="navbarNav"
-               aria-label="Toggle navigation"
-               href="#"
+               href="{{ route('web.main.index') }}"
                title="მთავარი">
                 <i class="ci-home fs-5 mb-1"></i>
                 <div class="nav-label font-neue">მთავარი</div>
             </a>
             <button type="button"
                     class="nav-link-custom text-center text-white-50 border-0 bg-transparent"
-                    wire:click="openFilterModal"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-label="Toggle navigation"
                     title="კატეგორიები">
                 <i class="ci-menu fs-5 mb-1"></i>
                 <div class="nav-label font-neue">კატეგორიები</div>
