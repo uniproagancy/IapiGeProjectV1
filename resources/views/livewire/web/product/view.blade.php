@@ -1,12 +1,10 @@
 @section('og_tags')
-
     <meta property="og:url"
           content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}"/>
     <meta property="og:type" content="article"/>
     <meta property="og:title"
           content="{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}"/>
     <meta property="og:image" content="{{ asset('storage/'.$product->main_image) }}"/>
-
 @endsection
 
 <main class="content-wrapper">

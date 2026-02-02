@@ -6,7 +6,6 @@
                       style="background: linear-gradient(90deg, #accbee 0%, #e7f0fd 100%)"></span>
                 <span class="position-absolute top-0 start-0 w-100 h-100 rounded-5 d-none d-block-dark rtl-flip"
                       style="background: linear-gradient(90deg, #1b273a 0%, #1f2632 100%)"></span>
-
                 <div class="row align-items-center position-relative z-2">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <div class="text-center text-md-start py-md-5 px-4 ps-md-5 pe-md-0 me-md-n5">
@@ -18,7 +17,6 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="col-md-6 d-flex justify-content-center justify-content-md-end pb-5 pb-md-0">
                         <div class="me-xxl-4">
                             @if(!empty($promo->image))
