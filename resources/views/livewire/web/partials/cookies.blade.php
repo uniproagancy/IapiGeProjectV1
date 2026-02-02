@@ -14,11 +14,8 @@
                 </p>
             </div>
             <div class="col-lg-4 d-flex gap-2 justify-content-lg-end">
-                <button type="button" class="btn btn-outline-light font-neue" id="cookieDecline">
-                    {{ __('trans.decline') }}
-                </button>
                 <button type="button" class="btn btn-primary font-neue" id="cookieAccept">
-                    {{ __('trans.accept_cookies') }}
+                    გასაგებია
                 </button>
             </div>
         </div>
