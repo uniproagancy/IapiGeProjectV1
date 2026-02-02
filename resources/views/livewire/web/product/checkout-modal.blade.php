@@ -7,7 +7,16 @@
                     <h1 class="modal-title fs-5 font-neue" id="checkoutModalLabel" style="font-size: 16px">
                         სწრაფი შეძენა
                     </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                            @click="setTimeout(() => {
+            const backdrop = document.querySelector('.modal-backdrop');
+            if(backdrop) backdrop.remove();
+            document.body.classList.remove('modal-open');
+        }, 300)">
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form wire:submit.prevent="placeOrder">
@@ -224,7 +233,6 @@
                 'lastname': 'modal_lastname',
                 'email': 'modal_email',
                 'phone': 'modal_phone',
-                'city_id': 'modal_city_id',
                 'address': 'modal_address',
                 'comment': 'modal_comment',
                 'payment_id': 'modal_payment_method',
@@ -256,8 +264,6 @@
             }
         }
     </script>
-
-    <!-- ✅ Additional highlight style -->
     <style>
         .field-error-highlight {
             background-color: rgba(220, 53, 69, 0.1) !important;
