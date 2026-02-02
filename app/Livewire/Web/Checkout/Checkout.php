@@ -331,9 +331,9 @@ class Checkout extends Component
                 break;
                 case '2':
                     // Invoice
-                    return $this->redirect(route('web.checkout.success'));
+                    return $this->redirect('/checkout/success');
                 default:
-                    return $this->redirect(route('web.checkout.success'));
+                    return $this->redirect('/checkout/success');
             }
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());
