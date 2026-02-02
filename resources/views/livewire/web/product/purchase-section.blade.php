@@ -22,7 +22,7 @@
     <livewire:web.components.add-to-cart-button-quantity :productId="$product->id"/>
     <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
         <button type="button"
-                class="btn btn-lg btn-outline-info w-100 animate-slide-end font-neue"
+                class="btn btn-lg btn-outline-dark w-100 animate-slide-end font-neue"
                 style="font-size: 14px"
                 @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
             სწრაფი შეძენა
