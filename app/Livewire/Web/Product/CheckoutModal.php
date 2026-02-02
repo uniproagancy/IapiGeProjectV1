@@ -189,6 +189,7 @@ class CheckoutModal extends Component
                         if($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);
+                        } else {
                         }
                     }
                     break;
