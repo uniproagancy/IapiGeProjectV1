@@ -29,13 +29,6 @@
                                             <span class="badge bg-success-subtle text-success ms-2 small">ძირითადი</span>
                                         @endif
                                     </div>
-                                    <div class="text-muted small">
-                                        <div>{{ $savedAddress->city }}, {{ $savedAddress->address }}</div>
-                                        @if($savedAddress->notes)
-                                            <div class="mt-1"><i
-                                                        class="ci-info-circle me-1"></i>{{ $savedAddress->notes }}</div>
-                                        @endif
-                                    </div>
                                 </div>
                             </div>
                         </label>
@@ -58,28 +51,6 @@
 
     @if(!$selected_address_id)
         <div class="row g-3">
-            <!-- City Selection -->
-            <div class="col-md-12">
-                <label for="city_id" class="form-label">
-                    ქალაქი <span class="text-danger">*</span>
-                </label>
-                <select class="form-select @error('city_id') is-invalid @enderror"
-                        id="city_id"
-                        wire:model.live="city_id">
-                    <option value="">აირჩიეთ ქალაქი</option>
-                    @foreach($cities_list as $city_item)
-                        <option value="{{ $city_item->id }}">
-                            {{ $city_item->translations->where('locale', app()->getLocale())->first()->name ?? $city_item->translations->where('locale', 'ka')->first()->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('city_id')
-                <div class="invalid-feedback d-block">
-                    <i class="ci-info-circle me-1"></i>{{ $message }}
-                </div>
-                @enderror
-            </div>
-
             <!-- Address Input -->
             <div class="col-12">
                 <label for="address" class="form-label">
@@ -189,7 +160,6 @@
 
         // Map field names to HTML IDs
         const fieldMap = {
-            'city_id': 'city_id',
             'address': 'address',
             'comment': 'comment',
             'payment_id': 'payment_method',

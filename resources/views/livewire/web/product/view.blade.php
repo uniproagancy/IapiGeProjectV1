@@ -110,4 +110,68 @@
             });
         });
     </script>
+    <script src="https://webstatic.bog.ge/bog-sdk/bog-sdk.js?version=2&client_id=57315"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('bog:installment', (installment_data) => {
+                BOG.Calculator.open({
+                    bnpl: false,
+                    amount: installment_data.amount,
+                    onClose: () => {
+                        // Modal close callback
+                    },
+                    onRequest: (selected, successCb, closeCb) => {
+                        const {
+                            amount, month, discount_code,
+                        } = selected;
+                        axios.post(installment_data.url, {
+                            amount: amount,
+                            month: month,
+                            discount_code: discount_code
+                        })
+                            .then(function (response) {
+                                successCb(response.data.orderId);
+                            })
+                            .catch(function (error) {
+                                closeCb();
+                            });
+                        return false;
+                    },
+                    onComplete: ({redirectUrl}) => {
+                        return false;
+                    }
+                })
+            })
+            Livewire.on('bog:installment-part', (part_installment_data) => {
+                BOG.Calculator.open({
+                    bnpl: true,
+                    amount: part_installment_data.amount,
+                    onClose: () => {
+                        // Modal close callback
+                    },
+                    onRequest: (selected, successCb, closeCb) => {
+                        const {
+                            amount, month, discount_code,
+                        } = selected;
+                        axios.post(part_installment_data.url, {
+                            amount: amount,
+                            month: month,
+                            discount_code: discount_code
+                        })
+                            .then(function (response) {
+                                successCb(response.data.orderId);
+                            })
+                            .catch(function (error) {
+                                closeCb();
+                            });
+                        return false;
+                    },
+                    onComplete: ({redirectUrl}) => {
+                        return false;
+                    }
+                })
+            });
+        })
+    </script>
 </main>

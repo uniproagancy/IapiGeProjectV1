@@ -12,7 +12,9 @@
                 <label class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4"
                        for="payment_{{ $payment->id }}"
                        style="height: 90px !important; font-size: 12px">
-                    <img src="{{ asset('storage/uploads/payments/'.$payment->icon) }}" width="160">
+                    <img src="{{ asset('storage/uploads/payments/'.$payment->icon) }}"
+                         @if($payment->id === 1 OR $payment->id === 2) width="45" @else width="160" @endif
+                    >
                     <span class="fw-semibold mb-1 font-neue"
                           style="word-break: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; max-width: 100%">
                     {{ $payment->translations->where('locale', app()->getLocale())->first()->title ?? '' }}

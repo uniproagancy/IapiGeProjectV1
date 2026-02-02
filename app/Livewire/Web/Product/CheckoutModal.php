@@ -66,7 +66,7 @@ class CheckoutModal extends Component
         try {
             // ✅ Validation rules
             $validated = $this->validate([
-                'city_id' => 'required|string|max:255|exists:db_cities,id',
+                'city_id' => 'string|max:255|exists:db_cities,id',
                 'address' => 'required|string|max:255',
                 'payment_id' => 'required',
             ], [
