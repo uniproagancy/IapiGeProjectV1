@@ -1,5 +1,5 @@
 <section class="container pt-5 mt-1 mt-sm-3 mt-lg-2">
-    <div class="row row-cols-2 row-cols-md-4 g-4">
+    <div class="row row-cols-2 row-cols-md-3 g-4">
         @php
             $features = [
                 [
