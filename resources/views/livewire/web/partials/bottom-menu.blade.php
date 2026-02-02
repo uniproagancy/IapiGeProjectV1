@@ -1,3 +1,4 @@
+<!-- ✅ Bottom Navigation - Fixed Footer Gap -->
 <nav class="navbar navbar-expand navbar-dark bg-dark fixed-bottom d-lg-none bottom-nav"
      style="padding: 0.75rem 0; border-top: 1px solid #333; z-index: 1000;">
     <div class="container-fluid px-0">
@@ -14,39 +15,60 @@
                     data-bs-target="#navbarNav"
                     aria-controls="navbarNav"
                     aria-label="Toggle navigation"
-                    title="ნავიგაცია">
+                    title="კატეგორიები">
                 <i class="ci-menu fs-5 mb-1"></i>
                 <div class="nav-label font-neue">ნავიგაცია</div>
             </button>
             <button type="button"
                     class="nav-link-custom text-center text-white-50 border-0 bg-transparent position-relative"
                     wire:click="openCheckoutModal"
-                    title="კალათა">
+                    title="ძებნა">
                 <i class="ci-search fs-5 mb-1"></i>
                 <div class="nav-label font-neue">ძებნა</div>
             </button>
             @if(Auth::check())
-            <a class="nav-link-custom text-center text-white-50"
-               href="{{ route('web.user.index') }}"
-               title="პროფილი">
-                <i class="ci-user fs-5 mb-1"></i>
-                <div class="nav-label font-neue">პროფილი</div>
-            </a>
+                <a class="nav-link-custom text-center text-white-50"
+                   href="{{ route('web.user.index') }}"
+                   title="პროფილი">
+                    <i class="ci-user fs-5 mb-1"></i>
+                    <div class="nav-label font-neue">პროფილი</div>
+                </a>
             @else
-            <a class="nav-link-custom text-center text-white-50"
-               href="#"
-               aria-label="ავტორიზაცია"
-               data-bs-toggle="modal"
-               data-bs-target="#loginModal"
-               title="პროფილი">
-                <i class="ci-user fs-5 mb-1"></i>
-                <div class="nav-label font-neue">პროფილი</div>
-            </a>
+                <a class="nav-link-custom text-center text-white-50"
+                   href="#"
+                   aria-label="ავტორიზაცია"
+                   data-bs-toggle="modal"
+                   data-bs-target="#loginModal"
+                   title="პროფილი">
+                    <i class="ci-user fs-5 mb-1"></i>
+                    <div class="nav-label font-neue">პროფილი</div>
+                </a>
             @endif
         </div>
     </div>
 </nav>
+
 <style>
+    body {
+        padding-bottom: 0 !important;  /* ✅ REMOVED - Was causing gap */
+    }
+
+    main,
+    .main-content,
+    [role="main"] {
+        padding-bottom: 100px;  /* ✅ Add padding to content, not body */
+    }
+
+    .content-wrapper {
+        padding-bottom: 70px;
+    }
+
+    .page-content,
+    .container,
+    .container-fluid {
+        padding-bottom: 0px !important;
+    }
+
     .bottom-nav-top {
         border-top: 2px solid #ff6900 !important;
         background: linear-gradient(to right, #ff6900 , #ff6900 ) !important;
@@ -63,6 +85,7 @@
         box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(10px);
     }
+
     .nav-link-custom {
         flex: 1;
         display: flex;
@@ -87,7 +110,7 @@
         transform: translateY(-2px);
     }
 
-    /* ✅ Icon Styling -->
+    /* ✅ Icon Styling */
     .nav-link-custom i {
         transition: all 0.3s ease;
         color: inherit;
@@ -112,7 +135,7 @@
         max-width: 100%;
     }
 
-    /* ✅ Badge Styling -->
+    /* ✅ Badge Styling */
     .nav-badge {
         position: absolute;
         top: 2px;
@@ -171,19 +194,23 @@
         }
     }
 
-    /* ✅ Page padding to accommodate fixed navbar */
-    body {
-        padding-bottom: 70px;
-    }
-
-    /* ✅ Hide on desktop -->
+    /* ✅ Hide on desktop */
     @media (min-width: 992px) {
         .bottom-nav {
             display: none !important;
         }
 
+        /* ✅ IMPORTANT: Remove padding on desktop */
+        main,
+        .main-content,
+        [role="main"],
+        .page-content,
+        .content-wrapper {
+            padding-bottom: 0 !important;
+        }
+
         body {
-            padding-bottom: 0;
+            padding-bottom: 0 !important;
         }
     }
 
