@@ -28,6 +28,7 @@ class Checkout extends Component
     public $email = '';
     public $phone = '';
     public $verify_phone = '';
+    public $city_id = null;
     public $address = '';
     public $comment = '';
 
@@ -96,6 +97,31 @@ class Checkout extends Component
             Log::error('Error loading user addresses: ' . $e->getMessage());
         }
     }
+
+    public function selectAddress($addressId)
+    {
+        $this->selected_address_id = $addressId;
+
+        // ✅ Load address data
+        $address = auth()->user()->addresses()->find($addressId);
+        if ($address) {
+            $this->city_id = $address->city_id;
+            $this->address = $address->address;
+            $this->comment = $address->notes ?? '';
+            $this->calculateShippingCost();
+            $this->calculateTotals();
+        }
+    }
+
+    public function clearAddressSelection()
+    {
+        $this->selected_address_id = null;
+        $this->city_id = null;
+        $this->address = '';
+        $this->comment = '';
+        $this->calculateTotals();
+    }
+
     public function loadOrderItems()
     {
         try {
@@ -152,29 +178,72 @@ class Checkout extends Component
         }
     }
 
+    public function updatedCityId()
+    {
+        $this->calculateShippingCost();
+        $this->calculateTotals();
+    }
+
+    public function calculateShippingCost()
+    {
+        try {
+            if (!empty($this->city_id)) {
+                $city_data = City::where('id', $this->city_id)->first();
+                $this->shipping_cost = $city_data->delivery_amount ?? 0;
+            }
+        } catch (Exception $e) {
+            Log::error('Error calculating shipping: ' . $e->getMessage());
+            $this->shipping_cost = 0;
+        }
+    }
+
+    public function calculateTotals()
+    {
+        try {
+            $this->subtotal = $this->orderItems->sum('total');
+            $this->tax = 0;
+            $this->total = $this->subtotal + $this->shipping_cost + $this->tax;
+        } catch (Exception $e) {
+            Log::error('Error calculating totals: ' . $e->getMessage());
+        }
+    }
+
     /**
      * ✅ Place order with validation and scroll to error
      */
     public function placeOrder()
     {
         try {
+            // ✅ Validation rules
             $validated = $this->validate([
+                'city_id' => 'string|max:255|exists:db_cities,id',
                 'address' => 'required|string|max:255',
                 'payment_id' => 'required',
             ], [
+                'city_id.required' => 'ქალაქი აუცილებელია',
+                'city_id.exists' => 'არჩეული ქალაქი ვერ მოიძებნა',
                 'address.required' => 'მისამართი აუცილებელია',
                 'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
                 'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
+
+            Log::info('Checkout form validated', [
+                'email' => $this->email,
+                'city_id' => $this->city_id,
+            ]);
+
             // ✅ Track checkout initiation (Facebook Pixel)
 
             // ✅ Create order
             if (Auth::check()) {
+                $city = City::find($this->city_id);
+
                 $order = Order::create([
                     'user_id' => Auth::user()->id,
                     'payment_id' => $this->payment_id,
                     'comment' => $this->comment,
                     'created_by' => Auth::user()->id,
+                    'delivery_amount' => $city->delivery_amount,
                     'amount' => $this->subtotal,
                 ]);
 
@@ -192,6 +261,7 @@ class Checkout extends Component
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
+                    'city_id' => $this->city_id,
                 ]);
 
                 Log::info('Order created successfully', [
