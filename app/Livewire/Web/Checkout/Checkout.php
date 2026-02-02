@@ -333,21 +333,20 @@ class Checkout extends Component
                     }
                     break;
                 case '7':
-                  if($order->amount < 100) {
+                  if($order->amount < 150) {
                      $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                   } else {
-                      Log::info(1);
                     $tbcInstallment = new LaravelTbcInstallment();
                     $products = [];
                     foreach ($order->items as $product) {
                         $products[] = [
                             'name' => $product->product->translation('ka')->title,
-                            'price' => $product->price + ($product->price * 0.1),
+                            'price' => $product->price + ($product->price * 0.05),
                             'quantity' => $product->quantity,
                         ];
                     }
                     $tbcInstallment->addProducts($products);
-                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.1));
+                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
                     if($response['status_code'] === 200) {
                         $redirectUri = $tbcInstallment->getRedirectUri();
                         return redirect($redirectUri);
@@ -358,7 +357,7 @@ class Checkout extends Component
                       if($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                       } else {
-                        return $this->redirect(route('credo-create-order',['order_id' => $order['id']]));
+                        return $this->redirect(route('credo-create-order', ['order_id' => $order['id']]));
                       }
                 break;
                 case '2':
