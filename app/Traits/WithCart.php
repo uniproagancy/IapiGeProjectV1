@@ -46,7 +46,6 @@ trait WithCart
             ]);
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
-            $this->dispatch('ui:success', message: 'პროდუქტი დაემატა კალათაში!', type: 'success');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $this->dispatch('ui:error', message: 'პროდუქტი ნაპოვნი არ არის!', type: 'error');
         } catch (\Exception $e) {
@@ -80,7 +79,6 @@ trait WithCart
             Cart::remove($itemId);
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
-            $this->dispatch('ui:success', message: 'პროდუქტი წაიშალა კალათიდან!', type: 'success');
         } catch (\Exception $e) {
             Log::error("Error removing from cart: " . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა წაშლის დროს!', type: 'error');
@@ -93,7 +91,6 @@ trait WithCart
             Cart::clear();
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
-            $this->dispatch('ui:success', message: 'კალათა გაიწმინდა!', type: 'success');
         } catch (\Exception $e) {
             $this->dispatch('ui:error', message: 'შეცდომა კალათის გასუფთავებისას!', type: 'error');
         }
