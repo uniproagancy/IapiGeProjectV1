@@ -1,4 +1,3 @@
-<!-- ✅ Bottom Navigation - Fixed Footer Gap -->
 <nav class="navbar navbar-expand navbar-dark bg-dark fixed-bottom d-lg-none bottom-nav"
      style="padding: 0.75rem 0; border-top: 1px solid #333; z-index: 1000;">
     <div class="container-fluid px-0">
