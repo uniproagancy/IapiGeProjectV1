@@ -5,6 +5,7 @@ namespace App\Livewire\Web\Product;
 use App\Models\Payments\Payment;
 use App\Models\Product\Product;
 use App\Models\User\User;
+use App\Models\Order\Order;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
