@@ -17,7 +17,6 @@
         <ul class="nav flex-column gap-2 pt-sm-3 pb-3 mt-n1 mb-1">
             @php
                 $serviceLinks = [
-                    ['title' => 'მიწოდების პირობები', 'url' => '/static/delivery'],
                     ['title' => 'წესები და პირობები', 'url' => '/static/rules'],
                 ];
             @endphp
