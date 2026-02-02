@@ -220,8 +220,6 @@ class Checkout extends Component
                 'address' => 'required|string|max:255',
                 'payment_id' => 'required',
             ], [
-                'city_id.required' => 'ქალაქი აუცილებელია',
-                'city_id.exists' => 'არჩეული ქალაქი ვერ მოიძებნა',
                 'address.required' => 'მისამართი აუცილებელია',
                 'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
                 'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
@@ -241,7 +239,6 @@ class Checkout extends Component
                     'payment_id' => $this->payment_id,
                     'comment' => $this->comment,
                     'created_by' => Auth::user()->id,
-                    'delivery_amount' => $city->delivery_amount,
                     'amount' => $this->subtotal,
                 ]);
 
