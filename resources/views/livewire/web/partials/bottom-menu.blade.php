@@ -14,9 +14,9 @@
                     data-bs-target="#navbarNav"
                     aria-controls="navbarNav"
                     aria-label="Toggle navigation"
-                    title="კატეგორიები">
+                    title="ნავიგაცია">
                 <i class="ci-menu fs-5 mb-1"></i>
-                <div class="nav-label font-neue">კატეგორიები</div>
+                <div class="nav-label font-neue">ნავიგაცია</div>
             </button>
             <button type="button"
                     class="nav-link-custom text-center text-white-50 border-0 bg-transparent position-relative"
