@@ -54,4 +54,38 @@
         </div>
     @endforeach
     @include('livewire.web.product.delivery-info')
+    @if(Route::is('web.products.view'))
+        <nav class="navbar navbar-expand navbar-dark bg-dark fixed-bottom d-lg-none bottom-nav-top"
+             style="padding: 0.75rem 0; border-top: 1px solid #333; z-index: 1000;">
+            <div class="container px-2">
+                <div class="d-flex w-100 justify-content-between align-items-center"  style="margin-bottom: 20px;">
+                    <div>
+                        <div class="d-flex flex-wrap align-items-center">
+                            @if(!empty($product->price->discount_price))
+                                <div class="h4 lh-1 mb-0" style="color: #fff;">
+                                    {{ number_format($product->price->discount_price, 2) }} ₾
+                                    <del class="text-body-tertiary fs-sm fw-normal" style="color: #252525 !important;">
+                                        {{ number_format($product->price->regular_price, 2) }}
+                                    </del>
+                                </div>
+                            @else
+                                <div class="h4 lh-1 mb-0" style="color: #fff;">
+                                    {{ number_format($product->price->regular_price, 2) }} ₾
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <livewire:web.components.add-to-cart-button-white :productId="$product->id"/>
+                        <button type="button"
+                                class="btn btn-lg btn-dark w-100 animate-slide-end font-neue"
+                                style="font-size: 14px; margin-left: 10px;"
+                                @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
+                            სწრაფი შეძენა
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    @endif
 </div>
