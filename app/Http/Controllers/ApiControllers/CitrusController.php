@@ -60,6 +60,19 @@ class CitrusController extends Controller
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);
         } else {
+
+            if($productData['stock'] > 0) {
+                $quantity = $productData['stock'];
+            } else {
+                $quantity = 0;
+            }
+
+            if($productData['in_stock'] > 0) {
+                $in_stock = $productData['in_stock'];
+            } else {
+                $in_stock = 0;
+            }
+
             $product = Product::create([
                 'supplier_product_id' => $productData['id'],
                 'brand_id' => 115,
@@ -67,10 +80,10 @@ class CitrusController extends Controller
                 'sku' => 'GL-'.$productData['id'],
                 'supplier_id' => 5,
                 'main_image' => 1,
-                'quantity' => $quantity ? $quantity : 0,
-                'in_stock' => $in_stock ? $in_stock : 0,
-                'show' => $in_stock ? $in_stock : 0,
-                'active' => $in_stock ? $in_stock : 0,
+                'quantity' =>$quantity,
+                'in_stock' => $in_stock,
+                'show' => $in_stock,
+                'active' => 1,
             ]);
             ProductTranslation::create([
                 'product_id' => $product->id,
