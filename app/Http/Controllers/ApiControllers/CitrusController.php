@@ -52,8 +52,8 @@ class CitrusController extends Controller
                 $quantity = 0;
             }
 
-            if($productData['in_stock'] > 0) {
-                $in_stock = $productData['in_stock'];
+            if($productData['stock_status'] > 0) {
+                $in_stock = $productData['stock_status'];
             } else {
                 $in_stock = 0;
             }
