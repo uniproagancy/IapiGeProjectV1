@@ -43,7 +43,7 @@
                                 border: 1px solid rgba(0,0,0,0.1);
                                 border-radius: 10px;
                                 padding: 20px;
-                                line-height: 10px;
+                            line-height: 20px;
                             ">{!! $product->translation('ka')->description !!}
                             </div>
                         </div>
