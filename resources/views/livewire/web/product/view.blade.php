@@ -33,6 +33,7 @@
             <div class="col-md-2 col-xl-4 pt-1">
                 @include('livewire.web.product.purchase-section')
             </div>
+            @if(!empty($product->translation('ka')->description))
             <div class="col-12">
                 <div class="row row-cols-1 row-cols-md-1">
                     <div class="col mb-3 mb-md-0">
@@ -49,7 +50,8 @@
                     </div>
                 </div>
             </div>
-            @if(!empty($product->fullSpecifications))
+            @endif
+            @if(count($product->fullSpecifications) > 0)
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
                         <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">

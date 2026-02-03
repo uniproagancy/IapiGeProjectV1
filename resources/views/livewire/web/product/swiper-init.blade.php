@@ -1,7 +1,7 @@
 <style>
     .swiper-prev, .swiper-next {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         background: #eef1f6;
         color: #252525;
         border-radius: 10px;
@@ -17,11 +17,11 @@
     }
 
     .swiper-prev {
-        left: -50px;
+        left: 0px;
     }
 
     .swiper-next {
-        right: -50px;
+        right: 0px;
     }
 
     .swiper-prev:hover,
