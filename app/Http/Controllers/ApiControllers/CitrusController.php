@@ -46,10 +46,22 @@ class CitrusController extends Controller
         }
 
         if($check_product) {
+            if($productData['stock'] > 0) {
+                $quantity = $productData['stock'];
+            } else {
+                $quantity = 0;
+            }
+
+            if($productData['in_stock'] > 0) {
+                $in_stock = $productData['in_stock'];
+            } else {
+                $in_stock = 0;
+            }
+
             $check_product->update([
-                'show' => $in_stock ? $in_stock : 0,
-                'active' => $in_stock ? $in_stock : 0,
-                'quantity' => $quantity ? $quantity : 0,
+                'quantity' =>$quantity,
+                'in_stock' => $in_stock,
+                'show' => $in_stock,
             ]);
             $productPrice = $productData['old_price'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['old_price'] ? $productData['price'] : null;
