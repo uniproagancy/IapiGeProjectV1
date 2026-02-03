@@ -11,11 +11,7 @@
                             class="btn-close"
                             data-bs-dismiss="modal"
                             aria-label="Close"
-                            @click="setTimeout(() => {
-            const backdrop = document.querySelector('.modal-backdrop');
-            if(backdrop) backdrop.remove();
-            document.body.classList.remove('modal-open');
-        }, 300)">
+                            onclick="closeModalProperly()">
                     </button>
                 </div>
                 <div class="modal-body">
@@ -280,4 +276,85 @@
             }
         }
     </style>
+    <script>
+        function closeModalProperly() {
+            const modalElement = document.getElementById('checkoutModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+
+            if (modal) {
+                modal.hide();
+            }
+
+            // ✅ backdrop-ის წაშლა
+            setTimeout(() => {
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        document.addEventListener('livewire:initialized', () => {
+            const modalElement = document.getElementById('checkoutModal');
+
+            // ✅ როცა modal დახურულია, backdrop წაიშალა
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+                document.body.style.overflow = '';
+            });
+
+            Livewire.on('openCheckoutModal', () => {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
+
+            Livewire.on('closeCheckoutModal', () => {
+                closeModalProperly();
+            });
+
+            Livewire.on('scrollToError', ({ field }) => {
+                scrollToErrorInModal(field);
+            });
+        });
+
+        function scrollToErrorInModal(fieldName) {
+            const fieldMap = {
+                'name': 'modal_name',
+                'lastname': 'modal_lastname',
+                'email': 'modal_email',
+                'phone': 'modal_phone',
+                'address': 'modal_address',
+                'comment': 'modal_comment',
+                'payment_id': 'modal_payment_method',
+            };
+
+            const elementId = fieldMap[fieldName] || `modal_${fieldName}`;
+            const element = document.getElementById(elementId);
+
+            if (element) {
+                const modalBody = document.querySelector('.modal-body');
+                if (modalBody) {
+                    const elementRect = element.getBoundingClientRect();
+                    const containerRect = modalBody.getBoundingClientRect();
+                    const scrollTop = elementRect.top - containerRect.top + modalBody.scrollTop - 100;
+                    modalBody.scrollTop = scrollTop;
+                }
+
+                element.focus();
+                element.classList.add('field-error-highlight');
+
+                setTimeout(() => {
+                    element.classList.remove('field-error-highlight');
+                }, 3000);
+            }
+        }
+    </script>
 </div>

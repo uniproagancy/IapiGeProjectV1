@@ -6,10 +6,22 @@
                 @foreach($orderItems as $item)
                     <div class="d-flex align-items-center gap-2 mb-3" wire:key="checkout-item-{{ $item['id'] }}">
                         <div class="ratio ratio-1x1 flex-shrink-0" style="width: 55px;">
+                            @if($product->main_image != 1)
                             <img src="{{ asset('storage/' . $item['image']) }}"
                                  alt="{{ $item['name'] }}"
                                  class="rounded"
                                  loading="lazy">
+                            @elseif(!empty($product->images[0]->path))
+                            <img src="{{ asset('storage/' . $product->images[0]->path) }}"
+                                 alt="{{ $item['name'] }}"
+                                 class="rounded"
+                                 loading="lazy">
+                            @else
+                            <img src="{{ asset('web-assets/img/no-product.png') }}"
+                                 alt="{{ $item['name'] }}"
+                                 class="rounded"
+                                 loading="lazy">
+                            @endif
                         </div>
                         <div class="flex-grow-1 min-w-0">
                             <div class="fw-medium text-truncate small" style="font-size: 12px">{{ $item['name'] }}</div>

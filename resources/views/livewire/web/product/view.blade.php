@@ -33,10 +33,26 @@
             <div class="col-md-2 col-xl-4 pt-1">
                 @include('livewire.web.product.purchase-section')
             </div>
+            <div class="col-12">
+                <div class="row row-cols-1 row-cols-md-1">
+                    <div class="col mb-3 mb-md-0">
+                        <div class="pe-lg-2 pe-xl-3">
+                            <div style="
+                                font-size: 13px;
+                                border: 1px solid rgba(0,0,0,0.1);
+                                border-radius: 10px;
+                                padding: 20px;
+                                line-height: 10px;
+                            ">{!! $product->translation('ka')->description !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             @if(!empty($product->fullSpecifications))
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
-                        <div id="specs-wrapper" class="specs-collapsed masonry-grid">
+                        <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">
                             @foreach($product->fullSpecifications as $full_specification_item)
                                 <div class="masonry-item p-1 rounded mb-3">
                                     <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>

@@ -62,10 +62,10 @@ class CitrusController extends Controller
         } else {
             $product = Product::create([
                 'supplier_product_id' => $productData['id'],
-                'brand_id' => 115,
-                'category_id' => 1,
+                'brand_id' => 114,
+                'category_id' => 39,
                 'sku' => 'GL-'.$productData['id'],
-                'supplier_id' => 3,
+                'supplier_id' => 5,
                 'main_image' => 1,
                 'quantity' => $quantity ? $quantity : 0,
                 'in_stock' => $in_stock ? $in_stock : 0,
