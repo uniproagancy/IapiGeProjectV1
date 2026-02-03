@@ -8,15 +8,6 @@
             aria-label="Toggle navigation in navbar stuck state">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <button type="button"
-            class="btn btn-icon btn-lg fs-xl btn-outline-secondary border-0 rounded-circle animate-shake d-lg-none"
-            data-bs-toggle="collapse"
-            data-bs-target="#searchBar"
-            aria-expanded="false"
-            aria-controls="searchBar"
-            aria-label="Toggle search bar">
-        <i class="ci-search animate-target"></i>
-    </button>
     @auth
         <a class="btn btn-icon btn-lg fs-lg btn-outline-secondary border-0 rounded-circle animate-pulse d-none d-md-inline-flex position-relative"
            href="{{ route('web.user.index', ['page' => 'profile']) }}"

@@ -2,7 +2,7 @@
         data-sticky-navbar='{"offset": 500}' style="background: #ff6900 !important;">
     <div class="container d-block py-1 py-lg-3" data-bs-theme="dark">
         <div class="navbar-stuck-hide pt-1"></div>
-        <div class="row flex-nowrap align-items-center g-0" style="padding-bottom: 20px">
+        <div class="row flex-nowrap align-items-center g-0" style="padding-bottom: 5px">
             <div class="col col-lg-3 d-flex align-items-center">
                 <button type="button"
                         class="navbar-toggler me-4 me-lg-0"
