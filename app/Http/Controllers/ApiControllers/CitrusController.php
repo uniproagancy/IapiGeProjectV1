@@ -88,7 +88,7 @@ class CitrusController extends Controller
             $product = Product::create([
                 'supplier_product_id' => $productData['id'],
                 'brand_id' => 115,
-                'category_id' => 32,
+                'category_id' => $request->category_id,
                 'sku' => 'GL-'.$productData['id'],
                 'supplier_id' => 5,
                 'main_image' => 1,
