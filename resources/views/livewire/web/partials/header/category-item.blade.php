@@ -11,7 +11,7 @@
             @endif
         </a>
         <a href="{{ route('web.products.index', $category->translation(app()->getLocale())->slug ?? $category->translation('ka')->slug) }}"
-           class="fw-medium text-wrap stretched-link d-lg-none font-neue" style="font-size: 13px">
+           class="fw-medium text-wrap stretched-link d-lg-none font-neue category-link" style="font-size: 13px">
             <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}" width="25">
             {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
         </a>
@@ -40,4 +40,6 @@
     .category-item:hover a {
         color: #ff6900;
     }
+
+    .category-link { color: #252525; text-decoration: none}
 </style>
