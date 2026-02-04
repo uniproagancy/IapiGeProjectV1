@@ -97,7 +97,7 @@ class CheckoutModal extends Component
                 ]);
                 $order_user_id = $user->id;
             }
-            $product = Product::find(9);
+            $product = Product::find($this->productId);
             if(!empty($product->price->discount_price)) {
                 $price = $product->price->discount_price;
             } else {
@@ -126,18 +126,12 @@ class CheckoutModal extends Component
                 'amount' => $order->amount,
             ]);
             $this->processPayment($order);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             // ✅ Get first error field
             $errorField = array_key_first($e->errors());
-            Log::warning('Validation error in checkout', [
-                'error_field' => $errorField,
-                'errors' => $e->errors(),
-            ]);
             $this->dispatch('scrollToError', field: $errorField);
             $this->dispatch('ui:error', message: 'გთხოვთ შეამოწმეთ ფორმა');
         } catch (Exception $e) {
-            Log::error('Order creation error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
         }
     }
@@ -161,7 +155,6 @@ class CheckoutModal extends Component
                     }
                     break;
                 case '5':
-                    // Part installment
                     if ($order->amount < 100) {
                         $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს!');
                     } else {
@@ -176,16 +169,18 @@ class CheckoutModal extends Component
                         $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
                         $tbcInstallment = new LaravelTbcInstallment();
-                        $products = [];
-                        foreach ($order->items as $product) {
-                            $products[] = [
-                                'name' => $product->product->translation('ka')->title,
-                                'price' => $product->price + ($product->price * 0.05),
-                                'quantity' => $product->quantity,
-                            ];
-                        }
-                        $tbcInstallment->addProducts($products);
+                        $tbcInstallment->addProduct([
+                            'name' => $order->items[0]->product->translation('ka')->title,
+                            'price' => $order->items[0]->price + ($order->items[0]->price * 0.05),
+                            'quantity' => $order->items[0]->quantity,
+                        ]);
+                        dd($tbcInstallment->addProduct([
+                            'name' => $order->items[0]->product->translation('ka')->title,
+                            'price' => $order->items[0]->price + ($order->items[0]->price * 0.05),
+                            'quantity' => $order->items[0]->quantity,
+                        ]));
                         $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                        dd($response);
                         if($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);

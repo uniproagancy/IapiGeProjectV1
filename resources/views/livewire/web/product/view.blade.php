@@ -83,7 +83,7 @@
             <div class="col-12">
                 @include('livewire.web.product.similar-products')
                 @include('livewire.web.partials.installment-modal')
-                <livewire:web.product.checkout-modal>
+                <livewire:web.product.checkout-modal :productId="$product->id">
             </div>
         </div>
     </section>

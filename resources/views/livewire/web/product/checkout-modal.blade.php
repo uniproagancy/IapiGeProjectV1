@@ -50,14 +50,14 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="modal_email" class="form-label font-neue" style="font-size: 12px">
-                                    ელ-ფოსტა <span class="text-danger">*</span>
+                                    ელ-ფოსტა
                                 </label>
                                 <input type="email"
                                        class="form-control @error('email') is-invalid @enderror"
                                        id="modal_email"
                                        wire:model.blur="email"
                                        placeholder="მაგ: example@gmail.com"
-                                       required>
+                                       >
                                 @error('email')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
@@ -329,7 +329,6 @@
             const fieldMap = {
                 'name': 'modal_name',
                 'lastname': 'modal_lastname',
-                'email': 'modal_email',
                 'phone': 'modal_phone',
                 'address': 'modal_address',
                 'comment': 'modal_comment',
