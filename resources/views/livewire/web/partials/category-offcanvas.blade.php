@@ -1,11 +1,11 @@
-<!-- ✅ Categories Offcanvas - Fixed Desktop Width -->
+<!-- ✅ Categories Offcanvas - FIXED Mobile + Text Alignment -->
 
 <div>
     <div class="offcanvas offcanvas-start pb-sm-2 px-sm-2 p-0"
          id="categoryOffcanvas"
          tabindex="-1"
          aria-labelledby="categoryOffcanvasLabel"
-         style="width: 100%; max-width: 550px; z-index: 1060; padding: 0 !important;">
+         style="width: 400px; z-index: 1060; padding: 0 !important;">
 
         <!-- ✅ HEADER -->
         <div class="offcanvas-header flex-column align-items-start py-3 pt-lg-4">
@@ -72,7 +72,7 @@
                                 @endif
                             </div>
 
-                            <!-- ✅ MOBILE VERSION (d-lg-none) -->
+                            <!-- ✅ MOBILE VERSION (d-lg-none) - FIXED -->
                             <div class="d-lg-none">
                                 @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
                                     <!-- ✅ Has subcategories - Expandable button -->
@@ -135,7 +135,7 @@
                             </div>
 
                             <!-- ✅ SUBCATEGORIES (Mobile) -->
-                            <div class="collapse d-block d-lg-none" id="subcategories-mobile-{{ $category->id }}">
+                            <div class="collapse d-lg-none" id="subcategories-mobile-{{ $category->id }}">
                                 <ul class="list-unstyled bg-light ps-0 ms-0 mb-0"
                                     style="padding: 0; margin: 0; border-top: 1px solid #e9ecef;">
                                     @foreach($category->children->where('active', 1)->where('show', 1) as $subcategory)
@@ -273,15 +273,7 @@
         @media (max-width: 768px) {
             .offcanvas {
                 width: 100% !important;
-                max-width: 100% !important;
-            }
-        }
-
-        /* ✅ Desktop: Wider panel -->
-        @media (min-width: 992px) {
-            .offcanvas {
-                width: 100% !important;
-                max-width: 550px !important;
+                max-width: 400px;
             }
         }
     </style>
