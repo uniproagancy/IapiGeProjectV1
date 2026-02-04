@@ -24,6 +24,5 @@
         </div>
         <div class="navbar-stuck-hide pb-1"></div>
     </div>
-    @include('livewire.web.partials.header.search-mobile')
     @include('livewire.web.partials.header.navigation')
 </header>

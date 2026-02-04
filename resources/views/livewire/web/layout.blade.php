@@ -44,7 +44,7 @@
 {{ $slot }}
 
 <livewire:web.cart.shopping-cart-offcanvas/>
-
+@include('livewire.web.partials.category-offcanvas')
 
 <style>
     .countInput {
