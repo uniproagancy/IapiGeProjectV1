@@ -10,10 +10,11 @@
                 <i class="ci-chevron-right fs-base ms-auto me-n1"></i>
             @endif
         </a>
-        <div class="fw-medium text-wrap stretched-link d-lg-none font-neue" style="font-size: 13px">
+        <a href="{{ route('web.products.index', $category->translation(app()->getLocale())->slug ?? $category->translation('ka')->slug) }}"
+           class="fw-medium text-wrap stretched-link d-lg-none font-neue" style="font-size: 13px">
             <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}" width="25">
             {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
-        </div>
+        </a>
     </div>
 {{--    @if($category->children->where('active', 1)->where('show', 1)->count() > 0)--}}
 {{--        <div class="dropdown-menu rounded-4 p-4"--}}
