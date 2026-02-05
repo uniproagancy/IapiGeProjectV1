@@ -11,7 +11,7 @@ class FacebookFeedController extends Controller
     //
     public function getFeed()
     {
-        $products = Product::where('in_stock', 1)->get();
+        $products = Product::where('in_stock', 1)->limit(20)->get();
         $xml = new \SimpleXMLElement('<?xml version="1.0"?><rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"></rss>');
         $channel = $xml->addChild('channel');
         $channel->addChild('title', 'Test Store');
