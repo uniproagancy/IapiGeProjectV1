@@ -35,19 +35,19 @@
             <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                 <img src="{{ asset('storage/' . $product->main_image) }}"
                      alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
-                     loading="lazy">
+                     loading="lazy" class="product-card-img">
             </div>
             @elseif(!empty($product->images[0]->path))
             <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                 <img src="{{ asset('storage/' . $product->images[0]->path) }}"
                      alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
-                     loading="lazy">
+                     loading="lazy" class="product-card-img">
             </div>
             @else
             <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                 <img src="{{ asset('web-assets/img/no-product.png') }}"
                      alt="{{ $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title }}"
-                     loading="lazy">
+                     loading="lazy" class="product-card-img">
             </div>
             @endif
         </a>
@@ -77,4 +77,13 @@
             <livewire:web.components.add-to-cart-button :productId="$product->id"/>
         </div>
     </div>
+    <style>
+        .product-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* ← მთავარი */
+            object-position: center;
+            background-color: #fff;
+        }
+    </style>
 </div>
