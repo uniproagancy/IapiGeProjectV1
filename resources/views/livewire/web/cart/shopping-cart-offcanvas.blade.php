@@ -110,7 +110,6 @@
                             შეკვეთა
                         </a>
                     @else
-                        <!-- ✅ User NOT logged in - show login button -->
                         <button type="button"
                                 class="btn btn-lg btn-primary w-100 font-neue"
                                 id="checkoutBtn">
@@ -121,8 +120,6 @@
             </div>
         @endif
     </div>
-
-    <!-- ✅ Script for proper modal sequence -->
     <script>
         document.addEventListener('livewire:initialized', () => {
             // ✅ Get checkout button

@@ -122,9 +122,10 @@
         <div class="alert alert-info d-flex align-items-start mt-3 mb-0">
             <i class="ci-info-circle fs-5 me-2 mt-1"></i>
             <div class="fs-sm">
-                გაქვთ ანგარიში?
-                <a href="" class="alert-link fw-semibold">შესვლა</a>
-                და ისარგებლეთ სწრაფი შეკვეთის შესაძლებლობით.
+                გაქვთ ანგარიში? გაიარეთ
+                <a href="#"
+                   data-bs-toggle="modal"
+                   data-bs-target="#loginModal" class="alert-link fw-semibold">ავტორიზაცია</a>
             </div>
         </div>
     @endauth
