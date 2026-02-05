@@ -113,11 +113,6 @@
                            id="phone"
                            wire:model.debounce-500ms="phone"
                            placeholder="+995 5__ __ __ __">
-                    @if ($phone && !$phone_verified)
-                        <button class="btn btn-outline-secondary" type="button" wire:click="sendOtp('{{ $phone }}')">
-                            დადასტურება
-                        </button>
-                    @endif
                     @error('phone')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

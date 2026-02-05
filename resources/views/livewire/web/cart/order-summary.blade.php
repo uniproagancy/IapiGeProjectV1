@@ -3,37 +3,45 @@
         <div class="bg-body-tertiary rounded-4 p-4 mb-3">
             <h3 class="h5 mb-4 font-neue">შეკვეთის შემაჯამებელი</h3>
             <div class="border-bottom pb-3 mb-3">
-                @foreach($orderItems as $item)
-                    <div class="d-flex align-items-center gap-2 mb-3" wire:key="checkout-item-{{ $item['id'] }}">
+                @if(!empty(request()->product_id) && !empty($product))
+                    <div class="d-flex align-items-center gap-2 mb-3" wire:key="checkout-item-{{ $product  }}">
                         <div class="ratio ratio-1x1 flex-shrink-0" style="width: 55px;">
-                            @if($product->main_image != 1)
-                            <img src="{{ asset('storage/' . $item['image']) }}"
-                                 alt="{{ $item['name'] }}"
+                            <img src="{{ asset('storage/' . $product->main_image) }}"
+                                 alt="{{ $product['name'] }}"
                                  class="rounded"
                                  loading="lazy">
-                            @elseif(!empty($product->images[0]->path))
-                            <img src="{{ asset('storage/' . $product->images[0]->path) }}"
-                                 alt="{{ $item['name'] }}"
-                                 class="rounded"
-                                 loading="lazy">
-                            @else
-                            <img src="{{ asset('web-assets/img/no-product.png') }}"
-                                 alt="{{ $item['name'] }}"
-                                 class="rounded"
-                                 loading="lazy">
-                            @endif
                         </div>
                         <div class="flex-grow-1 min-w-0">
-                            <div class="fw-medium text-truncate small" style="font-size: 12px">{{ $item['name'] }}</div>
-                            <div class="text-muted small">{{ $item['quantity'] }}
-                                × {{ number_format($item['price'], 2) }} ₾
+                            <div class="fw-medium text-truncate small" style="font-size: 12px">{{ $product['name'] }}</div>
+                            <div class="text-muted small">{{ $product->quantity }}
+                                × {{ number_format($product['price'], 2) }} ₾
                             </div>
                         </div>
                         <div class="fw-semibold" style="font-size: 13px">
-                            {{ number_format($item['total'], 2) }}₾
+                            {{ number_format($product['total'], 2) }}₾
                         </div>
                     </div>
-                @endforeach
+                @else
+                    @foreach($orderItems as $item)
+                        <div class="d-flex align-items-center gap-2 mb-3" wire:key="checkout-item-{{ $item['id'] }}">
+                            <div class="ratio ratio-1x1 flex-shrink-0" style="width: 55px;">
+                                <img src="{{ asset('storage/' . $item['image']) }}"
+                                     alt="{{ $item['name'] }}"
+                                     class="rounded"
+                                     loading="lazy">
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-medium text-truncate small" style="font-size: 12px">{{ $item['name'] }}</div>
+                                <div class="text-muted small">{{ $item['quantity'] }}
+                                    × {{ number_format($item['price'], 2) }} ₾
+                                </div>
+                            </div>
+                            <div class="fw-semibold" style="font-size: 13px">
+                                {{ number_format($item['total'], 2) }}₾
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
             </div>
             <ul class="list-unstyled fs-sm gap-2 mb-0">
                 <li class="d-flex justify-content-between">

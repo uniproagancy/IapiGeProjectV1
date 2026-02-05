@@ -1,27 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\ApiControllers;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Product\Product;
+use Illuminate\Http\Request;
 use MeeeetDev\LaravelFacebookCatalog\LaravelFacebookCatalog;
-
 
 class FacebookFeedController extends Controller
 {
-
     public function getFeed() {
         LaravelFacebookCatalog::setTitle('Example feed');
         LaravelFacebookCatalog::setDescription('Example feed of the Example shop');
         LaravelFacebookCatalog::setLink('https://example.shop');
-        LaravelFacebookCatalog::setCurrency('USD');
-
+        LaravelFacebookCatalog::setCurrency('GEL');
         $products = Product::where('active', 1)
             ->where('in_stock', 1)
             ->where('show', 1)
             ->limit(20)
             ->get();
-
         foreach($products as $product) {
             LaravelFacebookCatalog::addItem([
                 'link' => 'https://example.shop/p/foo-bar',
@@ -37,5 +33,4 @@ class FacebookFeedController extends Controller
         }
         return LaravelFacebookCatalog::display();
     }
-
 }

@@ -22,12 +22,10 @@
     <livewire:web.components.add-to-cart-button-quantity :productId="$product->id"/>
     <div class="d-none d-lg-block">
         <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
-            <button type="button"
-                    class="btn btn-lg btn-outline-dark w-100 animate-slide-end font-neue"
-                    style="font-size: 14px"
-                    @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
+            <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-outline-dark w-100 animate-slide-end font-neue"
+                    style="font-size: 14px">
                 სწრაფი შეძენა
-            </button>
+            </a>
         </div>
         @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)
         <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
@@ -85,7 +83,7 @@
                             @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)
                                 <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1" style="margin-bottom: 6px">
                                     <span class="badge text-bg-success">თვეში @if(!empty($product->price->discount_price))
-                                            {{ number_format($product->price->discount_price / 24, 2) }} @else {{ number_format($product->price->regular_price / 24, 2) }} @endif ₾ -დან
+                                        {{ number_format($product->price->discount_price / 24, 2) }} @else {{ number_format($product->price->regular_price / 24, 2) }} @endif ₾ -დან
                                     </span>
                                 </div>
                             @endif
@@ -93,12 +91,9 @@
                     </div>
                     <div class="d-flex justify-content-end">
                         <livewire:web.components.add-to-cart-button-white :productId="$product->id"/>
-                        <button type="button"
-                                class="btn btn-lg btn-dark w-100 animate-slide-end font-neue"
-                                style="font-size: 14px; margin-left: 10px;"
-                                @click="$wire.dispatch('openCheckoutModal', [{{ $product->id }}]); setTimeout(() => { new bootstrap.Modal(document.getElementById('checkoutModal')).show(); }, 100);">
+                        <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-dark w-100 animate-slide-end font-neue">
                             სწრაფი შეძენა
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

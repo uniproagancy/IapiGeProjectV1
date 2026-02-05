@@ -68,13 +68,6 @@ class Checkout extends Component
                 $this->email = $user->email;
                 $this->phone = $user->phone ?? '';
                 $this->verify_phone = $user->verify_phone ?? '';
-
-                $this->loadUserAddresses();
-
-                $defaultAddress = $user->defaultAddress;
-                if ($defaultAddress) {
-                    $this->selectAddress($defaultAddress->id);
-                }
             }
         } catch (Exception $e) {
             Log::error('Checkout mount error: ' . $e->getMessage());
@@ -204,7 +197,7 @@ class Checkout extends Component
 
 
                 // ✅ Clear cart
-                Cart::clear();
+//                Cart::clear();
 
                 // ✅ Process payment
                 $this->processPayment($order);
@@ -278,6 +271,7 @@ class Checkout extends Component
                     }
                     $tbcInstallment->addProducts($products);
                     $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                    dd($response);
                     if($response['status_code'] === 200) {
                         $redirectUri = $tbcInstallment->getRedirectUri();
                         return redirect($redirectUri);
@@ -292,10 +286,9 @@ class Checkout extends Component
                       }
                 break;
                 case '2':
-                    // Invoice
                     $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
                 default:
-                    $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
+                    return $this->redirect('/order/success');
             }
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());

@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.7",
         "mcamara/laravel-localization": "^2.3",
-        "meeeet-dev/laravel-facebook-catalog": "^1.4"
+        "meeeet-dev/laravel-facebook-catalog": "^1.4",
+        "ext-simplexml": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

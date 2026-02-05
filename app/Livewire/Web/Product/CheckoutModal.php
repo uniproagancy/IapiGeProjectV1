@@ -141,7 +141,6 @@ class CheckoutModal extends Component
         try {
             switch ($this->payment_id) {
                 case '3':
-                    // BOG Payment
                     return $this->redirect((new BOGPayment)->createPaymentOrder($order));
                 case '4':
                     // Installment
@@ -171,20 +170,13 @@ class CheckoutModal extends Component
                         $tbcInstallment = new LaravelTbcInstallment();
                         $tbcInstallment->addProduct([
                             'name' => $order->items[0]->product->translation('ka')->title,
-                            'price' => $order->items[0]->price + ($order->items[0]->price * 0.05),
+                            'price' => number_format($order->items[0]->price + ($order->items[0]->price * 0.05), 2),
                             'quantity' => $order->items[0]->quantity,
                         ]);
-                        dd($tbcInstallment->addProduct([
-                            'name' => $order->items[0]->product->translation('ka')->title,
-                            'price' => $order->items[0]->price + ($order->items[0]->price * 0.05),
-                            'quantity' => $order->items[0]->quantity,
-                        ]));
                         $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
-                        dd($response);
                         if($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);
-                        } else {
                         }
                     }
                     break;
@@ -195,11 +187,8 @@ class CheckoutModal extends Component
                         return $this->redirect(route('credo-create-order', ['order_id' => $order['id']]));
                     }
                     break;
-                case '2':
-                    // Invoice
-                    return $this->redirect('/checkout/success');
                 default:
-                    return $this->redirect('/checkout/success');
+                    return $this->redirect('/order/success');
             }
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());

@@ -5,15 +5,22 @@ use App\Http\Controllers\InvoiceController;
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
+
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     Route::name('web.')->group(function () {
+
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
+
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
         Route::get('/about-us', App\Livewire\Web\Main\AboutUs::class)->name('main.contact');
 
+        Route::get('/order/success', '\App\Http\Controllers\OrderStatusController@success');
+        Route::get('/order/reject', '\App\Http\Controllers\OrderStatusController@reject');
+        Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
+
         Route::group(['middleware' => 'auth'], function () {
             Route::get('/user/{page?}', App\Livewire\Web\User\Index::class)->name('user.index');
-            Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
         });
 
         Route::prefix('/products')->name('products.')->group(function () {

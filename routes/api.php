@@ -24,7 +24,3 @@ Route::prefix('bog')->group(function () {
 Route::prefix('credo')->group(function () {
     Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('credo-create-order');
 });
-
-Route::prefix('facebook')->group(function () {
-    Route::get('/feed', '\App\Http\Controllers\ApiControllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
-});
