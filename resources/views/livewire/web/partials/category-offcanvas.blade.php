@@ -23,131 +23,64 @@
 
         <!-- ✅ BODY - CATEGORIES LIST -->
         <div class="offcanvas-body d-flex flex-column gap-0 pt-2 p-0">
-            <ul class="w-100 rounded-top-0 rounded-bottom-4 py-1"
-                style="list-style: none; padding: 0 !important; margin: 0;">
-
+                <ul class="w-100 rounded-top-0 rounded-bottom-4 py-1"
+                    style="list-style: none; padding: 0 !important; margin: 0;">
                 @forelse($product_categories as $category)
-                    <!-- ✅ CATEGORY ITEM -->
-                    <li class="position-static border-bottom category-item">
+                    <li class="position-static border-bottom offcanvas-cat-item">
                         <div class="position-relative pt-2 pb-2 px-4">
-
-                            <!-- ✅ DESKTOP VERSION (d-none d-lg-flex) -->
-                            <div class="d-none d-lg-flex align-items-center justify-content-between w-100 gap-2"
-                                 @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
-                                     role="button"
-                                 data-bs-toggle="collapse"
-                                 data-bs-target="#subcategories-{{ $category->id }}"
-                                 style="cursor: pointer;"
-                                    @endif>
-
-                                <!-- ✅ ICON + TEXT WRAPPER -->
-                                <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                            <!-- ✅ ONE STRUCTURE FOR ALL SCREENS -->
+                            @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
+                                <!-- ✅ Has subcategories - Expandable button -->
+                                <button type="button"
+                                        class="w-100 btn btn-link text-start p-0 d-flex align-items-center gap-2 text-decoration-none offcanvas-cat-btn"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#subcategories-{{ $category->id }}"
+                                        aria-expanded="false"
+                                        style="color: #252525;">
                                     <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}"
                                          width="25"
                                          height="25"
                                          alt=""
                                          class="flex-shrink-0">
-
-                                    @if($category->children->where('active', 1)->where('show', 1)->count() == 0)
-                                        <!-- No subcategories - Direct link -->
-                                        <a href="{{ route('web.products.index', $category->translation(app()->getLocale())->slug ?? $category->translation('ka')->slug) }}"
-                                           class="text-decoration-none stretched-link font-neue fw-medium text-start text-truncate"
-                                           style="font-size: 13px; color: inherit;"
-                                           data-bs-dismiss="offcanvas">
-                                            {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
-                                        </a>
-                                    @else
-                                        <!-- Has subcategories - Show as expandable -->
-                                        <span class="text-truncate font-neue fw-medium text-start"
-                                              style="font-size: 13px; color: inherit;">
-                                            {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <!-- ✅ CHEVRON (Only if has subcategories) -->
-                                @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
-                                    <i class="ci-chevron-right fs-base transition-chevron flex-shrink-0"
+                                    <span class="flex-grow-1 font-neue fw-medium text-start"
+                                          style="font-size: 13px;">
+                                {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
+                            </span>
+                                    <i class="ci-chevron-right fs-base offcanvas-cat-chevron flex-shrink-0"
                                        style="transition: transform 0.3s ease;"></i>
-                                @endif
-                            </div>
-
-                            <!-- ✅ MOBILE VERSION (d-lg-none) - FIXED -->
-                            <div class="d-lg-none">
-                                @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
-                                    <!-- ✅ Has subcategories - Expandable button -->
-                                    <button type="button"
-                                            class="w-100 btn btn-link text-start p-0 d-flex align-items-center gap-2 text-decoration-none"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#subcategories-mobile-{{ $category->id }}"
-                                            aria-expanded="false"
-                                            style="color: #252525;">
-                                        <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}"
-                                             width="25"
-                                             height="25"
-                                             alt=""
-                                             class="flex-shrink-0">
-                                        <span class="flex-grow-1 font-neue fw-medium text-start"
-                                              style="font-size: 13px;">
-                                            {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
-                                        </span>
-                                        <i class="ci-chevron-right fs-base transition-chevron flex-shrink-0"
-                                           style="transition: transform 0.3s ease;"></i>
-                                    </button>
-                                @else
-                                    <!-- ✅ No subcategories - Direct link -->
-                                    <a href="{{ route('web.products.index', $category->translation(app()->getLocale())->slug ?? $category->translation('ka')->slug) }}"
-                                       class="d-flex align-items-center gap-2 text-decoration-none font-neue fw-medium category-link"
-                                       style="font-size: 13px; color: #252525;"
-                                       data-bs-dismiss="offcanvas">
-                                        <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}"
-                                             width="25"
-                                             height="25"
-                                             alt=""
-                                             class="flex-shrink-0">
-                                        <span class="text-start">
-                                            {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
-                                        </span>
-                                    </a>
-                                @endif
-                            </div>
+                                </button>
+                            @else
+                                <!-- ✅ No subcategories - Direct link -->
+                                <a href="{{ route('web.products.index', $category->translation(app()->getLocale())->slug ?? $category->translation('ka')->slug) }}"
+                                   class="d-flex align-items-center gap-2 text-decoration-none font-neue fw-medium offcanvas-cat-link"
+                                   style="font-size: 13px; color: #252525;">
+                                    <img src="{{ asset('web-assets/icons/categories/'.$category->id.'.svg') }}"
+                                         width="25"
+                                         height="25"
+                                         alt=""
+                                         class="flex-shrink-0">
+                                    <span class="flex-grow-1 font-neue fw-medium text-start">
+                                {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
+                            </span>
+                                </a>
+                            @endif
                         </div>
 
-                        <!-- ✅ SUBCATEGORIES (Desktop) -->
+                        <!-- ✅ SUBCATEGORIES - ONE FOR ALL SCREENS -->
                         @if($category->children->where('active', 1)->where('show', 1)->count() > 0)
-                            <div class="collapse d-none d-lg-block" id="subcategories-{{ $category->id }}">
+                            <div class="collapse" id="subcategories-{{ $category->id }}">
                                 <ul class="list-unstyled bg-light ps-0 ms-0 mb-0"
                                     style="padding: 0; margin: 0; border-top: 1px solid #e9ecef;">
                                     @foreach($category->children->where('active', 1)->where('show', 1) as $subcategory)
                                         <li class="border-bottom">
                                             <a href="{{ route('web.products.index', $subcategory->translation(app()->getLocale())->slug ?? $subcategory->translation('ka')->slug) }}"
-                                               class="d-flex align-items-center gap-2 py-3 px-4 text-decoration-none font-neue fw-normal subcategory-link"
+                                               class="d-flex align-items-center gap-2 py-3 px-4 text-decoration-none font-neue fw-normal offcanvas-subcat-link"
                                                style="font-size: 12px; color: #555; transition: all 0.3s ease;"
-                                               data-bs-dismiss="offcanvas">
+                                               onclick="bootstrap.Offcanvas.getInstance(document.getElementById('categoryOffcanvas'))?.hide()">
                                                 <i class="ci-tag opacity-50 flex-shrink-0"></i>
                                                 <span class="text-truncate text-start">
-                                                    {{ $subcategory->translation(app()->getLocale())->title ?? $subcategory->translation('ka')->title }}
-                                                </span>
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-
-                            <!-- ✅ SUBCATEGORIES (Mobile) -->
-                            <div class="collapse d-lg-none" id="subcategories-mobile-{{ $category->id }}">
-                                <ul class="list-unstyled bg-light ps-0 ms-0 mb-0"
-                                    style="padding: 0; margin: 0; border-top: 1px solid #e9ecef;">
-                                    @foreach($category->children->where('active', 1)->where('show', 1) as $subcategory)
-                                        <li class="border-bottom">
-                                            <a href="{{ route('web.products.index', $subcategory->translation(app()->getLocale())->slug ?? $subcategory->translation('ka')->slug) }}"
-                                               class="d-flex align-items-center gap-2 py-3 px-4 text-decoration-none font-neue fw-normal subcategory-link-mobile"
-                                               style="font-size: 12px; color: #555; transition: all 0.3s ease;"
-                                               data-bs-dismiss="offcanvas">
-                                                <i class="ci-tag opacity-50 flex-shrink-0"></i>
-                                                <span class="text-truncate text-start">
-                                                    {{ $subcategory->translation(app()->getLocale())->title ?? $subcategory->translation('ka')->title }}
-                                                </span>
+                                            {{ $subcategory->translation(app()->getLocale())->title ?? $subcategory->translation('ka')->title }}
+                                        </span>
                                             </a>
                                         </li>
                                     @endforeach
@@ -164,9 +97,7 @@
         </div>
     </div>
 
-    <!-- ✅ STYLES -->
     <style>
-        /* ✅ Offcanvas animations -->
         .offcanvas {
             transition: visibility 0.3s ease, transform 0.3s ease;
         }
@@ -299,18 +230,6 @@
                         button.setAttribute('aria-expanded', 'false');
                     });
                 }
-            });
-
-            // ✅ Close offcanvas when navigating
-            document.querySelectorAll('#categoryOffcanvas a[href*="/products"]').forEach(link => {
-                link.addEventListener('click', () => {
-                    const offcanvas = bootstrap.Offcanvas.getInstance(
-                        document.getElementById('categoryOffcanvas')
-                    );
-                    if (offcanvas) {
-                        offcanvas.hide();
-                    }
-                });
             });
         });
     </script>
