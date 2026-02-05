@@ -90,7 +90,7 @@ class CitrusController extends Controller
                 'brand_id' => $request->brand_id,
                 'category_id' => $request->category_id,
                 'sku' => 'GL-'.$productData['id'],
-                'supplier_id' => 5,
+                'supplier_id' => 4,
                 'main_image' => 1,
                 'quantity' =>$quantity,
                 'in_stock' => $in_stock,
