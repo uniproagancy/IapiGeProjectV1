@@ -157,11 +157,6 @@ class Checkout extends Component
                 'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
                 'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
-
-            Log::info('Checkout form validated', [
-                'email' => $this->email,
-            ]);
-
             if (Auth::check()) {
                 $order = Order::create([
                     'user_id' => Auth::user()->id,
@@ -171,8 +166,6 @@ class Checkout extends Component
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);
-
-                // ✅ Add order items
                 foreach ($this->orderItems as $orderItem) {
                     OrderItem::create([
                         'product_id' => $orderItem['id'],
@@ -181,45 +174,40 @@ class Checkout extends Component
                         'order_id' => $order->id,
                     ]);
                 }
-
-                // ✅ Add delivery info
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
                 ]);
-
-                Log::info('Order created successfully', [
-                    'order_id' => $order->id,
-                    'amount' => $order->amount,
-                ]);
-
-                // ✅ Track purchase (Facebook Pixel)
-
-
-                // ✅ Clear cart
 //                Cart::clear();
-
-                // ✅ Process payment
+                $this->processPayment($order);
+            } else {
+                $product = Product::find($this->product_id);
+                $price = $product->price->discount_price ?? $product->price->regular_price;
+                $order = Order::create([
+                    'user_id' => 12,
+                    'payment_id' => $this->payment_id,
+                    'comment' => $this->comment,
+                    'created_by' => 12,
+                    'delivery_amount' => 0,
+                    'amount' => $this->subtotal,
+                ]);
+                OrderItem::create([
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'price' => $price,
+                    'order_id' => $order->id,
+                ]);
+                OrderDelivery::create([
+                    'order_id' => $order->id,
+                    'address' => $this->address,
+                ]);
                 $this->processPayment($order);
             }
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // ✅ Get first error field
             $errorField = array_key_first($e->errors());
-
-            Log::warning('Validation error in checkout', [
-                'error_field' => $errorField,
-                'errors' => $e->errors(),
-            ]);
-
-            // ✅ Dispatch event to scroll to error field
             $this->dispatch('scrollToError', field: $errorField);
-
-            // ✅ Show error message
             $this->dispatch('ui:error', message: 'გთხოვთ შეამოწმეთ ფორმა');
-
         } catch (Exception $e) {
-            Log::error('Order creation error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
         }
     }
