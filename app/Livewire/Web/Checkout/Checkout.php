@@ -9,6 +9,7 @@ use App\Models\Payments\Payment;
 use App\Models\Product\Product;
 use App\Models\User\User;
 use App\Services\Payments\BOGPayment;
+use App\Services\Facebook\FacebookPixelService;
 use Giorgijorji\LaravelTbcInstallment\LaravelTbcInstallment;
 use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
@@ -70,6 +71,10 @@ class Checkout extends Component
                 $this->phone = $user->phone ?? '';
                 $this->verify_phone = $user->verify_phone ?? '';
             }
+
+            // ✅ Facebook Pixel - InitiateCheckout Event
+            $this->trackInitiateCheckout();
+
         } catch (Exception $e) {
             Log::error('Checkout mount error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'გვერდის ჩატვირთვა ვერ მოხერხდა');
@@ -144,6 +149,31 @@ class Checkout extends Component
     }
 
     /**
+     * ✅ Track InitiateCheckout Event
+     */
+    private function trackInitiateCheckout()
+    {
+        try {
+            $items = [];
+            foreach ($this->orderItems as $item) {
+                $items[] = [
+                    'id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                ];
+            }
+
+            app(FacebookPixelService::class)->trackCheckout(
+                value: $this->total,
+                currency: 'GEL',
+                items: $items
+            );
+
+        } catch (Exception $e) {
+            Log::warning('Facebook Pixel InitiateCheckout error: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * ✅ Place order with validation and scroll to error
      */
     public function placeOrder()
@@ -158,6 +188,8 @@ class Checkout extends Component
                 'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
                 'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
+
+            // ✅ თუ ავტორიზებულია
             if (Auth::check()) {
                 $order = Order::create([
                     'user_id' => Auth::user()->id,
@@ -167,6 +199,7 @@ class Checkout extends Component
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);
+
                 foreach ($this->orderItems as $orderItem) {
                     OrderItem::create([
                         'product_id' => $orderItem['id'],
@@ -175,21 +208,43 @@ class Checkout extends Component
                         'order_id' => $order->id,
                     ]);
                 }
+
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
                 ]);
-//                Cart::clear();
+
+                // ✅ Facebook Pixel - Lead (ავტორიზებული)
+                $this->trackLead($order, isGuest: false);
+
                 $this->processPayment($order);
-            } else {
+            }
+            // ✅ თუ არაავტორიზებული (სწრაფი შეძენა)
+            else {
+                // Validation for guest users
+                $this->validate([
+                    'name' => 'required|string|max:255',
+                    'lastname' => 'required|string|max:255',
+                    'email' => 'required|email',
+                    'phone' => 'required|string',
+                ], [
+                    'name.required' => 'სახელი აუცილებელია',
+                    'lastname.required' => 'გვარი აუცილებელია',
+                    'email.required' => 'ელ.ფოსტა აუცილებელია',
+                    'email.email' => 'ელ.ფოსტა არასწორია',
+                    'phone.required' => 'ტელეფონი აუცილებელია',
+                ]);
+
                 $product = Product::find($this->product_id);
                 $price = $product->price->discount_price ?? $product->price->regular_price;
+
                 $user = User::create([
                     'name' => $this->name,
                     'lastname' => $this->lastname,
                     'email' => $this->email,
                     'phone' => $this->phone,
                 ]);
+
                 $order = Order::create([
                     'user_id' => $user->id,
                     'payment_id' => $this->payment_id,
@@ -198,16 +253,22 @@ class Checkout extends Component
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);
+
                 OrderItem::create([
                     'product_id' => $product->id,
                     'quantity' => 1,
                     'price' => $price,
                     'order_id' => $order->id,
                 ]);
+
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
                 ]);
+
+                // ✅ Facebook Pixel - Lead (არაავტორიზებული)
+                $this->trackLead($order, isGuest: true);
+
                 $this->processPayment($order);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -215,7 +276,65 @@ class Checkout extends Component
             $this->dispatch('scrollToError', field: $errorField);
             $this->dispatch('ui:error', message: 'გთხოვთ შეამოწმეთ ფორმა');
         } catch (Exception $e) {
+            Log::error('Place order error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეკვეთის შექმნა ვერ მოხერხდა. სცადეთ ისევ.');
+        }
+    }
+
+    /**
+     * ✅ Track Lead - Universal (ავტო-detect Test vs Production)
+     */
+    private function trackLead($order, $isGuest = false)
+    {
+        try {
+            $userData = [];
+            $contentCategory = $isGuest ? 'quick_checkout' : 'checkout';
+
+            // ✅ თუ Guest User - ფორმის მონაცემები
+            if ($isGuest) {
+                $userData = [
+                    'email' => $this->email,
+                    'phone' => $this->phone,
+                    'first_name' => $this->name,
+                    'last_name' => $this->lastname,
+                ];
+            }
+            // ✅ თუ Authorized - Test Mode-ისთვის explicit data
+            else {
+                if (config('app.env') !== 'production') {
+                    $userData = [
+                        'email' => auth()->user()->email,
+                        'phone' => auth()->user()->phone,
+                        'first_name' => auth()->user()->name,
+                        'last_name' => auth()->user()->lastname,
+                    ];
+                }
+            }
+
+            $customData = [
+                'value' => $order->amount,
+                'currency' => 'GEL',
+                'content_category' => $contentCategory,
+            ];
+
+            // ✅ Production
+            if (config('app.env') === 'production') {
+                app(FacebookPixelService::class)->trackLead(
+                    userData: $userData,
+                    customData: $customData
+                );
+            }
+            // ✅ Test/Local/Staging
+            else {
+                app(FacebookPixelService::class)->trackLeadWithTest(
+                    testCode: config('services.facebook.test_event_code', 'TEST98776'),
+                    userData: $userData,
+                    customData: $customData
+                );
+            }
+
+        } catch (Exception $e) {
+            Log::warning('Facebook Pixel Lead error: ' . $e->getMessage());
         }
     }
 
@@ -252,33 +371,33 @@ class Checkout extends Component
                     }
                     break;
                 case '7':
-                  if($order->amount < 150) {
-                     $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
-                  } else {
-                    $tbcInstallment = new LaravelTbcInstallment();
-                    $products = [];
-                    foreach ($order->items as $product) {
-                        $products[] = [
-                            'name' => $product->product->translation('ka')->title,
-                            'price' => $product->price + ($product->price * 0.05),
-                            'quantity' => $product->quantity,
-                        ];
+                    if ($order->amount < 150) {
+                        $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
+                    } else {
+                        $tbcInstallment = new LaravelTbcInstallment();
+                        $products = [];
+                        foreach ($order->items as $product) {
+                            $products[] = [
+                                'name' => $product->product->translation('ka')->title,
+                                'price' => $product->price + ($product->price * 0.05),
+                                'quantity' => $product->quantity,
+                            ];
+                        }
+                        $tbcInstallment->addProducts($products);
+                        $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                        if ($response['status_code'] === 200) {
+                            $redirectUri = $tbcInstallment->getRedirectUri();
+                            return redirect($redirectUri);
+                        }
                     }
-                    $tbcInstallment->addProducts($products);
-                    $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
-                    if($response['status_code'] === 200) {
-                        $redirectUri = $tbcInstallment->getRedirectUri();
-                        return redirect($redirectUri);
-                    }
-                  }
-                break;
+                    break;
                 case '9':
-                      if($order->amount < 150) {
+                    if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
-                      } else {
+                    } else {
                         return $this->redirect(route('credo-create-order', ['order_id' => $order['id']]));
-                      }
-                break;
+                    }
+                    break;
                 case '2':
                     $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
                 default:
