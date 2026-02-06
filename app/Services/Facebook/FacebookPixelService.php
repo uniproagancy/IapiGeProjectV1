@@ -136,6 +136,29 @@ class FacebookPixelService
     }
 
     /**
+     * ✅ Track AddToCart with Test Event Code
+     */
+    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL'): bool
+    {
+        $contents = [
+            [
+                'id' => $product['id'] ?? null,
+                'quantity' => $product['quantity'] ?? 1,
+            ]
+        ];
+
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+            'contents' => $contents,
+            'content_name' => $product['name'] ?? null,
+            'content_type' => 'product',
+        ];
+
+        return $this->trackEventWithTest('AddToCart', $customData, $testCode);
+    }
+
+    /**
      * ✅ Track event - Main method
      */
     public function trackEvent(string $eventName, array $customData = []): bool
@@ -157,7 +180,7 @@ class FacebookPixelService
             // ✅ Send to Facebook
             $response = Http::timeout(10)
                 ->post($this->endpoint, [
-                    'data' => [$eventData], // ✅ Array, არა JSON string
+                    'data' => [$eventData],
                     'access_token' => $this->accessToken,
                 ]);
 
@@ -185,6 +208,48 @@ class FacebookPixelService
     }
 
     /**
+     * ✅ Track event with Test Code
+     */
+    private function trackEventWithTest(string $eventName, array $customData, string $testCode): bool
+    {
+        try {
+            if (empty($this->pixelId) || empty($this->accessToken)) {
+                Log::warning("⚠️  Facebook Pixel not configured");
+                return false;
+            }
+
+            $eventData = $this->buildEventData($eventName, $customData);
+
+            Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
+                'test_code' => $testCode,
+            ]);
+
+            $response = Http::timeout(10)
+                ->post($this->endpoint, [
+                    'data' => [$eventData],
+                    'access_token' => $this->accessToken,
+                    'test_event_code' => $testCode,
+                ]);
+
+            if ($response->successful()) {
+                Log::info("✅ TEST Event sent: {$eventName}", [
+                    'response' => $response->json(),
+                ]);
+                return true;
+            }
+
+            Log::error("❌ TEST Event failed", [
+                'response' => $response->body(),
+            ]);
+            return false;
+
+        } catch (Exception $e) {
+            Log::error("❌ Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * ✅ Build event data with standard parameters
      */
     private function buildEventData(string $eventName, array $customData = []): array
@@ -196,25 +261,37 @@ class FacebookPixelService
             'action_source' => 'website',
         ];
 
-        // ✅ REQUIRED: User Data (ᲧᲝᲕᲔᲚᲗᲕᲘᲡ უნდა იყოს)
+        // ✅ User Data (ᲧᲝᲕᲔᲚᲗᲕᲘᲡ უნდა იყოს)
         $eventData['user_data'] = $this->buildUserData();
 
-        // ✅ Custom Data (value, currency, contents, etc.)
+        // ✅ Custom Data
         if (!empty($customData)) {
             $eventData['custom_data'] = $customData;
         }
+
+        // ✅ DEBUG: ნახე რა იგზავნება
+        Log::info('📊 Facebook Pixel Event Data', [
+            'event' => $eventName,
+            'is_authorized' => auth()->check(),
+            'user_data_keys' => array_keys($eventData['user_data']),
+            'has_email' => isset($eventData['user_data']['em']),
+            'has_phone' => isset($eventData['user_data']['ph']),
+            'has_external_id' => isset($eventData['user_data']['external_id']),
+        ]);
 
         return $eventData;
     }
 
     /**
-     * ✅ Build user data (hashed for privacy)
+     * ✅ Build user data
+     * - თუ ავტორიზებულია: IP + Agent + Email + Phone + Name + ...
+     * - თუ არ არის ავტორიზებული: მხოლოდ IP + Agent + Cookies
      */
     private function buildUserData($user = null): array
     {
         $userData = [];
 
-        // ✅ REQUIRED: IP და User Agent
+        // ✅ REQUIRED: IP და User Agent (ᲧᲝᲕᲔᲚᲗᲕᲘᲡ)
         $userData['client_ip_address'] = request()->ip();
         $userData['client_user_agent'] = request()->userAgent();
 
@@ -224,7 +301,8 @@ class FacebookPixelService
         }
 
         // ✅ თუ მომხმარებელი ავტორიზებულია
-        if ($user) {
+        if ($user && auth()->check()) {
+
             // Email (hashed)
             if (!empty($user->email)) {
                 $userData['em'] = hash('sha256', strtolower(trim($user->email)));
@@ -248,32 +326,38 @@ class FacebookPixelService
                 $userData['ln'] = hash('sha256', strtolower(trim($user->lastname)));
             }
 
-            // City
+            // City (hashed)
             if (!empty($user->city)) {
                 $userData['ct'] = hash('sha256', strtolower(trim($user->city)));
             }
 
-            // State
+            // State (hashed)
             if (!empty($user->state)) {
                 $userData['st'] = hash('sha256', strtolower(trim($user->state)));
             }
 
-            // Zip code
+            // Zip code (hashed)
             if (!empty($user->zip)) {
                 $userData['zp'] = hash('sha256', strtolower(trim($user->zip)));
             }
 
-            // Country (ISO 2-letter code)
+            // Country (hashed, ISO 2-letter code)
             if (!empty($user->country)) {
                 $userData['country'] = hash('sha256', strtolower(trim($user->country)));
             }
 
-            // External ID (customer ID)
+            // External ID (customer ID - hashed)
             if (!empty($user->id)) {
                 $userData['external_id'] = hash('sha256', (string)$user->id);
             }
+
+            Log::info('✅ Authorized user data added to Pixel event', [
+                'user_id' => $user->id,
+                'has_email' => !empty($user->email),
+                'has_phone' => !empty($user->phone),
+            ]);
         }
-        // ✅ თუ არ არის ავტორიზებული - fbp/fbc cookies
+        // ✅ თუ არ არის ავტორიზებული - მხოლოდ IP, Agent და Cookies
         else {
             // Facebook Browser ID (fbp cookie)
             if (request()->cookie('_fbp')) {
@@ -284,6 +368,12 @@ class FacebookPixelService
             if (request()->cookie('_fbc')) {
                 $userData['fbc'] = request()->cookie('_fbc');
             }
+
+            Log::info('ℹ️ Guest user data (IP + Agent only)', [
+                'ip' => request()->ip(),
+                'has_fbp_cookie' => !empty(request()->cookie('_fbp')),
+                'has_fbc_cookie' => !empty(request()->cookie('_fbc')),
+            ]);
         }
 
         return $userData;
@@ -373,66 +463,6 @@ class FacebookPixelService
             }
         } catch (\Exception $e) {
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL'): bool
-    {
-        $contents = [
-            [
-                'id' => $product['id'] ?? null,
-                'quantity' => $product['quantity'] ?? 1,
-            ]
-        ];
-
-        $customData = [
-            'value' => $value,
-            'currency' => $currency,
-            'contents' => $contents,
-            'content_name' => $product['name'] ?? null,
-            'content_type' => 'product',
-        ];
-
-        return $this->trackEventWithTest('AddToCart', $customData, $testCode);
-    }
-
-    /**
-     * ✅ Track event with Test Code
-     */
-    private function trackEventWithTest(string $eventName, array $customData, string $testCode): bool
-    {
-        try {
-            if (empty($this->pixelId) || empty($this->accessToken)) {
-                Log::warning("⚠️  Facebook Pixel not configured");
-                return false;
-            }
-
-            $eventData = $this->buildEventData($eventName, $customData);
-
-            Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}");
-
-            $response = Http::timeout(10)
-                ->post($this->endpoint, [
-                    'data' => [$eventData],
-                    'access_token' => $this->accessToken,
-                    'test_event_code' => $testCode, // ✅ Test Code
-                ]);
-
-            if ($response->successful()) {
-                Log::info("✅ TEST Event sent: {$eventName}", [
-                    'response' => $response->json(),
-                ]);
-                return true;
-            }
-
-            Log::error("❌ TEST Event failed", [
-                'response' => $response->body(),
-            ]);
-            return false;
-
-        } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
             return false;
         }
     }
