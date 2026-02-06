@@ -10,7 +10,7 @@ class FacebookPixelService
 {
     protected string $pixelId;
     protected string $accessToken;
-    protected string $apiVersion = 'v18.0';
+    protected string $apiVersion = 'v24.0';
     protected string $endpoint;
 
     /**
