@@ -53,10 +53,37 @@ class FacebookPixelService
         if (isset($params['content_type'])) {
             $customData['content_type'] = $params['content_type'];
         }
+        if (isset($params['content_ids'])) {
+            $customData['content_ids'] = $params['content_ids'];
+        }
+        if (isset($params['num_items'])) {
+            $customData['num_items'] = $params['num_items'];
+        }
 
         return $this->trackEvent('Purchase', $customData);
     }
+    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
+    {
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+        ];
 
+        if (isset($params['contents'])) {
+            $customData['contents'] = $params['contents'];
+        }
+        if (isset($params['content_type'])) {
+            $customData['content_type'] = $params['content_type'];
+        }
+        if (isset($params['content_ids'])) {
+            $customData['content_ids'] = $params['content_ids'];
+        }
+        if (isset($params['num_items'])) {
+            $customData['num_items'] = $params['num_items'];
+        }
+
+        return $this->trackEventWithTest('Purchase', $customData, $testCode);
+    }
     /**
      * ✅ Track AddToCart event
      */
@@ -132,10 +159,12 @@ class FacebookPixelService
      */
     public function trackLead(array $userData = [], array $customData = []): bool
     {
-        $eventData = [];
+        $eventData = [
+            'content_category' => 'checkout',
+        ];
 
         if (!empty($customData)) {
-            $eventData = $customData;
+            $eventData = array_merge($eventData, $customData);
         }
 
         // თუ გადმოცემულია custom user data (არაავტორიზებული)
@@ -151,10 +180,12 @@ class FacebookPixelService
      */
     public function trackLeadWithTest(string $testCode, array $userData = [], array $customData = []): bool
     {
-        $eventData = [];
+        $eventData = [
+            'content_category' => 'checkout',
+        ];
 
         if (!empty($customData)) {
-            $eventData = $customData;
+            $eventData = array_merge($eventData, $customData);
         }
 
         if (!empty($userData)) {
@@ -163,6 +194,7 @@ class FacebookPixelService
 
         return $this->trackEventWithTest('Lead', $eventData, $testCode);
     }
+
     /**
      * ✅ Track Custom event
      */
@@ -617,55 +649,6 @@ class FacebookPixelService
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
             return false;
         }
-    }
-
-    public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
-    {
-        $customData = [
-            'value' => $value,
-            'currency' => $currency,
-        ];
-
-        if (isset($params['contents'])) {
-            $customData['contents'] = $params['contents'];
-        }
-        if (isset($params['content_type'])) {
-            $customData['content_type'] = $params['content_type'];
-        }
-        if (isset($params['content_ids'])) {
-            $customData['content_ids'] = $params['content_ids'];
-        }
-        if (isset($params['num_items'])) {
-            $customData['num_items'] = $params['num_items'];
-        }
-
-        return $this->trackEvent('Purchase', $customData);
-    }
-
-    /**
-     * ✅ Track Purchase with Test Code
-     */
-    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
-    {
-        $customData = [
-            'value' => $value,
-            'currency' => $currency,
-        ];
-
-        if (isset($params['contents'])) {
-            $customData['contents'] = $params['contents'];
-        }
-        if (isset($params['content_type'])) {
-            $customData['content_type'] = $params['content_type'];
-        }
-        if (isset($params['content_ids'])) {
-            $customData['content_ids'] = $params['content_ids'];
-        }
-        if (isset($params['num_items'])) {
-            $customData['num_items'] = $params['num_items'];
-        }
-
-        return $this->trackEventWithTest('Purchase', $customData, $testCode);
     }
 
     /**
