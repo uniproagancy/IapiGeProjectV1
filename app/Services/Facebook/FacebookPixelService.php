@@ -296,6 +296,48 @@ class FacebookPixelService
         }
     }
 
+    public function testWithCode(string $testEventCode = 'TEST36108'): bool
+    {
+        try {
+            Log::info('🧪 Testing Facebook Pixel with test code: ' . $testEventCode);
+
+            $eventData = [
+                'event_name' => 'PageView',
+                'event_time' => time(),
+                'event_source_url' => 'https://yourwebsite.com/test',
+                'action_source' => 'website',
+                'user_data' => [
+                    'em' => hash('sha256', 'test@example.com'),
+                    'ph' => hash('sha256', '1234567890'),
+                ],
+            ];
+
+            $response = Http::timeout(10)
+                ->post($this->endpoint, [
+                    'data' => json_encode([$eventData]),
+                    'access_token' => $this->accessToken,
+                    'test_event_code' => $testEventCode, // ✅ აქ ემატება ტესტ კოდი
+                ]);
+
+            if ($response->successful()) {
+                Log::info('✅ Facebook Pixel test successful', [
+                    'response' => $response->json(),
+                ]);
+                return true;
+            } else {
+                Log::error('❌ Facebook Pixel test failed', [
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                ]);
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     /**
      * ✅ Get Pixel configuration
      */
