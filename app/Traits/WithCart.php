@@ -46,6 +46,7 @@ trait WithCart
             ]);
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
+            $this->fbPixel->trackAddToCart(['id' => $product->id], $quantity);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $this->dispatch('ui:error', message: 'პროდუქტი ნაპოვნი არ არის!', type: 'error');
         } catch (\Exception $e) {
