@@ -282,7 +282,7 @@ class Checkout extends Component
     }
 
     /**
-     * ✅ Track Lead - Universal (ავტო-detect Test vs Production)
+     * ✅ Track Lead - Universal (Order Items-დან პროდუქტები)
      */
     private function trackLead($order, $isGuest = false)
     {
@@ -311,19 +311,29 @@ class Checkout extends Component
                 }
             }
 
-            // ✅ პროდუქტების ინფორმაცია
+            // ✅ პროდუქტების ინფორმაცია - Order Items-დან (უკვე შენახულია Database-ში)
             $contents = [];
             $contentIds = [];
             $contentNames = [];
 
-            foreach ($this->orderItems as $item) {
-                $contents[] = [
-                    'id' => $item['id'],
-                    'quantity' => $item['quantity'],
-                    'item_price' => $item['price'],
-                ];
-                $contentIds[] = $item['id'];
-                $contentNames[] = $item['name'];
+            // Load fresh order items with product relations
+            $orderItems = OrderItem::with('product.translations', 'product.price')
+                ->where('order_id', $order->id)
+                ->get();
+
+            foreach ($orderItems as $orderItem) {
+                $product = $orderItem->product;
+                if ($product) {
+                    $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
+
+                    $contents[] = [
+                        'id' => $product->id,
+                        'quantity' => $orderItem->quantity,
+                        'item_price' => $orderItem->price,
+                    ];
+                    $contentIds[] = $product->id;
+                    $contentNames[] = $translation->title ?? 'Product #' . $product->id;
+                }
             }
 
             $customData = [
@@ -331,10 +341,10 @@ class Checkout extends Component
                 'currency' => 'GEL',
                 'content_category' => $contentCategory,
                 'content_type' => 'product',
-                'contents' => $contents, // ✅ პროდუქტების სია
-                'content_ids' => $contentIds, // ✅ პროდუქტის ID-ები
-                'content_name' => implode(', ', array_slice($contentNames, 0, 3)), // ✅ პირველი 3 პროდუქტის სახელი
-                'num_items' => count($this->orderItems), // ✅ პროდუქტების რაოდენობა
+                'contents' => $contents,
+                'content_ids' => $contentIds,
+                'content_name' => implode(', ', array_slice($contentNames, 0, 3)),
+                'num_items' => count($contents),
             ];
 
             // ✅ Production
@@ -353,8 +363,20 @@ class Checkout extends Component
                 );
             }
 
+            Log::info('✅ Facebook Pixel Lead tracked', [
+                'order_id' => $order->id,
+                'is_guest' => $isGuest,
+                'amount' => $order->amount,
+                'products_count' => count($contents),
+                'content_ids' => $contentIds,
+                'product_names' => array_slice($contentNames, 0, 3),
+            ]);
+
         } catch (Exception $e) {
-            Log::warning('Facebook Pixel Lead error: ' . $e->getMessage());
+            Log::error('Facebook Pixel Lead error: ' . $e->getMessage(), [
+                'order_id' => $order->id ?? null,
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 
