@@ -1,5 +1,5 @@
 <div>
-    <!-- ✅ Shopping Cart Offcanvas - Fixed Modal Sequence -->
+    <!-- ✅ Shopping Cart Offcanvas -->
     <div class="offcanvas offcanvas-end pb-sm-2 px-sm-2"
          id="shoppingCart"
          tabindex="-1"
@@ -100,7 +100,6 @@
                 </div>
                 <div class="d-flex w-100 gap-3">
                     @auth
-                        <!-- ✅ User is logged in - show checkout links -->
                         <a class="btn btn-lg btn-secondary w-100 font-neue"
                            href="{{ route('web.user.index', ['page' => 'cart']) }}">
                             კალათის ნახვა
@@ -111,8 +110,7 @@
                         </a>
                     @else
                         <button type="button"
-                                class="btn btn-lg btn-primary w-100 font-neue"
-                                id="checkoutBtn">
+                                class="btn btn-lg btn-primary w-100 font-neue checkout-trigger">
                             შეკვეთა
                         </button>
                     @endif
@@ -120,44 +118,13 @@
             </div>
         @endif
     </div>
+
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            // ✅ Get checkout button
-            const checkoutBtn = document.getElementById('checkoutBtn');
+        // ✅ Event Delegation - მუშაობს Livewire update-ის შემდეგაც
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('checkout-trigger')) {
+                e.preventDefault();
 
-            if (checkoutBtn) {
-                checkoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    console.log('✅ Checkout clicked - closing cart first...');
-
-                    // ✅ Step 1: Close shopping cart
-                    const cartOffcanvas = document.getElementById('shoppingCart');
-                    const offcanvas = bootstrap.Offcanvas.getInstance(cartOffcanvas);
-
-                    if (offcanvas) {
-                        // ✅ Step 2: After cart closes, show login modal
-                        offcanvas.hide();
-
-                        // ✅ Wait for offcanvas to close (300ms animation)
-                        setTimeout(() => {
-                            console.log('✅ Cart closed - opening login modal...');
-                            const loginModal = new bootstrap.Modal(
-                                document.getElementById('loginModal'),
-                                { backdrop: 'static', keyboard: false }
-                            );
-                            loginModal.show();
-                        }, 300);  // Bootstrap offcanvas animation duration
-                    }
-                });
-            }
-        });
-
-        // ✅ Alternative: Livewire event listener approach
-        // Uncomment if you want to use Livewire events instead
-        /*
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('showLoginModal', () => {
                 const cartOffcanvas = document.getElementById('shoppingCart');
                 const offcanvas = bootstrap.Offcanvas.getInstance(cartOffcanvas);
 
@@ -165,15 +132,17 @@
                     offcanvas.hide();
 
                     setTimeout(() => {
-                        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                        const loginModal = new bootstrap.Modal(
+                            document.getElementById('loginModal'),
+                            { backdrop: 'static', keyboard: false }
+                        );
                         loginModal.show();
                     }, 300);
                 }
-            });
+            }
         });
-        */
 
-        // ✅ Keep the existing offcanvas update behavior
+        // ✅ Offcanvas update behavior
         document.addEventListener('livewire:updated', function () {
             const offcanvasElement = document.getElementById('shoppingCart');
             const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
@@ -185,7 +154,6 @@
     </script>
 
     <style>
-        /* ✅ Optional: Add smooth transition to cart closing */
         .offcanvas {
             transition: visibility 0.3s ease, transform 0.3s ease;
         }
