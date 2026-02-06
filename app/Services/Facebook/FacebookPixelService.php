@@ -331,7 +331,6 @@ class FacebookPixelService
                 ]);
                 return false;
             }
-
         } catch (\Exception $e) {
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
             return false;
