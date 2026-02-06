@@ -7,13 +7,14 @@ use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
-Route::get('/test-conversions', function (FacebookPixelService $fbPixel) {
-    return $fbPixel->testWithCode('TEST36108')
-        ? '✅ Conversions API works!'
-        : '❌ Check your setup';
-});
+
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
+    Route::get('/test-conversions', function (FacebookPixelService $fbPixel) {
+        return $fbPixel->testWithCode()
+            ? '✅ Conversions API works!'
+            : '❌ Check your setup';
+    });
     Route::name('web.')->group(function () {
 
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
