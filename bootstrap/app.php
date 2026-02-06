@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return route('web.main.index');
         });
+
         $middleware->alias([
             'localize' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
             'localizationRedirect' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
@@ -25,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'localeCookieRedirect' => \Mcamara\LaravelLocalization\Middleware\LocaleCookieRedirect::class,
             'localeViewPath' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath::class,
             'check.role' => \App\Http\Middleware\CheckRole::class,
+            'doNotCacheResponse' => \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class,
+        ]);
+        $middleware->web(append: [
+            \Spatie\ResponseCache\Middlewares\CacheResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
