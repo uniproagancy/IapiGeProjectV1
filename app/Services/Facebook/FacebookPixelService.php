@@ -19,7 +19,7 @@ class FacebookPixelService
     public function __construct()
     {
         $this->pixelId = config('services.facebook.pixel_id', '1280014533998229');
-        $this->accessToken = config('services.facebook.access_token', '1565035891434576|X-sOaj_xJT4t1-UnMcNOFO_-SPc');
+        $this->accessToken = config('services.facebook.access_token', 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD');
         $this->apiVersion = config('services.facebook.api_version', 'v18.0');
         if (empty($this->pixelId) || empty($this->accessToken)) {
             Log::warning('⚠️  Facebook Pixel credentials not configured');
