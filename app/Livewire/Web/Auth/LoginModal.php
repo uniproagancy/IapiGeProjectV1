@@ -26,7 +26,7 @@ class LoginModal extends Component
     public function login()
     {
         $this->validate();
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], 1)) {
             $this->dispatch('close-modal', 'loginModal');
         } else {
             $this->dispatch('ui:error', message: 'ელ-ფოსტა ან პაროლი არასწორია!');
