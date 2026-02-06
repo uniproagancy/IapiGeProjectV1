@@ -7,6 +7,7 @@ use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderItem;
 use App\Models\Payments\Payment;
 use App\Models\Product\Product;
+use App\Models\User\User;
 use App\Services\Payments\BOGPayment;
 use Giorgijorji\LaravelTbcInstallment\LaravelTbcInstallment;
 use App\Traits\WithCart;
@@ -183,11 +184,17 @@ class Checkout extends Component
             } else {
                 $product = Product::find($this->product_id);
                 $price = $product->price->discount_price ?? $product->price->regular_price;
+                $user = User::create([
+                    'name' => $this->name,
+                    'lastname' => $this->lastname,
+                    'email' => $this->email,
+                    'phone' => $this->phone,
+                ]);
                 $order = Order::create([
-                    'user_id' => 12,
+                    'user_id' => $user->id,
                     'payment_id' => $this->payment_id,
                     'comment' => $this->comment,
-                    'created_by' => 12,
+                    'created_by' => $user->id,
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);

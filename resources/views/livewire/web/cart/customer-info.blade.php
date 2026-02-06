@@ -87,19 +87,16 @@
                 </div>
             </div>
             <div class="col-sm-6">
-                <label for="email" class="form-label">ელფოსტა <span class="text-danger">*</span></label>
+                <label for="email" class="form-label">ელ-ფოსტა</label>
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="ci-mail"></i>
                     </span>
                     <input type="email"
-                           class="form-control @error('email') is-invalid @enderror"
+                           class="form-control"
                            id="email"
                            wire:model="email"
                            placeholder="example@mail.com">
-                    @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
             </div>
             <div class="col-sm-6">
