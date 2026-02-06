@@ -225,7 +225,7 @@ class Checkout extends Component
                 $this->validate([
                     'name' => 'required|string|max:255',
                     'lastname' => 'required|string|max:255',
-                    'email' => 'required|email',
+                    'email' => 'email',
                     'phone' => 'required|string',
                 ], [
                     'name.required' => 'სახელი აუცილებელია',

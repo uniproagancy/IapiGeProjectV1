@@ -619,6 +619,55 @@ class FacebookPixelService
         }
     }
 
+    public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
+    {
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+        ];
+
+        if (isset($params['contents'])) {
+            $customData['contents'] = $params['contents'];
+        }
+        if (isset($params['content_type'])) {
+            $customData['content_type'] = $params['content_type'];
+        }
+        if (isset($params['content_ids'])) {
+            $customData['content_ids'] = $params['content_ids'];
+        }
+        if (isset($params['num_items'])) {
+            $customData['num_items'] = $params['num_items'];
+        }
+
+        return $this->trackEvent('Purchase', $customData);
+    }
+
+    /**
+     * ✅ Track Purchase with Test Code
+     */
+    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
+    {
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+        ];
+
+        if (isset($params['contents'])) {
+            $customData['contents'] = $params['contents'];
+        }
+        if (isset($params['content_type'])) {
+            $customData['content_type'] = $params['content_type'];
+        }
+        if (isset($params['content_ids'])) {
+            $customData['content_ids'] = $params['content_ids'];
+        }
+        if (isset($params['num_items'])) {
+            $customData['num_items'] = $params['num_items'];
+        }
+
+        return $this->trackEventWithTest('Purchase', $customData, $testCode);
+    }
+
     /**
      * ✅ Get Pixel configuration
      */
