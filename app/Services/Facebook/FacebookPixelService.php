@@ -21,9 +21,11 @@ class FacebookPixelService
         $this->pixelId = config('services.facebook.pixel_id', '1280014533998229');
         $this->accessToken = config('services.facebook.access_token', 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD');
         $this->apiVersion = config('services.facebook.api_version', 'v24.0');
+
         if (empty($this->pixelId) || empty($this->accessToken)) {
             Log::warning('⚠️  Facebook Pixel credentials not configured');
         }
+
         $this->endpoint = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
     }
 
@@ -40,12 +42,19 @@ class FacebookPixelService
      */
     public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
     {
-        $eventData = array_merge($params, [
+        $customData = [
             'value' => $value,
             'currency' => $currency,
-        ]);
+        ];
 
-        return $this->trackEvent('Purchase', $eventData);
+        if (isset($params['contents'])) {
+            $customData['contents'] = $params['contents'];
+        }
+        if (isset($params['content_type'])) {
+            $customData['content_type'] = $params['content_type'];
+        }
+
+        return $this->trackEvent('Purchase', $customData);
     }
 
     /**
@@ -57,19 +66,18 @@ class FacebookPixelService
             [
                 'id' => $product['id'] ?? null,
                 'quantity' => $product['quantity'] ?? 1,
-                'delivery_category' => 'curbside',
             ]
         ];
 
-        $eventData = array_merge($params, [
+        $customData = [
             'value' => $value,
             'currency' => $currency,
-            'contents' => json_encode($contents),
+            'contents' => $contents,
             'content_name' => $product['name'] ?? null,
             'content_type' => 'product',
-        ]);
+        ];
 
-        return $this->trackEvent('AddToCart', $eventData);
+        return $this->trackEvent('AddToCart', $customData);
     }
 
     /**
@@ -81,20 +89,19 @@ class FacebookPixelService
             [
                 'id' => $product['id'] ?? null,
                 'quantity' => 1,
-                'delivery_category' => 'curbside',
             ]
         ];
 
-        $eventData = array_merge($params, [
+        $customData = [
             'content_name' => $product['name'] ?? null,
-            'content_ids' => json_encode([$product['id'] ?? null]),
+            'content_ids' => [$product['id'] ?? null],
             'content_type' => 'product',
             'value' => $product['price'] ?? 0,
             'currency' => 'GEL',
-            'contents' => json_encode($contents),
-        ]);
+            'contents' => $contents,
+        ];
 
-        return $this->trackEvent('ViewContent', $eventData);
+        return $this->trackEvent('ViewContent', $customData);
     }
 
     /**
@@ -110,14 +117,14 @@ class FacebookPixelService
             ];
         }
 
-        $eventData = array_merge($params, [
+        $customData = [
             'value' => $value,
             'currency' => $currency,
-            'contents' => json_encode($contents),
+            'contents' => $contents,
             'content_type' => 'product',
-        ]);
+        ];
 
-        return $this->trackEvent('InitiateCheckout', $eventData);
+        return $this->trackEvent('InitiateCheckout', $customData);
     }
 
     /**
@@ -131,7 +138,7 @@ class FacebookPixelService
     /**
      * ✅ Track event - Main method
      */
-    public function trackEvent(string $eventName, array $params = []): bool
+    public function trackEvent(string $eventName, array $customData = []): bool
     {
         try {
             // ✅ Validate required fields
@@ -141,7 +148,7 @@ class FacebookPixelService
             }
 
             // ✅ Build event data
-            $eventData = $this->buildEventData($eventName, $params);
+            $eventData = $this->buildEventData($eventName, $customData);
 
             Log::info("📤 Sending Facebook Pixel event: {$eventName}", [
                 'data' => $eventData,
@@ -150,7 +157,7 @@ class FacebookPixelService
             // ✅ Send to Facebook
             $response = Http::timeout(10)
                 ->post($this->endpoint, [
-                    'data' => json_encode([$eventData]),
+                    'data' => [$eventData], // ✅ Array, არა JSON string
                     'access_token' => $this->accessToken,
                 ]);
 
@@ -180,23 +187,22 @@ class FacebookPixelService
     /**
      * ✅ Build event data with standard parameters
      */
-    private function buildEventData(string $eventName, array $params = []): array
+    private function buildEventData(string $eventName, array $customData = []): array
     {
         $eventData = [
             'event_name' => $eventName,
             'event_time' => time(),
             'event_source_url' => request()->url(),
-            'opt_out' => false,
+            'action_source' => 'website',
         ];
 
-        // ✅ Add user data if available
-        if (auth()->check()) {
-            $user = auth()->user();
-            $eventData['user_data'] = $this->buildUserData($user);
-        }
+        // ✅ REQUIRED: User Data (ᲧᲝᲕᲔᲚᲗᲕᲘᲡ უნდა იყოს)
+        $eventData['user_data'] = $this->buildUserData();
 
-        // ✅ Merge custom parameters
-        $eventData = array_merge($eventData, $params);
+        // ✅ Custom Data (value, currency, contents, etc.)
+        if (!empty($customData)) {
+            $eventData['custom_data'] = $customData;
+        }
 
         return $eventData;
     }
@@ -204,56 +210,80 @@ class FacebookPixelService
     /**
      * ✅ Build user data (hashed for privacy)
      */
-    private function buildUserData($user): array
+    private function buildUserData($user = null): array
     {
         $userData = [];
 
-        // ✅ Email (hashed)
-        if (!empty($user->email)) {
-            $userData['em'] = hash('sha256', strtolower(trim($user->email)));
+        // ✅ REQUIRED: IP და User Agent
+        $userData['client_ip_address'] = request()->ip();
+        $userData['client_user_agent'] = request()->userAgent();
+
+        // თუ არ არის user გადმოცემული, სცადე auth()->user()
+        if (!$user) {
+            $user = auth()->user();
         }
 
-        // ✅ Phone (hashed, 10+ digits)
-        if (!empty($user->phone)) {
-            $phone = preg_replace('/\D/', '', $user->phone);
-            if (strlen($phone) >= 10) {
-                $userData['ph'] = hash('sha256', $phone);
+        // ✅ თუ მომხმარებელი ავტორიზებულია
+        if ($user) {
+            // Email (hashed)
+            if (!empty($user->email)) {
+                $userData['em'] = hash('sha256', strtolower(trim($user->email)));
+            }
+
+            // Phone (hashed, 10+ digits)
+            if (!empty($user->phone)) {
+                $phone = preg_replace('/\D/', '', $user->phone);
+                if (strlen($phone) >= 10) {
+                    $userData['ph'] = hash('sha256', $phone);
+                }
+            }
+
+            // First name (hashed)
+            if (!empty($user->name)) {
+                $userData['fn'] = hash('sha256', strtolower(trim($user->name)));
+            }
+
+            // Last name (hashed)
+            if (!empty($user->lastname)) {
+                $userData['ln'] = hash('sha256', strtolower(trim($user->lastname)));
+            }
+
+            // City
+            if (!empty($user->city)) {
+                $userData['ct'] = hash('sha256', strtolower(trim($user->city)));
+            }
+
+            // State
+            if (!empty($user->state)) {
+                $userData['st'] = hash('sha256', strtolower(trim($user->state)));
+            }
+
+            // Zip code
+            if (!empty($user->zip)) {
+                $userData['zp'] = hash('sha256', strtolower(trim($user->zip)));
+            }
+
+            // Country (ISO 2-letter code)
+            if (!empty($user->country)) {
+                $userData['country'] = hash('sha256', strtolower(trim($user->country)));
+            }
+
+            // External ID (customer ID)
+            if (!empty($user->id)) {
+                $userData['external_id'] = hash('sha256', (string)$user->id);
             }
         }
+        // ✅ თუ არ არის ავტორიზებული - fbp/fbc cookies
+        else {
+            // Facebook Browser ID (fbp cookie)
+            if (request()->cookie('_fbp')) {
+                $userData['fbp'] = request()->cookie('_fbp');
+            }
 
-        // ✅ First name (hashed)
-        if (!empty($user->name)) {
-            $userData['fn'] = hash('sha256', strtolower(trim($user->name)));
-        }
-
-        // ✅ Last name (hashed)
-        if (!empty($user->lastname)) {
-            $userData['ln'] = hash('sha256', strtolower(trim($user->lastname)));
-        }
-
-        // ✅ City
-        if (!empty($user->city)) {
-            $userData['ct'] = hash('sha256', strtolower(trim($user->city)));
-        }
-
-        // ✅ State
-        if (!empty($user->state)) {
-            $userData['st'] = hash('sha256', strtolower(trim($user->state)));
-        }
-
-        // ✅ Zip code
-        if (!empty($user->zip)) {
-            $userData['zp'] = hash('sha256', strtolower(trim($user->zip)));
-        }
-
-        // ✅ Country
-        if (!empty($user->country)) {
-            $userData['country'] = hash('sha256', strtolower(trim($user->country)));
-        }
-
-        // ✅ External ID (customer ID)
-        if (!empty($user->id)) {
-            $userData['external_id'] = hash('sha256', (string)$user->id);
+            // Facebook Click ID (fbc cookie)
+            if (request()->cookie('_fbc')) {
+                $userData['fbc'] = request()->cookie('_fbc');
+            }
         }
 
         return $userData;
@@ -270,11 +300,16 @@ class FacebookPixelService
             $testData = [
                 'event_name' => 'TestEvent',
                 'event_time' => time(),
+                'action_source' => 'website',
+                'user_data' => [
+                    'client_ip_address' => request()->ip(),
+                    'client_user_agent' => request()->userAgent(),
+                ],
             ];
 
             $response = Http::timeout(10)
                 ->post($this->endpoint, [
-                    'data' => json_encode([$testData]),
+                    'data' => [$testData],
                     'access_token' => $this->accessToken,
                 ]);
 
@@ -296,6 +331,9 @@ class FacebookPixelService
         }
     }
 
+    /**
+     * ✅ Test with Event Code (for Facebook Events Manager testing)
+     */
     public function testWithCode(string $testEventCode = 'TEST36108'): bool
     {
         try {
@@ -307,6 +345,8 @@ class FacebookPixelService
                 'event_source_url' => 'https://iapi.ge/',
                 'action_source' => 'website',
                 'user_data' => [
+                    'client_ip_address' => request()->ip(),
+                    'client_user_agent' => request()->userAgent(),
                     'em' => hash('sha256', 'test@example.com'),
                     'ph' => hash('sha256', '1234567890'),
                 ],
@@ -314,9 +354,9 @@ class FacebookPixelService
 
             $response = Http::timeout(10)
                 ->post($this->endpoint, [
-                    'data' => json_encode([$eventData]),
+                    'data' => [$eventData],
                     'access_token' => $this->accessToken,
-                    'test_event_code' => $testEventCode, // ✅ აქ ემატება ტესტ კოდი
+                    'test_event_code' => $testEventCode,
                 ]);
 
             if ($response->successful()) {

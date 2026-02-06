@@ -5,9 +5,20 @@ namespace App\Traits;
 use App\Models\Cart\ShoppingCart;
 use App\Models\Product\Product;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use App\Services\Facebook\FacebookPixelService;
 
 trait WithCart
 {
+    protected $fbPixel;
+
+    /**
+     * ✅ Initialize Facebook Pixel Service
+     */
+    public function bootWithCart()
+    {
+        $this->fbPixel = app(FacebookPixelService::class);
+    }
+
     public function addToCart($productId, $quantity = 1)
     {
         try {
@@ -15,22 +26,28 @@ trait WithCart
                 $this->dispatch('ui:error', message: 'რაოდენობა უნდა იყოს 1 ან მეტი!', type: 'error');
                 return;
             }
+
             $product = Product::with(['translations', 'price'])->findOrFail($productId);
+
             if (!$product->price) {
                 $this->dispatch('ui:error', message: 'პროდუქტის ფასი არ არის მიუთითებული!', type: 'error');
                 return;
             }
+
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-			if($product->price->discount_price != '0.0' AND $product->price->discount_price != null) {
-				$price = $product->price->discount_price;
-			} else {
-				$price = $product->price->regular_price;
-			}
+
+            if($product->price->discount_price != '0.0' AND $product->price->discount_price != null) {
+                $price = $product->price->discount_price;
+            } else {
+                $price = $product->price->regular_price;
+            }
+
             $existingItem = Cart::get($product->id);
             if ($existingItem) {
                 $this->updateCartQuantity($product->id, $existingItem->quantity + $quantity);
                 return;
             }
+
             Cart::add([
                 'id' => $product->id,
                 'name' => $translation->title,
@@ -44,9 +61,21 @@ trait WithCart
                     'regular_price' => $product->price->regular_price,
                 ]
             ]);
+
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
-            $this->fbPixel->trackAddToCart(['id' => $product->id], $quantity);
+
+            // ✅ Facebook Pixel - AddToCart Event
+            $this->fbPixel->trackAddToCart(
+                product: [
+                    'id' => $product->id,
+                    'name' => $translation->title,
+                    'quantity' => $quantity,
+                ],
+                value: $price * $quantity,
+                currency: 'GEL'
+            );
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $this->dispatch('ui:error', message: 'პროდუქტი ნაპოვნი არ არის!', type: 'error');
         } catch (\Exception $e) {
@@ -60,12 +89,14 @@ trait WithCart
             if ($quantity < 1) {
                 return $this->removeFromCart($itemId);
             }
+
             Cart::update($itemId, [
                 'quantity' => [
                     'relative' => false,
                     'value' => $quantity
                 ]
             ]);
+
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated');
         } catch (\Exception $e) {
@@ -140,6 +171,7 @@ trait WithCart
             $userId = auth()->id();
             $sessionId = session()->getId();
             $cartContent = Cart::getContent();
+
             if (empty($cartContent)) {
                 if ($userId) {
                     ShoppingCart::where('user_id', $userId)->delete();
@@ -183,18 +215,20 @@ trait WithCart
     {
         try {
             if (!Cart::getContent()->isEmpty()) {
-
                 Cart::clear();
                 $userId = auth()->id();
                 $sessionId = session()->getId();
+
                 if ($userId) {
                     $items = ShoppingCart::where('user_id', $userId)->get();
                 } else {
                     $items = ShoppingCart::where('session_id', $sessionId)->get();
                 }
+
                 if ($items->isEmpty()) {
                     return;
                 }
+
                 foreach ($items as $item) {
                     Cart::add([
                         'id' => $item->product_id,
@@ -204,9 +238,9 @@ trait WithCart
                         'attributes' => $item->attributes,
                     ]);
                 }
+
                 $this->dispatch('cartUpdated');
             }
-
         } catch (\Exception $e) {
         }
     }
