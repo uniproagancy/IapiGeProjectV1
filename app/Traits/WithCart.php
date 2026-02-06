@@ -66,8 +66,8 @@ trait WithCart
             $this->dispatch('cartUpdated');
 
             // ✅ Facebook Pixel - AddToCart Event
-            $this->fbPixel->trackAddToCart(
-//                testCode: 'TEST12345', // ← შენი test code
+            $this->fbPixel->trackAddToCartWithTest(
+                testCode: 'TEST98776', // ← შენი test code
                 product: [
                     'id' => $product->id,
                     'name' => $translation->title,
