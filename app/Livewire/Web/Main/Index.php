@@ -12,13 +12,22 @@ use App\Models\Content\Slider;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\Promotion;
 
+use App\Services\Facebook\FacebookPixelService;
+
 class Index extends Component
 {
 
-    protected $google;
-    public $spreadsheetId = '';
-    public $sheetData;
-    public $range = 'Sheet1!A1:C10';
+    protected $fbPixel;
+
+    public function boot(FacebookPixelService $fbPixel)
+    {
+        $this->fbPixel = $fbPixel;
+    }
+
+    public function mount()
+    {
+        $this->fbPixel->trackPageView();
+    }
 
     #[Computed]
     public function productCategories()

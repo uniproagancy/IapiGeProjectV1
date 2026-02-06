@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Tracking;
+namespace App\Services\Facebook;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -18,14 +18,12 @@ class FacebookPixelService
      */
     public function __construct()
     {
-        $this->pixelId = config('services.facebook.pixel_id', '');
-        $this->accessToken = config('services.facebook.access_token', '');
+        $this->pixelId = config('services.facebook.pixel_id', '1280014533998229');
+        $this->accessToken = config('services.facebook.access_token', '1565035891434576|X-sOaj_xJT4t1-UnMcNOFO_-SPc');
         $this->apiVersion = config('services.facebook.api_version', 'v18.0');
-
         if (empty($this->pixelId) || empty($this->accessToken)) {
             Log::warning('⚠️  Facebook Pixel credentials not configured');
         }
-
         $this->endpoint = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
     }
 
