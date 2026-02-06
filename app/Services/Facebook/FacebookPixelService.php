@@ -304,7 +304,7 @@ class FacebookPixelService
             $eventData = [
                 'event_name' => 'PageView',
                 'event_time' => time(),
-                'event_source_url' => 'https://yourwebsite.com/test',
+                'event_source_url' => 'https://iapi.ge/',
                 'action_source' => 'website',
                 'user_data' => [
                     'em' => hash('sha256', 'test@example.com'),
