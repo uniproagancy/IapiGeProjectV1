@@ -377,6 +377,66 @@ class FacebookPixelService
         }
     }
 
+    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL'): bool
+    {
+        $contents = [
+            [
+                'id' => $product['id'] ?? null,
+                'quantity' => $product['quantity'] ?? 1,
+            ]
+        ];
+
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+            'contents' => $contents,
+            'content_name' => $product['name'] ?? null,
+            'content_type' => 'product',
+        ];
+
+        return $this->trackEventWithTest('AddToCart', $customData, $testCode);
+    }
+
+    /**
+     * ✅ Track event with Test Code
+     */
+    private function trackEventWithTest(string $eventName, array $customData, string $testCode): bool
+    {
+        try {
+            if (empty($this->pixelId) || empty($this->accessToken)) {
+                Log::warning("⚠️  Facebook Pixel not configured");
+                return false;
+            }
+
+            $eventData = $this->buildEventData($eventName, $customData);
+
+            Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}");
+
+            $response = Http::timeout(10)
+                ->post($this->endpoint, [
+                    'data' => [$eventData],
+                    'access_token' => $this->accessToken,
+                    'test_event_code' => $testCode, // ✅ Test Code
+                ]);
+
+            if ($response->successful()) {
+                Log::info("✅ TEST Event sent: {$eventName}", [
+                    'response' => $response->json(),
+                ]);
+                return true;
+            }
+
+            Log::error("❌ TEST Event failed", [
+                'response' => $response->body(),
+            ]);
+            return false;
+
+        } catch (Exception $e) {
+            Log::error("❌ Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
     /**
      * ✅ Get Pixel configuration
      */
