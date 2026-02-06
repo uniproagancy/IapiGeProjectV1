@@ -17,16 +17,16 @@ use App\Services\Facebook\FacebookPixelService;
 class Index extends Component
 {
 
-//    protected $fbPixel;
+    protected $fbPixel;
 
-//    public function boot(FacebookPixelService $fbPixel)
-//    {
-//        $this->fbPixel = $fbPixel;
-//    }
+    public function boot(FacebookPixelService $fbPixel)
+    {
+        $this->fbPixel = $fbPixel;
+    }
 
     public function mount()
     {
-//        $this->fbPixel->trackPageView();
+        $this->fbPixel->trackPageView();
     }
 
     #[Computed]
