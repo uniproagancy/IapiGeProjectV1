@@ -132,12 +132,10 @@ class FacebookPixelService
      */
     public function trackLead(array $userData = [], array $customData = []): bool
     {
-        $eventData = [
-            'content_category' => 'checkout',
-        ];
+        $eventData = [];
 
         if (!empty($customData)) {
-            $eventData = array_merge($eventData, $customData);
+            $eventData = $customData;
         }
 
         // თუ გადმოცემულია custom user data (არაავტორიზებული)
@@ -153,12 +151,10 @@ class FacebookPixelService
      */
     public function trackLeadWithTest(string $testCode, array $userData = [], array $customData = []): bool
     {
-        $eventData = [
-            'content_category' => 'checkout',
-        ];
+        $eventData = [];
 
         if (!empty($customData)) {
-            $eventData = array_merge($eventData, $customData);
+            $eventData = $customData;
         }
 
         if (!empty($userData)) {
@@ -167,7 +163,6 @@ class FacebookPixelService
 
         return $this->trackEventWithTest('Lead', $eventData, $testCode);
     }
-
     /**
      * ✅ Track Custom event
      */

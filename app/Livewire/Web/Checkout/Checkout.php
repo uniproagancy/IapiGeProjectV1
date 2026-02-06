@@ -311,10 +311,30 @@ class Checkout extends Component
                 }
             }
 
+            // ✅ პროდუქტების ინფორმაცია
+            $contents = [];
+            $contentIds = [];
+            $contentNames = [];
+
+            foreach ($this->orderItems as $item) {
+                $contents[] = [
+                    'id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'item_price' => $item['price'],
+                ];
+                $contentIds[] = $item['id'];
+                $contentNames[] = $item['name'];
+            }
+
             $customData = [
                 'value' => $order->amount,
                 'currency' => 'GEL',
                 'content_category' => $contentCategory,
+                'content_type' => 'product',
+                'contents' => $contents, // ✅ პროდუქტების სია
+                'content_ids' => $contentIds, // ✅ პროდუქტის ID-ები
+                'content_name' => implode(', ', array_slice($contentNames, 0, 3)), // ✅ პირველი 3 პროდუქტის სახელი
+                'num_items' => count($this->orderItems), // ✅ პროდუქტების რაოდენობა
             ];
 
             // ✅ Production
@@ -327,7 +347,7 @@ class Checkout extends Component
             // ✅ Test/Local/Staging
             else {
                 app(FacebookPixelService::class)->trackLeadWithTest(
-                    testCode: config('services.facebook.test_event_code', 'TEST98776'),
+                    testCode: config('services.facebook.test_event_code', 'TEST12345'),
                     userData: $userData,
                     customData: $customData
                 );
