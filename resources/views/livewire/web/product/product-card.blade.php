@@ -1,4 +1,5 @@
-<div class="product-card animate-underline hover-effect-opacity bg-body rounded">
+@if(!empty($product->translations->where('locale', 'ka')->first()->slug))
+    <div class="product-card animate-underline hover-effect-opacity bg-body rounded">
     <div class="position-relative">
         <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 mt-3 me-3">
             <div class="d-flex flex-column gap-2">
@@ -87,3 +88,4 @@
         }
     </style>
 </div>
+@endif
