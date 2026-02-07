@@ -30,7 +30,7 @@ class CredoController extends Controller
             $check = md5($checkString);
             $payload = [
                 'merchantId' => '12545',
-                'orderCode'  => '17407',
+                'orderCode'  => $order->id,
                 'check'      => $check,
                 'products'   => $products,
             ];
