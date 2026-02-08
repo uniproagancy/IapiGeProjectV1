@@ -43,10 +43,10 @@ class FacebookFeedController extends Controller
                 'id' => $product->id,
                 'title' => $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title,
                 'image_link' => url('storage/'.$product_image),
-                'description' => $product->translations->where('locale', app()->getLocale())->first()->description ?? $product->translations->where('locale', 'ka')->first()->description,
+                'description' => htmlspecialchars($product->translations->where('locale', 'ka')->first()->description),
                 'availability' => 'in stock',
                 "price" => $product_price,
-                'brand' => $product->brand->translations->where('locale', 'ka')->first()->title,
+                'brand' => htmlspecialchars($product->brand->translations->where('locale', 'ka')->first()->title),
                 'google_product_category' => $product->category->parent->google_category_id,
                 'condition' => 'new',
             ]);
