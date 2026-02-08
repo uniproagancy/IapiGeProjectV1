@@ -30,7 +30,7 @@ class FacebookFeedController extends Controller
             elseif(!empty($product->images[0]->path)) {
                 $product_image = $product->images[0]->path;
             } else{
-                $product_image = 'web-assets/img/no-product.png';
+                $product_image = url('web-assets/img/no-product.png');
             }
 
             if(!empty($product->price->discount_price)) {
@@ -42,11 +42,13 @@ class FacebookFeedController extends Controller
                 'link' => route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug),
                 'id' => $product->id,
                 'title' => $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title,
-                'image_link' => asset($product_image),
+                'image_link' => url($product_image),
                 'description' => $product->translations->where('locale', app()->getLocale())->first()->description ?? $product->translations->where('locale', 'ka')->first()->description,
                 'availability' => 'in stock',
                 "price" => $product_price,
-                'brand' => $product->brand->translations->where('locale', 'ka')->first()->name,
+                'brand' => $product->brand->translations->where('locale', 'ka')->first()->title,
+                'brand' => $product->brand->translations->where('locale', 'ka')->first()->title,
+                'google_product_category' => $product->category->parent->google_category_id,
                 'condition' => 'new',
             ]);
         }
