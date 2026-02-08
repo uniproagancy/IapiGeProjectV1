@@ -1,5 +1,5 @@
 <button type="button"
-        class="btn btn-icon btn-lg btn-secondary position-relative rounded-circle ms-2"
+        class="btn btn-icon btn-lg btn-primary position-relative rounded-circle ms-2"
         data-bs-toggle="offcanvas"
         data-bs-target="#shoppingCart"
         aria-controls="shoppingCart"

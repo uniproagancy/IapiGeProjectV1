@@ -238,6 +238,13 @@ class Checkout extends Component
                 $product = Product::find($this->product_id);
                 $price = $product->price->discount_price ?? $product->price->regular_price;
 
+//                if(!empty($this->email)) {
+//
+//                }
+                $check_user = User::where('email', $this->email)->first();
+                if($check_user){
+                    $check_user->update(['email' => $this->email]);
+                }
                 $user = User::create([
                     'name' => $this->name,
                     'lastname' => $this->lastname,
