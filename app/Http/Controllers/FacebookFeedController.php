@@ -21,7 +21,6 @@ class FacebookFeedController extends Controller
         $products = Product::where('active', 1)
             ->where('in_stock', 1)
             ->where('show', 1)
-            ->limit(20)
             ->get();
         foreach($products as $product) {
             if($product->main_image != 1) {
