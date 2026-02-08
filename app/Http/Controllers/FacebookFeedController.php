@@ -58,8 +58,7 @@ class FacebookFeedController extends Controller
                 Log::debug("Product {$product->id} gallery count: " . count($productGallery));
 
                 // Get translation with fallback
-                $translation = $product->translations->where('locale', $locale)->first()
-                    ?? $product->translations->where('locale', $fallbackLocale)->first();
+                $translation = $product->translations->where('locale', 'ka')->first() ?? '';
 
                 if (!$translation) {
                     Log::warning("Product {$product->id} has no translation");
@@ -67,7 +66,7 @@ class FacebookFeedController extends Controller
                     continue;
                 }
 
-                $brandTranslation = $product->brand->translations->where('locale', $fallbackLocale)->first();
+                $brandTranslation = $product->brand->translations->where('locale', 'ka')->first();
 
                 if (!$brandTranslation) {
                     Log::warning("Product {$product->id} brand has no translation");
