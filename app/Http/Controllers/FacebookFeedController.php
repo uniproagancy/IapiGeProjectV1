@@ -47,7 +47,6 @@ class FacebookFeedController extends Controller
                 'availability' => 'in stock',
                 "price" => $product_price,
                 'brand' => $product->brand->translations->where('locale', 'ka')->first()->title,
-                'brand' => $product->brand->translations->where('locale', 'ka')->first()->title,
                 'google_product_category' => $product->category->parent->google_category_id,
                 'condition' => 'new',
             ]);
