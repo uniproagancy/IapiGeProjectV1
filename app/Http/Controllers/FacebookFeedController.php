@@ -4,61 +4,198 @@ namespace App\Http\Controllers;
 
 use App\Models\Product\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use MeeeetDev\LaravelFacebookCatalog\LaravelFacebookCatalog;
 
 class FacebookFeedController extends Controller
 {
-    public function __construct()
+    public function getFeed()
     {
-    }
-    public function getFeed() {
-        ob_end_clean();
+        Log::info('Facebook Feed Generation Started');
+
+        // Clear any existing output buffers
+        if (ob_get_level()) {
+            Log::info('Output buffer cleared, level: ' . ob_get_level());
+            ob_end_clean();
+        }
         ob_start();
+
+        // Set feed metadata
         LaravelFacebookCatalog::setTitle('Example feed');
         LaravelFacebookCatalog::setDescription('Example feed of the Example shop');
         LaravelFacebookCatalog::setLink('https://example.shop');
         LaravelFacebookCatalog::setCurrency('GEL');
+        Log::info('Feed metadata set');
+
+        // Get products
         $products = Product::where('active', 1)
             ->where('in_stock', 1)
             ->where('show', 1)
-//            ->limit(100)
+            ->with(['translations', 'images', 'price', 'brand.translations', 'category.parent'])
             ->get();
-        foreach($products as $product) {
-            if($product->main_image != 1) {
-                $product_image = $product->main_image;
-            }
-            elseif(!empty($product->images[0]->path)) {
-                $product_image = $product->images[0]->path;
-            } else{
-                $product_image = url('web-assets/img/no-product.png');
-            }
 
-            if(!empty($product->price->discount_price)) {
-                $product_price = $product->price->discount_price;
-            } else {
-                $product_price = $product->price->regular_price;
-            }
+        Log::info('Products loaded: ' . $products->count());
 
-        if(count($product->images) > 1) {
-            foreach($product->images as $image) {
-                $product_gallery[] = url('storage/'.$image->path);
+        $locale = app()->getLocale();
+        $fallbackLocale = 'ka';
+        $successCount = 0;
+        $errorCount = 0;
+
+        foreach ($products as $product) {
+            try {
+                Log::info("Processing product ID: {$product->id}");
+
+                // Get product image
+                $productImage = $this->getProductImage($product);
+                Log::debug("Product {$product->id} image: {$productImage}");
+
+                // Get product price
+                $productPrice = $this->getProductPrice($product);
+                Log::debug("Product {$product->id} price: {$productPrice}");
+
+                // Get additional images
+                $productGallery = $this->getProductGallery($product);
+                Log::debug("Product {$product->id} gallery count: " . count($productGallery));
+
+                // Get translation with fallback
+                $translation = $product->translations->where('locale', $locale)->first()
+                    ?? $product->translations->where('locale', $fallbackLocale)->first();
+
+                if (!$translation) {
+                    Log::warning("Product {$product->id} has no translation");
+                    $errorCount++;
+                    continue;
+                }
+
+                $brandTranslation = $product->brand->translations->where('locale', $fallbackLocale)->first();
+
+                if (!$brandTranslation) {
+                    Log::warning("Product {$product->id} brand has no translation");
+                }
+
+                // Add item to catalog
+                LaravelFacebookCatalog::addItem([
+                    'link' => route('web.products.view', $translation->slug),
+                    'id' => $product->id,
+                    'title' => $translation->title,
+                    'image_link' => $productImage,
+                    'description' => strip_tags($translation->description),
+                    'availability' => 'in stock',
+                    'price' => $productPrice,
+                    'brand' => $brandTranslation->title ?? 'Unknown',
+                    'google_product_category' => $product->category->parent->google_category_id ?? '',
+                    'condition' => 'new',
+                    'additional_image_link' => $productGallery,
+                ]);
+
+                $successCount++;
+                Log::info("Product {$product->id} added successfully");
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Error processing product {$product->id}: " . $e->getMessage(), [
+                    'exception' => $e,
+                    'product_id' => $product->id,
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
         }
 
-            LaravelFacebookCatalog::addItem([
-                'link' => route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug),
-                'id' => $product->id,
-                'title' => $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title,
-                'image_link' => url('storage/'.$product_image),
-                'description' => htmlspecialchars($product->translations->where('locale', 'ka')->first()->description),
-                'availability' => 'in stock',
-                "price" => $product_price,
-                'brand' => htmlspecialchars($product->brand->translations->where('locale', 'ka')->first()->title),
-                'google_product_category' => $product->category->parent->google_category_id,
-                'condition' => 'new',
-                'additional_image_link' => $product_gallery,
+        Log::info("Feed processing complete. Success: {$successCount}, Errors: {$errorCount}");
+
+        try {
+            $xml = LaravelFacebookCatalog::generate();
+            Log::info('XML generated, length: ' . strlen($xml));
+
+            // Debug first 200 characters
+            Log::debug('XML first 200 chars: ' . substr($xml, 0, 200));
+
+            // Check for BOM or whitespace
+            $firstChars = substr($xml, 0, 10);
+            $hexDump = bin2hex($firstChars);
+            Log::debug('XML first 10 chars HEX: ' . $hexDump);
+
+            if ($hexDump !== '3c3f786d6c207665') { // <?xml ve
+                Log::warning('XML does not start with proper declaration. HEX: ' . $hexDump);
+            }
+
+            ob_end_clean();
+            Log::info('Output buffer cleaned, returning response');
+
+            return response($xml, 200, [
+                'Content-Type' => 'application/xml; charset=utf-8',
             ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error generating XML: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response('Error generating feed', 500);
         }
-        return LaravelFacebookCatalog::display();
+    }
+
+    /**
+     * Get product main image
+     */
+    private function getProductImage($product): string
+    {
+        try {
+            if ($product->main_image && $product->main_image != 1) {
+                return url('storage/' . $product->main_image);
+            }
+
+            if ($product->images->isNotEmpty() && !empty($product->images[0]->path)) {
+                return url('storage/' . $product->images[0]->path);
+            }
+
+            Log::debug("Product {$product->id} using default image");
+            return url('web-assets/img/no-product.png');
+
+        } catch (\Exception $e) {
+            Log::error("Error getting image for product {$product->id}: " . $e->getMessage());
+            return url('web-assets/img/no-product.png');
+        }
+    }
+
+    /**
+     * Get product price (discount or regular)
+     */
+    private function getProductPrice($product): float
+    {
+        try {
+            if ($product->price->discount_price) {
+                return $product->price->discount_price;
+            }
+
+            return $product->price->regular_price ?? 0;
+
+        } catch (\Exception $e) {
+            Log::error("Error getting price for product {$product->id}: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Get product gallery images
+     */
+    private function getProductGallery($product): array
+    {
+        try {
+            $gallery = [];
+
+            if ($product->images->count() > 1) {
+                foreach ($product->images as $image) {
+                    $gallery[] = url('storage/' . $image->path);
+                }
+            }
+
+            return $gallery;
+
+        } catch (\Exception $e) {
+            Log::error("Error getting gallery for product {$product->id}: " . $e->getMessage());
+            return [];
+        }
     }
 }
