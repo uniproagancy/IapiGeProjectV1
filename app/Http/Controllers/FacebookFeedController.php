@@ -38,6 +38,13 @@ class FacebookFeedController extends Controller
             } else {
                 $product_price = $product->price->regular_price;
             }
+
+        if(count($product->images) > 1) {
+            foreach($product->images as $image) {
+                $product_gallery[] = url('storage/'.$image->path);
+            }
+        }
+
             LaravelFacebookCatalog::addItem([
                 'link' => route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug),
                 'id' => $product->id,
@@ -49,6 +56,7 @@ class FacebookFeedController extends Controller
                 'brand' => htmlspecialchars($product->brand->translations->where('locale', 'ka')->first()->title),
                 'google_product_category' => $product->category->parent->google_category_id,
                 'condition' => 'new',
+                'additional_image_link' => $product_gallery,
             ]);
         }
         return LaravelFacebookCatalog::display();

@@ -9,6 +9,7 @@
                      style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </div>
             @endif
+            @if(!empty($product->images))
             @foreach($product->images as $image)
                 <div class="swiper-slide">
                     <img src="{{ asset('storage/'.$image->path) }}"
@@ -17,6 +18,7 @@
                          style="width: 100%; height: 100%; object-fit: cover; display: block;">
                 </div>
             @endforeach
+            @endif
         </div>
     </div>
     <div class="swiper main-swiper">
@@ -27,6 +29,7 @@
                      loading="lazy"
                      style="width: 100%; height: auto; object-fit: contain; max-height: 465px;">
             </div>
+            @if(!empty($product->images))
             @foreach($product->images as $image)
                 <div class="swiper-slide">
                     <img src="{{ asset('storage/'.$image->path) }}"
@@ -35,6 +38,7 @@
                          style="width: 100%; height: auto; object-fit: contain; max-height: 465px;">
                 </div>
             @endforeach
+            @endif
         </div>
         <button class="btn slider-prev"><i class="ci-chevron-left"></i></button>
         <button class="btn slider-next"><i class="ci-chevron-right"></i></button>
