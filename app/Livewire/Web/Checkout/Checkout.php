@@ -348,20 +348,16 @@ class Checkout extends Component
             ];
 
             // ✅ Production
-            if (config('app.env') === 'production') {
-                app(FacebookPixelService::class)->trackLead(
-                    userData: $userData,
-                    customData: $customData
-                );
-            }
+            app(FacebookPixelService::class)->trackLead(
+                userData: $userData,
+                customData: $customData
+            );
             // ✅ Test/Local/Staging
-            else {
-                app(FacebookPixelService::class)->trackLeadWithTest(
-                    testCode: config('services.facebook.test_event_code', 'TEST98776'),
-                    userData: $userData,
-                    customData: $customData
-                );
-            }
+//            app(FacebookPixelService::class)->trackLeadWithTest(
+//                testCode: config('services.facebook.test_event_code', 'TEST98776'),
+//                userData: $userData,
+//                customData: $customData
+//            );
 
             Log::info('✅ Facebook Pixel Lead tracked', [
                 'order_id' => $order->id,
