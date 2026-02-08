@@ -42,7 +42,7 @@ class FacebookFeedController extends Controller
                 'link' => route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug),
                 'id' => $product->id,
                 'title' => $product->translations->where('locale', app()->getLocale())->first()->title ?? $product->translations->where('locale', 'ka')->first()->title,
-                'image_link' => url($product_image),
+                'image_link' => url('storage/'.$product_image),
                 'description' => $product->translations->where('locale', app()->getLocale())->first()->description ?? $product->translations->where('locale', 'ka')->first()->description,
                 'availability' => 'in stock',
                 "price" => $product_price,
