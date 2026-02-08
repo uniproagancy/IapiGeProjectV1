@@ -6,7 +6,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
+Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
 
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
@@ -44,7 +44,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return \Illuminate\Support\Facades\Redirect::route('web.main.index');
-        })->name('logout');
+        })->middleware('doNotCacheResponse')->name('logout');
 
         Livewire::setUpdateRoute(function ($handle) {
             return Route::post('/livewire/update', $handle);
