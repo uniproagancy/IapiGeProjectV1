@@ -199,7 +199,7 @@ class Checkout extends Component
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);
-
+                $user_phone = Auth::user()->phone;
                 foreach ($this->orderItems as $orderItem) {
                     OrderItem::create([
                         'product_id' => $orderItem['id'],
@@ -215,8 +215,8 @@ class Checkout extends Component
                 ]);
 
                 // ✅ Facebook Pixel - Lead (ავტორიზებული)
+                (new \App\Services\Sender\SmsOffice)->send(Auth::user()->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
                 $this->trackLead($order, isGuest: false);
-
                 $this->processPayment($order);
             }
             // ✅ თუ არაავტორიზებული (სწრაფი შეძენა)
@@ -267,7 +267,6 @@ class Checkout extends Component
                     'price' => $price,
                     'order_id' => $order->id,
                 ]);
-
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
@@ -356,13 +355,6 @@ class Checkout extends Component
                 userData: $userData,
                 customData: $customData
             );
-            // ✅ Test/Local/Staging
-//            app(FacebookPixelService::class)->trackLeadWithTest(
-//                testCode: config('services.facebook.test_event_code', 'TEST98776'),
-//                userData: $userData,
-//                customData: $customData
-//            );
-
             Log::info('✅ Facebook Pixel Lead tracked', [
                 'order_id' => $order->id,
                 'is_guest' => $isGuest,
