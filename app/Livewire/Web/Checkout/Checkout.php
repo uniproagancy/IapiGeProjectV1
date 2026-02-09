@@ -272,10 +272,9 @@ class Checkout extends Component
                     'order_id' => $order->id,
                     'address' => $this->address,
                 ]);
-//                (new \App\Services\Sender\SmsOffice)->send($this->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
+                (new \App\Services\Sender\SmsOffice)->send($this->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
                 // ✅ Facebook Pixel - Lead (არაავტორიზებული)
-                $this->trackLeadWithTest($order, isGuest: true);
-
+                $this->trackLead($order, isGuest: true);
                 $this->processPayment($order);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
