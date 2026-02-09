@@ -193,7 +193,7 @@
 @guest
     <livewire:web.auth.login-modal/>
     <livewire:web.auth.register-modal/>
-    {{--    <livewire:auth.forgot-password-modal />--}}
+    <livewire:web.auth.forgot-modal />
 @endguest
 
 @livewireScripts

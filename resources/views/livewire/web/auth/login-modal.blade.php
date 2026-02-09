@@ -32,7 +32,7 @@
                                    class="small text-primary text-decoration-none"
                                    data-bs-dismiss="modal"
                                    data-bs-toggle="modal"
-                                   data-bs-target="#forgotPasswordModal">
+                                   data-bs-target="#forgotModal">
                                     დაგავიწყდათ პაროლი?
                                 </a>
                             </div>

@@ -122,9 +122,7 @@
                                    wire:model="terms">
                             <label class="form-check-label small" for="register-terms" style="font-size: 12px">
                                 ვეთანხმები
-                                <a href="" target="_blank" class="text-primary">წესებსა და პირობებს</a>
-                                და
-                                <a href="" target="_blank" class="text-primary">კონფიდენციალურობის პოლიტიკას</a>
+                                <a href="/static/rules" target="_blank" class="text-primary">წესებსა და პირობებს</a>
                             </label>
                             @error('terms')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
