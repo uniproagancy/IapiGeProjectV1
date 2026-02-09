@@ -80,7 +80,7 @@
                                         </td>
                                         <td class="text-start">
                                             <span class="badge badge-light-info">{{ $product->sku }}</span> -
-                                            {{ $product->translations->where('locale', 'ka')->first()->title }}</td>
+                                            {{ $product->translations->where('locale', 'ka')->first()->title ?? ' ' }}</td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
                                                 <span class="badge badge-light-success">{{ $product->price->discount_price }} ₾</span>
