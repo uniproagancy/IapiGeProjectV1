@@ -107,6 +107,28 @@ class FacebookPixelService
         return $this->trackEvent('AddToCart', $customData);
     }
 
+    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
+    {
+        $contents = [
+            [
+                'id' => $product['id'] ?? null,
+                'quantity' => $product['quantity'] ?? 1,
+            ]
+        ];
+
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+            'contents' => $contents,
+            'content_name' => $product['name'] ?? null,
+            'content_type' => 'product',
+            'content_ids' => [$product['id'] ?? null],
+        ];
+
+        return $this->trackEventWithTest('AddToCart', $customData, $testCode);
+    }
+
+
     /**
      * ✅ Track ViewContent event
      */
