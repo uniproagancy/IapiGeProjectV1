@@ -306,16 +306,13 @@ class Checkout extends Component
                     'last_name' => $this->lastname,
                 ];
             }
-            // ✅ თუ Authorized - Test Mode-ისთვის explicit data
             else {
-                if (config('app.env') !== 'production') {
-                    $userData = [
-                        'email' => auth()->user()->email,
-                        'phone' => auth()->user()->phone,
-                        'first_name' => auth()->user()->name,
-                        'last_name' => auth()->user()->lastname,
-                    ];
-                }
+                $userData = [
+                    'email' => auth()->user()->email,
+                    'phone' => auth()->user()->phone,
+                    'first_name' => auth()->user()->name,
+                    'last_name' => auth()->user()->lastname,
+                ];
             }
 
             // ✅ პროდუქტების ინფორმაცია - Order Items-დან (უკვე შენახულია Database-ში)
@@ -355,7 +352,8 @@ class Checkout extends Component
             ];
 
             // ✅ Production
-            app(FacebookPixelService::class)->trackLead(
+            app(FacebookPixelService::class)->trackLeadWithTest(
+                testCode: config('services.facebook.test_event_code', 'TEST98776'),
                 userData: $userData,
                 customData: $customData
             );

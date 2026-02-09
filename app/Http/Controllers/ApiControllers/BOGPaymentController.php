@@ -62,22 +62,12 @@ class BOGPaymentController extends Controller
                 'num_items' => count($contents),
             ];
 
-            // ✅ Production vs Test
-            if (config('app.env') === 'production') {
-                app(FacebookPixelService::class)->trackPurchase(
-                    value: $order->amount,
-                    currency: 'GEL',
-                    params: $customData
-                );
-            } else {
-                // Test Mode
-                app(FacebookPixelService::class)->trackPurchaseWithTest(
-                    testCode: config('services.facebook.test_event_code', 'TEST98776'),
-                    value: $order->amount,
-                    currency: 'GEL',
-                    params: $customData
-                );
-            }
+            app(FacebookPixelService::class)->trackPurchaseWithTest(
+                testCode: config('services.facebook.test_event_code', 'TEST98776'),
+                value: $order->amount,
+                currency: 'GEL',
+                params: $customData
+            );
 
             Log::info('✅ Facebook Pixel Purchase tracked', [
                 'order_id' => $order->id,
