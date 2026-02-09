@@ -215,7 +215,7 @@ class Checkout extends Component
                 ]);
 
                 // ✅ Facebook Pixel - Lead (ავტორიზებული)
-                $this->trackLead($order, isGuest: false);
+                $this->trackLeadWithTest($order, isGuest: false);
 
                 $this->processPayment($order);
             }
@@ -274,7 +274,7 @@ class Checkout extends Component
                 ]);
 
                 // ✅ Facebook Pixel - Lead (არაავტორიზებული)
-                $this->trackLead($order, isGuest: true);
+                $this->trackLeadWithTest($order, isGuest: true);
 
                 $this->processPayment($order);
             }
