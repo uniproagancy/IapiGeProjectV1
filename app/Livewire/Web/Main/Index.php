@@ -68,7 +68,8 @@ class Index extends Component
     public function render()
     {
         $event_id = 'pv_'.time().'_'.Str::random(6);
-        $this->fbPixel->trackPageViewWithTest();
+        $this->fbPixel->trackPageViewWithTest('TEST68876', [
+        ]);
 
 //        $this->google = new GoogleSheet();
 //        $this->spreadsheetId = '1YvGwk6pilN_S4O9ZYP4-CRxgygPLSjPS';
