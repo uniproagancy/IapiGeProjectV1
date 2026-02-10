@@ -35,7 +35,9 @@ class PromotionProductsController extends Controller
 
             // ✅ Get products currently in promotions (with optional promotion_id filter)
             $query = PromotionProduct::query();
+            if ($promotionId) {
                 $query->where('promotion_id', $promotionId);
+            }
             $productsInPromotion = $query->pluck('product_id')->toArray();
 
             // ✅ STEP 1: Add new products to promotion
@@ -45,6 +47,7 @@ class PromotionProductsController extends Controller
                     'product_id' => $productId,
                     'promotion_id' => $promotionId,
                     'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
 
@@ -52,7 +55,9 @@ class PromotionProductsController extends Controller
             $productsToRemove = array_diff($productsInPromotion, $productsWithDiscount);
             if (!empty($productsToRemove)) {
                 $removeQuery = PromotionProduct::whereIn('product_id', $productsToRemove);
+                if ($promotionId) {
                     $removeQuery->where('promotion_id', $promotionId);
+                }
                 $removeQuery->delete();
             }
 
@@ -89,7 +94,9 @@ class PromotionProductsController extends Controller
                     ->with(['price:product_id,regular_price,discount_price', 'translations:id,product_id,title,slug']);
             }]);
 
-            $query->where('promotion_id', $promotionId);
+            if ($promotionId) {
+                $query->where('promotion_id', $promotionId);
+            }
 
             $products = $query->get();
 
