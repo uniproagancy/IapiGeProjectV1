@@ -175,6 +175,18 @@
         </section>
     </main>
 </div>
+@section('fb_pixel')
+    <script>
+        // ✅ Browser-side Custom Event: CategoryView
+        fbq('trackCustom', 'CategoryView', {
+            content_name: '{{ $currentCategory?->translation('ka')->title }}',
+            content_category: '{{ $currentCategory?->translation('ka')->slug }}',
+            content_ids: ['{{ $currentCategory?->id }}']
+        }, {
+            eventID: '{{ $event_id }}'
+        });
+    </script>
+@endsection
 @section('page_scripts')
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
 @endsection
