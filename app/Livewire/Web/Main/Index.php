@@ -14,20 +14,37 @@ use App\Models\Product\Promotion;
 
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
     public string $eventId;
 
+    // ✅ Static property to track if PageView was already sent in this request
+    private static bool $pageViewTracked = false;
+
     public function mount()
     {
-        // ✅ Generate event_id once on mount (initial page load only)
         $this->eventId = 'pv_' . time() . '_' . Str::random(6);
 
-        // ✅ Track PageView only once per page load
-        app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
+        Log::info('🔍 Index::mount() called', [
             'event_id' => $this->eventId,
+            'already_tracked' => self::$pageViewTracked,
         ]);
+
+        // ✅ Only track if not already tracked in this request
+        if (!self::$pageViewTracked) {
+            Log::info('✅ Tracking PageView NOW');
+
+            app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
+                'event_id' => $this->eventId,
+            ]);
+
+            // ✅ Mark as tracked
+            self::$pageViewTracked = true;
+        } else {
+            Log::warning('⏭️ PageView ALREADY TRACKED - SKIPPING');
+        }
     }
 
     #[Computed]
@@ -67,10 +84,14 @@ class Index extends Component
 
     public function render()
     {
+        Log::info('🎨 Index::render() called', [
+            'event_id' => $this->eventId,
+        ]);
+
         return view('livewire.web.main.index', [
             'sliders' => $this->sliders,
             'brands' => $this->brands,
-            'event_id' => $this->eventId, // ✅ Pass to view for browser-side tracking
+            'event_id' => $this->eventId,
         ])->layout('livewire.web.layout');
     }
 }
