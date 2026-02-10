@@ -84,7 +84,7 @@ class FacebookFeedController extends Controller
                     'brand' => $brandTranslation->title ?? 'Unknown',
                     'google_product_category' => $product->category->parent->google_category_id ?? '',
                     'condition' => 'new',
-                    'item_group_id' => $product->category_id ?? '',
+//                    'item_group_id' => $product->category_id ?? '',
                     'additional_image_link' => $productGallery,
                 ]);
 
