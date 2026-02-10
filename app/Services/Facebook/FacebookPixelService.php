@@ -192,6 +192,10 @@ class FacebookPixelService
             'contents' => $contents,
         ];
 
+        if (isset($params['event_id'])) {
+            $customData['event_id'] = $params['event_id'];
+        }
+
         return $this->trackEventWithTest('ViewContent', $customData, $testCode);
     }
 
