@@ -190,3 +190,28 @@
         })
     </script>
 </main>
+@section('fb_pixel')
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1280014533998229');
+        fbq('track', 'ViewContent', {
+            content_ids: ['{{ $product->id }}'],
+            content_name: '{{ addslashes($product->translation('ka')->title) }}',
+            content_type: 'product',
+            value: {{ $product->price->discount_price ?? $product->price->regular_price }},
+            currency: 'GEL'
+        }, {
+            eventID: '{{ $event_id }}'
+        });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"
+        /></noscript>
+@endsection
