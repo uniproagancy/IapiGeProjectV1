@@ -13,6 +13,7 @@ use App\Models\Product\ProductCategory;
 use App\Models\Product\Promotion;
 
 use App\Services\Facebook\FacebookPixelService;
+use Pest\Support\Str;
 
 class Index extends Component
 {
@@ -66,9 +67,9 @@ class Index extends Component
 
     public function render()
     {
+        $event_id = 'pv_'.time().'_'.Str::random(6);
         $this->fbPixel->trackPageViewWithTest('TEST68876', [
-            'content_name' => 'Homepage',
-            'content_category' => 'landing',
+            'event_id' => $event_id,
         ]);
 
 //        $this->google = new GoogleSheet();
@@ -87,7 +88,8 @@ class Index extends Component
 
         return view('livewire.web.main.index', [
             'sliders',
-            'brands'
+            'brands',
+            'event_id' => $event_id,
         ])->layout('livewire.web.layout');
     }
 }
