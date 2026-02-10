@@ -171,6 +171,9 @@ class FacebookPixelService
         return $this->trackEvent('ViewContent', $customData);
     }
 
+    /**
+     * ✅ Track ViewContent event with Test Code
+     */
     public function trackViewContentWithTest(string $testCode, array $product, array $params = []): bool
     {
         $contents = [
@@ -262,6 +265,14 @@ class FacebookPixelService
     public function trackCustomEvent(string $eventName, array $params = []): bool
     {
         return $this->trackEvent($eventName, $params);
+    }
+
+    /**
+     * ✅ Track Custom event with Test Code
+     */
+    public function trackCustomEventWithTest(string $testCode, string $eventName, array $params = []): bool
+    {
+        return $this->trackEventWithTest($eventName, $params, $testCode);
     }
 
     /**
