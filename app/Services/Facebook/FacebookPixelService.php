@@ -13,6 +13,9 @@ class FacebookPixelService
     protected string $apiVersion = 'v24.0';
     protected string $endpoint;
 
+    // ✅ Track sent events to prevent duplicates within same request
+    protected static array $sentEvents = [];
+
     /**
      * ✅ Constructor - Initialize Facebook Pixel
      */
@@ -246,6 +249,42 @@ class FacebookPixelService
     public function trackEvent(string $eventName, array $customData = []): bool
     {
         try {
+            // ✅ ᲡᲐᲓᲐᲪ ᲘᲫᲐᲮᲔᲑᲐ - ᲓᲔᲢᲐᲚᲣᲠᲘ ინფო
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+            $callerChain = [];
+
+            foreach ($trace as $index => $item) {
+                if (isset($item['file'])) {
+                    $callerChain[] = [
+                        'step' => $index,
+                        'file' => str_replace(base_path(), '', $item['file']),
+                        'line' => $item['line'] ?? 0,
+                        'class' => $item['class'] ?? 'N/A',
+                        'function' => $item['function'] ?? 'N/A',
+                    ];
+                }
+            }
+
+            Log::info("🔍 FULL STACK TRACE for {$eventName}", [
+                'caller_chain' => $callerChain,
+                'url' => request()->url(),
+                'method' => request()->method(),
+            ]);
+
+            // ✅ Generate unique key for deduplication
+            $eventKey = md5($eventName . json_encode($customData) . request()->url());
+
+            // ✅ Check if already sent in this request
+            if (isset(self::$sentEvents[$eventKey])) {
+                Log::warning("🚫 DUPLICATE EVENT PREVENTED: {$eventName}", [
+                    'event_key' => $eventKey,
+                    'first_sent_at' => self::$sentEvents[$eventKey]['time'],
+                    'first_sent_from' => self::$sentEvents[$eventKey]['caller'],
+                    'duplicate_attempt_from' => $callerChain[0] ?? 'unknown',
+                ]);
+                return false;
+            }
+
             if (empty($this->pixelId) || empty($this->accessToken)) {
                 Log::warning("⚠️  Facebook Pixel not configured, skipping event: {$eventName}");
                 return false;
@@ -254,6 +293,8 @@ class FacebookPixelService
             $eventData = $this->buildEventData($eventName, $customData);
 
             Log::info("📤 Sending Facebook Pixel event: {$eventName}", [
+                'event_key' => $eventKey,
+                'called_from' => $callerChain[0] ?? 'unknown',
                 'data' => $eventData,
             ]);
 
@@ -270,6 +311,12 @@ class FacebookPixelService
                 ]);
                 return false;
             }
+
+            // ✅ Mark as sent
+            self::$sentEvents[$eventKey] = [
+                'time' => now()->toDateTimeString(),
+                'caller' => $callerChain[0] ?? 'unknown',
+            ];
 
             Log::info("✅ Facebook Pixel event sent: {$eventName}", [
                 'response' => $response->json(),
@@ -292,6 +339,27 @@ class FacebookPixelService
     private function trackEventWithTest(string $eventName, array $customData, string $testCode): bool
     {
         try {
+            // ✅ ᲡᲐᲓᲐᲪ ᲘᲫᲐᲮᲔᲑᲐ
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+            $callerChain = [];
+
+            foreach ($trace as $index => $item) {
+                if (isset($item['file'])) {
+                    $callerChain[] = [
+                        'step' => $index,
+                        'file' => str_replace(base_path(), '', $item['file']),
+                        'line' => $item['line'] ?? 0,
+                        'class' => $item['class'] ?? 'N/A',
+                        'function' => $item['function'] ?? 'N/A',
+                    ];
+                }
+            }
+
+            Log::info("🔍 TEST EVENT STACK TRACE for {$eventName}", [
+                'test_code' => $testCode,
+                'caller_chain' => $callerChain,
+            ]);
+
             if (empty($this->pixelId) || empty($this->accessToken)) {
                 Log::warning("⚠️  Facebook Pixel not configured");
                 return false;
@@ -301,6 +369,7 @@ class FacebookPixelService
 
             Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
                 'test_code' => $testCode,
+                'called_from' => $callerChain[0] ?? 'unknown',
             ]);
 
             $response = Http::timeout(10)
@@ -313,6 +382,7 @@ class FacebookPixelService
             if ($response->successful()) {
                 Log::info("✅ TEST Event sent: {$eventName}", [
                     'response' => $response->json(),
+                    'called_from' => $callerChain[0] ?? 'unknown',
                 ]);
                 return true;
             }
