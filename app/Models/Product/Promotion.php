@@ -14,7 +14,7 @@ class Promotion extends Model
 
     public function products()
     {
-        return $this->hasMany(PromotionProduct::class, 'promotion_id', 'id');
+        return $this->hasMany(PromotionProduct::class, 'promotion_id', 'id')->orderBy('id', 'DESC');
     }
 
     public function translations()
