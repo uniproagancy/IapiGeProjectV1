@@ -22,7 +22,7 @@
                                 class="btn-secondary animate-pulse"/>
                     </div>
                     <div class="col-md-8">
-                        <span class="font-neue" style="font-size: 14px">SKU: {{ $product->sku }}</span>
+                        <span class="font-neue" style="font-size: 14px">SKU: {{ $product->id }}</span>
                         @include('livewire.web.product.gallery')
                     </div>
                     <div class="col-md-4">
