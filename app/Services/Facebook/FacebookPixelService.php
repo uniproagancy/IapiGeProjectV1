@@ -171,6 +171,27 @@ class FacebookPixelService
         return $this->trackEvent('ViewContent', $customData);
     }
 
+    public function trackViewContentWithTest(string $testCode, array $product, array $params = []): bool
+    {
+        $contents = [
+            [
+                'id' => $product['id'] ?? null,
+                'quantity' => 1,
+            ]
+        ];
+
+        $customData = [
+            'content_name' => $product['name'] ?? null,
+            'content_ids' => [$product['id'] ?? null],
+            'content_type' => 'product',
+            'value' => $product['price'] ?? 0,
+            'currency' => 'GEL',
+            'contents' => $contents,
+        ];
+
+        return $this->trackEventWithTest('ViewContent', $customData, $testCode);
+    }
+
     /**
      * ✅ Track InitiateCheckout event
      */
