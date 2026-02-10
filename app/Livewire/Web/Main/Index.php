@@ -13,17 +13,20 @@ use App\Models\Product\ProductCategory;
 use App\Models\Product\Promotion;
 
 use App\Services\Facebook\FacebookPixelService;
-use Pest\Support\Str;
+use Illuminate\Support\Str;
 
 class Index extends Component
 {
+    public string $eventId;
 
     public function mount()
     {
-        $event_id = 'pv_'.time().'_'.Str::random(6);
+        // ✅ Generate event_id once on mount (initial page load only)
+        $this->eventId = 'pv_' . time() . '_' . Str::random(6);
+
+        // ✅ Track PageView only once per page load
         app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
-            'event_id' => $event_id,
-            'ip' => request()->ip(),
+            'event_id' => $this->eventId,
         ]);
     }
 
@@ -64,26 +67,10 @@ class Index extends Component
 
     public function render()
     {
-
-
-//        $this->google = new GoogleSheet();
-//        $this->spreadsheetId = '1YvGwk6pilN_S4O9ZYP4-CRxgygPLSjPS';
-//        $this->sheetData = $this->google->getValues(
-//            $this->spreadsheetId,
-//            $this->range
-//        ) ?? [];
-//
-//        if (empty($this->sheetData)) {
-//            dd(123);
-//        } else {
-//            $this->dispatch('ui:success', message: 'Data loaded successfully! Rows: ' . count($this->sheetData));
-//        }
-//        dd($this->google);
-
         return view('livewire.web.main.index', [
-            'sliders',
-            'brands',
-            'event_id' => $event_id,
+            'sliders' => $this->sliders,
+            'brands' => $this->brands,
+            'event_id' => $this->eventId, // ✅ Pass to view for browser-side tracking
         ])->layout('livewire.web.layout');
     }
 }
