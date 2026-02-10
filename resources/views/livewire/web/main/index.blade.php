@@ -50,7 +50,7 @@
 </div>
 @section('fb_pixel')
     <script>
-        fbq('track', 'PageView', {}, { eventID: {{ $event_id }} });
+        fbq('track', 'PageView', {}, { eventID: '{{ $event_id }}' });
     </script>
 @endsection
 @section('page_scripts')
