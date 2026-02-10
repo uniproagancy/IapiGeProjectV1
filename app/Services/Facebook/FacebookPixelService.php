@@ -38,6 +38,14 @@ class FacebookPixelService
     }
 
     /**
+     * ✅ Track PageView event with Test Code
+     */
+    public function trackPageViewWithTest(string $testCode, array $params = []): bool
+    {
+        return $this->trackEventWithTest('PageView', $params, $testCode);
+    }
+
+    /**
      * ✅ Track Purchase event
      */
     public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
@@ -62,6 +70,10 @@ class FacebookPixelService
 
         return $this->trackEvent('Purchase', $customData);
     }
+
+    /**
+     * ✅ Track Purchase event with Test Code
+     */
     public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
     {
         $customData = [
@@ -84,6 +96,7 @@ class FacebookPixelService
 
         return $this->trackEventWithTest('Purchase', $customData, $testCode);
     }
+
     /**
      * ✅ Track AddToCart event
      */
@@ -107,6 +120,9 @@ class FacebookPixelService
         return $this->trackEvent('AddToCart', $customData);
     }
 
+    /**
+     * ✅ Track AddToCart event with Test Code
+     */
     public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
     {
         $contents = [
@@ -127,7 +143,6 @@ class FacebookPixelService
 
         return $this->trackEventWithTest('AddToCart', $customData, $testCode);
     }
-
 
     /**
      * ✅ Track ViewContent event

@@ -26,7 +26,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->fbPixel->trackPageView();
+
     }
 
     #[Computed]
@@ -66,6 +66,10 @@ class Index extends Component
 
     public function render()
     {
+        $this->fbPixel->trackPageViewWithTest('TEST68876', [
+            'content_name' => 'Homepage',
+            'content_category' => 'landing',
+        ]);
 
 //        $this->google = new GoogleSheet();
 //        $this->spreadsheetId = '1YvGwk6pilN_S4O9ZYP4-CRxgygPLSjPS';
