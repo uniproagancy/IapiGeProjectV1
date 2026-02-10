@@ -37,7 +37,6 @@
 </head>
 <body>
 @yield('fb_pixel')
-<!-- End Facebook Pixel Code -->
 @include('livewire.web.partials.header.header')
 @include('livewire.web.search.search-offcanvas')
 {{ $slot }}
