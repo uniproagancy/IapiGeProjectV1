@@ -18,13 +18,6 @@ use Pest\Support\Str;
 class Index extends Component
 {
 
-    protected $fbPixel;
-
-    public function boot(FacebookPixelService $fbPixel)
-    {
-        $this->fbPixel = $fbPixel;
-    }
-
     public function mount()
     {
 
@@ -68,7 +61,8 @@ class Index extends Component
     public function render()
     {
         $event_id = 'pv_'.time().'_'.Str::random(6);
-        $this->fbPixel->trackPageViewWithTest('TEST68876', [
+        app(FacebookPixelService::class)->trackPageViewWithTest('TEST36108', [
+            'event_id' => $event_id,
         ]);
 
 //        $this->google = new GoogleSheet();
