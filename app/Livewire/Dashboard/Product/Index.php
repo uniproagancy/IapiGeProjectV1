@@ -30,6 +30,7 @@ class Index extends Component
     public array $currentPageIds = [];
 
     public $selectedCategory = null;
+    public $selectedBrand = null;
     public $selectedSubcategory = null;
     public $subcategories = [];
 
@@ -177,6 +178,22 @@ class Index extends Component
         ]);
         $this->selectedProducts = [];
         $this->dispatch('category_modal_close');
+        $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა წარმატებით!', title: 'შეტყობინება');
+    }
+
+    public function updateProductBrand()
+    {
+        $this->validate([
+            'selectedBrand' => 'required|exists:db_product_brands,id',
+        ], [
+            'required' => 'გთხოვთ აირჩიოთ ბრენდი',
+            'db_exists' => 'დაფიქსირდა შეცდომა!',
+        ]);
+        Product::whereIn('id', $this->selectedProducts)->update([
+            'brand_id' => $this->selectedBrand,
+        ]);
+        $this->selectedProducts = [];
+        $this->dispatch('brand_modal_close');
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა წარმატებით!', title: 'შეტყობინება');
     }
 

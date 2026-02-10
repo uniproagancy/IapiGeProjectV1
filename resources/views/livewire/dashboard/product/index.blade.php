@@ -17,6 +17,8 @@
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" data-bs-toggle="modal"
                                            data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal"
+                                           data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
                                     </div>
                                 </div>
                             @endif
@@ -315,7 +317,31 @@
             </div>
         </div>
     </div>
-
+    <div class="modal fade" wire:ignore.self id="changeCategoryBrand" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label"></label>
+                        <select class="form-select" wire:model.live="selectedCategory">
+                            <option value="">— აირჩიეთ —</option>
+                            @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
+                                <option value="{{ $category->id }}">{{ $category->translations->where('locale', 'ka')->first()->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updateProductCategory">დადასტურება</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @section('page_scripts')
     <script>
