@@ -13,6 +13,9 @@ class FacebookPixelService
     protected string $apiVersion = 'v24.0';
     protected string $endpoint;
 
+    // ✅ Track sent events to prevent duplicates within same request
+    protected static array $sentEvents = [];
+
     /**
      * ✅ Constructor - Initialize Facebook Pixel
      */
@@ -34,6 +37,7 @@ class FacebookPixelService
      */
     public function trackPageView(array $params = []): bool
     {
+        $this->logCallerInfo('trackPageView');
         return $this->trackEvent('PageView', $params);
     }
 
@@ -42,6 +46,7 @@ class FacebookPixelService
      */
     public function trackPageViewWithTest(string $testCode, array $params = []): bool
     {
+        $this->logCallerInfo('trackPageViewWithTest');
         return $this->trackEventWithTest('PageView', $params, $testCode);
     }
 
@@ -50,6 +55,8 @@ class FacebookPixelService
      */
     public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
     {
+        $this->logCallerInfo('trackPurchase');
+
         $customData = [
             'value' => $value,
             'currency' => $currency,
@@ -76,6 +83,8 @@ class FacebookPixelService
      */
     public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
     {
+        $this->logCallerInfo('trackPurchaseWithTest');
+
         $customData = [
             'value' => $value,
             'currency' => $currency,
@@ -102,6 +111,8 @@ class FacebookPixelService
      */
     public function trackAddToCart(array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
     {
+        $this->logCallerInfo('trackAddToCart');
+
         $contents = [
             [
                 'id' => $product['id'] ?? null,
@@ -125,6 +136,8 @@ class FacebookPixelService
      */
     public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
     {
+        $this->logCallerInfo('trackAddToCartWithTest');
+
         $contents = [
             [
                 'id' => $product['id'] ?? null,
@@ -149,6 +162,8 @@ class FacebookPixelService
      */
     public function trackViewContent(array $product, array $params = []): bool
     {
+        $this->logCallerInfo('trackViewContent');
+
         $contents = [
             [
                 'id' => $product['id'] ?? null,
@@ -173,6 +188,8 @@ class FacebookPixelService
      */
     public function trackCheckout(float $value, string $currency = 'GEL', array $items = [], array $params = []): bool
     {
+        $this->logCallerInfo('trackCheckout');
+
         $contents = [];
         foreach ($items as $item) {
             $contents[] = [
@@ -196,6 +213,8 @@ class FacebookPixelService
      */
     public function trackLead(array $userData = [], array $customData = []): bool
     {
+        $this->logCallerInfo('trackLead');
+
         $eventData = [
             'content_category' => 'checkout',
         ];
@@ -217,6 +236,8 @@ class FacebookPixelService
      */
     public function trackLeadWithTest(string $testCode, array $userData = [], array $customData = []): bool
     {
+        $this->logCallerInfo('trackLeadWithTest');
+
         $eventData = [
             'content_category' => 'checkout',
         ];
@@ -237,6 +258,7 @@ class FacebookPixelService
      */
     public function trackCustomEvent(string $eventName, array $params = []): bool
     {
+        $this->logCallerInfo('trackCustomEvent');
         return $this->trackEvent($eventName, $params);
     }
 
@@ -246,6 +268,20 @@ class FacebookPixelService
     public function trackEvent(string $eventName, array $customData = []): bool
     {
         try {
+            // ✅ Generate unique key for deduplication
+            $eventKey = md5($eventName . json_encode($customData) . request()->url());
+
+            // ✅ Check if already sent in this request
+            if (isset(self::$sentEvents[$eventKey])) {
+                Log::warning("🚫 DUPLICATE EVENT PREVENTED: {$eventName}", [
+                    'event_key' => $eventKey,
+                    'first_sent_at' => self::$sentEvents[$eventKey]['time'],
+                    'first_sent_from' => self::$sentEvents[$eventKey]['caller'],
+                    'duplicate_caller' => $this->getCallerInfo(),
+                ]);
+                return false;
+            }
+
             if (empty($this->pixelId) || empty($this->accessToken)) {
                 Log::warning("⚠️  Facebook Pixel not configured, skipping event: {$eventName}");
                 return false;
@@ -253,7 +289,12 @@ class FacebookPixelService
 
             $eventData = $this->buildEventData($eventName, $customData);
 
+            // ✅ Get detailed caller info
+            $callerInfo = $this->getCallerInfo();
+
             Log::info("📤 Sending Facebook Pixel event: {$eventName}", [
+                'event_key' => $eventKey,
+                'caller' => $callerInfo,
                 'data' => $eventData,
             ]);
 
@@ -267,12 +308,20 @@ class FacebookPixelService
                 Log::error("❌ Facebook Pixel error: " . $response->status(), [
                     'response' => $response->body(),
                     'event' => $eventName,
+                    'caller' => $callerInfo,
                 ]);
                 return false;
             }
 
+            // ✅ Mark as sent
+            self::$sentEvents[$eventKey] = [
+                'time' => now()->toDateTimeString(),
+                'caller' => $callerInfo,
+            ];
+
             Log::info("✅ Facebook Pixel event sent: {$eventName}", [
                 'response' => $response->json(),
+                'caller' => $callerInfo,
             ]);
 
             return true;
@@ -281,6 +330,7 @@ class FacebookPixelService
             Log::error("❌ Error sending Facebook Pixel event: {$e->getMessage()}", [
                 'event' => $eventName,
                 'error' => $e,
+                'caller' => $this->getCallerInfo(),
             ]);
             return false;
         }
@@ -299,8 +349,11 @@ class FacebookPixelService
 
             $eventData = $this->buildEventData($eventName, $customData);
 
+            $callerInfo = $this->getCallerInfo();
+
             Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
                 'test_code' => $testCode,
+                'caller' => $callerInfo,
             ]);
 
             $response = Http::timeout(10)
@@ -313,17 +366,21 @@ class FacebookPixelService
             if ($response->successful()) {
                 Log::info("✅ TEST Event sent: {$eventName}", [
                     'response' => $response->json(),
+                    'caller' => $callerInfo,
                 ]);
                 return true;
             }
 
             Log::error("❌ TEST Event failed", [
                 'response' => $response->body(),
+                'caller' => $callerInfo,
             ]);
             return false;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ Error: " . $e->getMessage(), [
+                'caller' => $this->getCallerInfo(),
+            ]);
             return false;
         }
     }
@@ -381,7 +438,11 @@ class FacebookPixelService
                 $eventData['custom_data'] = $customData;
             }
 
-            Log::info("📤 Sending Facebook Pixel event with custom user data: {$eventName}");
+            $callerInfo = $this->getCallerInfo();
+
+            Log::info("📤 Sending Facebook Pixel event with custom user data: {$eventName}", [
+                'caller' => $callerInfo,
+            ]);
 
             $response = Http::timeout(10)
                 ->post($this->endpoint, [
@@ -392,17 +453,21 @@ class FacebookPixelService
             if ($response->successful()) {
                 Log::info("✅ Event sent: {$eventName}", [
                     'response' => $response->json(),
+                    'caller' => $callerInfo,
                 ]);
                 return true;
             }
 
             Log::error("❌ Event failed", [
                 'response' => $response->body(),
+                'caller' => $callerInfo,
             ]);
             return false;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ Error: " . $e->getMessage(), [
+                'caller' => $this->getCallerInfo(),
+            ]);
             return false;
         }
     }
@@ -460,10 +525,13 @@ class FacebookPixelService
                 $eventData['custom_data'] = $customData;
             }
 
+            $callerInfo = $this->getCallerInfo();
+
             Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
                 'test_code' => $testCode,
                 'has_email' => !empty($customUserData['email']),
                 'has_phone' => !empty($customUserData['phone']),
+                'caller' => $callerInfo,
             ]);
 
             $response = Http::timeout(10)
@@ -476,17 +544,21 @@ class FacebookPixelService
             if ($response->successful()) {
                 Log::info("✅ TEST Event sent: {$eventName}", [
                     'response' => $response->json(),
+                    'caller' => $callerInfo,
                 ]);
                 return true;
             }
 
             Log::error("❌ TEST Event failed", [
                 'response' => $response->body(),
+                'caller' => $callerInfo,
             ]);
             return false;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ Error: " . $e->getMessage(), [
+                'caller' => $this->getCallerInfo(),
+            ]);
             return false;
         }
     }
@@ -598,6 +670,41 @@ class FacebookPixelService
         }
 
         return $userData;
+    }
+
+    /**
+     * ✅ Get detailed caller information
+     */
+    private function getCallerInfo(): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
+
+        // Skip internal service methods
+        $relevantTrace = [];
+        foreach ($trace as $item) {
+            if (isset($item['file']) && !str_contains($item['file'], 'FacebookPixelService.php')) {
+                $relevantTrace[] = [
+                    'file' => str_replace(base_path(), '', $item['file'] ?? ''),
+                    'line' => $item['line'] ?? 0,
+                    'class' => $item['class'] ?? 'N/A',
+                    'function' => $item['function'] ?? 'N/A',
+                ];
+            }
+        }
+
+        return $relevantTrace;
+    }
+
+    /**
+     * ✅ Log caller info (helper method)
+     */
+    private function logCallerInfo(string $method): void
+    {
+        $callerInfo = $this->getCallerInfo();
+        Log::info("🔔 {$method} called", [
+            'caller' => $callerInfo[0] ?? 'unknown',
+            'full_trace' => $callerInfo,
+        ]);
     }
 
     /**
