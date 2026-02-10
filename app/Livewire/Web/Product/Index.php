@@ -6,6 +6,9 @@ use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductFullSpecificationSection;
+use App\Services\Facebook\FacebookPixelService;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -27,6 +30,7 @@ class Index extends Component
     public $category_slug = null;
     public $perPage = 20;
     public $isLoading = false;
+    public string $eventId; // ✅ Added
 
     #[Url]
     public $search = '';
@@ -54,6 +58,39 @@ class Index extends Component
         $this->loadCategoryFromSlug();
         $this->normalizeBrands();
         $this->normalizeSpecs();
+
+        // ✅ Track Category View (only if category is loaded)
+        $this->trackCategoryView();
+    }
+
+    // ============================================
+    // Facebook Pixel Tracking
+    // ============================================
+
+    private function trackCategoryView(): void
+    {
+        // ✅ Only track if viewing a specific category
+        if (empty($this->currentCategory)) {
+            Log::info('🔍 Product Index - No category selected, skipping CategoryView event');
+            return;
+        }
+
+        // ✅ Generate event_id
+        $this->eventId = 'cv_' . time() . '_' . Str::random(6);
+
+        Log::info('🔍 Category View mounted', [
+            'category_id' => $this->currentCategory->id,
+            'category_name' => $this->currentCategory->name,
+            'category_slug' => $this->category_slug,
+            'event_id' => $this->eventId,
+        ]);
+
+        // ✅ Track Custom Event: CategoryView with TEST CODE
+        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST68876', 'CategoryView', [
+            'content_name' => $this->currentCategory->name,
+            'content_category' => $this->category_slug,
+            'content_ids' => [$this->currentCategory->id],
+        ]);
     }
 
     // ============================================
@@ -443,6 +480,7 @@ class Index extends Component
             'brands' => $this->brands,
             'specificationSections' => $this->specificationSections,
             'isLoading' => $this->isLoading,
+            'event_id' => $this->eventId ?? null, // ✅ Pass to view
         ])->layout('livewire.web.layout');
     }
 }
