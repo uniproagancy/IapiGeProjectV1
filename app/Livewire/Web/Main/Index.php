@@ -63,6 +63,7 @@ class Index extends Component
         $event_id = 'pv_'.time().'_'.Str::random(6);
         app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
             'event_id' => $event_id,
+            'ip' => request()->ip(),
         ]);
 
 //        $this->google = new GoogleSheet();
