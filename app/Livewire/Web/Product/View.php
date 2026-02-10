@@ -49,8 +49,7 @@ class View extends Component
             'id' => $this->product->id,
             'name' => $this->product->name,
             'price' => $this->product->price->discount_price ?? $this->product->price->regular_price,
-            'event_id' => $this->eventId,
-        ]);
+        ],['event_id' => $this->eventId]);
     }
 
     public function getSimilarProducts()
