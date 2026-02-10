@@ -67,7 +67,7 @@ trait WithCart
 
             // ✅ Facebook Pixel - AddToCart Event
             $this->fbPixel->trackAddToCartWithTest(
-                testCode: 'TEST99369',
+                testCode: 'TEST68876',
                 product: [
                     'id' => $product->id,
                     'name' => $translation->title,
