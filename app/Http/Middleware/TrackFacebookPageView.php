@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Services\Facebook\FacebookPixelService;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -29,9 +30,12 @@ class TrackFacebookPageView
 
             Log::info('✅ Middleware: Tracking PageView');
 
-            app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
-                'event_id' => $eventId,
-            ]);
+            if(Route::current() != 'web.product.view') {
+                app(FacebookPixelService::class)->trackPageViewWithTest('TEST68876', [
+                    'event_id' => $eventId,
+                ]);
+            }
+            
 
             // ✅ Cache for 60 seconds
             Cache::put($cacheKey, [
