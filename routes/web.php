@@ -10,11 +10,6 @@ Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFe
 
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
-    Route::get('/test-conversions', function (FacebookPixelService $fbPixel) {
-        return $fbPixel->testWithCode()
-            ? '✅ Conversions API works!'
-            : '❌ Check your setup';
-    });
     Route::name('web.')->group(function () {
 
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');

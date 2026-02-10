@@ -12,6 +12,8 @@ class PromotionProduct extends Model
 
     protected $table = 'db_promotion_products';
 
+    protected $fillable = ['product_id','promotion_id'];
+
     public function product()
     {
         return $this->hasOne(Product::class, 'id', 'product_id');
