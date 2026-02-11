@@ -48,7 +48,7 @@ class View extends Component
             ? $this->product->price->discount_price
             : $this->product->price?->regular_price;
         // ✅ Track ViewContent Event with TEST CODE
-        app(FacebookPixelService::class)->trackViewContent([
+        app(FacebookPixelService::class)->trackViewContentWithTest('TEST86097',[
             'id' => $this->product->id,
             'name' => $this->product->name,
             'price' => $price,
