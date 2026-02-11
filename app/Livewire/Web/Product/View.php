@@ -48,8 +48,8 @@ class View extends Component
         app(FacebookPixelService::class)->trackViewContentWithTest('TEST68876', [
             'id' => $this->product->id,
             'name' => $this->product->name,
-            'price' => $this->product->price->discount_price ?? $this->product->price->regular_price,
-        ],['event_id' => $this->eventId]);
+            'price' => $this->product->price->price ?? 0,
+        ], [], $this->eventId);
     }
 
     public function getSimilarProducts()

@@ -90,7 +90,7 @@ class Index extends Component
             'content_name' => $this->currentCategory->name,
             'content_category' => $this->category_slug,
             'content_ids' => [$this->currentCategory->id],
-        ], $this->eventId);
+        ],  $this->eventId);
     }
 
     // ============================================

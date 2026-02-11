@@ -220,9 +220,9 @@ class FacebookPixelService
             $customData['event_id'] = $eventId;
         }
 
+        // ✅ სწორი გამოძახება
         return $this->trackEventWithTest('ViewContent', $customData, $testCode);
     }
-
     /**
      * ✅ Track InitiateCheckout event
      */
