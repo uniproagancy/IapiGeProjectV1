@@ -45,7 +45,7 @@ class View extends Component
         ]);
 
         // ✅ Track ViewContent Event with TEST CODE
-        app(FacebookPixelService::class)->trackViewContent([
+        app(FacebookPixelService::class)->trackViewContentWithTest('TEST86097',[
             'id' => $this->product->id,
             'name' => $this->product->name,
             'price' => $this->product->price->price ?? 0,
