@@ -3,6 +3,7 @@
 namespace App\Livewire\Web\Components;
 
 use App\Traits\WithCart;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class AddToCartButton extends Component
@@ -14,10 +15,13 @@ class AddToCartButton extends Component
     public $productPrice;
     public $productTitle;
 
+    public $cartEventId;
+
     public function mount($productId, $quantity = 1)
     {
         $this->productId = $productId;
         $this->quantity = $quantity;
+        $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
     }
 
     public function addProduct()

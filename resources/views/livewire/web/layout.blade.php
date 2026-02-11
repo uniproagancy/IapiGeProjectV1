@@ -222,9 +222,7 @@
     });
 </script>
 <script>
-    function pixelAddToCart(productId, price, name) {
-        const eventId = 'addtocart_' + Date.now();
-
+    function pixelAddToCart(productId, price, name, eventId) {
         fbq('track', 'AddToCart', {
             content_ids: [productId],
             content_name: name,
