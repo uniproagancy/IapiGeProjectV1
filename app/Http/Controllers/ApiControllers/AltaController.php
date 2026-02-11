@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ApiControllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Services\Products\AltaService;
 use Illuminate\Http\Request;
@@ -43,6 +44,14 @@ class AltaController extends Controller
                 'status' => 'error',
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    public function updateActive()
+    {
+        $ids = AltaID::all();
+        foreach($ids as $id) {
+            Product::where('sku', 'ALTA-',$id['product_id'])->update(['active' => 1, 'show' => 1]);
         }
     }
 }

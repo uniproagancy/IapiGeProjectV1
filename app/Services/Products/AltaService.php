@@ -2,6 +2,7 @@
 
 namespace App\Services\Products;
 
+use App\Models\AltaID;
 use SoapClient;
 use Exception;
 
@@ -31,10 +32,12 @@ class AltaService
                 'password' => 'unipro2020',
                 'item' => $itemCode
             ];
-
             $response = $this->soapClient->GetPriceList($params);
-
-            return $response;
+            foreach($response->PriceList->items->item as $product_item)  {
+                AltaID::create([
+                    'product_id' => $product_item->item,
+                ]);
+            }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
