@@ -47,6 +47,10 @@ class Index extends Component
     #[Url(as: 'specs', keep: true)]
     public $selectedSpecs = [];
 
+    // ✅ ADD DISCOUNT FILTER PROPERTY
+    #[Url]
+    public bool $onlyDiscounted = false;
+
     // ============================================
     // Lifecycle Hooks
     // ============================================
@@ -227,6 +231,8 @@ class Index extends Component
             'max' => $this->priceMax,
             'search' => !empty($this->search) ? $this->search : null,
             'specs' => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
+            // ✅ ADD DISCOUNT FILTER TO PARAMS
+            'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
         ]);
     }
 
@@ -256,6 +262,14 @@ class Index extends Component
         $this->isLoading = true;
     }
 
+    // ✅ ADD CLEAR DISCOUNT FILTER
+    public function clearDiscountFilter(): void
+    {
+        $this->onlyDiscounted = false;
+        $this->resetPage();
+        $this->isLoading = true;
+    }
+
     public function resetAllFilters(): void
     {
         $this->selectedBrands = [];
@@ -263,6 +277,7 @@ class Index extends Component
         $this->priceMax = null;
         $this->search = '';
         $this->selectedSpecs = [];
+        $this->onlyDiscounted = false; // ✅ ADD THIS
         $this->currentCategory = null;
         $this->selectedParent = null;
         $this->resetPage();
@@ -301,6 +316,13 @@ class Index extends Component
     public function updatedSelectedSpecs(): void
     {
         $this->normalizeSpecs();
+        $this->isLoading = true;
+        $this->resetPage();
+    }
+
+    // ✅ ADD DISCOUNT FILTER UPDATE
+    public function updatedOnlyDiscounted(): void
+    {
         $this->isLoading = true;
         $this->resetPage();
     }
@@ -346,6 +368,8 @@ class Index extends Component
         $this->applyCategoryFilter($query);
         $this->applyPriceFilter($query);
         $this->applySearchFilter($query);
+        // ✅ ADD DISCOUNT FILTER
+        $this->applyDiscountFilter($query);
 
         $brandIds = $query
             ->distinct('brand_id')
@@ -406,6 +430,7 @@ class Index extends Component
         $this->applyBrandFilter($query);
         $this->applyPriceFilter($query);
         $this->applySearchFilter($query);
+        $this->applyDiscountFilter($query); // ✅ ADD THIS
     }
 
     private function applyCategoryFilter($query): void
@@ -466,6 +491,19 @@ class Index extends Component
                     $subQuery->where('title', 'like', $searchTerm)
                         ->orWhere('description', 'like', $searchTerm);
                 });
+        });
+    }
+
+    // ✅ ADD DISCOUNT FILTER METHOD
+    private function applyDiscountFilter($query): void
+    {
+        if (!$this->onlyDiscounted) {
+            return;
+        }
+
+        $query->whereHas('price', function ($priceQuery) {
+            $priceQuery->where('discount_price', '!=', 0)
+                ->where('discount_price', '!=', null);
         });
     }
 

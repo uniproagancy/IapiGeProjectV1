@@ -135,6 +135,16 @@
                                     @endif
                                 </div>
                             </div>
+                            <div class="form-check pt-3 border-top">
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       wire:model.live="onlyDiscounted"
+                                       id="discountFilter">
+                                <label class="form-check-label text-body-emphasis fw-medium"
+                                       for="discountFilter">
+                                    მხოლოდ ფასდაკლებული
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </aside>
