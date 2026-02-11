@@ -36,6 +36,7 @@ class TrackFacebookPageView
                 ]);
             }
 
+
             // ✅ Cache for 60 seconds
             Cache::put($cacheKey, [
                 'event_id' => $eventId,

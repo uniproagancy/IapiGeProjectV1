@@ -115,7 +115,7 @@
             content_type: 'product',
             num_items: {{ $cart_items_count ?? 0 }}
         }, {
-            eventID: '{{ $event_id }}'
+            eventID: ''
         });
     </script>
     <noscript><img height="1" width="1" style="display:none"
