@@ -113,8 +113,6 @@
             currency: 'GEL',
             content_type: 'product',
             num_items: {{ $orderItems ?? 0 }}
-        }, {
-            eventID: '{{ $event_id }}'
         });
     </script>
     <noscript><img height="1" width="1" style="display:none"
