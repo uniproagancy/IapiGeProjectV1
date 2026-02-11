@@ -4,7 +4,7 @@
             onclick="pixelAddToCart(
                 {{ $productId }},
                 {{ $productPrice }},
-                @js($productTitle)
+                @js($productTitle),
                 @js($cartEventId)
             )"
             class="product-card-button btn btn-icon btn-primary animate-slide-end ms-2"
