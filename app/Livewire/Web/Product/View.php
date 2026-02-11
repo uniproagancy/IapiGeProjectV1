@@ -44,11 +44,14 @@ class View extends Component
             'event_id' => $this->eventId,
         ]);
 
+        $price = !empty($product->price?->discount_price)
+            ? $this->product->price->discount_price
+            : $this->product->price?->regular_price;
         // ✅ Track ViewContent Event with TEST CODE
         app(FacebookPixelService::class)->trackViewContent([
             'id' => $this->product->id,
             'name' => $this->product->name,
-            'price' => $this->product->price->price ?? 0,
+            'price' => $price,
         ], [], $this->eventId);
     }
 
