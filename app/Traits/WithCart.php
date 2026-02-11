@@ -63,7 +63,7 @@ trait WithCart
             ]);
 
             $this->syncCartToDatabase();
-            $this->dispatch('cartUpdated');
+            $this->dispatch('cartUpdated',name: $translation->title, value: $price, id: $product->id );
 
             // ✅ Facebook Pixel - AddToCart Event
             $this->fbPixel->trackAddToCartWithTest(
