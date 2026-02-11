@@ -168,7 +168,8 @@ class Checkout extends Component
                 ];
             }
 
-            app(FacebookPixelService::class)->trackCheckout(
+            app(FacebookPixelService::class)->trackCheckoutWithTest(
+                testCode: 'TEST86097',
                 value: $this->total,
                 currency: 'GEL',
                 items: $items,
