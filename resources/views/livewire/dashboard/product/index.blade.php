@@ -98,7 +98,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($product->brand->translations->where('locale', 'ka')->first())
+                                            @if(!empty($product->brand->translations))
                                                 {{ $product->brand->translations->where('locale', 'ka')->first()->title ?? '' }}
                                             @endif
                                         </td>
