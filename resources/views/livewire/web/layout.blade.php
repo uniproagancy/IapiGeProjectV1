@@ -203,17 +203,6 @@
 <!--End of Tawk.to Script-->
 <script>
     document.addEventListener('livewire:initialized', () => {
-        Livewire.on('cartUpdated', (data) => {
-            console.log(data);
-            fbq('track', 'AddToCart', {
-                content_ids: [data.id],
-                content_name: data.name,
-                content_type: 'product',
-                value: data.value,
-                currency: 'GEL'
-            });
-        });
-
         Livewire.on('ui:error', (data) => {
             Toastify({
                 text: data.message,
@@ -257,6 +246,17 @@
                     location.reload();
                 }
             }
+        });
+    });
+
+    Livewire.on('cartUpdated', (data) => {
+        console.log(data);
+        fbq('track', 'AddToCart', {
+            content_ids: [data.id],
+            content_name: data.name,
+            content_type: 'product',
+            value: data.value,
+            currency: 'GEL'
         });
     });
 </script>
