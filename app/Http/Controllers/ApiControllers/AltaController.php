@@ -51,7 +51,7 @@ class AltaController extends Controller
     {
         $ids = AltaID::all();
         foreach($ids as $id) {
-            Product::where('sku', 'ALTA-',$id['product_id'])->update(['active' => 1, 'show' => 1]);
+            Product::where(['sku' => 'ALTA-'.$id['product_id']])->update(['active' => 1, 'show' => 1]);
         }
     }
 }
