@@ -418,7 +418,6 @@ class FacebookPixelService
     private function trackEventWithTest(string $eventName, array $customData, string $testCode): bool
     {
         try {
-            // ✅ ᲡᲐᲓᲐᲪ ᲘᲫᲐᲮᲔᲑᲐ
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
             $callerChain = [];
 
