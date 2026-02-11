@@ -44,7 +44,7 @@ class View extends Component
             'event_id' => $this->eventId,
         ]);
 
-        $pxl_price = !empty($product->price?->discount_price)
+        $pxl_price = !empty($this->product->price?->discount_price)
             ? $this->product->price->discount_price
             : $this->product->price->regular_price;
         // ✅ Track ViewContent Event with TEST CODE
