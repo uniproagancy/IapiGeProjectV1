@@ -57,7 +57,7 @@ class FacebookPixelService
     /**
      * ✅ Track Purchase event
      */
-    public function trackPurchase(float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
+    public function trackPurchase(float $value, array $userData, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         $customData = [
             'value' => $value,
@@ -85,33 +85,68 @@ class FacebookPixelService
 
     /**
      * ✅ Track Purchase event with Test Code
-     */
-    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
-    {
-        $customData = [
-            'value' => $value,
-            'currency' => $currency,
+     */public function trackPurchaseWithTest(
+    string $testCode,
+    float $value,
+    ?array $userData = null,
+    string $currency = 'GEL',
+    ?array $params = null
+)
+{
+    try {
+        // ✅ Get user data (from auth or passed parameter)
+        $finalUserData = $this->buildUserData($userData);
+
+        // ✅ Build event data
+        $eventData = [
+            'event_name' => 'Purchase',
+            'event_time' => time(),
+            'event_id' => 'purchase_' . time() . '_' . rand(1000, 9999),
+            'user_data' => $finalUserData,
+            'custom_data' => [
+                'value' => $value,
+                'currency' => $currency,
+            ],
+            'test_event_code' => $testCode,
         ];
 
-        if (isset($params['contents'])) {
-            $customData['contents'] = $params['contents'];
-        }
-        if (isset($params['content_type'])) {
-            $customData['content_type'] = $params['content_type'];
-        }
-        if (isset($params['content_ids'])) {
-            $customData['content_ids'] = $params['content_ids'];
-        }
-        if (isset($params['num_items'])) {
-            $customData['num_items'] = $params['num_items'];
-        }
-        if ($eventId) {
-            $customData['event_id'] = $eventId;
+        // ✅ Merge additional params
+        if (!empty($params)) {
+            $eventData['custom_data'] = array_merge(
+                $eventData['custom_data'],
+                $params
+            );
         }
 
-        return $this->trackEventWithTest('Purchase', $customData, $testCode);
+        Log::info('📊 Facebook Pixel Purchase Event', [
+            'test_code' => $testCode,
+            'value' => $value,
+            'currency' => $currency,
+            'user_data_keys' => array_keys($finalUserData),
+            'has_email' => !empty($finalUserData['em']),
+            'has_phone' => !empty($finalUserData['ph']),
+            'has_external_id' => !empty($finalUserData['external_id']),
+        ]);
+
+        // ✅ Send to Facebook
+        $response = $this->sendEventToFacebook($eventData);
+
+        Log::info('✅ Purchase Event Sent', [
+            'test_code' => $testCode,
+            'response' => $response,
+        ]);
+
+        return $response;
+
+    } catch (\Exception $e) {
+        Log::error('❌ Purchase Event Error', [
+            'test_code' => $testCode,
+            'error' => $e->getMessage(),
+        ]);
+
+        throw $e;
     }
-
+}
     /**
      * ✅ Track AddToCart event
      */

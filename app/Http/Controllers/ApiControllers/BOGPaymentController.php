@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ApiControllers;
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
 use App\Models\Order\OrderTransaction;
+use App\Models\User\User;
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -53,6 +54,14 @@ class BOGPaymentController extends Controller
                 $contentIds[] = $item->product_id;
             }
 
+            $user = User::find($order->user_id);
+            $userData = [
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'first_name' => $user->name,
+                'last_name' => $user->lastname,
+            ];
+
             $customData = [
                 'value' => $order->amount,
                 'currency' => 'GEL',
@@ -65,6 +74,7 @@ class BOGPaymentController extends Controller
             app(FacebookPixelService::class)->trackPurchaseWithTest(
                 testCode: 'TEST86097',
                 value: $order->amount,
+                userData: $userData,
                 currency: 'GEL',
                 params: $customData
             );
