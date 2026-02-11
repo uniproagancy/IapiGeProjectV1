@@ -109,13 +109,12 @@
             'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '1280014533998229');
         fbq('track', 'InitiateCheckout', {
-            value: {{ $cart_total ?? 0 }},
+            value: {{ $total ?? 0 }},
             currency: 'GEL',
-            content_ids: {!! json_encode($cart_product_ids ?? []) !!},
             content_type: 'product',
-            num_items: {{ $cart_items_count ?? 0 }}
+            num_items: {{ $orderItems ?? 0 }}
         }, {
-            eventID: ''
+            eventID: '{{ $event_id }}'
         });
     </script>
     <noscript><img height="1" width="1" style="display:none"
