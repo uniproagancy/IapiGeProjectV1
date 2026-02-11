@@ -11,6 +11,8 @@ class AddToCartButton extends Component
 
     public $productId;
     public $quantity = 1;
+    public $productPrice;
+    public $productTitle;
 
     public function mount($productId, $quantity = 1)
     {
