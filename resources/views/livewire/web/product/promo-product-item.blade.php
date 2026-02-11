@@ -30,7 +30,7 @@
     </div>
 
     <button type="button"
-            class="product-card-button btn btn-icon btn-danger animate-slide-end ms-2"
+            class="product-card-button btn btn-icon btn-primary animate-slide-end ms-2"
             aria-label="კალათაში დამატება">
         <i class="ci-shopping-cart fs-base animate-target"></i>
     </button>
