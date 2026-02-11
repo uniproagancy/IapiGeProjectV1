@@ -93,9 +93,13 @@
                                             @endif
                                         </td>
                                         <td>
+                                            @if(!empty($product->category->parent->translations))
                                             {{ $product->category->parent->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            @endif
+                                            @if(!empty($product->category->translations))
                                             /
                                             {{ $product->category->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            @endif
                                         </td>
                                         <td>
                                             @if(!$product->trashed())
