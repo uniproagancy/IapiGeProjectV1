@@ -75,7 +75,12 @@
                     {{ number_format($product->price->regular_price, 2) }} ₾
                 </div>
             @endif
-            <livewire:web.components.add-to-cart-button :productId="$product->id" :productPrice="$product->price?->discount_price ?? $product->price?->regular_price" :productTitle="$product->translations->where('locale', app()->getLocale())->first()->title" />
+            @php
+                $price = !empty($product->price?->discount_price)
+            ? $product->price->discount_price
+            : $product->price?->regular_price;
+            @endphp
+            <livewire:web.components.add-to-cart-button :productId="$product->id" :productPrice="$price" :productTitle="$product->translations->where('locale', app()->getLocale())->first()->title" />
         </div>
     </div>
     <style>
