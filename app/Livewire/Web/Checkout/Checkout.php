@@ -93,15 +93,15 @@ class Checkout extends Component
                     ->where('active', 1)
                     ->where('show', 1)
                     ->findOrFail($this->product_id);
-
                 if ($product->in_stock !== 1) {
                     $this->dispatch('ui:error', message: 'პროდუქტი არ არის მარაგში', type: 'error');
                     return $this->redirect(route('web.products.index'));
                 }
 
                 $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-                $price = $product->price->discount_price ?? $product->price->regular_price;
-
+                $price = !empty($product->price?->discount_price)
+                    ? $product->price->discount_price
+                    : $product->price?->regular_price;
                 $this->orderItems = collect([
                     [
                         'id' => $product->id,
