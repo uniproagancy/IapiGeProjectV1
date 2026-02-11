@@ -392,7 +392,8 @@ class Checkout extends Component
                 'num_items' => count($contents),
             ];
 
-            app(FacebookPixelService::class)->trackLead(
+            app(FacebookPixelService::class)->trackLeadWithTest(
+                testCode: 'TEST86097',
                 userData: $userData,
                 customData: $customData,
                 eventId: $leadEventId
