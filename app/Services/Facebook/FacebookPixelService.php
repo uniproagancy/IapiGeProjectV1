@@ -858,6 +858,57 @@ class FacebookPixelService
     }
 
     /**
+     * ✅ Track CompleteRegistration event
+     */
+    public function trackCompleteRegistration(array $userData = [], array $customData = [], ?string $eventId = null): bool
+    {
+        $eventData = [
+            'content_name' => 'registration',
+            'status' => 'completed',
+        ];
+
+        if (!empty($customData)) {
+            $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
+        }
+
+        // Track with custom user data
+        if (!empty($userData)) {
+            return $this->trackEventWithCustomUserData('CompleteRegistration', $eventData, $userData);
+        }
+
+        return $this->trackEvent('CompleteRegistration', $eventData);
+    }
+
+    /**
+     * ✅ Track CompleteRegistration with Test Code
+     */
+    public function trackCompleteRegistrationWithTest(string $testCode, array $userData = [], array $customData = [], ?string $eventId = null): bool
+    {
+        $eventData = [
+            'content_name' => 'registration',
+            'status' => 'completed',
+        ];
+
+        if (!empty($customData)) {
+            $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
+        }
+
+        if (!empty($userData)) {
+            return $this->trackEventWithCustomUserDataAndTest('CompleteRegistration', $eventData, $userData, $testCode);
+        }
+
+        return $this->trackEventWithTest('CompleteRegistration', $eventData, $testCode);
+    }
+
+    /**
      * ✅ Get Pixel configuration
      */
     public function getConfig(): array

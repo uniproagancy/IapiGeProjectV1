@@ -6,6 +6,9 @@ use Livewire\Component;
 use App\Models\User\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Services\Facebook\FacebookPixelService;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class RegisterModal extends Component
 {
@@ -42,6 +45,7 @@ class RegisterModal extends Component
     public function register()
     {
         $this->validate();
+
         $user = User::create([
             'name' => $this->name,
             'lastname' => $this->lastname,
@@ -50,10 +54,44 @@ class RegisterModal extends Component
             'password' => Hash::make($this->password),
             'email_verified_at' => now()
         ]);
+
+        // ✅ Track CompleteRegistration Event
+        $eventId = 'cr_' . time() . '_' . Str::random(6);
+
+        Log::info('🎉 User registered successfully', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'event_id' => $eventId,
+        ]);
+
+        // ✅ Track with custom user data (before auto-login)
+        app(FacebookPixelService::class)->trackCompleteRegistrationWithTest(
+            'TEST68876',
+            [
+                'email' => $this->email,
+                'phone' => $this->phone,
+                'first_name' => $this->name,
+                'last_name' => $this->lastname,
+            ],
+            [],
+            $eventId
+        );
+
+        // ✅ Dispatch event to browser for client-side tracking
+        $this->dispatch('registration-completed', [
+            'event_id' => $eventId,
+            'user_email' => $this->email,
+            'user_phone' => $this->phone,
+            'user_name' => $this->name,
+            'user_lastname' => $this->lastname,
+        ]);
+
         // TODO SMS SENDER
         // TODO MAIL SENDER
+
         $this->dispatch('close-modal', 'registerModal');
         $this->dispatch('ui:success', message: 'თქვენ წარმატებით დარეგისტრირდით!');
+
         return redirect('/');
     }
 
