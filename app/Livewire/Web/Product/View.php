@@ -47,7 +47,7 @@ class View extends Component
         $pxl_price = !empty($this->product->price?->discount_price)
             ? $this->product->price->discount_price
             : $this->product->price->regular_price;
-        app(FacebookPixelService::class)->trackViewContentWithTest('TEST86097',[
+        app(FacebookPixelService::class)->trackViewContent([
             'id' => $this->product->id,
             'name' => $this->product->name,
             'price' => $pxl_price,
