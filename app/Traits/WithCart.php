@@ -19,7 +19,7 @@ trait WithCart
         $this->fbPixel = app(FacebookPixelService::class);
     }
 
-    public function addToCart($productId, $quantity = 1)
+    public function addToCart($productId, $quantity = 1, $cartEventId = null)
     {
         try {
             if ($quantity < 1) {
@@ -73,6 +73,7 @@ trait WithCart
                     'name' => $translation->title,
                     'quantity' => $quantity,
                 ],
+                eventId: $cartEventId,
                 value: $price * $quantity,
                 currency: 'GEL'
             );
