@@ -1,5 +1,5 @@
-@if($product->category->parent->id != 2)
 <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
+    @if($product->category->parent->id != 2)
     <ol class="breadcrumb font-neue">
         <li class="breadcrumb-item">
             <a href="{{ route('web.main.index') }}"> მთავარი გვერდი</a>
@@ -20,5 +20,5 @@
             {{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}
         </li>
     </ol>
+    @endif
 </nav>
-@endif
