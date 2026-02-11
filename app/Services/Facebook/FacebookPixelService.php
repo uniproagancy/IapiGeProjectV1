@@ -84,9 +84,9 @@ class FacebookPixelService
     }
 
     /**
-     * ✅ Track Purchase event with Test Code
+     * ✅ Track Purchase event with Test Code AND userData
      */
-    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
+    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null, ?array $userData = null): bool
     {
         $customData = [
             'value' => $value,
@@ -107,6 +107,11 @@ class FacebookPixelService
         }
         if ($eventId) {
             $customData['event_id'] = $eventId;
+        }
+
+        // ✅ Track with custom user data if provided
+        if (!empty($userData)) {
+            return $this->trackEventWithCustomUserDataAndTest('Purchase', $customData, $userData, $testCode);
         }
 
         return $this->trackEventWithTest('Purchase', $customData, $testCode);

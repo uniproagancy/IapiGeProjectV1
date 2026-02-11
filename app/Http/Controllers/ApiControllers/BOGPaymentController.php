@@ -61,7 +61,6 @@ class BOGPaymentController extends Controller
                 'first_name' => $user->name,
                 'last_name' => $user->lastname,
             ];
-
             $customData = [
                 'value' => $order->amount,
                 'currency' => 'GEL',
@@ -74,9 +73,10 @@ class BOGPaymentController extends Controller
             app(FacebookPixelService::class)->trackPurchaseWithTest(
                 testCode: 'TEST86097',
                 value: $order->amount,
-                userData: $userData,
                 currency: 'GEL',
-                params: $customData
+                params: $customData,
+                eventId: null,
+                userData: $userData
             );
 
             Log::info('✅ Facebook Pixel Purchase tracked', [
