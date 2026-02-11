@@ -1,4 +1,4 @@
-@if($product->category->parent == 2)
+@if($product->category->parent->id === 2)
 <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
     <ol class="breadcrumb font-neue">
         <li class="breadcrumb-item">
