@@ -75,7 +75,7 @@
                     {{ number_format($product->price->regular_price, 2) }} ₾
                 </div>
             @endif
-            <livewire:web.components.add-to-cart-button :productId="$product->id"/>
+            <livewire:web.components.add-to-cart-button :productId="$product->id" :productPrice="{{ $product->price->regular_price }}" :productTitle="{{ $product->translations->where('locale', app()->getLocale())->first()->title }}" />
         </div>
     </div>
     <style>
