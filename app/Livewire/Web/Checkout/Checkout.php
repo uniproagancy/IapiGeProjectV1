@@ -168,8 +168,7 @@ class Checkout extends Component
                 ];
             }
 
-            app(FacebookPixelService::class)->trackCheckoutWithTest(
-                testCode: 'TEST68876',
+            app(FacebookPixelService::class)->trackCheckout(
                 value: $this->total,
                 currency: 'GEL',
                 items: $items,
@@ -392,8 +391,7 @@ class Checkout extends Component
                 'num_items' => count($contents),
             ];
 
-            app(FacebookPixelService::class)->trackLeadWithTest(
-                testCode: 'TEST68876',
+            app(FacebookPixelService::class)->trackLead(
                 userData: $userData,
                 customData: $customData,
                 eventId: $leadEventId

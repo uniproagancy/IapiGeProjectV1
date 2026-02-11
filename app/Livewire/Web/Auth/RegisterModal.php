@@ -65,8 +65,7 @@ class RegisterModal extends Component
         ]);
 
         // ✅ Track with custom user data (before auto-login)
-        app(FacebookPixelService::class)->trackCompleteRegistrationWithTest(
-            'TEST68876',
+        app(FacebookPixelService::class)->trackCompleteRegistration(
             [
                 'email' => $this->email,
                 'phone' => $this->phone,

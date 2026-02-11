@@ -17,8 +17,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
         Route::get('/about-us', App\Livewire\Web\Main\AboutUs::class)->name('main.contact');
 
-        Route::get('/order/success', '\App\Http\Controllers\OrderStatusController@success');
-        Route::get('/order/reject', '\App\Http\Controllers\OrderStatusController@reject');
+        Route::get('/checkout/success', '\App\Http\Controllers\OrderStatusController@success');
+        Route::get('/checkout/reject', '\App\Http\Controllers\OrderStatusController@reject');
         Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
 
         Route::group(['middleware' => 'auth'], function () {

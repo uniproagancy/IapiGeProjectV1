@@ -19,9 +19,7 @@ class Index extends Component
 
     public function mount()
     {
-        // ✅ მხოლოდ event_id-ის მიღება Middleware-დან (view()->shared())
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
-
         Log::info('🔍 Index::mount() called', [
             'event_id' => $this->eventId,
         ]);

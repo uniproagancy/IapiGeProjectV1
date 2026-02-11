@@ -256,11 +256,9 @@ class PromotionProductsController extends Controller
             $promotionId = 1; // ✅ Optional
 
             if ($promotionId) {
-                // Delete only specific promotion
                 PromotionProduct::where('promotion_id', $promotionId)->delete();
                 $message = "Promotion products for promotion_id: {$promotionId} cleared";
             } else {
-                // Delete all promotions
                 PromotionProduct::truncate();
                 $message = "All promotion products cleared";
             }

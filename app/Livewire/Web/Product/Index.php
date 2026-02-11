@@ -86,7 +86,7 @@ class Index extends Component
         ]);
 
         // ✅ Track Custom Event: CategoryView with TEST CODE
-        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST68876', 'CategoryView', [
+        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name' => $this->currentCategory->name,
             'content_category' => $this->category_slug,
             'content_ids' => [$this->currentCategory->id],
