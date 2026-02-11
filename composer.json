@@ -22,7 +22,9 @@
         "livewire/livewire": "^3.7",
         "mcamara/laravel-localization": "^2.3",
         "meeeet-dev/laravel-facebook-catalog": "^1.4",
-        "spatie/laravel-responsecache": "^7.7"
+        "php-soap/wsdl": "^1.0",
+        "spatie/laravel-responsecache": "^7.7",
+      "ext-soap": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

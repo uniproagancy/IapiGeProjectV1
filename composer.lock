@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b7928e97bde4ed1f36eefdeffd1e4b18",
+    "content-hash": "ce16616b76f51a5710413c52afbe5aed",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -4189,6 +4189,55 @@
                 "source": "https://github.com/phar-io/version/tree/3.2.1"
             },
             "time": "2022-02-21T01:04:05+00:00"
+        },
+        {
+            "name": "php-soap/wsdl",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-soap/wsdl.git",
+                "reference": "6181e7d43969abc76e1401446a6690e55e663e83"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-soap/wsdl/zipball/6181e7d43969abc76e1401446a6690e55e663e83",
+                "reference": "6181e7d43969abc76e1401446a6690e55e663e83",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Soap\\Wsdl\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Toon Verwerft",
+                    "email": "toonverwerft@gmail.com"
+                }
+            ],
+            "description": "Deals with WSDLs",
+            "support": {
+                "issues": "https://github.com/php-soap/wsdl/issues",
+                "source": "https://github.com/php-soap/wsdl/tree/v1.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/veewee",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-07-08T05:29:04+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -11909,8 +11958,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2",
-        "ext-simplexml": "*",
-        "ext-soap": "*"
+        "ext-simplexml": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"
