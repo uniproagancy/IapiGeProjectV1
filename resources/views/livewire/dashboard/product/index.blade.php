@@ -31,11 +31,6 @@
                                         id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="refresh-cw"></i>
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" href="#" wire:click.prevent="productSync('alta')">ALTA</a>
-                                    <a class="dropdown-item" href="#" wire:click.prevent="productSync('all')">სრული
-                                        სინქრონიზაცია</a>
-                                </div>
                             </div>
                             <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
                                style="font-size: 13px">
@@ -59,6 +54,7 @@
                                     <th class="text-start">დასახელება</th>
                                     <th>ფასი</th>
                                     <th>კატეგორია</th>
+                                    <th>ბრენდი</th>
                                     <th>სტატუსი</th>
                                     <th>საიტზე ჩვენება</th>
                                     <th>მოქმედება</th>
@@ -100,6 +96,9 @@
                                             /
                                             {{ $product->category->translations->where('locale', 'ka')->first()->title ?? '' }}
                                             @endif
+                                        </td>
+                                        <td>
+                                            {{ $product->brand->translations->where('locale', 'ka')->first()->title ?? '' }}
                                         </td>
                                         <td>
                                             @if(!$product->trashed())
@@ -287,7 +286,6 @@
     <div class="modal fade" wire:ignore.self id="changeCategoryModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -321,7 +319,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" wire:ignore.self id="changeCategoryBrand" tabindex="-1">
+    <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -331,16 +329,16 @@
                 <div class="modal-body">
                     <div class="mb-2">
                         <label class="form-label"></label>
-                        <select class="form-select" wire:model.live="selectedCategory">
+                        <select class="form-select" wire:model.live="selectedBrand">
                             <option value="">— აირჩიეთ —</option>
-                            @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
-                                <option value="{{ $category->id }}">{{ $category->translations->where('locale', 'ka')->first()->title }}</option>
+                            @foreach($brands->where('active', 1) as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()->title }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" wire:click="updateProductCategory">დადასტურება</button>
+                    <button class="btn btn-primary" wire:click="updateProductBrand">დადასტურება</button>
                     <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
@@ -387,6 +385,14 @@
 
         Livewire.on('category_modal_close', () => {
             const modalEl = document.getElementById('changeCategoryModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        });
+
+        Livewire.on('brand_modal_close', () => {
+            const modalEl = document.getElementById('changeBrandModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             if (modal) {
                 modal.hide();
