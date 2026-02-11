@@ -250,6 +250,30 @@ class FacebookPixelService
         return $this->trackEvent('InitiateCheckout', $customData);
     }
 
+    public function trackCheckoutWithTest(string $testCode, float $value, string $currency = 'GEL', array $items = [], array $params = [], ?string $eventId = null): bool
+    {
+        $contents = [];
+        foreach ($items as $item) {
+            $contents[] = [
+                'id' => $item['id'] ?? null,
+                'quantity' => $item['quantity'] ?? 1,
+            ];
+        }
+
+        $customData = [
+            'value' => $value,
+            'currency' => $currency,
+            'contents' => $contents,
+            'content_type' => 'product',
+        ];
+
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
+
+        return $this->trackEventWithTest('InitiateCheckout', $customData, $testCode);
+    }
+
     /**
      * ✅ Track Lead event
      */

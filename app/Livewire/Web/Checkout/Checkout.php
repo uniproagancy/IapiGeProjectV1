@@ -15,6 +15,7 @@ use App\Traits\WithCart;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Exception;
@@ -48,6 +49,9 @@ class Checkout extends Component
     public $orderItems = [];
     public $subtotal = 0;
     public $total = 0;
+
+    // ✅ Event IDs
+    public string $checkoutEventId;
 
     public function mount()
     {
@@ -149,11 +153,13 @@ class Checkout extends Component
     }
 
     /**
-     * ✅ Track InitiateCheckout Event
+     * ✅ Track InitiateCheckout Event with TEST CODE
      */
     private function trackInitiateCheckout()
     {
         try {
+            $this->checkoutEventId = 'ic_' . time() . '_' . Str::random(6);
+
             $items = [];
             foreach ($this->orderItems as $item) {
                 $items[] = [
@@ -162,11 +168,20 @@ class Checkout extends Component
                 ];
             }
 
-            app(FacebookPixelService::class)->trackCheckout(
+            app(FacebookPixelService::class)->trackCheckoutWithTest(
+                testCode: 'TEST68876',
                 value: $this->total,
                 currency: 'GEL',
-                items: $items
+                items: $items,
+                params: [],
+                eventId: $this->checkoutEventId
             );
+
+            Log::info('✅ InitiateCheckout tracked', [
+                'event_id' => $this->checkoutEventId,
+                'total' => $this->total,
+                'items_count' => count($items),
+            ]);
 
         } catch (Exception $e) {
             Log::warning('Facebook Pixel InitiateCheckout error: ' . $e->getMessage());
@@ -199,7 +214,7 @@ class Checkout extends Component
                     'delivery_amount' => 0,
                     'amount' => $this->subtotal,
                 ]);
-                $user_phone = Auth::user()->phone;
+
                 foreach ($this->orderItems as $orderItem) {
                     OrderItem::create([
                         'product_id' => $orderItem['id'],
@@ -214,8 +229,9 @@ class Checkout extends Component
                     'address' => $this->address,
                 ]);
 
-                // ✅ Facebook Pixel - Lead (ავტორიზებული)
                 (new \App\Services\Sender\SmsOffice)->send(Auth::user()->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
+
+                // ✅ Facebook Pixel - Lead (ავტორიზებული)
                 $this->trackLead($order, isGuest: false);
                 $this->processPayment($order);
             }
@@ -235,16 +251,15 @@ class Checkout extends Component
                     'phone.required' => 'ტელეფონი აუცილებელია',
                 ]);
 
-                $product = Product::find($this->product_id);
+                $product = Product::with(['translations', 'price'])->find($this->product_id);
                 $price = $product->price->discount_price ?? $product->price->regular_price;
+                $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-//                if(!empty($this->email)) {
-//
-//                }
                 $check_user = User::where('email', $this->email)->first();
                 if($check_user){
                     $check_user->update(['email' => $this->email]);
                 }
+
                 $user = User::create([
                     'name' => $this->name,
                     'lastname' => $this->lastname,
@@ -263,15 +278,42 @@ class Checkout extends Component
 
                 OrderItem::create([
                     'product_id' => $product->id,
-                    'quantity' => 1,
+                    'quantity' => $this->quantity,
                     'price' => $price,
                     'order_id' => $order->id,
                 ]);
+
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
                 ]);
+
                 (new \App\Services\Sender\SmsOffice)->send($this->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
+
+                // ✅ Track AddToCart for Quick Checkout (Guest)
+                $addToCartEventId = 'atc_' . time() . '_' . Str::random(6);
+
+                app(FacebookPixelService::class)->trackAddToCartWithTest(
+                    testCode: 'TEST68876',
+                    product: [
+                        'id' => $product->id,
+                        'name' => $translation->title,
+                        'quantity' => $this->quantity,
+                    ],
+                    value: $price * $this->quantity,
+                    currency: 'GEL',
+                    params: [],
+                    eventId: $addToCartEventId
+                );
+
+                Log::info('✅ AddToCart tracked (Quick Checkout)', [
+                    'event_id' => $addToCartEventId,
+                    'product_id' => $product->id,
+                    'product_name' => $translation->title,
+                    'quantity' => $this->quantity,
+                    'value' => $price * $this->quantity,
+                ]);
+
                 // ✅ Facebook Pixel - Lead (არაავტორიზებული)
                 $this->trackLead($order, isGuest: true);
                 $this->processPayment($order);
@@ -287,11 +329,12 @@ class Checkout extends Component
     }
 
     /**
-     * ✅ Track Lead - Universal (Order Items-დან პროდუქტები)
+     * ✅ Track Lead - Universal (Order Items-დან პროდუქტები) with TEST CODE
      */
     private function trackLead($order, $isGuest = false)
     {
         try {
+            $leadEventId = 'lead_' . time() . '_' . Str::random(6);
             $userData = [];
             $contentCategory = $isGuest ? 'quick_checkout' : 'checkout';
 
@@ -349,14 +392,16 @@ class Checkout extends Component
                 'num_items' => count($contents),
             ];
 
-            // ✅ Production
             app(FacebookPixelService::class)->trackLeadWithTest(
-                testCode: config('services.facebook.test_event_code', 'TEST68876'),
+                testCode: 'TEST68876',
                 userData: $userData,
-                customData: $customData
+                customData: $customData,
+                eventId: $leadEventId
             );
+
             Log::info('✅ Facebook Pixel Lead tracked', [
                 'order_id' => $order->id,
+                'event_id' => $leadEventId,
                 'is_guest' => $isGuest,
                 'amount' => $order->amount,
                 'products_count' => count($contents),
@@ -447,6 +492,7 @@ class Checkout extends Component
     {
         return view('livewire.web.cart.checkout', [
             'payment_list' => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
+            'checkout_event_id' => $this->checkoutEventId ?? null,
         ])->layout('livewire.web.layout');
     }
 }
