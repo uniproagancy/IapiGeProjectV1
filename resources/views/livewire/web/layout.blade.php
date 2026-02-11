@@ -23,6 +23,8 @@
     <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2"
           crossorigin>
     <link rel="stylesheet" href="{{ asset('web-assets/icons/cartzilla-icons.min.css') }}">
+    <link rel="shortcut icon" type="image/x-icon"
+              href="{{ asset('web-assets/img/logo.png') }}">
 
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.css') }}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
