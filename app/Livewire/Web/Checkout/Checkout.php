@@ -292,8 +292,7 @@ class Checkout extends Component
                 // ✅ Track AddToCart for Quick Checkout (Guest)
                 $addToCartEventId = 'atc_' . time() . '_' . Str::random(6);
 
-                app(FacebookPixelService::class)->trackAddToCartWithTest(
-                    testCode: 'TEST68876',
+                app(FacebookPixelService::class)->trackAddToCart(
                     product: [
                         'id' => $product->id,
                         'name' => $translation->title,
@@ -314,6 +313,7 @@ class Checkout extends Component
                 ]);
 
                 // ✅ Facebook Pixel - Lead (არაავტორიზებული)
+                Cart::clear();
                 $this->trackLead($order, isGuest: true);
                 $this->processPayment($order);
             }
@@ -478,7 +478,7 @@ class Checkout extends Component
                 case '2':
                     $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
                 default:
-                    return $this->redirect('/order/success');
+                    return $this->redirect('/checkout/success');
             }
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());
