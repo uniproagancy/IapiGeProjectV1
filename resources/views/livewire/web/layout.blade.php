@@ -222,6 +222,23 @@
     });
 </script>
 <script>
+    function pixelAddToCart(productId, price, name) {
+        const eventId = 'addtocart_' + Date.now();
+
+        fbq('track', 'AddToCart', {
+            content_ids: [productId],
+            content_name: name,
+            content_type: 'product',
+            value: price,
+            currency: 'GEL',
+            event_id: eventId
+        });
+
+        // event_id ვაგზავნით Livewire-სთვის
+        Livewire.dispatch('storePixelEventId', { eventId });
+    }
+</script>
+<script>
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
         const icon = document.getElementById(fieldId + '-icon');
@@ -246,17 +263,6 @@
                     location.reload();
                 }
             }
-        });
-    });
-
-    Livewire.on('cartUpdated', (data) => {
-        console.log(data);
-        fbq('track', 'AddToCart', {
-            content_ids: [data.id],
-            content_name: data.name,
-            content_type: 'product',
-            value: data.value,
-            currency: 'GEL'
         });
     });
 </script>
