@@ -62,7 +62,8 @@ class BOGPaymentController extends Controller
                 'num_items' => count($contents),
             ];
 
-            app(FacebookPixelService::class)->trackPurchase(
+            app(FacebookPixelService::class)->trackPurchaseWithTest(
+                testCode: 'TEST86097',
                 value: $order->amount,
                 currency: 'GEL',
                 params: $customData
