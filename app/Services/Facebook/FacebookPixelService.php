@@ -35,23 +35,29 @@ class FacebookPixelService
     /**
      * ✅ Track PageView event
      */
-    public function trackPageView(array $params = []): bool
+    public function trackPageView(array $params = [], ?string $eventId = null): bool
     {
+        if ($eventId) {
+            $params['event_id'] = $eventId;
+        }
         return $this->trackEvent('PageView', $params);
     }
 
     /**
      * ✅ Track PageView event with Test Code
      */
-    public function trackPageViewWithTest(string $testCode, array $params = []): bool
+    public function trackPageViewWithTest(string $testCode, array $params = [], ?string $eventId = null): bool
     {
+        if ($eventId) {
+            $params['event_id'] = $eventId;
+        }
         return $this->trackEventWithTest('PageView', $params, $testCode);
     }
 
     /**
      * ✅ Track Purchase event
      */
-    public function trackPurchase(float $value, string $currency = 'GEL', array $params = []): bool
+    public function trackPurchase(float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         $customData = [
             'value' => $value,
@@ -69,6 +75,9 @@ class FacebookPixelService
         }
         if (isset($params['num_items'])) {
             $customData['num_items'] = $params['num_items'];
+        }
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
         }
 
         return $this->trackEvent('Purchase', $customData);
@@ -77,7 +86,7 @@ class FacebookPixelService
     /**
      * ✅ Track Purchase event with Test Code
      */
-    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = []): bool
+    public function trackPurchaseWithTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         $customData = [
             'value' => $value,
@@ -96,6 +105,9 @@ class FacebookPixelService
         if (isset($params['num_items'])) {
             $customData['num_items'] = $params['num_items'];
         }
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
 
         return $this->trackEventWithTest('Purchase', $customData, $testCode);
     }
@@ -103,7 +115,7 @@ class FacebookPixelService
     /**
      * ✅ Track AddToCart event
      */
-    public function trackAddToCart(array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
+    public function trackAddToCart(array $product, float $value = 0, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         $contents = [
             [
@@ -119,6 +131,10 @@ class FacebookPixelService
             'content_name' => $product['name'] ?? null,
             'content_type' => 'product',
         ];
+
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
 
         return $this->trackEvent('AddToCart', $customData);
     }
@@ -126,7 +142,7 @@ class FacebookPixelService
     /**
      * ✅ Track AddToCart event with Test Code
      */
-    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL', array $params = []): bool
+    public function trackAddToCartWithTest(string $testCode, array $product, float $value = 0, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         $contents = [
             [
@@ -144,13 +160,17 @@ class FacebookPixelService
             'content_ids' => [$product['id'] ?? null],
         ];
 
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
+
         return $this->trackEventWithTest('AddToCart', $customData, $testCode);
     }
 
     /**
      * ✅ Track ViewContent event
      */
-    public function trackViewContent(array $product, array $params = []): bool
+    public function trackViewContent(array $product, array $params = [], ?string $eventId = null): bool
     {
         $contents = [
             [
@@ -167,6 +187,10 @@ class FacebookPixelService
             'currency' => 'GEL',
             'contents' => $contents,
         ];
+
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
 
         return $this->trackEvent('ViewContent', $customData);
     }
@@ -174,7 +198,7 @@ class FacebookPixelService
     /**
      * ✅ Track ViewContent event with Test Code
      */
-    public function trackViewContentWithTest(string $testCode, array $product, array $params = []): bool
+    public function trackViewContentWithTest(string $testCode, array $product, array $params = [], ?string $eventId = null): bool
     {
         $contents = [
             [
@@ -192,8 +216,8 @@ class FacebookPixelService
             'contents' => $contents,
         ];
 
-        if (isset($params['event_id'])) {
-            $customData['event_id'] = $params['event_id'];
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
         }
 
         return $this->trackEventWithTest('ViewContent', $customData, $testCode);
@@ -202,7 +226,7 @@ class FacebookPixelService
     /**
      * ✅ Track InitiateCheckout event
      */
-    public function trackCheckout(float $value, string $currency = 'GEL', array $items = [], array $params = []): bool
+    public function trackCheckout(float $value, string $currency = 'GEL', array $items = [], array $params = [], ?string $eventId = null): bool
     {
         $contents = [];
         foreach ($items as $item) {
@@ -219,13 +243,17 @@ class FacebookPixelService
             'content_type' => 'product',
         ];
 
+        if ($eventId) {
+            $customData['event_id'] = $eventId;
+        }
+
         return $this->trackEvent('InitiateCheckout', $customData);
     }
 
     /**
      * ✅ Track Lead event
      */
-    public function trackLead(array $userData = [], array $customData = []): bool
+    public function trackLead(array $userData = [], array $customData = [], ?string $eventId = null): bool
     {
         $eventData = [
             'content_category' => 'checkout',
@@ -233,6 +261,10 @@ class FacebookPixelService
 
         if (!empty($customData)) {
             $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
         }
 
         // თუ გადმოცემულია custom user data (არაავტორიზებული)
@@ -246,7 +278,7 @@ class FacebookPixelService
     /**
      * ✅ Track Lead with Test Code
      */
-    public function trackLeadWithTest(string $testCode, array $userData = [], array $customData = []): bool
+    public function trackLeadWithTest(string $testCode, array $userData = [], array $customData = [], ?string $eventId = null): bool
     {
         $eventData = [
             'content_category' => 'checkout',
@@ -254,6 +286,10 @@ class FacebookPixelService
 
         if (!empty($customData)) {
             $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
         }
 
         if (!empty($userData)) {
@@ -266,16 +302,22 @@ class FacebookPixelService
     /**
      * ✅ Track Custom event
      */
-    public function trackCustomEvent(string $eventName, array $params = []): bool
+    public function trackCustomEvent(string $eventName, array $params = [], ?string $eventId = null): bool
     {
+        if ($eventId) {
+            $params['event_id'] = $eventId;
+        }
         return $this->trackEvent($eventName, $params);
     }
 
     /**
      * ✅ Track Custom event with Test Code
      */
-    public function trackCustomEventWithTest(string $testCode, string $eventName, array $params = []): bool
+    public function trackCustomEventWithTest(string $testCode, string $eventName, array $params = [], ?string $eventId = null): bool
     {
+        if ($eventId) {
+            $params['event_id'] = $eventId;
+        }
         return $this->trackEventWithTest($eventName, $params, $testCode);
     }
 
@@ -307,8 +349,8 @@ class FacebookPixelService
                 'method' => request()->method(),
             ]);
 
-            // ✅ Generate unique key for deduplication
-            $eventKey = md5($eventName . json_encode($customData) . request()->url());
+            // ✅ Generate unique key for deduplication - DIFFERENT FOR EACH EVENT TYPE
+            $eventKey = $eventName . '_' . md5(json_encode($customData) . request()->url());
 
             // ✅ Check if already sent in this request
             if (isset(self::$sentEvents[$eventKey])) {
@@ -331,6 +373,7 @@ class FacebookPixelService
             Log::info("📤 Sending Facebook Pixel event: {$eventName}", [
                 'event_key' => $eventKey,
                 'called_from' => $callerChain[0] ?? 'unknown',
+                'has_event_id' => isset($customData['event_id']),
                 'data' => $eventData,
             ]);
 
@@ -406,6 +449,7 @@ class FacebookPixelService
             Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
                 'test_code' => $testCode,
                 'called_from' => $callerChain[0] ?? 'unknown',
+                'has_event_id' => isset($customData['event_id']),
             ]);
 
             $response = Http::timeout(10)
@@ -451,6 +495,12 @@ class FacebookPixelService
                 'event_source_url' => request()->url(),
                 'action_source' => 'website',
             ];
+
+            // ✅ Add event_id if present
+            if (isset($customData['event_id'])) {
+                $eventData['event_id'] = $customData['event_id'];
+                unset($customData['event_id']); // Remove from custom_data
+            }
 
             // Build user data from form
             $userData = [
@@ -531,6 +581,12 @@ class FacebookPixelService
                 'action_source' => 'website',
             ];
 
+            // ✅ Add event_id if present
+            if (isset($customData['event_id'])) {
+                $eventData['event_id'] = $customData['event_id'];
+                unset($customData['event_id']); // Remove from custom_data
+            }
+
             // Build user data from form
             $userData = [
                 'client_ip_address' => request()->ip(),
@@ -609,6 +665,12 @@ class FacebookPixelService
             'action_source' => 'website',
         ];
 
+        // ✅ Add event_id if present in customData
+        if (isset($customData['event_id'])) {
+            $eventData['event_id'] = $customData['event_id'];
+            unset($customData['event_id']); // Remove from custom_data
+        }
+
         $eventData['user_data'] = $this->buildUserData();
 
         if (!empty($customData)) {
@@ -622,6 +684,7 @@ class FacebookPixelService
             'has_email' => isset($eventData['user_data']['em']),
             'has_phone' => isset($eventData['user_data']['ph']),
             'has_external_id' => isset($eventData['user_data']['external_id']),
+            'has_event_id' => isset($eventData['event_id']),
         ]);
 
         return $eventData;
