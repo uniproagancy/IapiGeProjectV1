@@ -158,7 +158,7 @@
                                         </td>
                                         <td class="text-start">
                                             <span class="badge badge-light-info">{{ $item->product->sku }}</span> -
-                                            {{ $item->product->translations->where('locale', 'ka')->first()->title }}
+                                            <a href="{{ route('web.products.view', $item->product->translations->where('locale', 'ka')->first()->slug) }}" target="_blank" > {{ $item->product->translations->where('locale', 'ka')->first()->title }} </a>
                                         </td>
                                         <td>
                                             <span class="badge badge-light-success">{{ number_format($item->price, 2)  }} ₾</span>
