@@ -83,6 +83,7 @@ class FacebookFeedController extends Controller
                     'google_product_category' => $product->category->parent->google_category_id ?? '',
                     'condition' => 'new',
                     'additional_image_link' => $productGallery,
+                    'product_type' => $product->category->parent->translations->where('locale', 'ka')->first()->title.' > '.$product->category->translations->where('locale', 'ka')->first()->title,
                 ];
                 if($productPrice > 150) {
                     $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
