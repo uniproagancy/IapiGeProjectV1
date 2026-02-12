@@ -38,7 +38,7 @@
                                     <tr class="text-center">
                                         <th>{{ $order->id }}</th>
                                         <th>{{ $order->user->name }} {{ $order->user->lastname }}</th>
-                                        <th>{{ $order->created_at->format('d-m-Y i:s') }}</th>
+                                        <th>{{ \Carbon\Carbon::parse($order->created_at) }}</th>
                                         <th>{{ number_format($order->amount + $order->delivery_amount, 2) }} ₾</th>
                                         <td>
                                         <span class="badge badge-light-primary">
