@@ -85,6 +85,7 @@ class FacebookFeedController extends Controller
                     'google_product_category' => $product->category->parent->google_category_id ?? '',
                     'condition' => 'new',
                     'additional_image_link' => $productGallery,
+                    'custom_label_0' => 'თვეში ' . ($productPrice / 24) . ' დან',
                 ]);
 
                 $successCount++;
