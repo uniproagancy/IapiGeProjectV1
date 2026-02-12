@@ -71,9 +71,7 @@ class FacebookFeedController extends Controller
                 if (!$brandTranslation) {
                     Log::warning("Product {$product->id} brand has no translation");
                 }
-
-                // Add item to catalog
-                LaravelFacebookCatalog::addItem([
+                $item = [
                     'link' => route('web.products.view', $translation->slug),
                     'id' => $product->id,
                     'title' => $translation->title,
@@ -85,9 +83,11 @@ class FacebookFeedController extends Controller
                     'google_product_category' => $product->category->parent->google_category_id ?? '',
                     'condition' => 'new',
                     'additional_image_link' => $productGallery,
-                    'custom_label_0' => 'თვეში ' . ($productPrice / 24) . ' დან',
-                ]);
-
+                ];
+                if($productPrice > 150) {
+                    $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
+                }
+                LaravelFacebookCatalog::addItem($item);
                 $successCount++;
                 Log::info("Product {$product->id} added successfully");
 
