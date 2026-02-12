@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\ApiControllers\SocialLoginController;
 use App\Http\Controllers\InvoiceController;
 
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Route;
+use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
 Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
 
@@ -45,21 +45,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             return Route::post('/livewire/update', $handle);
         });
     });
-
     Route::get('/bog/installment/redirect', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@installmentRedirect')->name('bog.installment-redirect');
-
-//    Route::prefix('auth')->name('auth.')->group(function () {
-    // Google
-//        Route::get('google', [SocialLoginController::class, 'redirectToGoogle'])->name('google');
-//        Route::get('google/callback', [SocialLoginController::class, 'handleGoogleCallback'])->name('google.callback');
-//
-//        // Facebook
-//        Route::get('facebook', [SocialLoginController::class, 'redirectToFacebook'])->name('facebook');
-//        Route::get('facebook/callback', [SocialLoginController::class, 'handleFacebookCallback'])->name('facebook.callback');
-//    });
 });
 
-Route::prefix('/dashboard')->name('dashboard.')->group(function () {
+Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::class)->group(function () {
     // AUTH ROUTES
     Route::middleware('guest')->group(function () {
         Route::get('/login', App\Livewire\Dashboard\Login::class)->name('login');
