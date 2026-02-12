@@ -28,6 +28,9 @@ class View extends Component
     public function mount()
     {
         $this->order = Order::with('status', 'paymentStatus')->findOrFail($this->order_id);
+        if($this->order->status_id === 1) {
+            $this->order->update(['status_id' => 2]);
+        }
         if ($this->order->status_id === 1) {
             $this->order->update([
                 'status_id' => 2,
