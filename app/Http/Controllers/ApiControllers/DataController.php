@@ -59,7 +59,7 @@ class DataController extends Controller
         }
         $product = Product::create([
             'supplier_product_id' => !empty($productData['product_code']) ? intval($productData['product_code']) : 0,
-            'brand_id' => 6,
+            'brand_id' => 143,
             'category_id' => $categoryId,
             'sku' => 'COMFO-' . (!empty($productData['product_code']) ? intval($productData['product_code']) : ''),
             'supplier_id' => 4,
@@ -106,13 +106,12 @@ class DataController extends Controller
         if (!empty($productData['image_9'])) {
             $this->downloadAndSaveImages($product, $productData['image_9']);
         }
-
+        }
         return response()->json([
             'message' => 'მონაცემები წარმატებით იმპორტირდა',
             'product_id' => $product->id,
             'title' => $productData['data'] ?? '',
         ]);
-    }
     }
 
     /**
