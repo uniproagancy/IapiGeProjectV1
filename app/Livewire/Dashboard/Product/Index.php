@@ -24,6 +24,7 @@ class Index extends Component
     public bool $show_web = false;
     public bool $status_active = false;
     public bool $no_stock = false;
+    public bool $unsorted = false;
 
     public array $selectedProducts = [];
     public bool $selectAll = false;
@@ -55,6 +56,7 @@ class Index extends Component
         'show_web' => ['except' => false],
         'status_active' => ['except' => false],
         'no_stock' => ['except' => false],
+        'unsorted' => ['except' => false],
     ];
 
     public function mount()
@@ -132,7 +134,7 @@ class Index extends Component
 
     public function resetFilters()
     {
-        $this->reset(['search_query', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active']);
+        $this->reset(['search_query', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted']);
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
@@ -210,6 +212,8 @@ class Index extends Component
             ->when($this->brand_id, fn($q) => $q->where('brand_id', $this->brand_id)
             )
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
+            )
+            ->when($this->unsorted === true, fn($q) => $q->whereIn('category_id', [3,4])
             )
             ->when($this->no_stock === true, fn($q) => $q->where('in_stock', 0)
             )

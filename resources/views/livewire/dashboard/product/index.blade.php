@@ -276,6 +276,11 @@
                                wire:model.lazy="with_trashed">
                         <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერების ჩვენება</label>
                     </div>
+                    <div class="mb-1 form-check form-check-primary">
+                        <input type="checkbox" class="form-check-input" id="unsorted"
+                               wire:model.lazy="unsorted">
+                        <label class="form-check-label" for="unsorted">დაუხარისხებელი</label>
+                    </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
                         <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
