@@ -27,6 +27,10 @@ class Order extends Model
         'delivery_amount',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime', // ან 'datetime:Y-m-d H:i:s'
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
