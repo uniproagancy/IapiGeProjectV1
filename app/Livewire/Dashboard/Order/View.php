@@ -27,15 +27,7 @@ class View extends Component
 
     public function mount()
     {
-        $this->order = Order::with('status', 'paymentStatus')->findOrFail($this->order_id);
-        if($this->order->status_id === 1) {
-            $this->order->update(['status_id' => 2]);
-        }
-        if ($this->order->status_id === 1) {
-            $this->order->update([
-                'status_id' => 2,
-            ]);
-        }
+        $this->order = Order::with('orderStatus', 'paymentStatus')->findOrFail($this->order_id);
         $this->status_id = $this->order->status_id;
         $this->payment_status_id = $this->order->payment_status_id;
     }
@@ -108,6 +100,9 @@ class View extends Component
 
     public function render()
     {
+        if($this->order->status_id === 1) {
+            Order::find($this->order->id)->update(['status_id' => 2]);
+        }
         return view('livewire.dashboard.order.view', [
             'order' => Order::findOrFail($this->order_id),
             'order_statuses' => OrderStatus::all(),

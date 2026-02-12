@@ -52,8 +52,8 @@
                                        </span>
                                         </td>
                                         <th>
-                                        <span class="badge badge-light-{{$order->status->badge_class}}">
-                                           {{ $order->status->translations->where('locale', 'ka')->first()->title }}
+                                        <span class="badge badge-light-{{ $order->orderStatus->badge_class}}">
+                                           {{ $order->orderStatus->translations->where('locale', 'ka')->first()->title }}
                                         </span>
                                         </th>
                                         <td>

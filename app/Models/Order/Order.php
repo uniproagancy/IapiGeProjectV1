@@ -25,6 +25,7 @@ class Order extends Model
         'payment_status_id',
         'amount',
         'delivery_amount',
+        'status_id',
     ];
 
     protected $casts = [
@@ -46,9 +47,9 @@ class Order extends Model
         return $this->belongsTo(Payment::class);
     }
 
-    public function status(): BelongsTo
+    public function orderStatus(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->belongsTo(OrderStatus::class, 'status_id', 'id');
+        return $this->hasOne(OrderStatus::class, 'id', 'status_id');
     }
 
     public function paymentStatus(): BelongsTo

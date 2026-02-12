@@ -70,8 +70,8 @@
                             <ul class="list-unstyled">
                                 <li class="mb-75 d-flex justify-content-between">
                                     <span class="fw-bolder me-25 font-neue">შეკვეთის სტატუსი:</span>
-                                    <span class="badge badge-light-{{$order->status->badge_class}}">
-                                       {{ $order->status->translations->where('locale', 'ka')->first()->title }}
+                                    <span class="badge badge-light-{{$order->orderStatus->badge_class}}">
+                                       {{ $order->orderStatus->translations->where('locale', 'ka')->first()->title }}
                                     </span>
                                 </li>
                                 <li class="mb-75 d-flex justify-content-between">
