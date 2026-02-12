@@ -22,7 +22,7 @@
                                 <h4 class="mb-0 font-neue" style="font-size: 16px">შეკვეთა #{{ $order->id }}</h4>
                             </div>
                             <div>
-                                <span>{{ $order->created_at->format('d-m-Y i:s') }}</span>
+                                <span>{{ $order->created_at }}</span>
                             </div>
                         </div>
                         <div>
