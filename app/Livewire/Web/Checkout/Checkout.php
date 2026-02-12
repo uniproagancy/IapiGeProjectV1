@@ -230,6 +230,7 @@ class Checkout extends Component
                 ]);
 
                 (new \App\Services\Sender\SmsOffice)->send(Auth::user()->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
+                (new \App\Services\Sender\SmsOffice)->send(555700720, 'შემოვიდა ახალი შეკვეთა, შეკვეთის ნომერი '.$order->id);
 
                 // ✅ Facebook Pixel - Lead (ავტორიზებული)
                 $this->trackLead($order, isGuest: false);
