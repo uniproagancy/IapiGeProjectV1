@@ -456,21 +456,40 @@ class Checkout extends Component
                     } else {
                         $tbcInstallment = new LaravelTbcInstallment();
                         $products = [];
+
                         foreach ($order->items as $product) {
+                            // ფასი - float რიცხვი (არა string)
+                            $productPrice = floatval($product->price);
+                            $priceWithTax = floatval($productPrice + ($productPrice * 0.05));
+
                             $products[] = [
                                 'name' => $product->product->translation('ka')->title,
-                                'price' => $product->price + ($product->price * 0.05),
-                                'quantity' => $product->quantity,
+                                'price' => $priceWithTax,
+                                'quantity' => intval($product->quantity),
                             ];
-                            Log::warning('Item price'.$product->price + ($product->price * 0.05));
+
+                            Log::warning('Item price: ' . number_format($priceWithTax, 2, '.', ''));
                         }
+
                         $tbcInstallment->addProducts($products);
-                        $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
-                        Log::warning('RESPONSE'.$response);
+
+// Order amount - float
+                        $orderAmount = floatval($order->amount);
+                        $totalAmount = floatval($orderAmount + ($orderAmount * 0.05));
+
+                        Log::warning('Total amount: ' . number_format($totalAmount, 2, '.', ''));
+
+                        $response = $tbcInstallment->applyInstallmentApplication(
+                            $order->id,
+                            $totalAmount
+                        );
 
                         if ($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);
+                        } else {
+                            Log::error('TBC Installment Error: ', $response);
+                            return back()->withErrors('გადახდის დამუშავება ვერ მოხერხდა');
                         }
                     }
                     break;
