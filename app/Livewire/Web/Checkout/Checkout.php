@@ -462,10 +462,12 @@ class Checkout extends Component
                                 'price' => $product->price + ($product->price * 0.05),
                                 'quantity' => $product->quantity,
                             ];
-                            Log::warning($product->price + ($product->price * 0.05));
+                            Log::warning('Item price'.$product->price + ($product->price * 0.05));
                         }
                         $tbcInstallment->addProducts($products);
                         $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                        Log::warning('RESPONSE'.$response);
+
                         if ($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);
