@@ -467,7 +467,7 @@ class Checkout extends Component
                             Log::warning('TBC - Order Items Count: ' . $orderItems->count());
 
                             foreach ($orderItems as $item) {
-                                $productPrice = floatval($item->price);
+                                $productPrice = floatval($item->price + ($item->price * 0.05));
 
                                 $products[] = [
                                     'name' => $item->product->translation('ka')->title ?? 'Product',
