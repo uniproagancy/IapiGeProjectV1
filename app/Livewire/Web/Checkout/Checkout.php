@@ -478,18 +478,42 @@ class Checkout extends Component
                         $totalAmount = floatval($orderAmount + ($orderAmount * 0.05));
 
                         Log::warning('Total amount: ' . number_format($totalAmount, 2, '.', ''));
+                        Log::warning('Products for TBC: ' . json_encode($products, JSON_UNESCAPED_UNICODE));
 
-                        $response = $tbcInstallment->applyInstallmentApplication(
-                            $order->id,
-                            $totalAmount
-                        );
+                        try {
+                            $response = $tbcInstallment->applyInstallmentApplication(
+                                $order->id,
+                                $totalAmount
+                            );
 
-                        if ($response['status_code'] === 200) {
-                            $redirectUri = $tbcInstallment->getRedirectUri();
-                            return redirect($redirectUri);
-                        } else {
-                            Log::error('TBC Installment Error: ', $response);
-                            return back()->withErrors('გადახდის დამუშავება ვერ მოხერხდა');
+                            Log::warning('TBC Response Status: ' . ($response['status_code'] ?? 'undefined'));
+                            Log::warning('TBC Full Response: ' . json_encode($response, JSON_UNESCAPED_UNICODE));
+
+                            if ($response['status_code'] === 200) {
+                                $redirectUri = $tbcInstallment->getRedirectUri();
+                                Log::info('TBC Redirect URI: ' . $redirectUri);
+                                return redirect($redirectUri);
+                            } else {
+                                // დეტალური error handling
+                                $errorMessage = $response['message'] ?? 'unknown error';
+                                $errorCode = $response['status_code'] ?? 'unknown';
+                                $errorBody = $response['body'] ?? '';
+
+                                Log::error('TBC Payment Error - Code: ' . $errorCode);
+                                Log::error('TBC Payment Error - Message: ' . $errorMessage);
+                                Log::error('TBC Payment Error - Body: ' . json_encode($errorBody, JSON_UNESCAPED_UNICODE));
+
+                                return back()->withErrors([
+                                    'payment' => "გადახდის დამუშავება ვერ მოხერხდა ({$errorCode}): {$errorMessage}"
+                                ]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('TBC Exception: ' . $e->getMessage());
+                            Log::error('TBC Exception Stack: ' . $e->getTraceAsString());
+
+                            return back()->withErrors([
+                                'payment' => 'გადახდის დამუშავება ვერ მოხერხდა: ' . $e->getMessage()
+                            ]);
                         }
                     }
                     break;
