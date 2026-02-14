@@ -216,13 +216,14 @@ class Checkout extends Component
                 ]);
 
                 foreach ($this->orderItems as $orderItem) {
-                    $o = OrderItem::create([
+                    OrderItem::create([
                         'product_id' => $orderItem['id'],
                         'quantity' => $orderItem['quantity'],
                         'price' => $orderItem['price'],
                         'order_id' => $order->id,
                     ]);
                 }
+
                 OrderDelivery::create([
                     'order_id' => $order->id,
                     'address' => $this->address,
@@ -449,68 +450,24 @@ class Checkout extends Component
                         );
                     }
                     break;
-                // ========== TBC Installment Case (გამოწორებული) ==========
-
                 case '7':
                     if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
-                        try {
-                            $tbcInstallment = new LaravelTbcInstallment();
-                            $products = [];
-
-                            // Load order items with relations
-                            $orderItems = OrderItem::with('product.translations')
-                                ->where('order_id', $order->id)
-                                ->get();
-
-                            Log::warning('TBC - Order Items Count: ' . $orderItems->count());
-
-                            foreach ($orderItems as $item) {
-                                $productPrice = number_format($item->price + ($item->price * 0.05), 2);
-
-                                $products[] = [
-                                    'name' => $item->product->translation('ka')->title ?? 'Product',
-                                    'price' => $productPrice,
-                                    'quantity' => intval($item->quantity),
-                                ];
-
-                                Log::warning('TBC Product: ' . $item->product->translation('ka')->title . ' | Price: ' . $productPrice . ' | Qty: ' . $item->quantity);
-                            }
-
-                            Log::warning('TBC Products Array: ' . json_encode($products, JSON_UNESCAPED_UNICODE));
-
-                            $tbcInstallment->addProducts($products);
-
-                            $orderAmount = floatval($order->amount);
-                            $totalAmount = number_format($orderAmount + ($orderAmount * 0.05), 2);
-
-                            Log::warning('TBC Order Amount: ' . $orderAmount);
-                            Log::warning('TBC Total Amount (with 5% fee): ' . $totalAmount);
-
-                            $response = $tbcInstallment->applyInstallmentApplication($order->id, $totalAmount);
-
-                            Log::warning('TBC Response Status Code: ' . ($response['status_code'] ?? 'undefined'));
-                            Log::warning('TBC Full Response: ' . json_encode($response, JSON_UNESCAPED_UNICODE));
-
-                            if (isset($response['status_code']) && $response['status_code'] === 200) {
-                                $redirectUri = $tbcInstallment->getRedirectUri();
-                                Log::info('TBC Redirect URI: ' . $redirectUri);
-                                return redirect($redirectUri);
-                            } else {
-                                $errorMessage = $response['message'] ?? 'Unknown error';
-                                $errorCode = $response['status_code'] ?? 'Unknown';
-
-                                Log::error('TBC Error Code: ' . $errorCode);
-                                Log::error('TBC Error Message: ' . $errorMessage);
-                                Log::error('TBC Error Body: ' . json_encode($response, JSON_UNESCAPED_UNICODE));
-
-                                $this->dispatch('ui:error', message: 'TBC განვადება: ' . $errorMessage . ' (Code: ' . $errorCode . ')');
-                            }
-                        } catch (Exception $e) {
-                            Log::error('TBC Exception: ' . $e->getMessage());
-                            Log::error('TBC Exception Trace: ' . $e->getTraceAsString());
-                            $this->dispatch('ui:error', message: 'TBC გადახდა ვერ მოხერხდა: ' . $e->getMessage());
+                        $tbcInstallment = new LaravelTbcInstallment();
+                        $products = [];
+                        foreach ($order->items as $product) {
+                            $products[] = [
+                                'name' => $product->product->translation('ka')->title,
+                                'price' => $product->price + ($product->price * 0.05),
+                                'quantity' => $product->quantity,
+                            ];
+                        }
+                        $tbcInstallment->addProducts($products);
+                        $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                        if ($response['status_code'] === 200) {
+                            $redirectUri = $tbcInstallment->getRedirectUri();
+                            return redirect($redirectUri);
                         }
                     }
                     break;
