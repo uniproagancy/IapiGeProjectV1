@@ -11,7 +11,7 @@ use Exception;
 
 class ZoommerProduct
 {
-    protected string $api_url = 'https://api.zoommer.ge';
+    protected string $api_url = 'https://zoommer.ge/api/proxy/';
     protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
     protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
     protected int $timeout = 30;
