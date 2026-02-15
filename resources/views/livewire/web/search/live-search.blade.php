@@ -69,9 +69,9 @@
                                      style="font-size: 15px; padding: 0 0 0 3px">
                                     {{ $translation->title }}
                                 </div>
-                                @if($product->sku)
+                                @if($product->id)
                                     <div class="text-muted small" style="padding: 0 0 0 3px; font-size: 11px">
-                                        SKU: {{ $product->sku }}
+                                        SKU: {{ $product->id }}
                                     </div>
                                 @endif
                                 <div class="d-flex align-items-center gap-2" style="padding: 0 0 0 3px">
