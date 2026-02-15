@@ -460,6 +460,14 @@ class Index extends Component
         $query->whereIn('brand_id', $this->selectedBrands);
     }
 
+    /**
+     * ✅ UPDATED: Price filter now checks BOTH discount_price AND regular_price
+     *
+     * Logic:
+     * - If discount_price exists (> 0), use it
+     * - Otherwise use regular_price
+     * - Filter by the effective price (whichever is lower)
+     */
     private function applyPriceFilter($query): void
     {
         if (empty($this->priceMin) && empty($this->priceMax)) {
@@ -467,14 +475,23 @@ class Index extends Component
         }
 
         $query->whereHas('price', function ($priceQuery) {
+            // ✅ Use COALESCE to get effective price:
+            // If discount_price > 0, use it; otherwise use regular_price
+
             if (!empty($this->priceMin)) {
                 $minPrice = round((float)$this->priceMin, 2);
-                $priceQuery->where('regular_price', '>=', $minPrice);
+                $priceQuery->where(function ($q) use ($minPrice) {
+                    // ✅ Product matches if effective price >= minPrice
+                    $q->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) >= ?', [$minPrice]);
+                });
             }
 
             if (!empty($this->priceMax)) {
                 $maxPrice = round((float)$this->priceMax, 2);
-                $priceQuery->where('regular_price', '<=', $maxPrice);
+                $priceQuery->where(function ($q) use ($maxPrice) {
+                    // ✅ Product matches if effective price <= maxPrice
+                    $q->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) <= ?', [$maxPrice]);
+                });
             }
         });
     }
