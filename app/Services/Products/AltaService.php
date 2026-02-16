@@ -31,7 +31,7 @@ class AltaService
     public function getAltaB2B()
     {
         try {
-            AltaID::all()->fordeDelete();
+            AltaID::all()->forceDelete();
             $params = [
                 'user' => 'UNIPRO_CHI',
                 'password' => 'CHI1457160',
@@ -39,7 +39,9 @@ class AltaService
             ];
             $response = $this->soapClient->GetPriceList($params);
             foreach($response->PriceList->items->item as $product_item)  {
-
+//                AltaID::create([
+//
+//                ]);
             }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
