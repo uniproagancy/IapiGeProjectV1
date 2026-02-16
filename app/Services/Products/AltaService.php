@@ -32,12 +32,11 @@ class AltaService
     {
         try {
             $params = [
-                'user' => 'UNIPRO_GP',
-                'password' => 'unipro2020',
+                'user' => 'UNIPRO_CHI',
+                'password' => 'CHI1457160',
                 'item' => '',
             ];
-            $response = $this->soapClient->GetPriceList($params);
-            dd($response);
+            AltaID::all
             foreach($response->PriceList->items->item as $product_item)  {
 
             }
