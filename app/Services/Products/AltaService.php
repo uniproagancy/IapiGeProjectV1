@@ -32,8 +32,8 @@ class AltaService
     {
         try {
             $params = [
-                'user' => 'UNIPRO_CHI',
-                'password' => 'CHI1457160',
+                'user' => 'UNIPRO_GP',
+                'password' => 'unipro2020',
                 'item' => '',
             ];
             $response = $this->soapClient->GetPriceList($params);
