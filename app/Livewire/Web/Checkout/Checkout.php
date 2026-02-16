@@ -253,9 +253,14 @@ class Checkout extends Component
                 ]);
 
                 $product = Product::with(['translations', 'price'])->find($this->product_id);
-                $price = $product->price->discount_price ?? $product->price->regular_price;
-                $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
+
+                if($product->price->discount_price > 0 OR  !empty($product->price->discount->price)){
+                    $price = $product->price->discount_price;
+                } else {
+                    $price = $product->price->regular_price;
+                }
+                $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
                 $check_user = User::where('email', $this->email)->first();
                 if($check_user){
                     $check_user->update(['email' => $this->email]);
@@ -434,7 +439,7 @@ class Checkout extends Component
                         $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
                     } else {
                         $this->dispatch('bog:installment',
-                            amount: round($order->amount + ($order->amount * 0.05)),
+                            amount: $order->amount + ($order->amount * 0.05),
                             url: route('bog.create-installment-order', $order->id)
                         );
                     }
@@ -459,7 +464,7 @@ class Checkout extends Component
                         foreach ($order->items as $product) {
                             $products[] = [
                                 'name' => $product->product->translation('ka')->title,
-                                'price' => $product->price + ($product->price * 0.05),
+                                'price' => round($product->price + ($product->price * 0.05)),
                                 'quantity' => $product->quantity,
                             ];
                         }

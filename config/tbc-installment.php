@@ -11,7 +11,7 @@ return [
      * TBC installment environment : testing | production
      * */
 
-    'environment' => env('TBC_ENVIRONMENT', 'testing'),
+    'environment' => env('TBC_ENVIRONMENT', 'production'),
 
     /*
      * For apiKey and apiSecret please visit: developers.tbcbank.ge/get-started
