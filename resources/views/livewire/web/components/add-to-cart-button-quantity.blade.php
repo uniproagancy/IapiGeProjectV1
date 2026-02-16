@@ -19,7 +19,7 @@
         </button>
     </div>
     <button type="button"
-            class="btn btn-lg btn-primary w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
+            class="btn btn-lg btn-outline-dark w-100 animate-slide-end order-sm-2 order-md-4 font-neue"
             style="font-size: 14px"
             onclick="pixelAddToCart(123, 1500, 'iPhone 15')"
             wire:click="addProduct"

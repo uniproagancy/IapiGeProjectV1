@@ -22,7 +22,7 @@
     <livewire:web.components.add-to-cart-button-quantity :productId="$product->id"/>
     <div class="d-none d-lg-block">
         <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
-            <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-outline-dark w-100 animate-slide-end font-neue"
+            <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-primary w-100 animate-slide-end font-neue"
                     style="font-size: 14px">
                 ყიდვა / განვადება
             </a>
@@ -92,7 +92,7 @@
                     <div class="d-flex justify-content-end">
                         <livewire:web.components.add-to-cart-button-white :productId="$product->id"/>
                         <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-dark w-100 animate-slide-end font-neue">
-                            სწრაფი შეძენა
+                            ყიდვა / განვადება
                         </a>
                     </div>
                 </div>
