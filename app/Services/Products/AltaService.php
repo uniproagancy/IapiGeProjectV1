@@ -44,7 +44,7 @@ class AltaService
                 }
             }
         } catch (Exception $e) {
-            throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
+            throw new Exception('ფასების მიღება ვერ მოხერხდა1: ' . $e->getMessage());
         }
     }
 
