@@ -45,7 +45,7 @@ class AltaService
             $response = $this->soapClient->GetPriceList($params);
             if (!empty($response->PriceList) || !empty($response->PriceList->items->item)) {
                 foreach($response->PriceList->items->item as $item) {
-                    if($this->parseQtyText($item->qty_text)['quantity'] > 0) {
+                    if($this->parseQtyText($item->qty_text)['quantity'] > 1) {
                         $productData = AltaID::create([
                             'product_id' => $item->item,
                             'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
