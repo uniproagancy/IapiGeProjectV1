@@ -54,8 +54,8 @@ class AltaService
 
     public function setIdRange(int $startId, int $endId): self
     {
-        $this->start_id = $startId;
-        $this->end_id = $endId;
+        $this->start_id = 45000;
+        $this->end_id = 47000;
         return $this;
     }
 
