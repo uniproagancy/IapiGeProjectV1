@@ -38,8 +38,8 @@ class AltaService
         try {
             AltaID::truncate();
             $params = [
-                'user' => 'UNIPRO_GP',
-                'password' => 'unipro2020',
+                'user' => 'UNIPRO_CHI',
+                'password' => 'CHI1457160',
                 'item' => '',
             ];
             $response = $this->soapClient->GetPriceList($params);
