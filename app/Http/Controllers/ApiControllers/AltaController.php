@@ -22,7 +22,7 @@ class AltaController extends Controller
 
     public function scan()
     {
-        return app(AltaService::class)->scanAllIds();
+        return app(AltaService::class)->setIdRange(45000, 50000)->scanAllIds();
     }
 
     public function altaTrash()
