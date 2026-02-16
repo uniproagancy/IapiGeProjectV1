@@ -2,17 +2,21 @@
 
 namespace App\Services\Products;
 
+use App\Jobs\AltaProductJob;
 use App\Models\AltaID;
-use SoapClient;
+use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Facades\Log;
 use Exception;
+use SoapClient;
 
 class AltaService
 {
     private $soapClient;
-    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL'; // შენი WSDL URL
+    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL';
 
-    public function __construct()
-    {
+    public function __construct() {
         try {
             $this->soapClient = new SoapClient($this->wsdlUrl, [
                 'trace' => 1,
@@ -24,23 +28,13 @@ class AltaService
         }
     }
 
-    public function getPriceList($itemCode = '')
+    public function getAltaB2B()
     {
         try {
-            $params = [
-                'user' => 'UNIPRO_GP',
-                'password' => 'unipro2020',
-                'item' => $itemCode
-            ];
-            $response = $this->soapClient->GetPriceList($params);
-            dd($response);
-            foreach($response->PriceList->items->item as $product_item)  {
-                AltaID::create([
-                    'product_id' => $product_item->item,
-                ]);
-            }
+
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
     }
+
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\ApiControllers;
 use App\Http\Controllers\Controller;
 use App\Models\AltaID;
 use App\Models\Product\Product;
-use App\Services\Products\AltaProduct;
 use App\Services\Products\AltaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +21,6 @@ class AltaController extends Controller
 
     public function scan()
     {
-        return app(AltaService::class)->scanB2B();
+        return $this->altaService->getAltaB2B();
     }
 }

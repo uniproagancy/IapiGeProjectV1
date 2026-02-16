@@ -9,8 +9,6 @@ Route::prefix('zoommer')->group(function () {
 
 Route::prefix('alta')->group(function () {
     Route::get('/scan', '\App\Http\Controllers\ApiControllers\AltaController@scan');
-    Route::get('/trash', '\App\Http\Controllers\ApiControllers\AltaController@altaTrash');
-    Route::get('/update', '\App\Http\Controllers\ApiControllers\AltaController@updateActive');
 });
 
 Route::prefix('citrus')->group(function () {
