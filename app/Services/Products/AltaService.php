@@ -38,7 +38,11 @@ class AltaService
                 'item' => '',
             ];
             $response = $this->soapClient->GetPriceList($params);
-            dd($response);
+            if (empty($response->PriceList) || empty($response->PriceList->items->item)) {
+                foreach($response->PriceList->items->item as $item) {
+                    dd($item);
+                }
+            }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
