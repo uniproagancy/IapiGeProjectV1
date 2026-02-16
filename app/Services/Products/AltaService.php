@@ -45,15 +45,13 @@ class AltaService
             $response = $this->soapClient->GetPriceList($params);
             if (!empty($response->PriceList) || !empty($response->PriceList->items->item)) {
                 foreach($response->PriceList->items->item as $item) {
-                    dd($item);
                     $productData = AltaID::create([
                         'product_id' => $item->item,
                         'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
                     ]);
                     if($productData->quantity > 0) {
-                        $target_url = 'https://alta.ge/search/'.$productData->product_id;
-                        $url = "https://api.scrape.do/?url=" . urlencode($target_url) .
-                            "&token=54ca3e2868ca407893b3316c254d6db6c146439c5b3";
+//                        $target_url = 'https://alta.ge/search/'.$productData->product_id;
+                        $url = "https://zoommer.ge/search/032374";
                         $page_response = $this->client->get($url);
                         $html = (string)$page_response->getBody();
 
