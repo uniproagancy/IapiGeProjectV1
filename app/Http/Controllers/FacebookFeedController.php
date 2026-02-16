@@ -82,7 +82,7 @@ class FacebookFeedController extends Controller
                     'price' => $productPrice,
                     'brand' => $brandTranslation->title ?? 'Unknown',
                     'google_product_category' => $product->category->google_category_id ?? $product->category->parent->google_category_id,
-                    'facebook_product_category' => $product->category->facebook_category_id ?? $product->category->parent->facebook_category_id,
+                    'fb_product_category' => $product->category->facebook_category_id ?? $product->category->parent->facebook_category_id,
                     'condition' => 'new',
                     'additional_image_link' => $productGallery,
                     'product_type' => $product->category->parent->translations->where('locale', 'ka')->first()->title.' > '.$product->category->translations->where('locale', 'ka')->first()->title,
