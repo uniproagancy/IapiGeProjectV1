@@ -43,7 +43,6 @@ class AltaService
                 'item' => '',
             ];
             $response = $this->soapClient->GetPriceList($params);
-            dd($response);
             if (!empty($response->PriceList) || !empty($response->PriceList->items->item)) {
                 foreach($response->PriceList->items->item as $item) {
                     $productData = AltaID::create([
@@ -55,7 +54,7 @@ class AltaService
                         $url = "https://api.scrape.do/?url=" . urlencode($target_url) .
                             "&token=";
                         $page_response = $this->client->get($url);
-                        $html = (string)$response->getBody();
+                        $html = (string)$page_response->getBody();
 
                             dd($html);
                         $url = "https://api.scrape.do/?url=" . urlencode($target_url) .
