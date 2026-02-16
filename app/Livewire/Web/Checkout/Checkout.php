@@ -212,14 +212,14 @@ class Checkout extends Component
                     'comment' => $this->comment,
                     'created_by' => Auth::user()->id,
                     'delivery_amount' => 0,
-                    'amount' => $this->subtotal,
+                    'amount' => round($this->subtotal),
                 ]);
 
                 foreach ($this->orderItems as $orderItem) {
                     OrderItem::create([
                         'product_id' => $orderItem['id'],
                         'quantity' => $orderItem['quantity'],
-                        'price' => $orderItem['price'],
+                        'price' => round($orderItem['price']),
                         'order_id' => $order->id,
                     ]);
                 }
@@ -274,13 +274,13 @@ class Checkout extends Component
                     'comment' => $this->comment,
                     'created_by' => $user->id,
                     'delivery_amount' => 0,
-                    'amount' => $this->subtotal,
+                    'amount' => round($this->subtotal),
                 ]);
 
                 OrderItem::create([
                     'product_id' => $product->id,
                     'quantity' => $this->quantity,
-                    'price' => $price,
+                    'price' => round($price),
                     'order_id' => $order->id,
                 ]);
 
@@ -464,7 +464,7 @@ class Checkout extends Component
                             ];
                         }
                         $tbcInstallment->addProducts($products);
-                        $response = $tbcInstallment->applyInstallmentApplication($order->id, $order->amount + ($order->amount * 0.05));
+                        $response = $tbcInstallment->applyInstallmentApplication($order->id, round($order->amount + ($order->amount * 0.05)));
                         if ($response['status_code'] === 200) {
                             $redirectUri = $tbcInstallment->getRedirectUri();
                             return redirect($redirectUri);
