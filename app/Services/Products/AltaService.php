@@ -31,12 +31,13 @@ class AltaService
     public function getAltaB2B()
     {
         try {
+            AltaID::all()->fordeDelete();
             $params = [
                 'user' => 'UNIPRO_CHI',
                 'password' => 'CHI1457160',
                 'item' => '',
             ];
-            AltaID::all
+            $response = $this->soapClient->GetPriceList($params);
             foreach($response->PriceList->items->item as $product_item)  {
 
             }
