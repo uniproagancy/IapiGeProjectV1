@@ -31,7 +31,7 @@ class AltaService
     public function getAltaB2B()
     {
         try {
-            AltaID::all()->forceDelete();
+            AltaID::all()->force();
             $params = [
                 'user' => 'UNIPRO_CHI',
                 'password' => 'CHI1457160',
