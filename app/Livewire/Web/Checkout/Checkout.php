@@ -434,7 +434,7 @@ class Checkout extends Component
                         $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
                     } else {
                         $this->dispatch('bog:installment',
-                            amount: $order->amount + ($order->amount * 0.05),
+                            amount: round($order->amount + ($order->amount * 0.05)),
                             url: route('bog.create-installment-order', $order->id)
                         );
                     }
