@@ -39,11 +39,6 @@ class AltaService
             ];
             $response = $this->soapClient->GetPriceList($params);
             dd($response);
-            foreach($response->PriceList->items->item as $product_item)  {
-//                AltaID::create([
-//
-//                ]);
-            }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
