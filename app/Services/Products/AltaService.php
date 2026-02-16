@@ -31,7 +31,16 @@ class AltaService
     public function getAltaB2B()
     {
         try {
+            $params = [
+                'user' => 'UNIPRO_CHI',
+                'password' => 'CHI1457160',
+                'item' => '',
+            ];
+            $response = $this->soapClient->GetPriceList($params);
+            dd($response);
+            foreach($response->PriceList->items->item as $product_item)  {
 
+            }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
