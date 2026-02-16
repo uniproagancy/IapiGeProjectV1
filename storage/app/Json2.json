@@ -1,0 +1,865 @@
+{
+  "total": 172,
+  "categories": [
+    {
+      "id": 5,
+      "google_category_id": 604,
+      "facebook_category_id": 339
+    },
+    {
+      "id": 6,
+      "google_category_id": 604,
+      "facebook_category_id": 339
+    },
+    {
+      "id": 7,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 8,
+      "google_category_id": 222,
+      "facebook_category_id": 238
+    },
+    {
+      "id": 9,
+      "google_category_id": 278,
+      "facebook_category_id": 227
+    },
+    {
+      "id": 10,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 11,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 12,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 13,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 14,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 15,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 16,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 17,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 18,
+      "google_category_id": 267,
+      "facebook_category_id": 206
+    },
+    {
+      "id": 19,
+      "google_category_id": 201,
+      "facebook_category_id": 209
+    },
+    {
+      "id": 20,
+      "google_category_id": 5122,
+      "facebook_category_id": 207
+    },
+    {
+      "id": 21,
+      "google_category_id": 264,
+      "facebook_category_id": 207
+    },
+    {
+      "id": 22,
+      "google_category_id": 686,
+      "facebook_category_id": 335
+    },
+    {
+      "id": 23,
+      "google_category_id": 2849,
+      "facebook_category_id": 336
+    },
+    {
+      "id": 24,
+      "google_category_id": 2849,
+      "facebook_category_id": 336
+    },
+    {
+      "id": 25,
+      "google_category_id": 680,
+      "facebook_category_id": 338
+    },
+    {
+      "id": 26,
+      "google_category_id": 604,
+      "facebook_category_id": 339
+    },
+    {
+      "id": 27,
+      "google_category_id": 684,
+      "facebook_category_id": 944
+    },
+    {
+      "id": 28,
+      "google_category_id": 604,
+      "facebook_category_id": 339
+    },
+    {
+      "id": 29,
+      "google_category_id": 604,
+      "facebook_category_id": 339
+    },
+    {
+      "id": 30,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 31,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 32,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 33,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 34,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 35,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 36,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 37,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 38,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 39,
+      "google_category_id": 404,
+      "facebook_category_id": 218
+    },
+    {
+      "id": 40,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 41,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 42,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 43,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 44,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 45,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 46,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 47,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 48,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 49,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 50,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 51,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 52,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 53,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 54,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 55,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 56,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 57,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 58,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 59,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 60,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 61,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 62,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 63,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 64,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 65,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 66,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 67,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 68,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 69,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 70,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 71,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 72,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 73,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 74,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 75,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 76,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 77,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 78,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 79,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 80,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 81,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 82,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 83,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 84,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 85,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 86,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 87,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 88,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 89,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 90,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 91,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 92,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 93,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 94,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 95,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 96,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 97,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 98,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 99,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 100,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 101,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 102,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 103,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 104,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 105,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 106,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 107,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 108,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 109,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 110,
+      "google_category_id": 328,
+      "facebook_category_id": 230
+    },
+    {
+      "id": 111,
+      "google_category_id": 285,
+      "facebook_category_id": 229
+    },
+    {
+      "id": 112,
+      "google_category_id": 302,
+      "facebook_category_id": 227
+    },
+    {
+      "id": 113,
+      "google_category_id": 278,
+      "facebook_category_id": 232
+    },
+    {
+      "id": 114,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 115,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 116,
+      "google_category_id": 305,
+      "facebook_category_id": 219
+    },
+    {
+      "id": 117,
+      "google_category_id": 283,
+      "facebook_category_id": 237
+    },
+    {
+      "id": 118,
+      "google_category_id": 285,
+      "facebook_category_id": 229
+    },
+    {
+      "id": 119,
+      "google_category_id": 345,
+      "facebook_category_id": 222
+    },
+    {
+      "id": 120,
+      "google_category_id": 342,
+      "facebook_category_id": 228
+    },
+    {
+      "id": 121,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 122,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 123,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 124,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 125,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 126,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 127,
+      "google_category_id": 500002,
+      "facebook_category_id": 238
+    },
+    {
+      "id": 128,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 129,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 130,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 131,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 132,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 133,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 134,
+      "google_category_id": 686,
+      "facebook_category_id": 335
+    },
+    {
+      "id": 135,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 136,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 137,
+      "google_category_id": 5139,
+      "facebook_category_id": 1310
+    },
+    {
+      "id": 138,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 139,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 140,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 141,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 142,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 143,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 144,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 145,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 146,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 147,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 148,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 149,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 150,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 151,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 152,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 153,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 154,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 155,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 156,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 157,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 158,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 159,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 160,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 161,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 162,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 163,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 164,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 165,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 166,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 167,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 168,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 169,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 170,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 171,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 172,
+      "google_category_id": 505771,
+      "facebook_category_id": 207
+    },
+    {
+      "id": 173,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 174,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 175,
+      "google_category_id": null,
+      "facebook_category_id": null
+    },
+    {
+      "id": 176,
+      "google_category_id": null,
+      "facebook_category_id": null
+    }
+  ]
+}

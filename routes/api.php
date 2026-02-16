@@ -26,6 +26,10 @@ Route::prefix('comfo')->group(function () {
     Route::get('/get', '\App\Http\Controllers\ApiControllers\DataController@importData');
 });
 
+Route::prefix('json')->group(function () {
+    Route::get('/loadJson', '\App\Http\Controllers\ApiControllers\JsonParseController@loadJson');
+});
+
 Route::prefix('bog')->group(function () {
     Route::post('/payment/callback', '\App\Http\Controllers\ApiControllers\BOGPaymentController@callback')->name('bog.payment-callback');
     Route::post('/installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createInstallment')->name('bog.create-installment-order');

@@ -17,6 +17,8 @@ class ProductCategory extends Model
         'active',
         'show',
         'show_on_main',
+        'google_category_id',
+        'facebook_category_id',
     ];
 
     public function translations()
