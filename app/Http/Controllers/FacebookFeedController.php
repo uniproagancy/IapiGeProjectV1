@@ -89,6 +89,11 @@ class FacebookFeedController extends Controller
                 if($productPrice > 150) {
                     $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
                 }
+
+                if($product->price->discount_price > 0 OR !empty($product->price->discount_price)) {
+                    $item['custom_label_1'] = $product->price->discount_price;
+                }
+
                 LaravelFacebookCatalog::addItem($item);
                 $successCount++;
                 Log::info("Product {$product->id} added successfully");
@@ -137,6 +142,7 @@ class FacebookFeedController extends Controller
             return response('Error generating feed', 500);
         }
     }
+
 
     /**
      * Get product main image
