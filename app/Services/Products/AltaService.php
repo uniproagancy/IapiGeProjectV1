@@ -38,6 +38,7 @@ class AltaService
                 'item' => '',
             ];
             $response = $this->soapClient->GetPriceList($params);
+            dd($response);
             foreach($response->PriceList->items->item as $product_item)  {
 //                AltaID::create([
 //
