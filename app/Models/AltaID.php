@@ -9,7 +9,7 @@ class AltaID extends Model
     //
     protected $table = 'db_alta';
 
-    protected $fillable = ['product_id'];
+    protected $fillable = ['product_id', 'quantity'];
 
     public $timestamps = false;
 }
