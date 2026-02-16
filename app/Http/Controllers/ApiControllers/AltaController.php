@@ -13,24 +13,15 @@ use Illuminate\Support\Facades\Log;
 class AltaController extends Controller
 {
     //
-    private $priceService;
+    private $altaService;
 
-    public function __construct(AltaService $priceService)
+    public function __construct(AltaService $altaService)
     {
-        $this->priceService = $priceService;
+        $this->altaService = $altaService;
     }
 
     public function scan()
     {
-        return app(AltaProduct::class)->scanAllIds();
-    }
-
-    public function updateActive()
-    {
-        $ids = AltaID::all();
-        foreach($ids as $id) {
-            Product::where(['sku' => 'ALTA-'.$id['product_id']])->update(['active' => 1, 'show' => 1]);
-            Log::warning('ALTA-'.$id['product_id'].' Updated');
-        }
+        return app(AltaService::class)->scanB2B();
     }
 }

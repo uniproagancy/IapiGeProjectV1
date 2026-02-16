@@ -24,7 +24,7 @@
         <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1 mb-4">
             <a href="{{ route('web.checkout.index', ['product_id' => $product->id]) }}" class="btn btn-lg btn-outline-dark w-100 animate-slide-end font-neue"
                     style="font-size: 14px">
-                სწრაფი შეძენა
+                ყიდვა / განვადება
             </a>
         </div>
         @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)
