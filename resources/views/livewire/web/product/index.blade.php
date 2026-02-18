@@ -187,9 +187,8 @@
 </div>
 
 @section('fb_pixel')
-    @if($currentCategory && $event_id)
+    @if($currentCategory)
         <script>
-            // ✅ Pixel CategoryView — CAPI-სთან deduplication-ისთვის იგივე eventID
             fbq('trackCustom', 'CategoryView', {
                 content_name: '{{ $currentCategory->translation('ka')->title }}',
                 content_category: '{{ $currentCategory->translation('ka')->slug }}',
@@ -200,9 +199,9 @@
             });
         </script>
     @else
-        <script>
-            fbq('track', 'PageView', {}, { eventID: '{{ $event_id }}' });
-        </script>
+    <script>
+        fbq('track', 'PageView', {}, { eventID: '{{ $event_id }}' });
+    </script>
     @endif
 @endsection
 

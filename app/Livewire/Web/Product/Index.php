@@ -74,12 +74,8 @@ class Index extends Component
             Log::info('🔍 Product Index - No category selected, skipping CategoryView event');
             return;
         }
-
         $this->eventId = 'cv_' . time() . '_' . Str::random(6);
-
-        // ✅ კატეგორიაში არსებული პროდუქტების ID-ები Facebook კატალოგისთვის
         $productIds = $this->getProductIdsForCategory();
-
         Log::info('🔍 Category View mounted', [
             'category_id'   => $this->currentCategory->id,
             'category_name' => $this->currentCategory->name,
@@ -87,12 +83,11 @@ class Index extends Component
             'event_id'      => $this->eventId,
             'product_count' => count($productIds),
         ]);
-
         app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name'     => $this->currentCategory->name,
             'content_category' => $this->category_slug,
-            'content_ids'      => $productIds, // ✅ პროდუქტების ID-ები, კატეგორიის არა
-            'content_type'     => 'product',   // ✅ სავალდებულო Facebook-ისთვის
+            'content_ids'      => $productIds,
+            'content_type'     => 'product',
         ], $this->eventId);
     }
 
