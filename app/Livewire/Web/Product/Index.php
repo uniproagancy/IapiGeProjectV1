@@ -61,6 +61,7 @@ class Index extends Component
         $this->loadCategoryFromSlug();
         $this->normalizeBrands();
         $this->normalizeSpecs();
+        $this->eventId = ($this->currentCategory ? 'cv_' : 'pv_') . time() . '_' . Str::random(6);
         $this->trackCategoryView();
     }
 
@@ -71,22 +72,12 @@ class Index extends Component
     private function trackCategoryView(): void
     {
         if (empty($this->currentCategory)) {
-            Log::info('🔍 Product Index - No category selected, skipping CategoryView event');
             return;
         }
-        $this->eventId = 'cv_' . time() . '_' . Str::random(6);
-        $productIds = $this->getProductIdsForCategory();
-        Log::info('🔍 Category View mounted', [
-            'category_id'   => $this->currentCategory->id,
-            'category_name' => $this->currentCategory->name,
-            'category_slug' => $this->category_slug,
-            'event_id'      => $this->eventId,
-            'product_count' => count($productIds),
-        ]);
         app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name'     => $this->currentCategory->name,
             'content_category' => $this->category_slug,
-            'content_ids'      => $productIds,
+            'content_ids'      => $this->getProductIdsForCategory(),
             'content_type'     => 'product',
         ], $this->eventId);
     }
