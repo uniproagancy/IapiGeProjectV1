@@ -68,14 +68,25 @@ trait WithCart
             // ✅ Facebook Pixel - AddToCart Event
             $this->fbPixel->trackAddToCart(
                 product: [
-                    'id' => $product->id,
-                    'name' => $translation->title,
+                    'id'       => $product->id,
+                    'name'     => $translation->title,
                     'quantity' => $quantity,
                 ],
-                eventId: $cartEventId,
                 value: $price * $quantity,
-                currency: 'GEL'
+                currency: 'GEL',
+                params: [
+                    'event_source_url' => url()->current(), // ✅ CAPI სწორ URL-ს გაგზავნის
+                ],
+                eventId: $cartEventId,
             );
+
+            $this->dispatch('fb-add-to-cart', [
+                'eventId'  => $cartEventId,
+                'price'    => $price * $quantity,
+                'id'       => $product->id,
+                'name'     => $translation->title,
+                'quantity' => $quantity,
+            ]);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $this->dispatch('ui:error', message: 'პროდუქტი ნაპოვნი არ არის!', type: 'error');

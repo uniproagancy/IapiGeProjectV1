@@ -203,7 +203,8 @@
                 content_type: 'product',
                 content_name: '{{ $product->translation('ka')->title }}',
                 value: {{ $actualPrice }},
-                currency: 'GEL'
+                currency: 'GEL',
+                contents: [{ id: '{{ $product->id }}', quantity: 1 }] // ✅ დაამატე
             }, {
                 eventID: '{{ $event_id }}'
             });

@@ -21,11 +21,11 @@ class AddToCartButton extends Component
     {
         $this->productId = $productId;
         $this->quantity = $quantity;
-        $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
     }
 
     public function addProduct()
     {
+        $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
         $this->addToCart($this->productId, $this->quantity, $this->cartEventId);
         $this->quantity = 1;
     }
