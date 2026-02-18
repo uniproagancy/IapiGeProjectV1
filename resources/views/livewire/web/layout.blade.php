@@ -50,6 +50,26 @@
     fbq('init', '1280014533998229');
 </script>
 @yield('fb_pixel')
+<script>
+    document.addEventListener('livewire:init', () => {
+        if (window._fbAddToCartListenerAdded) return; // ✅ ორჯერ არ დარეგისტრირდეს
+        window._fbAddToCartListenerAdded = true;
+
+        Livewire.on('fb-add-to-cart', (data) => {
+            const item = Array.isArray(data) ? data[0] : data;
+            fbq('track', 'AddToCart', {
+                content_ids: [String(item.id)],
+                content_type: 'product',
+                content_name: item.name,
+                value: item.price,
+                currency: 'GEL',
+                contents: [{ id: String(item.id), quantity: item.quantity }]
+            }, {
+                eventID: item.eventId
+            });
+        });
+    });
+</script>
 @include('livewire.web.partials.header.header')
 @include('livewire.web.search.search-offcanvas')
 {{ $slot }}
