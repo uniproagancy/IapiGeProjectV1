@@ -75,7 +75,7 @@ class Index extends Component
             return;
         }
         app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
-            'content_name'     => $this->currentCategory->name,
+            'content_name'     => $this->currentCategory->translation('ka')->title,
             'content_category' => $this->category_slug,
             'content_ids'      => $this->getProductIdsForCategory(),
             'content_type'     => 'product',
