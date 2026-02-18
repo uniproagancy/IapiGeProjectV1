@@ -77,18 +77,45 @@ class Index extends Component
 
         $this->eventId = 'cv_' . time() . '_' . Str::random(6);
 
+        // ✅ კატეგორიაში არსებული პროდუქტების ID-ები Facebook კატალოგისთვის
+        $productIds = $this->getProductIdsForCategory();
+
         Log::info('🔍 Category View mounted', [
             'category_id'   => $this->currentCategory->id,
             'category_name' => $this->currentCategory->name,
             'category_slug' => $this->category_slug,
             'event_id'      => $this->eventId,
+            'product_count' => count($productIds),
         ]);
 
-        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
+        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name'     => $this->currentCategory->name,
             'content_category' => $this->category_slug,
-            'content_ids'      => [$this->currentCategory->id],
+            'content_ids'      => $productIds, // ✅ პროდუქტების ID-ები, კატეგორიის არა
+            'content_type'     => 'product',   // ✅ სავალდებულო Facebook-ისთვის
         ], $this->eventId);
+    }
+
+    /**
+     * ✅ კატეგორიაში არსებული პროდუქტების ID-ების წამოღება
+     */
+    private function getProductIdsForCategory(): array
+    {
+        $query = Product::query()
+            ->where('show', 1)
+            ->where('active', 1);
+
+        if ($this->currentCategory->parent_id === 0) {
+            // მშობელი კატეგორია — ქვეკატეგორიების პროდუქტები
+            $childIds = $this->currentCategory->children()->pluck('id');
+            $query->whereIn('category_id', $childIds);
+        } else {
+            // ქვეკატეგორია — პირდაპირი პროდუქტები
+            $query->where('category_id', $this->currentCategory->id);
+        }
+
+        // ✅ მხოლოდ პირველი 10 პროდუქტის ID — Facebook-ს ბევრი არ სჭირდება
+        return $query->limit(10)->pluck('id')->map(fn($id) => (string) $id)->toArray();
     }
 
     // ============================================
@@ -479,7 +506,6 @@ class Index extends Component
 
     private function applyBrandFilter($query): void
     {
-        // ✅ normalize და დავრწმუნდეთ რომ სწორი array-ია
         $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
 
         if (empty($brands)) {
