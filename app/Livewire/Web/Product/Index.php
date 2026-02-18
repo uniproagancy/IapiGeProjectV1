@@ -74,7 +74,7 @@ class Index extends Component
         if (empty($this->currentCategory)) {
             return;
         }
-        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
+        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
             'content_name'     => $this->currentCategory->name,
             'content_category' => $this->category_slug,
             'content_ids'      => $this->getProductIdsForCategory(),
