@@ -3,7 +3,6 @@
 namespace App\Livewire\Web\Main;
 
 use App\Models\Product\ProductBrand;
-use App\Services\Facebook\FacebookPixelService;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 
@@ -21,10 +20,9 @@ class Index extends Component
     public function mount()
     {
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
-        app(FacebookPixelService::class)->trackPageViewWithTest(
-            testCode:'TEST61083',
-            eventId: $this->eventId
-        );
+        Log::info('🔍 Index::mount() called', [
+            'event_id' => $this->eventId,
+        ]);
     }
 
     #[Computed]
@@ -89,6 +87,10 @@ class Index extends Component
 
     public function render()
     {
+        Log::info('🎨 Index::render() called', [
+            'event_id' => $this->eventId,
+        ]);
+
         return view('livewire.web.main.index')->layout('livewire.web.layout');
     }
 }
