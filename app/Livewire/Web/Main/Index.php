@@ -22,7 +22,7 @@ class Index extends Component
     {
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
         app(FacebookPixelService::class)->trackPageViewWithTest('TEST61083',[], $this->eventId);
-        Log::info('🔍 Index::mount() called', [
+        Log::info('🔍 Index::mount() called111111', [
             'event_id' => $this->eventId,
         ]);
     }
