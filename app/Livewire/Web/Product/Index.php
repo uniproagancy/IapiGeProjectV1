@@ -103,8 +103,7 @@ class Index extends Component
                 : [];
         }
 
-        $this->selectedBrands = array_map('intval', (array) $this->selectedBrands);
-        $this->selectedBrands = array_filter($this->selectedBrands);
+        $this->selectedBrands = array_filter(array_map('intval', (array) $this->selectedBrands));
     }
 
     private function normalizeSpecs(): void
@@ -285,39 +284,39 @@ class Index extends Component
     public function updatedSelectedBrands(): void
     {
         $this->normalizeBrands();
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     public function updatedPriceMin(): void
     {
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     public function updatedPriceMax(): void
     {
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     public function updatedSearch(): void
     {
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     public function updatedSelectedSpecs(): void
     {
         $this->normalizeSpecs();
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     public function updatedOnlyDiscounted(): void
     {
-        $this->isLoading = true;
         $this->resetPage();
+        $this->isLoading = true;
     }
 
     // ============================================
@@ -349,17 +348,19 @@ class Index extends Component
     public function brands()
     {
         return ProductBrand::query()
-            ->select('id', 'logo', 'show') // ✅ რეალური სვეტები
-            ->with(['translations' => fn($q) => $q
+            ->select('id', 'logo', 'show', 'active')
+            ->with(['translations' => fn ($q) => $q
                 ->select('id', 'product_brand_id', 'title', 'slug', 'locale')
                 ->where('locale', app()->getLocale())
             ])
             ->where('show', 1)
+            ->where('active', 1)
             ->whereIn('id', function ($sub) {
                 $sub->select('brand_id')
                     ->from('db_products')
                     ->where('show', 1)
                     ->where('active', 1)
+                    ->whereNull('deleted_at')
                     ->whereNotNull('brand_id')
                     ->when($this->currentCategory, function ($q) {
                         if ($this->currentCategory->parent_id === 0) {
@@ -373,7 +374,8 @@ class Index extends Component
                         $q->whereExists(function ($price) {
                             $price->select('id')
                                 ->from('db_product_prices')
-                                ->whereColumn('product_id', 'products.id')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
                                 ->whereRaw(
                                     'COALESCE(NULLIF(discount_price, 0), regular_price) >= ?',
                                     [round((float) $this->priceMin, 2)]
@@ -384,7 +386,8 @@ class Index extends Component
                         $q->whereExists(function ($price) {
                             $price->select('id')
                                 ->from('db_product_prices')
-                                ->whereColumn('product_id', 'products.id')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
                                 ->whereRaw(
                                     'COALESCE(NULLIF(discount_price, 0), regular_price) <= ?',
                                     [round((float) $this->priceMax, 2)]
@@ -395,7 +398,8 @@ class Index extends Component
                         $q->whereExists(function ($price) {
                             $price->select('id')
                                 ->from('db_product_prices')
-                                ->whereColumn('product_id', 'products.id')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
                                 ->whereNotNull('discount_price')
                                 ->where('discount_price', '>', 0);
                         });
@@ -408,7 +412,6 @@ class Index extends Component
     #[Computed]
     public function specificationSections()
     {
-        // ✅ Laravel cache — ერთხელ იტვირთება, 1 საათი ინახება
         return cache()->remember('spec_sections_v1', 3600, function () {
             return ProductFullSpecificationSection::whereHas('filter')
                 ->with(['filter' => fn ($q) => $q
@@ -435,14 +438,17 @@ class Index extends Component
         return Product::query()
             ->select('id', 'category_id', 'brand_id', 'show', 'active', 'main_image', 'sku')
             ->with([
-                'translations' => fn($q) => $q
+                'translations' => fn ($q) => $q
                     ->select('id', 'product_id', 'title', 'slug', 'locale')
                     ->where('locale', app()->getLocale()),
-                'price' => fn($q) => $q->select('id', 'product_id', 'regular_price', 'discount_price'),
-                'brand' => fn($q) => $q->select('id', 'logo'), // ✅ name არ არის brands-ში
+                'price' => fn ($q) => $q
+                    ->select('id', 'product_id', 'regular_price', 'discount_price'),
+                'brand' => fn ($q) => $q
+                    ->select('id', 'logo'),
             ])
             ->where('show', 1)
-            ->where('active', 1);
+            ->where('active', 1)
+            ->tap(fn ($q) => $this->applyAllFilters($q));
     }
 
     private function applyAllFilters($query): void
@@ -473,11 +479,14 @@ class Index extends Component
 
     private function applyBrandFilter($query): void
     {
-        if (empty($this->selectedBrands)) {
+        // ✅ normalize და დავრწმუნდეთ რომ სწორი array-ია
+        $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
+
+        if (empty($brands)) {
             return;
         }
 
-        $query->whereIn('brand_id', $this->selectedBrands);
+        $query->whereIn('brand_id', $brands);
     }
 
     private function applyPriceFilter($query): void
