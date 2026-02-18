@@ -89,10 +89,6 @@ class Index extends Component
 
     public function render()
     {
-        Log::info('🎨 Index::render() called', [
-            'event_id' => $this->eventId,
-        ]);
-
         return view('livewire.web.main.index')->layout('livewire.web.layout');
     }
 }
