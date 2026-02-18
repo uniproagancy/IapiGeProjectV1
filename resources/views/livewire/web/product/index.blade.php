@@ -192,7 +192,7 @@
             fbq('trackCustom', 'CategoryView', {
                 content_name: '{{ $currentCategory->translation('ka')->title }}',
                 content_category: '{{ $currentCategory->translation('ka')->slug }}',
-                content_ids: {!! json_encode($products->pluck('id')->map(fn($id) => (string)$id)->toArray()) !!},
+                content_ids: {!! json_encode($categoryProductIds) !!},
                 content_type: 'product'
             }, {
                 eventID: '{{ $event_id }}'
