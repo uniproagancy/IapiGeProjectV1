@@ -79,7 +79,7 @@ class Index extends Component
 
         $this->categoryProductIds = $this->getProductIdsForCategory();
 
-        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
+        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name'     => $this->currentCategory->translation('ka')->title,
             'content_category' => $this->category_slug,
             'content_ids'      => $this->getProductIdsForCategory(),

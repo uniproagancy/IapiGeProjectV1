@@ -30,27 +30,21 @@ class View extends Component
             'shortSpecifications'
         ])->whereHas('translations', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })
-            ->firstOrFail();
+        })->firstOrFail();
 
         $this->loadCartFromDatabase();
 
-        // ✅ Generate event_id
         $this->eventId = 'vc_' . time() . '_' . Str::random(6);
 
-        Log::info('🔍 Product View mounted', [
-            'product_id' => $this->product->id,
-            'product_name' => $this->product->name,
-            'event_id' => $this->eventId,
-        ]);
-
-        $pxl_price = !empty($this->product->price?->discount_price)
+        $pxl_price = ($this->product->price?->discount_price && $this->product->price->discount_price > 0)
             ? $this->product->price->discount_price
             : $this->product->price->regular_price;
-        app(FacebookPixelService::class)->trackViewContent([
-            'id' => $this->product->id,
-            'name' => $this->product->name,
-            'price' => $pxl_price,
+
+        app(FacebookPixelService::class)->trackViewContentWithTest('TEST61083',[
+            'id'               => $this->product->id,
+            'name'             => $this->product->translation('ka')->title,
+            'price'            => $pxl_price,
+            'event_source_url' => url()->current(),
         ], [], $this->eventId);
     }
 
