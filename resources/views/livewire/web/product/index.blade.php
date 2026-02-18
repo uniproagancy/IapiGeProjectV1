@@ -185,27 +185,27 @@
         </section>
     </main>
 </div>
+
 @section('fb_pixel')
-    <script>
-        // ✅ Browser-side Custom Event: CategoryView
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '1280014533998229');
-        fbq('trackCustom', 'CategoryView', {
-            content_name: '{{ $currentCategory?->translation('ka')->title }}',
-            content_category: '{{ $currentCategory?->translation('ka')->slug }}',
-            content_ids: ['{{ $currentCategory?->id }}']
-        }, {
-            eventID: '{{ $event_id }}'
-        });
-    </script>
+    @if($currentCategory && $event_id)
+        <script>
+            // ✅ Pixel CategoryView — CAPI-სთან deduplication-ისთვის იგივე eventID
+            fbq('trackCustom', 'CategoryView', {
+                content_name: '{{ $currentCategory->translation('ka')->title }}',
+                content_category: '{{ $currentCategory->translation('ka')->slug }}',
+                content_ids: {!! json_encode($products->pluck('id')->map(fn($id) => (string)$id)->toArray()) !!},
+                content_type: 'product'
+            }, {
+                eventID: '{{ $event_id }}'
+            });
+        </script>
+    @else
+        <script>
+            fbq('track', 'PageView', {}, { eventID: '{{ $event_id }}' });
+        </script>
+    @endif
 @endsection
+
 @section('page_scripts')
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
 @endsection
