@@ -348,9 +348,12 @@ class Index extends Component
     #[Computed]
     public function brands()
     {
-        // ✅ სრულად DB-ში — PHP-ში არაფერი იტვირთება
         return ProductBrand::query()
-            ->select('id', 'name', 'slug', 'logo')
+            ->select('id', 'logo', 'show') // ✅ რეალური სვეტები
+            ->with(['translations' => fn($q) => $q
+                ->select('id', 'product_brand_id', 'title', 'slug', 'locale')
+                ->where('locale', app()->getLocale())
+            ])
             ->where('show', 1)
             ->whereIn('id', function ($sub) {
                 $sub->select('brand_id')
@@ -430,15 +433,16 @@ class Index extends Component
     private function buildProductQuery()
     {
         return Product::query()
-            ->select('id', 'category_id', 'brand_id', 'show', 'active')
+            ->select('id', 'category_id', 'brand_id', 'show', 'active', 'main_image', 'sku')
             ->with([
-                'translations' => fn ($q) => $q->select('id', 'product_id', 'title', 'slug', 'locale'),
-                'price'        => fn ($q) => $q->select('id', 'product_id', 'regular_price', 'discount_price'),
-                'brand'        => fn ($q) => $q->select('id', 'name', 'slug'),
+                'translations' => fn($q) => $q
+                    ->select('id', 'product_id', 'title', 'slug', 'locale')
+                    ->where('locale', app()->getLocale()),
+                'price' => fn($q) => $q->select('id', 'product_id', 'regular_price', 'discount_price'),
+                'brand' => fn($q) => $q->select('id', 'logo'), // ✅ name არ არის brands-ში
             ])
             ->where('show', 1)
-            ->where('active', 1)
-            ->tap(fn ($q) => $this->applyAllFilters($q));
+            ->where('active', 1);
     }
 
     private function applyAllFilters($query): void
