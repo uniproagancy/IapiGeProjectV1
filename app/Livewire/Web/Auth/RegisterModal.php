@@ -65,7 +65,7 @@ class RegisterModal extends Component
         ]);
 
         // ✅ Track with custom user data (before auto-login)
-        app(FacebookPixelService::class)->trackCompleteRegistration(
+        app(FacebookPixelService::class)->trackCompleteRegistrationWithTest('TEST61083',
             [
                 'email' => $this->email,
                 'phone' => $this->phone,
@@ -84,13 +84,8 @@ class RegisterModal extends Component
             'user_name' => $this->name,
             'user_lastname' => $this->lastname,
         ]);
-
-        // TODO SMS SENDER
-        // TODO MAIL SENDER
-
         $this->dispatch('close-modal', 'registerModal');
         $this->dispatch('ui:success', message: 'თქვენ წარმატებით დარეგისტრირდით!');
-
         return redirect('/');
     }
 
