@@ -3,6 +3,7 @@
 namespace App\Livewire\Web\Main;
 
 use App\Models\Product\ProductBrand;
+use App\Services\Facebook\FacebookPixelService;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 
@@ -20,6 +21,7 @@ class Index extends Component
     public function mount()
     {
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
+        app(FacebookPixelService::class)->trackPageViewWithTest('TEST61083',[], $this->eventId);
         Log::info('🔍 Index::mount() called', [
             'event_id' => $this->eventId,
         ]);
