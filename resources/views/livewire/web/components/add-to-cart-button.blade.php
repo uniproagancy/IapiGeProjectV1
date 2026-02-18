@@ -16,6 +16,7 @@
 </div>
 <script>
     Livewire.on('fb-add-to-cart', (data) => {
+        console.log(data);
         fbq('track', 'AddToCart', {
             content_ids: [String(data.id)],
             content_type: 'product',

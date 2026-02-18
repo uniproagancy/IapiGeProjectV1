@@ -23,7 +23,7 @@ class AddToCartButtonQuantity extends Component
     public function addProduct()
     {
         $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
-        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, url()->previous());
+        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, $this->pageUrl); // ✅ ფრჩხილების გარეშე
         $this->quantity = 1;
     }
 
