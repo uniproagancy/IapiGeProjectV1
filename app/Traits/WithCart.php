@@ -19,7 +19,7 @@ trait WithCart
         $this->fbPixel = app(FacebookPixelService::class);
     }
 
-    public function addToCart($productId, $quantity = 1, $cartEventId = null)
+    public function addToCart($productId, $quantity = 1, $cartEventId = null, $sourceUrl = null)
     {
         try {
             if ($quantity < 1) {
@@ -76,7 +76,7 @@ trait WithCart
                 value: $price * $quantity,
                 currency: 'GEL',
                 params: [
-                    'event_source_url' => url()->current(), // ✅ CAPI სწორ URL-ს გაგზავნის
+                    'event_source_url' => $sourceUrl ?? url()->current(),
                 ],
                 eventId: $cartEventId,
             );
