@@ -16,17 +16,20 @@ class AddToCartButton extends Component
     public $productTitle;
 
     public $cartEventId;
+    public string $pageUrl = '';
+
 
     public function mount($productId, $quantity = 1)
     {
         $this->productId = $productId;
         $this->quantity = $quantity;
+        $this->pageUrl    = url()->current();
     }
 
     public function addProduct()
     {
         $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
-        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, url()->previous());
+        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, $this->pageUrl());
         $this->quantity = 1;
     }
 

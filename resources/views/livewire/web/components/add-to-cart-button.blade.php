@@ -9,6 +9,7 @@
             )"
             class="product-card-button btn btn-icon btn-primary animate-slide-end ms-2"
             aria-label="კალათაში დამატება"
+            data-url="{{ url()->current() }}"
             wire:loading.attr="disabled">
         <i class="ci-shopping-cart fs-base animate-target"></i>
     </button>
