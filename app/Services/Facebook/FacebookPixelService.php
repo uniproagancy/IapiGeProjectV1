@@ -151,19 +151,24 @@ class FacebookPixelService
     {
         $contents = [
             [
-                'id' => $product['id'] ?? null,
+                'id'       => $product['id'] ?? null,
                 'quantity' => $product['quantity'] ?? 1,
             ]
         ];
 
         $customData = [
-            'value' => $value,
-            'currency' => $currency,
-            'contents' => $contents,
+            'value'        => $value,
+            'currency'     => $currency,
+            'contents'     => $contents,
             'content_name' => $product['name'] ?? null,
             'content_type' => 'product',
-            'content_ids' => [$product['id'] ?? null],
+            'content_ids'  => [$product['id'] ?? null],
         ];
+
+        // ✅ event_source_url params-დან
+        if (!empty($params['event_source_url'])) {
+            $customData['event_source_url'] = $params['event_source_url'];
+        }
 
         if ($eventId) {
             $customData['event_id'] = $eventId;
