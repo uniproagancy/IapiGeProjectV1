@@ -47,6 +47,11 @@ class Order extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    public function transaction(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(OrderTransaction::class,'order_id','id');
+    }
+
     public function orderStatus(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(OrderStatus::class, 'id', 'status_id');
