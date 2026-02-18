@@ -653,10 +653,13 @@ class FacebookPixelService
      */
     private function buildEventData(string $eventName, array $customData = []): array
     {
+        $eventSourceUrl = $customData['event_source_url'] ?? request()->url();
+        unset($customData['event_source_url']);
+
         $eventData = [
             'event_name' => $eventName,
             'event_time' => time(),
-            'event_source_url' => request()->url(),
+            'event_source_url' => $eventSourceUrl,
             'action_source' => 'website',
         ];
 

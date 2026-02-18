@@ -84,6 +84,7 @@ class Index extends Component
             'content_category' => $this->category_slug,
             'content_ids'      => $this->getProductIdsForCategory(),
             'content_type'     => 'product',
+            'event_source_url' => url()->current(),
         ], $this->eventId);
     }
 
