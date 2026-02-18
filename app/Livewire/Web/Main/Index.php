@@ -15,8 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
-    public string $eventId;
-    public bool $loaded = false;
+    public string $eventId = '';
 
     public function mount()
     {
@@ -26,49 +25,64 @@ class Index extends Component
         ]);
     }
 
-    public function loadContent()
-    {
-        $this->loaded = true;
-    }
-
-    #[Computed(cache: true, seconds: 3600)]
+    #[Computed]
     public function productCategories()
     {
-        return ProductCategory::with(['children', 'translations'])
+        return cache()->remember('product_categories_active', 3600, fn () =>
+        ProductCategory::with(['children', 'translations'])
             ->where('show', 1)
             ->where('active', 1)
-            ->get();
+            ->get()
+        );
     }
 
-    #[Computed(cache: true, seconds: 1800)]
+    #[Computed]
     public function promotions()
     {
-        return Promotion::with([
-            'translations',
-            'products.product' => function ($q) {
-                $q->with(['translations', 'price']);
-            }
-        ])
-            ->where('active', 1)
-            ->orderBy('position')
-            ->get();
+        return cache()->remember('promotions_active', 1800, function () {
+            return Promotion::with([
+                'translations',
+                'products' => fn ($q) => $q
+                    ->whereHas('product', fn ($q) => $q
+                        ->where('active', 1)
+                        ->where('show', 1)
+                    )
+                    ->limit(20), // ✅ მაქსიმუმ 20 პროდუქტი თითო პრომოუშენზე
+                'products.product' => fn ($q) => $q
+                    ->select('id', 'main_image', 'category_id', 'brand_id')
+                    ->where('active', 1)
+                    ->where('show', 1),
+                'products.product.translations' => fn ($q) => $q
+                    ->select('id', 'product_id', 'title', 'slug', 'locale')
+                    ->where('locale', app()->getLocale()),
+                'products.product.price' => fn ($q) => $q
+                    ->select('id', 'product_id', 'regular_price', 'discount_price'),
+            ])
+                ->where('active', 1)
+                ->orderBy('position')
+                ->get();
+        });
     }
 
-    #[Computed(cache: true, seconds: 3600)]
+    #[Computed]
     public function sliders()
     {
-        return Slider::where('active', 1)
+        return cache()->remember('sliders_active', 3600, fn () =>
+        Slider::where('active', 1)
             ->orderBy('sortable')
-            ->get();
+            ->get()
+        );
     }
 
-    #[Computed(cache: true, seconds: 3600)]
+    #[Computed]
     public function brands()
     {
-        return ProductBrand::where('active', 1)
+        return cache()->remember('brands_active', 3600, fn () =>
+        ProductBrand::where('active', 1)
             ->where('show', 1)
             ->orderBy('sortable')
-            ->get();
+            ->get()
+        );
     }
 
     public function render()
