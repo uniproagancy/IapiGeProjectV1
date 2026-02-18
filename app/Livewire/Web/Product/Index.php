@@ -357,7 +357,7 @@ class Index extends Component
             ->where('show', 1)
             ->whereIn('id', function ($sub) {
                 $sub->select('brand_id')
-                    ->from('products')
+                    ->from('db_products')
                     ->where('show', 1)
                     ->where('active', 1)
                     ->whereNotNull('brand_id')
@@ -372,7 +372,7 @@ class Index extends Component
                     ->when(!empty($this->priceMin), function ($q) {
                         $q->whereExists(function ($price) {
                             $price->select('id')
-                                ->from('product_prices')
+                                ->from('db_product_prices')
                                 ->whereColumn('product_id', 'products.id')
                                 ->whereRaw(
                                     'COALESCE(NULLIF(discount_price, 0), regular_price) >= ?',
@@ -383,7 +383,7 @@ class Index extends Component
                     ->when(!empty($this->priceMax), function ($q) {
                         $q->whereExists(function ($price) {
                             $price->select('id')
-                                ->from('product_prices')
+                                ->from('db_product_prices')
                                 ->whereColumn('product_id', 'products.id')
                                 ->whereRaw(
                                     'COALESCE(NULLIF(discount_price, 0), regular_price) <= ?',
@@ -394,7 +394,7 @@ class Index extends Component
                     ->when($this->onlyDiscounted, function ($q) {
                         $q->whereExists(function ($price) {
                             $price->select('id')
-                                ->from('product_prices')
+                                ->from('db_product_prices')
                                 ->whereColumn('product_id', 'products.id')
                                 ->whereNotNull('discount_price')
                                 ->where('discount_price', '>', 0);
