@@ -31,6 +31,18 @@ class BOGInstallmentController extends Controller
 
     public function installmentRedirect(Request $request): void
     {
-        Log::info($request);
+        Log::warning($request);
+    }
+
+    public function installmentCheck(Request $request): void
+    {
+        $orders = Order::whereIn('payment_id', [4,5])->where('payment_status_id', 1)->get();
+        if(!empty($orders)) {
+            foreach($orders as $order) {
+                if(!empty($order->transaction->payment_order_id)) {
+
+                }
+            }
+        }
     }
 }

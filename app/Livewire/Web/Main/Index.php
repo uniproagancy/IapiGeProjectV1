@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class Index extends Component
 {
     public string $eventId;
+    public bool $loaded = false;
 
     public function mount()
     {
@@ -25,7 +26,12 @@ class Index extends Component
         ]);
     }
 
-    #[Computed]
+    public function loadContent()
+    {
+        $this->loaded = true;
+    }
+
+    #[Computed(cache: true, seconds: 3600)]
     public function productCategories()
     {
         return ProductCategory::with(['children', 'translations'])
@@ -34,16 +40,21 @@ class Index extends Component
             ->get();
     }
 
-    #[Computed]
+    #[Computed(cache: true, seconds: 1800)]
     public function promotions()
     {
-        return Promotion::with(['translations', 'products.product.translations', 'products.product.price'])
+        return Promotion::with([
+            'translations',
+            'products.product' => function ($q) {
+                $q->with(['translations', 'price']);
+            }
+        ])
             ->where('active', 1)
             ->orderBy('position')
             ->get();
     }
 
-    #[Computed]
+    #[Computed(cache: true, seconds: 3600)]
     public function sliders()
     {
         return Slider::where('active', 1)
@@ -51,7 +62,7 @@ class Index extends Component
             ->get();
     }
 
-    #[Computed]
+    #[Computed(cache: true, seconds: 3600)]
     public function brands()
     {
         return ProductBrand::where('active', 1)
@@ -66,10 +77,6 @@ class Index extends Component
             'event_id' => $this->eventId,
         ]);
 
-        return view('livewire.web.main.index', [
-            'sliders' => $this->sliders,
-            'brands' => $this->brands,
-            'event_id' => $this->eventId,
-        ])->layout('livewire.web.layout');
+        return view('livewire.web.main.index')->layout('livewire.web.layout');
     }
 }
