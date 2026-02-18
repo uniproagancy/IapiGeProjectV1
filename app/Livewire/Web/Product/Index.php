@@ -50,6 +50,8 @@ class Index extends Component
     #[Url]
     public bool $onlyDiscounted = false;
 
+    public array $categoryProductIds = [];
+
     // ============================================
     // Lifecycle Hooks
     // ============================================
@@ -74,6 +76,9 @@ class Index extends Component
         if (empty($this->currentCategory)) {
             return;
         }
+
+        $this->categoryProductIds = $this->getProductIdsForCategory();
+
         app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
             'content_name'     => $this->currentCategory->translation('ka')->title,
             'content_category' => $this->category_slug,
