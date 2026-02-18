@@ -84,7 +84,7 @@ class Index extends Component
             'event_id'      => $this->eventId,
         ]);
 
-        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
+        app(FacebookPixelService::class)->trackCustomEventWithTest('TEST61083','CategoryView', [
             'content_name'     => $this->currentCategory->name,
             'content_category' => $this->category_slug,
             'content_ids'      => [$this->currentCategory->id],
