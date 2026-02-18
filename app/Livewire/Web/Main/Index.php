@@ -21,7 +21,10 @@ class Index extends Component
     public function mount()
     {
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
-        app(FacebookPixelService::class)->trackPageViewWithTest('TEST61083',[], $this->eventId);
+        app(FacebookPixelService::class)->trackPageViewWithTest(
+            testCode:'TEST61083',
+            eventId: $this->eventId
+        );
     }
 
     #[Computed]

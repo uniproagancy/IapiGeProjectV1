@@ -220,9 +220,9 @@ class FacebookPixelService
             $customData['event_id'] = $eventId;
         }
 
+        // ✅ სწორი გამოძახება
         return $this->trackEventWithTest('ViewContent', $customData, $testCode);
     }
-
     /**
      * ✅ Track InitiateCheckout event
      */
@@ -250,9 +250,6 @@ class FacebookPixelService
         return $this->trackEvent('InitiateCheckout', $customData);
     }
 
-    /**
-     * ✅ Track InitiateCheckout event with Test Code
-     */
     public function trackCheckoutWithTest(string $testCode, float $value, string $currency = 'GEL', array $items = [], array $params = [], ?string $eventId = null): bool
     {
         $contents = [];
@@ -294,6 +291,7 @@ class FacebookPixelService
             $eventData['event_id'] = $eventId;
         }
 
+        // თუ გადმოცემულია custom user data (არაავტორიზებული)
         if (!empty($userData)) {
             return $this->trackEventWithCustomUserData('Lead', $eventData, $userData);
         }
@@ -353,6 +351,7 @@ class FacebookPixelService
     public function trackEvent(string $eventName, array $customData = []): bool
     {
         try {
+            // ✅ ᲡᲐᲓᲐᲪ ᲘᲫᲐᲮᲔᲑᲐ - ᲓᲔᲢᲐᲚᲣᲠᲘ ინფო
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
             $callerChain = [];
 
@@ -374,8 +373,10 @@ class FacebookPixelService
                 'method' => request()->method(),
             ]);
 
+            // ✅ Generate unique key for deduplication - DIFFERENT FOR EACH EVENT TYPE
             $eventKey = $eventName . '_' . md5(json_encode($customData) . request()->url());
 
+            // ✅ Check if already sent in this request
             if (isset(self::$sentEvents[$eventKey])) {
                 Log::warning("🚫 DUPLICATE EVENT PREVENTED: {$eventName}", [
                     'event_key' => $eventKey,
@@ -414,6 +415,7 @@ class FacebookPixelService
                 return false;
             }
 
+            // ✅ Mark as sent
             self::$sentEvents[$eventKey] = [
                 'time' => now()->toDateTimeString(),
                 'caller' => $callerChain[0] ?? 'unknown',
@@ -517,28 +519,37 @@ class FacebookPixelService
                 'action_source' => 'website',
             ];
 
+            // ✅ Add event_id if present
             if (isset($customData['event_id'])) {
                 $eventData['event_id'] = $customData['event_id'];
-                unset($customData['event_id']);
+                unset($customData['event_id']); // Remove from custom_data
             }
 
-            $userData = $this->buildBaseUserData();
+            // Build user data from form
+            $userData = [
+                'client_ip_address' => request()->ip(),
+                'client_user_agent' => request()->userAgent(),
+            ];
 
             if (!empty($customUserData['email'])) {
                 $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
             }
+
             if (!empty($customUserData['phone'])) {
                 $phone = preg_replace('/\D/', '', $customUserData['phone']);
                 if (strlen($phone) >= 10) {
                     $userData['ph'] = hash('sha256', $phone);
                 }
             }
+
             if (!empty($customUserData['first_name'])) {
                 $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
             }
+
             if (!empty($customUserData['last_name'])) {
                 $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
             }
+
             if (!empty($customUserData['city'])) {
                 $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
             }
@@ -558,11 +569,15 @@ class FacebookPixelService
                 ]);
 
             if ($response->successful()) {
-                Log::info("✅ Event sent: {$eventName}", ['response' => $response->json()]);
+                Log::info("✅ Event sent: {$eventName}", [
+                    'response' => $response->json(),
+                ]);
                 return true;
             }
 
-            Log::error("❌ Event failed", ['response' => $response->body()]);
+            Log::error("❌ Event failed", [
+                'response' => $response->body(),
+            ]);
             return false;
 
         } catch (Exception $e) {
@@ -589,28 +604,37 @@ class FacebookPixelService
                 'action_source' => 'website',
             ];
 
+            // ✅ Add event_id if present
             if (isset($customData['event_id'])) {
                 $eventData['event_id'] = $customData['event_id'];
-                unset($customData['event_id']);
+                unset($customData['event_id']); // Remove from custom_data
             }
 
-            $userData = $this->buildBaseUserData();
+            // Build user data from form
+            $userData = [
+                'client_ip_address' => request()->ip(),
+                'client_user_agent' => request()->userAgent(),
+            ];
 
             if (!empty($customUserData['email'])) {
                 $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
             }
+
             if (!empty($customUserData['phone'])) {
                 $phone = preg_replace('/\D/', '', $customUserData['phone']);
                 if (strlen($phone) >= 10) {
                     $userData['ph'] = hash('sha256', $phone);
                 }
             }
+
             if (!empty($customUserData['first_name'])) {
                 $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
             }
+
             if (!empty($customUserData['last_name'])) {
                 $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
             }
+
             if (!empty($customUserData['city'])) {
                 $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
             }
@@ -635,11 +659,15 @@ class FacebookPixelService
                 ]);
 
             if ($response->successful()) {
-                Log::info("✅ TEST Event sent: {$eventName}", ['response' => $response->json()]);
+                Log::info("✅ TEST Event sent: {$eventName}", [
+                    'response' => $response->json(),
+                ]);
                 return true;
             }
 
-            Log::error("❌ TEST Event failed", ['response' => $response->body()]);
+            Log::error("❌ TEST Event failed", [
+                'response' => $response->body(),
+            ]);
             return false;
 
         } catch (Exception $e) {
@@ -660,9 +688,10 @@ class FacebookPixelService
             'action_source' => 'website',
         ];
 
+        // ✅ Add event_id if present in customData
         if (isset($customData['event_id'])) {
             $eventData['event_id'] = $customData['event_id'];
-            unset($customData['event_id']);
+            unset($customData['event_id']); // Remove from custom_data
         }
 
         $eventData['user_data'] = $this->buildUserData();
@@ -678,8 +707,6 @@ class FacebookPixelService
             'has_email' => isset($eventData['user_data']['em']),
             'has_phone' => isset($eventData['user_data']['ph']),
             'has_external_id' => isset($eventData['user_data']['external_id']),
-            'has_fbc' => isset($eventData['user_data']['fbc']),
-            'has_fbp' => isset($eventData['user_data']['fbp']),
             'has_event_id' => isset($eventData['event_id']),
         ]);
 
@@ -687,34 +714,14 @@ class FacebookPixelService
     }
 
     /**
-     * ✅ Build base user data (IP, User Agent, fbc, fbp) - საბაზო მონაცემები ყველასთვის
-     */
-    private function buildBaseUserData(): array
-    {
-        $userData = [
-            'client_ip_address' => request()->ip(),
-            'client_user_agent' => request()->userAgent(),
-        ];
-
-        // ✅ fbc და fbp ყველასთვის - ავტორიზებული თუ guest
-        if (request()->cookie('_fbp')) {
-            $userData['fbp'] = request()->cookie('_fbp');
-        }
-
-        if (request()->cookie('_fbc')) {
-            $userData['fbc'] = request()->cookie('_fbc');
-        }
-
-        return $userData;
-    }
-
-    /**
-     * ✅ Build user data - ავტორიზებული მომხმარებლის მონაცემებიც ემატება
+     * ✅ Build user data
      */
     private function buildUserData($user = null): array
     {
-        // ✅ საბაზო მონაცემები (IP, Agent, fbc, fbp) ყველასთვის
-        $userData = $this->buildBaseUserData();
+        $userData = [];
+
+        $userData['client_ip_address'] = request()->ip();
+        $userData['client_user_agent'] = request()->userAgent();
 
         if (!$user) {
             $user = auth()->user();
@@ -765,69 +772,24 @@ class FacebookPixelService
                 'user_id' => $user->id,
                 'has_email' => !empty($user->email),
                 'has_phone' => !empty($user->phone),
-                'has_fbc' => isset($userData['fbc']),
-                'has_fbp' => isset($userData['fbp']),
             ]);
-
         } else {
-            Log::info('ℹ️ Guest user data', [
+            if (request()->cookie('_fbp')) {
+                $userData['fbp'] = request()->cookie('_fbp');
+            }
+
+            if (request()->cookie('_fbc')) {
+                $userData['fbc'] = request()->cookie('_fbc');
+            }
+
+            Log::info('ℹ️ Guest user data (IP + Agent only)', [
                 'ip' => request()->ip(),
-                'has_fbp_cookie' => isset($userData['fbp']),
-                'has_fbc_cookie' => isset($userData['fbc']),
+                'has_fbp_cookie' => !empty(request()->cookie('_fbp')),
+                'has_fbc_cookie' => !empty(request()->cookie('_fbc')),
             ]);
         }
 
         return $userData;
-    }
-
-    /**
-     * ✅ Track CompleteRegistration event
-     */
-    public function trackCompleteRegistration(array $userData = [], array $customData = [], ?string $eventId = null): bool
-    {
-        $eventData = [
-            'content_name' => 'registration',
-            'status' => 'completed',
-        ];
-
-        if (!empty($customData)) {
-            $eventData = array_merge($eventData, $customData);
-        }
-
-        if ($eventId) {
-            $eventData['event_id'] = $eventId;
-        }
-
-        if (!empty($userData)) {
-            return $this->trackEventWithCustomUserData('CompleteRegistration', $eventData, $userData);
-        }
-
-        return $this->trackEvent('CompleteRegistration', $eventData);
-    }
-
-    /**
-     * ✅ Track CompleteRegistration with Test Code
-     */
-    public function trackCompleteRegistrationWithTest(string $testCode, array $userData = [], array $customData = [], ?string $eventId = null): bool
-    {
-        $eventData = [
-            'content_name' => 'registration',
-            'status' => 'completed',
-        ];
-
-        if (!empty($customData)) {
-            $eventData = array_merge($eventData, $customData);
-        }
-
-        if ($eventId) {
-            $eventData['event_id'] = $eventId;
-        }
-
-        if (!empty($userData)) {
-            return $this->trackEventWithCustomUserDataAndTest('CompleteRegistration', $eventData, $userData, $testCode);
-        }
-
-        return $this->trackEventWithTest('CompleteRegistration', $eventData, $testCode);
     }
 
     /**
@@ -855,10 +817,14 @@ class FacebookPixelService
                 ]);
 
             if ($response->successful()) {
-                Log::info('✅ Facebook Pixel test successful', ['response' => $response->json()]);
+                Log::info('✅ Facebook Pixel test successful', [
+                    'response' => $response->json(),
+                ]);
                 return true;
             } else {
-                Log::error('❌ Facebook Pixel test failed: ' . $response->status(), ['response' => $response->body()]);
+                Log::error('❌ Facebook Pixel test failed: ' . $response->status(), [
+                    'response' => $response->body(),
+                ]);
                 return false;
             }
 
@@ -897,7 +863,9 @@ class FacebookPixelService
                 ]);
 
             if ($response->successful()) {
-                Log::info('✅ Facebook Pixel test successful', ['response' => $response->json()]);
+                Log::info('✅ Facebook Pixel test successful', [
+                    'response' => $response->json(),
+                ]);
                 return true;
             } else {
                 Log::error('❌ Facebook Pixel test failed', [
@@ -910,6 +878,57 @@ class FacebookPixelService
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * ✅ Track CompleteRegistration event
+     */
+    public function trackCompleteRegistration(array $userData = [], array $customData = [], ?string $eventId = null): bool
+    {
+        $eventData = [
+            'content_name' => 'registration',
+            'status' => 'completed',
+        ];
+
+        if (!empty($customData)) {
+            $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
+        }
+
+        // Track with custom user data
+        if (!empty($userData)) {
+            return $this->trackEventWithCustomUserData('CompleteRegistration', $eventData, $userData);
+        }
+
+        return $this->trackEvent('CompleteRegistration', $eventData);
+    }
+
+    /**
+     * ✅ Track CompleteRegistration with Test Code
+     */
+    public function trackCompleteRegistrationWithTest(string $testCode, array $userData = [], array $customData = [], ?string $eventId = null): bool
+    {
+        $eventData = [
+            'content_name' => 'registration',
+            'status' => 'completed',
+        ];
+
+        if (!empty($customData)) {
+            $eventData = array_merge($eventData, $customData);
+        }
+
+        if ($eventId) {
+            $eventData['event_id'] = $eventId;
+        }
+
+        if (!empty($userData)) {
+            return $this->trackEventWithCustomUserDataAndTest('CompleteRegistration', $eventData, $userData, $testCode);
+        }
+
+        return $this->trackEventWithTest('CompleteRegistration', $eventData, $testCode);
     }
 
     /**

@@ -31,7 +31,7 @@ class TrackFacebookPageView
             Log::info('✅ Middleware: Tracking PageView');
 
             if(Route::current() != 'web.product.view') {
-                app(FacebookPixelService::class)->trackPageView([
+                app(FacebookPixelService::class)->trackPageViewWithTest('TEST61083',[
                     'event_id' => $eventId,
                 ]);
             }
