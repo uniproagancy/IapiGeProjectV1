@@ -11,16 +11,17 @@
     document.addEventListener('livewire:init', () => {
         Livewire.on('fb-add-to-cart', (data) => {
             console.log(data);
+            const item = Array.isArray(data) ? data[0] : data;
             fbq('track', 'AddToCart', {
-                content_ids: [String(data.id)],
+                content_ids: [item.id],
                 content_type: 'product',
-                content_name: data.name,
-                value: data.price,
+                content_name: item.name,
+                value: item.price,
                 currency: 'GEL',
-                contents: [{ id: String(data.id), quantity: data.quantity }]
+                contents: [{ id: item.id, quantity: item.quantity }]
             }, {
-                eventID: data.eventId
+                eventID: item.eventId
             });
         });
-    });
+    }, { once: true }); // ✅ ერთხელ დარეგისტრირდება
 </script>
