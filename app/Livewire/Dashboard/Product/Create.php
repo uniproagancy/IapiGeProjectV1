@@ -3,11 +3,11 @@
 namespace App\Livewire\Dashboard\Product;
 
 use App\Models\Product;
-use App\Models\ProductBrand;
-use App\Models\ProductCategory;
-use App\Models\ProductSupplier;
+use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductSupplier;
 
-use App\Models\ProductTranslation;
+use App\Models\Product\ProductTranslation;
 use Illuminate\Support\Str;
 
 use Livewire\Component;
