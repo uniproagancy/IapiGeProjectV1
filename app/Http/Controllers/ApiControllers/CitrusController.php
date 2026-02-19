@@ -60,7 +60,7 @@ class CitrusController extends Controller
 
             $check_product->update([
                 'quantity' =>$quantity,
-                'in_stock' => $in_stock,
+                'in_stock' => $request->in_stock,
                 'show' => $in_stock,
             ]);
             $productPrice = $productData['old_price'] ?? $productData['price'] ?? 0;
