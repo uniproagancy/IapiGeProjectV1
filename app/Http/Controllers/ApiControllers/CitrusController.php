@@ -39,8 +39,7 @@ class CitrusController extends Controller
         $service = new CitrusProduct();
         $productData = $service->getProduct($request->product_url);
 
-        $check_product = Product::where('supplier_product_id', $productData['id'])->first();
-        dd($check_product);
+        $check_product = Product::where('supplier_product_id', $productData['id'])->where('supplier_id', $request->supplier_id)->first();
         if($productData['stock'] > 0 && $productData['stock_status'] === 1) {
             $quantity = $productData['stock'];
             $in_stock = $productData['stock_status'];
