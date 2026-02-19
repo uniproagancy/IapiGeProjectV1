@@ -123,7 +123,6 @@ class FacebookPixelService
                 'quantity' => $product['quantity'] ?? 1,
             ]
         ];
-
         $customData = [
             'value'        => $value,
             'currency'     => $currency,
@@ -132,16 +131,12 @@ class FacebookPixelService
             'content_type' => 'product',
             'content_ids'  => [$product['id'] ?? null],
         ];
-
-        // ✅ event_source_url params-დან
         if (!empty($params['event_source_url'])) {
             $customData['event_source_url'] = $params['event_source_url'];
         }
-
         if ($eventId) {
             $customData['event_id'] = $eventId;
         }
-
         return $this->trackEvent('AddToCart', $customData);
     }
     /**
