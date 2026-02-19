@@ -13,7 +13,8 @@ class ZoommerController extends Controller
     //
     public function scan()
     {
-        Log::info(1);
+        Log::info("ZoommerController->scan");
+
         return app(ZoommerProduct::class)->scanAllIds();
     }
 }

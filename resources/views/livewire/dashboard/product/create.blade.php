@@ -67,6 +67,18 @@
                                         @error('supplier_id')
                                         <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
+                                    <div class="col-4 mb-1">
+                                        <label class="form-label">მომწოდებლის ფასი</label>
+                                        <input type="text" class="form-control" wire:model="sku">
+                                    </div>
+                                    <div class="col-4 mb-1">
+                                        <label class="form-label">ფასი</label>
+                                        <input type="text" class="form-control" wire:model="sku">
+                                    </div>
+                                    <div class="col-4 mb-1">
+                                        <label class="form-label">ფასდაკლების ფასი</label>
+                                        <input type="text" class="form-control" wire:model="sku">
+                                    </div>
                                     <div class="col-12 mb-1">
                                         <label class="form-label">SKU</label>
                                         <input type="text" class="form-control" wire:model="sku">
@@ -141,11 +153,6 @@
                                                         <div class="textarea-wrapper">
                                                             <textarea class="form-control" rows="6"
                                                                       wire:model="description_ka"></textarea>
-                                                            <div class="buttons">
-                                                                <button type="button" class="btn btn-outline-success">
-                                                                    ავტომატური თარგმნა
-                                                                </button>
-                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-12">
