@@ -12,19 +12,22 @@ class AddToCartButtonQuantity extends Component
 
     public $productId;
     public $quantity = 1;
+    public $productPrice;
+    public $productTitle;
     public $cartEventId;
+    public string $pageUrl = ''; // ✅ დაამატე
 
     public function mount($productId, $quantity = 1)
     {
         $this->productId = $productId;
-        $this->quantity = $quantity;
-        $this->pageUrl    = url()->current();
+        $this->quantity  = $quantity;
+        $this->pageUrl   = url()->current(); // ✅ დაამატე
     }
 
     public function addProduct()
     {
         $this->cartEventId = 'ac_' . time() . '_' . Str::random(6);
-        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, $this->pageUrl); // ✅ ფრჩხილების გარეშე
+        $this->addToCart($this->productId, $this->quantity, $this->cartEventId, $this->pageUrl);
         $this->quantity = 1;
     }
 

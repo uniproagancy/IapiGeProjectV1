@@ -13,6 +13,8 @@ class AddToCartButtonWhite extends Component
     public $productId;
     public $quantity = 1;
     public $cartEventId;
+    public string $pageUrl = '';
+
 
     public function mount($productId, $quantity = 1)
     {
