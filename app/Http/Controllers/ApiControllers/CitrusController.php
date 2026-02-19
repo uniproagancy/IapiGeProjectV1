@@ -93,7 +93,7 @@ class CitrusController extends Controller
                 'supplier_id' => 4,
                 'main_image' => 1,
                 'quantity' =>$quantity,
-                'in_stock' => $in_stock,
+                'in_stock' => $request->in_stock,
                 'show' => $in_stock,
                 'active' => 1,
             ]);
