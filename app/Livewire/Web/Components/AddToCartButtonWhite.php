@@ -18,6 +18,7 @@ class AddToCartButtonWhite extends Component
     {
         $this->productId = $productId;
         $this->quantity = $quantity;
+        $this->pageUrl    = url()->current();
     }
 
     public function addProduct()

@@ -204,7 +204,7 @@
                 content_name: '{{ $product->translation('ka')->title }}',
                 value: {{ $actualPrice }},
                 currency: 'GEL',
-                contents: [{ id: '{{ $product->id }}', quantity: 1 }] // ✅ დაამატე
+                contents: [{ id: '{{ $product->id }}', quantity: 1 }]
             }, {
                 eventID: '{{ $event_id }}'
             });

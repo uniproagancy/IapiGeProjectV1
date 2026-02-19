@@ -149,6 +149,10 @@
                                                         <i data-feather="edit"></i>
                                                     </a>
                                                     <a href="#" class="text-body"
+                                                       wire:click="priceEditModal({{ $product->id }})">
+                                                        <i class="text-success" data-feather="trash"></i>
+                                                    </a>
+                                                    <a href="#" class="text-body"
                                                        wire:click="deleteModal({{ $product->id }})">
                                                         <i class="text-danger" data-feather="trash"></i>
                                                     </a>
