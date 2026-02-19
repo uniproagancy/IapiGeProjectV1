@@ -64,8 +64,7 @@ trait WithCart
 
             $this->syncCartToDatabase();
             $this->dispatch('cartUpdated',name: $translation->title, value: $price, id: $product->id );
-            $this->fbPixel->trackAddToCartWithTest(
-                testCode: '',
+            $this->fbPixel->trackAddToCart(
                 product: [
                     'id'       => $product->id,
                     'name'     => $translation->title,
