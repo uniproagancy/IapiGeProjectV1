@@ -54,7 +54,6 @@
     document.addEventListener('livewire:init', () => {
         if (window._fbAddToCartListenerAdded) return; // ✅ ორჯერ არ დარეგისტრირდეს
         window._fbAddToCartListenerAdded = true;
-
         Livewire.on('fb-add-to-cart', (data) => {
             const item = Array.isArray(data) ? data[0] : data;
             fbq('track', 'AddToCart', {
