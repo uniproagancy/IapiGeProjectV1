@@ -46,16 +46,16 @@
              x-show="open"
              x-transition>
             @if($this->results->count() > 0)
-                <div class="overflow-auto search-item-container" style="max-height: 400px;">
+                <a class="overflow-auto search-item-container" style="max-height: 400px;">
                     @foreach($this->results as $index => $product)
                         @php
                             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
                         @endphp
-                        <div class="search-item d-flex align-items-center px-3 py-2 {{ $selectedIndex === $index ? 'bg-light' : '' }}"
-                             style="cursor: pointer; transition: background-color 0.15s ease; border-bottom: solid 1px #d1d1d1"
-                             wire:key="search-result-{{ $product->id }}"
-                             wire:click="selectProduct('{{ $translation->slug }}')"
-                             @mouseenter="$wire.selectedIndex = {{ $index }}">
+                        <a href="{{ route('web.products.view', $translation->slug) }}"
+                           class="search-item d-flex align-items-center px-3 py-2 text-decoration-none text-dark {{ $selectedIndex === $index ? 'bg-light' : '' }}"
+                           style="cursor: pointer; transition: background-color 0.15s ease; border-bottom: solid 1px #d1d1d1"
+                           wire:key="search-result-{{ $product->id }}"
+                           @mouseenter="$wire.selectedIndex = {{ $index }}">
                             <div class="flex-shrink-0 rounded overflow-hidden" style="border: solid 1px #d1d1d1;">
                                 <img src="{{ asset('storage/' . $product->main_image) }}"
                                      alt="{{ $translation->title }}"
@@ -97,7 +97,7 @@
                             <div class="flex-shrink-0 ms-2">
                                 <i class="ci-chevron-right text-muted"></i>
                             </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
                 @if($this->results->count() >= 10)
