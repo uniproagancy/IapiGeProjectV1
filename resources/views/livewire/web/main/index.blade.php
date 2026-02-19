@@ -50,7 +50,6 @@
 </div>
 @section('fb_pixel')
     <script>
-        fbq('init', '1280014533998229');
         fbq('track', 'PageView', {}, { eventID: '{{ $this->eventId }}' });
     </script>
     <noscript><img height="1" width="1" style="display:none"
