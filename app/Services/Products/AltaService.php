@@ -11,18 +11,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Exception;
 
-/**
- * ✅ FIXED & OPTIMIZED ALTA Product Scraping Service
- *
- * Fixes:
- * - ✅ Fixed hardcoded ID range (was 45000-47000)
- * - ✅ Fixed memory leak in Pool closure
- * - ✅ Fixed usleep() with invalid values
- * - ✅ Proper rate limit retry logic
- * - ✅ Delay between responses
- * - ✅ Better validation
- * - ✅ Proper exception handling
- */
 class AltaService
 {
     protected string $api_url;
@@ -31,21 +19,21 @@ class AltaService
     protected int $timeout;
     protected int $delay_ms;
     protected int $retry_delay;
-    protected int $start_id;
-    protected int $end_id;
+    protected int $start_id = 0; // ✅ გასწორდა: default value
+    protected int $end_id = 0;   // ✅ გასწორდა: default value
     protected string $scrape_token;
     protected bool $use_scraper;
 
     public function __construct()
     {
-        $this->api_url = Config::get('services.alta.api_url', 'https://api.alta.ge');
+        $this->api_url             = Config::get('services.alta.api_url', 'https://api.alta.ge');
         $this->concurrent_requests = Config::get('services.alta.concurrent_requests', 5);
-        $this->chunk_size = Config::get('services.alta.chunk_size', 50);
-        $this->timeout = Config::get('services.alta.timeout', 300);
-        $this->delay_ms = Config::get('services.alta.request_delay_ms', 100);
-        $this->retry_delay = Config::get('services.alta.retry_delay', 5);
-        $this->scrape_token = Config::get('services.alta.scrape_token', '');
-        $this->use_scraper = Config::get('services.alta.use_scraper', true);
+        $this->chunk_size          = Config::get('services.alta.chunk_size', 50);
+        $this->timeout             = Config::get('services.alta.timeout', 300);
+        $this->delay_ms            = Config::get('services.alta.request_delay_ms', 100);
+        $this->retry_delay         = Config::get('services.alta.retry_delay', 5);
+        $this->scrape_token        = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
+        $this->use_scraper         = Config::get('services.alta.use_scraper', true);
     }
 
     // ============================================
@@ -55,7 +43,7 @@ class AltaService
     public function setIdRange(int $startId, int $endId): self
     {
         $this->start_id = $startId;
-        $this->end_id = $endId;
+        $this->end_id   = $endId;
         return $this;
     }
 
@@ -87,57 +75,62 @@ class AltaService
     // Main Scan Method
     // ============================================
 
-    /**
-     * ✅ FIXED: Now uses $this->start_id and $this->end_id
-     */
     public function scanAllIds(): array
     {
         try {
+            // ✅ გასწორდა: validation დაემატა
+            if ($this->start_id === 0 || $this->end_id === 0) {
+                throw new Exception('ID range not set. Call setIdRange() first.');
+            }
+
+            if ($this->start_id > $this->end_id) {
+                throw new Exception('start_id must be less than or equal to end_id.');
+            }
+
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', '0');
 
             $startTime = microtime(true);
-            $totalIds = $this->end_id - $this->start_id + 1;
+            $totalIds  = $this->end_id - $this->start_id + 1;
 
             Log::info('🔄 Starting ALTA product scan', [
-                'start_id' => $this->start_id,
-                'end_id' => $this->end_id,
-                'total_ids' => $totalIds,
+                'start_id'    => $this->start_id,
+                'end_id'      => $this->end_id,
+                'total_ids'   => $totalIds,
                 'concurrency' => $this->concurrent_requests,
-                'chunk_size' => $this->chunk_size,
+                'chunk_size'  => $this->chunk_size,
             ]);
 
             $stats = [
-                'total' => $totalIds,
-                'queued' => 0,
-                'null' => 0,
-                'errors' => 0,
-                'skipped' => 0,
+                'total'        => $totalIds,
+                'queued'       => 0,
+                'null'         => 0,
+                'errors'       => 0,
+                'skipped'      => 0,
                 'rate_limited' => 0,
-                'retried' => 0,
+                'retried'      => 0,
             ];
 
-            // ✅ FIX: Use $this->start_id and $this->end_id (not hardcoded!)
-            $allIds = range($this->start_id, $this->end_id);
-            $chunks = array_chunk($allIds, $this->chunk_size);
+            $allIds  = range($this->start_id, $this->end_id);
+            $chunks  = array_chunk($allIds, $this->chunk_size);
 
             foreach ($chunks as $chunkIndex => $chunk) {
                 $chunkNumber = $chunkIndex + 1;
                 $totalChunks = count($chunks);
 
                 Log::info("🔄 Processing chunk {$chunkNumber}/{$totalChunks}", [
-                    'chunk_ids' => count($chunk),
+                    'chunk_ids'    => count($chunk),
                     'memory_usage' => round(memory_get_usage() / 1024 / 1024, 2) . 'MB',
                 ]);
 
                 $chunkStats = $this->scanChunk($chunk);
-                $stats['queued'] += $chunkStats['queued'];
-                $stats['null'] += $chunkStats['null'];
-                $stats['errors'] += $chunkStats['errors'];
-                $stats['skipped'] += $chunkStats['skipped'] ?? 0;
+
+                $stats['queued']       += $chunkStats['queued'];
+                $stats['null']         += $chunkStats['null'];
+                $stats['errors']       += $chunkStats['errors'];
+                $stats['skipped']      += $chunkStats['skipped'] ?? 0;
                 $stats['rate_limited'] += $chunkStats['rate_limited'] ?? 0;
 
-                // ✅ FIX: Collect rate-limited IDs and retry them
                 if (($chunkStats['rate_limited'] ?? 0) > 0 && $chunkNumber < $totalChunks) {
                     Log::warning("⚠️ Rate limiting detected, retrying after delay...");
                     sleep($this->retry_delay);
@@ -150,7 +143,7 @@ class AltaService
             }
 
             $stats['duration'] = round(microtime(true) - $startTime, 2);
-            $stats['rate'] = $stats['duration'] > 0
+            $stats['rate']     = $stats['duration'] > 0
                 ? round($stats['total'] / $stats['duration'], 2) . ' products/sec'
                 : 'N/A';
 
@@ -170,36 +163,32 @@ class AltaService
     // Chunk Processing
     // ============================================
 
-    /**
-     * ✅ FIXED: Proper closure binding and memory management
-     */
     protected function scanChunk(array $ids): array
     {
         $stats = [
-            'queued' => 0,
-            'null' => 0,
-            'errors' => 0,
-            'skipped' => 0,
+            'queued'       => 0,
+            'null'         => 0,
+            'errors'       => 0,
+            'skipped'      => 0,
             'rate_limited' => 0,
         ];
 
         try {
             $client = new Client([
-                'timeout' => $this->timeout,
+                'timeout'         => $this->timeout,
                 'connect_timeout' => 10,
-                'http_errors' => false,
-                'verify' => false,
+                'http_errors'     => false,
+                'verify'          => false,
             ]);
 
-            // ✅ FIX: Create stats copy to avoid circular reference
             $requests = $this->buildRequests($ids);
 
             $pool = new Pool($client, $requests, [
                 'concurrency' => $this->concurrent_requests,
-                'fulfilled' => function ($response, $id) use (&$stats) {
+                'fulfilled'   => function ($response, $id) use (&$stats) {
                     $this->handleResponse($response, $id, $stats);
                 },
-                'rejected' => function ($reason, $id) use (&$stats) {
+                'rejected'    => function ($reason, $id) use (&$stats) {
                     $this->handleRejection($reason, $id, $stats);
                 },
             ]);
@@ -210,7 +199,6 @@ class AltaService
             Log::error('❌ AltaService scanChunk error: ' . $e->getMessage());
             $stats['errors'] += count($ids);
         } finally {
-            // ✅ FIX: Explicitly free resources
             unset($pool, $client, $requests);
             gc_collect_cycles();
         }
@@ -222,18 +210,12 @@ class AltaService
     // Request Building
     // ============================================
 
-    /**
-     * ✅ FIXED: Proper delay handling with seconds + microseconds
-     */
     private function buildRequests(array $ids): \Generator
     {
         foreach ($ids as $id) {
             try {
-                // ✅ FIX: Proper sleep for delay_ms
                 $this->sleep($this->delay_ms);
-
                 yield $id => $this->buildRequest($id);
-
             } catch (Exception $e) {
                 Log::warning("⚠️ Error building request for {$id}: {$e->getMessage()}");
                 continue;
@@ -241,9 +223,6 @@ class AltaService
         }
     }
 
-    /**
-     * ✅ FIXED: Extracted request building
-     */
     private function buildRequest(int $id): Request
     {
         $targetUrl = "{$this->api_url}/v1/Products/details?productId={$id}";
@@ -257,16 +236,13 @@ class AltaService
 
         return new Request('GET', $url, [
             'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'Accept' => 'application/json',
+            'Accept'     => 'application/json',
         ]);
     }
 
-    /**
-     * ✅ NEW: Proper millisecond sleep
-     */
     private function sleep(int $milliseconds): void
     {
-        $seconds = intdiv($milliseconds, 1000);
+        $seconds      = intdiv($milliseconds, 1000);
         $microseconds = ($milliseconds % 1000) * 1000;
 
         if ($seconds > 0) {
@@ -281,9 +257,6 @@ class AltaService
     // Response Handling
     // ============================================
 
-    /**
-     * ✅ FIXED: Better response handling with proper validation
-     */
     private function handleResponse($response, $id, &$stats): void
     {
         try {
@@ -310,14 +283,12 @@ class AltaService
                 return;
             }
 
-            // ✅ FIX: Better validation
             if (!$this->validateProductData($data['product'])) {
                 Log::debug("⚠️ Product {$id} failed validation");
                 $stats['skipped']++;
                 return;
             }
 
-            // ✅ FIX: Check if product exists in B2B
             $barCode = $data['product']['barCode'] ?? null;
             if (!$barCode) {
                 Log::debug("⚠️ Product {$id} missing barCode");
@@ -331,6 +302,9 @@ class AltaService
                     $data['availabilityInStores'] ?? []
                 )->onQueue('alta');
                 $stats['queued']++;
+            } else {
+                Log::debug("⏭️ Product {$id} not in AltaID whitelist");
+                $stats['skipped']++;
             }
 
         } catch (Exception $e) {
@@ -339,35 +313,29 @@ class AltaService
         }
     }
 
-    /**
-     * ✅ NEW: Handle rejected requests properly
-     */
     private function handleRejection($reason, $id, &$stats): void
     {
-        $reasonStr = (string)$reason;
+        $reasonStr = (string) $reason;
 
         if (stripos($reasonStr, 'timeout') !== false) {
             Log::warning("⏱️ Timeout for product {$id}");
-            $stats['errors']++;
-        } else if (stripos($reasonStr, '429') !== false) {
+        } elseif (stripos($reasonStr, '429') !== false) {
             Log::warning("⚠️ Rate limited for product {$id}");
             $stats['rate_limited']++;
+            return;
         } else {
             Log::error("❌ Request rejected for product {$id}: {$reasonStr}");
-            $stats['errors']++;
         }
+
+        $stats['errors']++;
     }
 
     // ============================================
     // Validation
     // ============================================
 
-    /**
-     * ✅ FIXED: Better validation (not using empty())
-     */
     private function validateProductData(array $product): bool
     {
-        // Check required fields
         if (!isset($product['id']) || !$product['id']) {
             return false;
         }
@@ -380,7 +348,6 @@ class AltaService
             return false;
         }
 
-        // Price can be 0, so just check existence
         if (!isset($product['price'])) {
             return false;
         }
@@ -397,12 +364,12 @@ class AltaService
         try {
             $client = new Client([
                 'timeout' => $this->timeout,
-                'verify' => false,
+                'verify'  => false,
             ]);
 
-            $request = $this->buildRequest($id);
+            $request  = $this->buildRequest($id);
             $response = $client->send($request);
-            $data = json_decode($response->getBody()->getContents(), true);
+            $data     = json_decode($response->getBody()->getContents(), true);
 
             Log::info("✅ Test successful for product {$id}");
             return $data;
@@ -415,16 +382,21 @@ class AltaService
 
     public function scanSpecificIds(array $ids): array
     {
+        // ✅ გასწორდა: validation დაემატა
+        if (empty($ids)) {
+            throw new Exception('IDs array cannot be empty.');
+        }
+
         $originalStart = $this->start_id;
-        $originalEnd = $this->end_id;
+        $originalEnd   = $this->end_id;
 
         try {
             $this->start_id = min($ids);
-            $this->end_id = max($ids);
+            $this->end_id   = max($ids);
             return $this->scanChunk($ids);
         } finally {
             $this->start_id = $originalStart;
-            $this->end_id = $originalEnd;
+            $this->end_id   = $originalEnd;
         }
     }
 
@@ -436,14 +408,17 @@ class AltaService
 
     public function getStats(): array
     {
+        // ✅ გასწორდა: null safe
         return [
-            'api_url' => $this->api_url,
-            'start_id' => $this->start_id,
-            'end_id' => $this->end_id,
-            'total_ids' => ($this->end_id - $this->start_id + 1),
+            'api_url'     => $this->api_url,
+            'start_id'    => $this->start_id ?: null,
+            'end_id'      => $this->end_id ?: null,
+            'total_ids'   => ($this->start_id && $this->end_id)
+                ? ($this->end_id - $this->start_id + 1)
+                : null,
             'concurrency' => $this->concurrent_requests,
-            'chunk_size' => $this->chunk_size,
-            'delay_ms' => $this->delay_ms,
+            'chunk_size'  => $this->chunk_size,
+            'delay_ms'    => $this->delay_ms,
             'use_scraper' => $this->use_scraper,
         ];
     }

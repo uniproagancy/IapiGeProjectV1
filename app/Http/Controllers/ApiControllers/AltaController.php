@@ -25,28 +25,20 @@ class AltaController extends Controller
         return app(AltaService::class)->setIdRange(1, 60000)->scanAllIds();
     }
 
-    public function altaTrash()
+    public function AltaIDS()
     {
-        try {
-            $username = 'UNIPRO_GP';
-            $password = 'unipro2020';
+        $client = new SoapClient('http://extra.alta.com.ge/b2b/b2bEWS?WSDL', [
+            'trace'              => 1,
+            'exceptions'         => true,
+            'encoding'           => 'UTF-8',
+            'connection_timeout' => 30,
+        ]);
 
-            $priceList = $this->priceService->getPriceList(
-                $username,
-                $password,
-            );
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $priceList
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
-        }
+        $result = $client->GetPriceList([
+            'user'     => 'UNIPRO_ICH',
+            'password' => 'CHI1457160',
+        ]);
+        dd($result->PriceList->items->item);
     }
 
     public function updateActive()
