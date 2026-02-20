@@ -9,7 +9,7 @@
             </div>
         </div>
         <h1 class="h3 container mb-4 font-neue">
-            {{ $currentCategory?->translation('ka')->title ?? 'პროდუქციის ჩამონათვალი' }}
+            სპეციალური ფასდაკლება კრედო ბანკის მომხმარებლებისთვის
         </h1>
         <section class="container mb-4">
             <div class="row">
