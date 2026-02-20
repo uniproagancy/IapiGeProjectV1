@@ -4,8 +4,8 @@
 <div>
     <main class="content-wrapper">
         <div class="container">
-            <div class="img-fluid">
-                <img src="{{ asset('storage/uploads/slider/c41a1080-c557-4bd3-943d-f8ba55625f11.jpg') }}">
+            <div class="img-fluid my-4">
+                <img src="{{ asset('storage/uploads/slider/c41a1080-c557-4bd3-943d-f8ba55625f11.jpg') }}" style="border-radius: 5px">
             </div>
         </div>
         <h1 class="h3 container mb-4 font-neue">
