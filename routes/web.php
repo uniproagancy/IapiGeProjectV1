@@ -31,6 +31,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             Route::get('/view/{slug?}', App\Livewire\Web\Product\View::class)->name('view');
         });
 
+        Route::prefix('/promotions')->name('promotions.')->group(function () {
+            Route::get('/{promotion_name?}', App\Livewire\Web\Promotions\Index::class)->name('index');
+        });
+
         Route::prefix('/static')->name('static.')->group(function () {
             Route::get('/{page?}', App\Livewire\Web\Main\StaticPages::class)->name('index');
         });
