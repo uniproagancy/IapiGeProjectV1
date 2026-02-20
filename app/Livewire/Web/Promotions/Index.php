@@ -381,6 +381,16 @@ class Index extends Component
                     ->where('active', 1)
                     ->whereNull('deleted_at')
                     ->whereNotNull('brand_id')
+                    ->where('sku', 'LIKE', '%GL-%') // ✅ დაემატა
+                    // ✅ დაემატა — მხოლოდ ფასდაკლებული პროდუქტების ბრენდები
+                    ->whereExists(function ($price) {
+                        $price->select('id')
+                            ->from('db_product_prices')
+                            ->whereColumn('product_id', 'db_products.id')
+                            ->whereNull('deleted_at')
+                            ->whereNotNull('discount_price')
+                            ->where('discount_price', '>', 0);
+                    })
                     ->when($this->currentCategory, function ($q) {
                         if ($this->currentCategory->parent_id === 0) {
                             $childIds = $this->currentCategory->children()->pluck('id');
@@ -413,21 +423,10 @@ class Index extends Component
                                 );
                         });
                     })
-                    ->when($this->onlyDiscounted, function ($q) {
-                        $q->whereExists(function ($price) {
-                            $price->select('id')
-                                ->from('db_product_prices')
-                                ->whereColumn('product_id', 'db_products.id')
-                                ->whereNull('deleted_at')
-                                ->whereNotNull('discount_price')
-                                ->where('discount_price', '>', 0);
-                        });
-                    })
                     ->distinct();
             })
             ->get();
     }
-
     #[Computed]
     public function specificationSections()
     {
