@@ -40,7 +40,7 @@ class AltaController extends Controller
             'password' => 'CHI1457160',
             'item' => '',
         ]);
-        dd($result->PriceList->items->item);
+        dd($result->PriceList->items);
     }
 
     public function updateActive()
