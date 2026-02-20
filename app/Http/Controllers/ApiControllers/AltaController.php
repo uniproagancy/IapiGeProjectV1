@@ -38,6 +38,7 @@ class AltaController extends Controller
         $result = $client->GetPriceList([
             'user'     => 'UNIPRO_ICH',
             'password' => 'CHI1457160',
+            'item' => '',
         ]);
         dd($result->PriceList->items->item);
     }
