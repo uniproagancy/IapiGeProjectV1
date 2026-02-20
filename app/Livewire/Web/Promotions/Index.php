@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Web\Promotions;
 
+use App\Models\PromotionPages\Product;
+use App\Models\PromotionPages\Page;
 use Livewire\Component;
 
 class Index extends Component
@@ -9,7 +11,8 @@ class Index extends Component
 
     protected $promotionSlug;
     public function mount($promotionSlug) {
-        dd($promotionSlug);
+        $promotionPage = Page::where('slug', $promotionSlug)->findOrFail();
+        $promotionProducts = Product::where('promotion_id', $promotionPage->id)->get();
     }
     public function render()
     {
