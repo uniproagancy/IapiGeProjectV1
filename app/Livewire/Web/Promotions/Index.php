@@ -8,9 +8,11 @@ class Index extends Component
 {
 
     protected $promotionSlug;
+    public function mount($promotionSlug) {
+        dd($promotionSlug);
+    }
     public function render()
     {
-        dd($this->promotionSlug);
         return view('livewire.web.promotions.index')->layout('livewire.web.layout');
     }
 }
