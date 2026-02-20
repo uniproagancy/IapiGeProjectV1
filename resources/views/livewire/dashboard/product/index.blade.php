@@ -81,11 +81,11 @@
                                             {{ $product->translations->where('locale', 'ka')->first()->title ?? ' ' }}</td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
-                                                <span class="badge badge-light-success">{{ $product->price->discount_price }} ₾</span>
+                                                <span class="badge badge-light-success">{{ $product->price->discount_price ?? '' }} ₾</span>
                                                 <br><br>
-                                                <span class="badge badge-light-danger">{{ $product->price->regular_price }} ₾</span>
+                                                <span class="badge badge-light-danger">{{ $product->price->regular_price ?? '' }} ₾</span>
                                             @else
-                                                <span class="badge badge-light-success">{{ $product->price->regular_price }} ₾</span>
+                                                <span class="badge badge-light-success">{{ $product->price->regular_price ?? '' }} ₾</span>
                                             @endif
                                         </td>
                                         <td>
