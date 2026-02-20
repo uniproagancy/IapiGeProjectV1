@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Web\Promotions\Pages;
+namespace App\Livewire\Web\Promotions;
 
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
