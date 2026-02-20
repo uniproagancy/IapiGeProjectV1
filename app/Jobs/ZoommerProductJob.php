@@ -159,20 +159,20 @@ class ZoommerProductJob implements ShouldQueue
                 'discount_price' => $discountPrice,
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);
-            Storage::disk('public')->delete($product->main_image);
+//            Storage::disk('public')->delete($product->main_image);
             $product->update([
                 'quantity' => $hasStock ? 5 : 0,
                 'in_stock' => $hasStock ? 1 : 0,
                 'show' => $hasStock ? 1 : 0,
-                'main_image' => 1,
+//                'main_image' => 1,
             ]);
-            $productGallery = ProductImage::where('product_id', $product->id)->get();
-            foreach ($productGallery as $image) {
-                Storage::disk('public')->delete($image->path);
-            }
-            ProductImage::where('product_id', $product->id)->forceDelete();
-            $this->downloadImages($product, $productData);
-            Log::info("✏️  Updated product: {$product->id}");
+//            $productGallery = ProductImage::where('product_id', $product->id)->get();
+//            foreach ($productGallery as $image) {
+//                Storage::disk('public')->delete($image->path);
+//            }
+//            ProductImage::where('product_id', $product->id)->forceDelete();
+//            $this->downloadImages($product, $productData);
+//            Log::info("✏️  Updated product: {$product->id}");
 
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");

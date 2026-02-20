@@ -102,7 +102,7 @@ class CitrusController extends Controller
                 'locale' => 'ka',
                 'title' => $productData['name'],
                 'slug' => Str::slug($productData['name']) . "-{$product->id}",
-                'description' => $productData['details']['description'] ? $productData['details']['description'] : $productData['seo']['description'],
+                'description' => $productData['details']['description'] ? $productData['details']['description'] : '',
                 'keywords' => $productData['seo']['meta_keywords'],
             ]);
             $productPrice = $productData['old_price'] ?? $productData['price'] ?? 0;
