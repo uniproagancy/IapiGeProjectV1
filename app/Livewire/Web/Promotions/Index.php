@@ -466,6 +466,10 @@ class Index extends Component
                 'brand' => fn ($q) => $q
                     ->select('id', 'logo'),
             ])
+            ->whereHas('price', fn ($q) => $q
+                ->whereNotNull('discount_price')
+                ->where('discount_price', '>', 0)
+            )
             ->where('show', 1)
             ->where('active', 1)
             ->tap(fn ($q) => $this->applyAllFilters($q));
