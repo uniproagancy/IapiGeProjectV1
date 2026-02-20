@@ -456,6 +456,7 @@ class Index extends Component
     {
         return Product::query()
             ->select('id', 'category_id', 'brand_id', 'show', 'active', 'main_image', 'sku')
+            ->where('sku', 'LIKE', '%GL-%')
             ->with([
                 'translations' => fn ($q) => $q
                     ->select('id', 'product_id', 'title', 'slug', 'locale')
