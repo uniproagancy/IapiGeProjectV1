@@ -3,14 +3,13 @@
 @endsection
 <div>
     <main class="content-wrapper">
-        <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">მთავარი</a></li>
-                <li class="breadcrumb-item active" aria-current="page">კატალოგი</li>
-            </ol>
-        </nav>
+        <div class="container">
+            <div class="img-fluid">
+                <img src="{{ asset('storage/uploads/slider/c41a1080-c557-4bd3-943d-f8ba55625f11.jpg') }}">
+            </div>
+        </div>
         <h1 class="h3 container mb-4 font-neue">
-
+            {{ $currentCategory?->translation('ka')->title ?? 'პროდუქციის ჩამონათვალი' }}
         </h1>
         <section class="container mb-4">
             <div class="row">
