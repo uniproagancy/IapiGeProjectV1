@@ -569,7 +569,7 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.web.promotion.index', [
+        return view('livewire.web.promotions.index', [
             'products'              => $this->products,
             'brands'                => $this->brands,
             'specificationSections' => $this->specificationSections,
