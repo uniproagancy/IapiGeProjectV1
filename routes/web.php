@@ -32,7 +32,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         });
 
         Route::prefix('/promotions')->name('promotions.')->group(function () {
-            Route::get('/{promotion_name?}', App\Livewire\Web\Promotions\Index::class)->name('index');
+            Route::get('/{promotionSlug?}', App\Livewire\Web\Promotions\Index::class)->name('index');
         });
 
         Route::prefix('/static')->name('static.')->group(function () {
