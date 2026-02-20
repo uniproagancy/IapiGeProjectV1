@@ -11,7 +11,7 @@ class Index extends Component
 
     protected $promotionSlug;
     public function mount($promotionSlug) {
-        $promotionPage = Page::where('slug', $promotionSlug)->findOrFail();
+        $promotionPage = Page::where('slug', $promotionSlug)->firstOrFail();
         $promotionProducts = Product::where('promotion_id', $promotionPage->id)->get();
     }
     public function render()
