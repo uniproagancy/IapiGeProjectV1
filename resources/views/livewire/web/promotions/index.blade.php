@@ -14,7 +14,7 @@
                 <div class="col-lg-9">
                     <div class="d-md-flex align-items-start">
                         <div class="h6 fs-sm fw-normal text-nowrap translate-middle-y mt-3 mb-0 me-4 font-neue">
-                            ნაპოვნია <span class="fw-semibold">{{ $this->products->total() }}</span> პროდუქტი
+                            ნაპოვნია 1 პროდუქტი
                         </div>
                     </div>
                 </div>
