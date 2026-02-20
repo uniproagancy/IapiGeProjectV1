@@ -220,13 +220,13 @@ class Index extends Component
     public function resetCategories(): void
     {
         $this->isLoading = true;
-        $this->redirect(route('web.promotions.index',['promotionSlug' => 'credo']), navigate: true);
+        $this->redirect(route('web.promotions.index'), navigate: true);
     }
 
     private function redirectToCategory(ProductCategory $category): void
     {
         $params = $this->buildFilterParams();
-        $url    = route('web.promotions.index',['promotionSlug' => 'credo'], [
+        $url    = route('web.promotions.index', [
             'category_slug' => $category->translation('ka')->slug,
         ]);
 
