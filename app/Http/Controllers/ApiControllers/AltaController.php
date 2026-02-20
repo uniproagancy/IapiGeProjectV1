@@ -9,7 +9,6 @@ use App\Services\Products\AltaProduct;
 use App\Services\Products\AltaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use SoapClient;
 
 class AltaController extends Controller
 {
@@ -26,21 +25,28 @@ class AltaController extends Controller
         return app(AltaService::class)->setIdRange(1, 60000)->scanAllIds();
     }
 
-    public function AltaIDS()
+    public function altaTrash()
     {
-        $client = new SoapClient('http://extra.alta.com.ge/b2b/b2bEWS?WSDL', [
-            'trace'              => 1,
-            'exceptions'         => true,
-            'encoding'           => 'UTF-8',
-            'connection_timeout' => 30,
-        ]);
+        try {
+            $username = 'UNIPRO_GP';
+            $password = 'unipro2020';
 
-        $result = $client->GetPriceList([
-            'user'     => 'UNIPRO_CHI',
-            'password' => 'CHI1457160',
-            'item' => '',
-        ]);
-        dd($result->PriceList);
+            $priceList = $this->priceService->getPriceList(
+                $username,
+                $password,
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $priceList
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     public function updateActive()
