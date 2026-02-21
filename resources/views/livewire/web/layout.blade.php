@@ -72,55 +72,8 @@
 @include('livewire.web.partials.header.header')
 @include('livewire.web.search.search-offcanvas')
 {{ $slot }}
-
-<div id="site-loader">
-    <div class="loader-content">
-        <div class="spinner"></div>
-    </div>
-</div>
-
 <livewire:web.cart.shopping-cart-offcanvas/>
 @include('livewire.web.partials.category-offcanvas')
-
-<style>
-    #site-loader {
-        position: fixed;
-        inset: 0;
-        background: rgba(255, 255, 255, 0.95);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
-    }
-
-    #site-loader.hidden {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    .loader-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .spinner {
-        width: 48px;
-        height: 48px;
-        border: 3px solid #e9ecef;
-        border-top-color: #ff6900; /* შენი brand ფერი */
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-</style>
 <style>
     .countInput {
         background-color: #fff;
