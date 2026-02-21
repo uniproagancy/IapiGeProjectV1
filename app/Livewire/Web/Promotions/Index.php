@@ -64,7 +64,6 @@ class Index extends Component
         $this->normalizeBrands();
         $this->normalizeSpecs();
         $this->eventId = ($this->currentCategory ? 'cv_' : 'pv_') . time() . '_' . Str::random(6);
-        $this->trackCategoryView();
     }
 
     // ============================================

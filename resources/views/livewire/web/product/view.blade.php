@@ -190,24 +190,3 @@
         })
     </script>
 </main>
-@section('fb_pixel')
-    @if($event_id)
-        @php
-            $actualPrice = ($product->price->discount_price && $product->price->discount_price > 0)
-                ? $product->price->discount_price
-                : $product->price->regular_price;
-        @endphp
-        <script>
-            fbq('track', 'ViewContent', {
-                content_ids: ['{{ $product->id }}'],
-                content_type: 'product',
-                content_name: '{{ $product->translation('ka')->title }}',
-                value: {{ $actualPrice }},
-                currency: 'GEL',
-                contents: [{ id: '{{ $product->id }}', quantity: 1 }]
-            }, {
-                eventID: '{{ $event_id }}'
-            });
-        </script>
-    @endif
-@endsection
