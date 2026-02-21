@@ -16,7 +16,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
 
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
-        Route::get('/about-us', App\Livewire\Web\Main\AboutUs::class)->name('main.contact');
+        Route::get('/about-us', App\Livewire\Web\Main\AboutUs::class)->name('main.about');
 
         Route::get('/checkout/success', '\App\Http\Controllers\OrderStatusController@success');
         Route::get('/checkout/reject', '\App\Http\Controllers\OrderStatusController@reject');
