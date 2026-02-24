@@ -97,23 +97,11 @@
 @endsection
 @section('fb_pixel')
     <script>
-        (function() {
-            function trackCheckout() {
-                if (typeof fbq !== 'undefined') {
-                    fbq('track', 'InitiateCheckout', {
-                        value: {{ $total ?? 0 }},
-                        currency: 'GEL',
-                        content_type: 'product',
-                        num_items: {{ $items_count ?? 0 }}
-                    });
-                }
-            }
-            document.addEventListener('livewire:navigated', trackCheckout);
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', trackCheckout);
-            } else {
-                trackCheckout();
-            }
-        })();
+        fbq('track', 'InitiateCheckout', {
+            value: {{ $total ?? 0 }},
+            currency: 'GEL',
+            content_type: 'product',
+            num_items: {{ $items_count ?? 0 }}
+        });
     </script>
 @endsection
