@@ -52,7 +52,7 @@ class View extends Component
 
         // ✅ მხოლოდ მაშინ გაიგზავნოს როდესაც სტატუსი იცვლება 2-ზე
         if ($this->payment_status_id === 2 && $previousPaymentStatus !== 2) {
-            $this->trackPurchase($this->order->fresh());
+            $this->trackPurchase($this->order);
         }
 
         $this->dispatch('ui:success', message: 'შეკვეთის სტატუსი წარმატებით განახლდა!', title: 'შეტყობინება');
