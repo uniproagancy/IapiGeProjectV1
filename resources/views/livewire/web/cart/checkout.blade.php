@@ -104,4 +104,19 @@
             num_items: {{ $orderItemsCount ?? 0 }}
         }, { eventID: '{{ $checkout_event_id }}' });
     </script>
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('pixel:lead', (data) => {
+                if (typeof fbq !== 'undefined') {
+                    fbq('track', 'Lead', {
+                        value: data.value,
+                        currency: 'GEL',
+                        content_type: 'product',
+                        num_items: data.num_items,
+                        eventID: data.event_id // ✅ server-side-თან დუბლიკატის თავიდან ასაცილებლად
+                    });
+                }
+            });
+        });
+    </script>
 @endsection

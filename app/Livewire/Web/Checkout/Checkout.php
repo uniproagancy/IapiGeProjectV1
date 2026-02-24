@@ -418,8 +418,7 @@ class Checkout extends Component
                 $contentNames[] = $translation->title ?? 'Product #' . $product->id;
             }
 
-            app(FacebookPixelService::class)->trackLeadWithTest(
-                testCode: 'TEST8409',
+            app(FacebookPixelService::class)->trackLead(
                 userData: $userData,
                 customData: [
                     'value'            => $order->amount,
@@ -432,6 +431,12 @@ class Checkout extends Component
                     'num_items'        => count($contents),
                 ],
                 eventId: $leadEventId
+            );
+
+            $this->dispatch('pixel:lead',
+                value: $order->amount,
+                num_items: count($contents),
+                event_id: $leadEventId
             );
 
             Log::info('✅ Facebook Pixel Lead tracked', [
