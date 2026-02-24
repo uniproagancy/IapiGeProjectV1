@@ -418,7 +418,8 @@ class Checkout extends Component
                 $contentNames[] = $translation->title ?? 'Product #' . $product->id;
             }
 
-            app(FacebookPixelService::class)->trackLead(
+            app(FacebookPixelService::class)->trackLeadWithTest(
+                testCode: 'TEST8409',
                 userData: $userData,
                 customData: [
                     'value'            => $order->amount,
