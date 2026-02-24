@@ -41,12 +41,12 @@ class BOGInstallmentController extends Controller
             foreach($orders as $order) {
                 if(!empty($order->transaction->payment_order_id)) {
                     $orderData = (new \App\Services\Payments\BOGInstallment)->installmentCallback($order->transaction->payment_order_id);
-                    switch ($orderData->installment_status) {
+                    switch ($orderData['installment_status']) {
                         case 'success':
-                            Order::find($order->shop_order_id)->update(['payment_status_id' => 2]);
+                            Order::find($order['shop_order_id'])->update(['payment_status_id' => 2]);
                         break;
                         default:
-                            Order::find($order->shop_order_id)->update(['payment_status_id' => 3]);
+                            Order::find($order['shop_order_id'])->update(['payment_status_id' => 3]);
                     }
                 }
             }
