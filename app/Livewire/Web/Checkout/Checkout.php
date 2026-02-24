@@ -167,16 +167,13 @@ class Checkout extends Component
                     'quantity' => $item['quantity'],
                 ];
             }
-
-            app(FacebookPixelService::class)->trackCheckoutWithTest(
-                testCode:'TEST8409',
+            app(FacebookPixelService::class)->trackCheckoutWith(
                 value: $this->total,
                 currency: 'GEL',
                 items: $items,
                 params: [],
                 eventId: $this->checkoutEventId
             );
-
             Log::info('✅ InitiateCheckout tracked', [
                 'event_id' => $this->checkoutEventId,
                 'total' => $this->total,
