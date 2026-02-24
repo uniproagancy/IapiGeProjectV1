@@ -167,7 +167,7 @@ class Checkout extends Component
                     'quantity' => $item['quantity'],
                 ];
             }
-            app(FacebookPixelService::class)->trackCheckoutWith(
+            app(FacebookPixelService::class)->trackCheckout(
                 value: $this->total,
                 currency: 'GEL',
                 items: $items,
