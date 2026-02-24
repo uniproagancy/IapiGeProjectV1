@@ -40,7 +40,7 @@ class View extends Component
             ? $this->product->price->discount_price
             : $this->product->price->regular_price;
 
-        app(FacebookPixelService::class)->trackViewContentWithTest('TEST61083',[
+        app(FacebookPixelService::class)->trackViewContentWithTest('TEST8409',[
             'id'               => $this->product->id,
             'name'             => $this->product->translation('ka')->title,
             'price'            => $pxl_price,
