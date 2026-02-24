@@ -167,7 +167,7 @@ class Checkout extends Component
                     'quantity' => $item['quantity'],
                 ];
             }
-            dd($items, count($items));
+            Log::warning(count($items));
             app(FacebookPixelService::class)->trackCheckout(
                 value: $this->total,
                 currency: 'GEL',
