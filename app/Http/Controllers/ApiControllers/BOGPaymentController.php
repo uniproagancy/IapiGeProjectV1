@@ -25,8 +25,6 @@ class BOGPaymentController extends Controller
                 if(!empty($order)){
                     if($request->body['order_status']['key'] === 'completed'){
                         $order->update(['payment_status_id' => 2]);
-
-                        // ✅ Facebook Pixel - Purchase Event
                         $this->trackPurchase($order);
                     }
                 }

@@ -39,15 +39,67 @@ class View extends Component
     public function updateOrderStatus()
     {
         $this->validate([
-            'status_id' => 'required|integer',
+            'status_id'         => 'required|integer',
             'payment_status_id' => 'required|integer',
         ]);
+
+        $previousPaymentStatus = $this->order->payment_status_id;
+
         $this->order->update([
-            'status_id' => $this->status_id,
+            'status_id'         => $this->status_id,
             'payment_status_id' => $this->payment_status_id,
         ]);
+
+        // ✅ მხოლოდ მაშინ გაიგზავნოს როდესაც სტატუსი იცვლება 2-ზე
+        if ($this->payment_status_id === 2 && $previousPaymentStatus !== 2) {
+            $this->trackPurchase($this->order->fresh());
+        }
+
         $this->dispatch('ui:success', message: 'შეკვეთის სტატუსი წარმატებით განახლდა!', title: 'შეტყობინება');
         $this->dispatch('status_modal_close');
+    }
+
+    private function trackPurchase(\App\Models\Order\Order $order): void
+    {
+        try {
+            $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
+            $contents   = [];
+            $contentIds = [];
+
+            foreach ($order->items as $item) {
+                $contents[]   = [
+                    'id'         => $item->product_id,
+                    'quantity'   => $item->quantity,
+                    'item_price' => $item->price,
+                ];
+                $contentIds[] = $item->product_id;
+            }
+
+            app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithTest(
+                testCode: 'TEST8409',
+                value: $order->amount,
+                currency: 'GEL',
+                params: [
+                    'contents'     => $contents,
+                    'content_ids'  => $contentIds,
+                    'content_type' => 'product',
+                    'num_items'    => count($contents),
+                ],
+                eventId: $eventId
+            );
+
+            \Illuminate\Support\Facades\Log::info('✅ Purchase tracked', [
+                'order_id' => $order->id,
+                'event_id' => $eventId,
+                'amount'   => $order->amount,
+                'items'    => count($contents),
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('❌ Purchase pixel error: ' . $e->getMessage(), [
+                'order_id' => $order->id ?? null,
+            ]);
+        }
     }
 
     public function sendToDeliveryCompany()
