@@ -31,6 +31,7 @@ class Index extends Component
     public $perPage = 12;
     public $isLoading = false;
     public string $eventId = '';
+    public array $categoryProductIds = [];
 
     #[Url]
     public $search = '';
@@ -50,8 +51,6 @@ class Index extends Component
     #[Url]
     public bool $onlyDiscounted = false;
 
-    public array $categoryProductIds = [];
-
     // ============================================
     // Lifecycle Hooks
     // ============================================
@@ -64,6 +63,7 @@ class Index extends Component
         $this->normalizeBrands();
         $this->normalizeSpecs();
         $this->eventId = ($this->currentCategory ? 'cv_' : 'pv_') . time() . '_' . Str::random(6);
+        $this->trackCategoryView(); // ✅ გასწორდა: mount-ში ეძახება
     }
 
     // ============================================
@@ -76,20 +76,18 @@ class Index extends Component
             return;
         }
 
+        // ✅ გასწორდა: ერთხელ იძახება და ინახება
         $this->categoryProductIds = $this->getProductIdsForCategory();
 
         app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
             'content_name'     => $this->currentCategory->translation('ka')->title,
             'content_category' => $this->category_slug,
-            'content_ids'      => $this->getProductIdsForCategory(),
+            'content_ids'      => $this->categoryProductIds, // ✅ cached
             'content_type'     => 'product',
             'event_source_url' => url()->current(),
         ], $this->eventId);
     }
 
-    /**
-     * ✅ კატეგორიაში არსებული პროდუქტების ID-ების წამოღება
-     */
     private function getProductIdsForCategory(): array
     {
         $query = Product::query()
@@ -97,16 +95,17 @@ class Index extends Component
             ->where('active', 1);
 
         if ($this->currentCategory->parent_id === 0) {
-            // მშობელი კატეგორია — ქვეკატეგორიების პროდუქტები
             $childIds = $this->currentCategory->children()->pluck('id');
             $query->whereIn('category_id', $childIds);
         } else {
-            // ქვეკატეგორია — პირდაპირი პროდუქტები
             $query->where('category_id', $this->currentCategory->id);
         }
 
-        // ✅ მხოლოდ პირველი 10 პროდუქტის ID — Facebook-ს ბევრი არ სჭირდება
-        return $query->limit(10)->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        return $query
+            ->limit(10)
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->toArray();
     }
 
     // ============================================
@@ -430,7 +429,10 @@ class Index extends Component
     #[Computed]
     public function specificationSections()
     {
-        return cache()->remember('spec_sections_v1', 3600, function () {
+        // ✅ გასწორდა: cache key კატეგორიის მიხედვით
+        $cacheKey = 'spec_sections_' . ($this->currentCategory?->id ?? 'all');
+
+        return cache()->remember($cacheKey, 3600, function () {
             return ProductFullSpecificationSection::whereHas('filter')
                 ->with(['filter' => fn ($q) => $q
                     ->select('id', 'section_id', 'name', 'value')
@@ -462,7 +464,7 @@ class Index extends Component
                 'price' => fn ($q) => $q
                     ->select('id', 'product_id', 'regular_price', 'discount_price'),
                 'brand' => fn ($q) => $q
-                    ->select('id', 'logo'),
+                    ->select('id', 'logo', 'active'),
             ])
             ->where('show', 1)
             ->where('active', 1)

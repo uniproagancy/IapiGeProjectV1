@@ -185,22 +185,6 @@
         </section>
     </main>
 </div>
-
-@section('fb_pixel')
-    @if($currentCategory && $event_id)
-        <script>
-            fbq('trackCustom', 'CategoryView', {
-                content_name: '{{ $currentCategory->translation('ka')->title }}',
-                content_category: '{{ $currentCategory->translation('ka')->slug }}',
-                content_ids: {!! json_encode($categoryProductIds) !!},
-                content_type: 'product'
-            }, {
-                eventID: '{{ $event_id }}'
-            });
-        </script>
-    @endif
-@endsection
-
 @section('page_scripts')
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
 @endsection
