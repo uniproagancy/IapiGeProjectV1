@@ -101,7 +101,7 @@
             value: {{ $total ?? 0 }},
             currency: 'GEL',
             content_type: 'product',
-            num_items: {{ $orderItems ?? 0 }}
+            num_items: {{ $orderItemsCount ?? 0 }}
         }, { eventID: '{{ $checkout_event_id }}' });
     </script>
 @endsection

@@ -544,7 +544,7 @@ class Checkout extends Component
             'payment_list'      => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
             'checkout_event_id' => $this->checkoutEventId ?? null,
             'total'             => $this->total,                       // ✅ დაემატა
-            'orderItems'        => count($this->orderItems ?? []),     // ✅ რიცხვი
+            'orderItemsCount'        => count($this->orderItems ?? []),     // ✅ რიცხვი
         ])->layout('livewire.web.layout');
     }
 }
