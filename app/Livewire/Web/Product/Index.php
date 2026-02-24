@@ -218,7 +218,7 @@ class Index extends Component
     public function resetCategories(): void
     {
         $this->isLoading = true;
-        $this->redirect(route('web.products.index'), navigate: true);
+        $this->redirect(route('web.products.index'));
     }
 
     private function redirectToCategory(ProductCategory $category): void
@@ -232,9 +232,7 @@ class Index extends Component
             $url .= '?' . http_build_query($params);
         }
 
-        dd($url);
-
-        $this->redirect($url, navigate: true);
+        $this->redirect($url);
     }
 
     private function buildFilterParams(): array
