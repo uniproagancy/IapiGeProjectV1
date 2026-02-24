@@ -17,6 +17,7 @@ class View extends Component
     public $product;
     public $quantity = 1;
     public string $eventId;
+    public string $eventId2;
 
     public function mount($slug)
     {
@@ -35,6 +36,7 @@ class View extends Component
         $this->loadCartFromDatabase();
 
         $this->eventId = 'vc_' . time() . '_' . Str::random(6);
+        $this->eventId2 = 'pv_' . time() . '_' . Str::random(6);
 
         $pxl_price = ($this->product->price?->discount_price && $this->product->price->discount_price > 0)
             ? $this->product->price->discount_price
@@ -70,6 +72,7 @@ class View extends Component
             'similarProducts' => $this->getSimilarProducts(),
             'installments' => $this->getInstallments(),
             'event_id' => $this->eventId,
+            'event_id2' => $this->eventId2,
         ])->layout('livewire.web.layout');
     }
 }

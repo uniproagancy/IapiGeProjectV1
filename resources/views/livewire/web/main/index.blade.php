@@ -48,6 +48,14 @@
         ])
     @endforeach
 </div>
+@section('fb_pixel')
+    <script>
+        fbq('track', 'PageView', {}, { eventID: '{{ $this->eventId }}' });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"
+        /></noscript>
+@endsection
 @section('page_scripts')
     @include('livewire.web.product.swiper-init')
 @endsection
