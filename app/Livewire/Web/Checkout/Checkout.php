@@ -24,14 +24,18 @@ class Checkout extends Component
 {
     use WithCart;
 
+    // ============================================
+    // Properties
+    // ============================================
+
     // Customer Info
-    public $name = '';
-    public $lastname = '';
-    public $email = '';
-    public $phone = '';
+    public $name        = '';
+    public $lastname    = '';
+    public $email       = '';
+    public $phone       = '';
     public $verify_phone = '';
-    public $address = '';
-    public $comment = '';
+    public $address     = '';
+    public $comment     = '';
 
     // Delivery
     public $shipping_cost = 0;
@@ -46,21 +50,26 @@ class Checkout extends Component
     #[Url(as: 'quantity')]
     public $quantity = 1;
 
-    public $orderItems = [];
-    public $subtotal = 0;
-    public $total = 0;
+    public $orderItems  = [];
+    public $subtotal    = 0;
+    public $total       = 0;
+    public $tax         = 0;
 
-    // ✅ Event IDs
-    public string $checkoutEventId;
+    public string $checkoutEventId = '';
 
-    public function mount()
+    // ============================================
+    // Lifecycle Hooks
+    // ============================================
+
+    public function mount(): void
     {
         try {
-            if (count(Cart::getContent()) > 0 or !empty($this->product_id)) {
+            if (count(Cart::getContent()) > 0 || !empty($this->product_id)) {
                 $this->loadOrderItems();
                 $this->calculateTotals();
             } else {
-                return $this->redirect(route('web.products.index'));
+                $this->redirect(route('web.products.index'));
+                return;
             }
 
             if ($this->quantity < 1) {
@@ -68,15 +77,14 @@ class Checkout extends Component
             }
 
             if (auth()->check()) {
-                $user = auth()->user();
-                $this->name = $user->name ?? '';
-                $this->lastname = $user->lastname ?? '';
-                $this->email = $user->email;
-                $this->phone = $user->phone ?? '';
+                $user            = auth()->user();
+                $this->name      = $user->name ?? '';
+                $this->lastname  = $user->lastname ?? '';
+                $this->email     = $user->email;
+                $this->phone     = $user->phone ?? '';
                 $this->verify_phone = $user->verify_phone ?? '';
             }
 
-            // ✅ Facebook Pixel - InitiateCheckout Event
             $this->trackInitiateCheckout();
 
         } catch (Exception $e) {
@@ -85,7 +93,11 @@ class Checkout extends Component
         }
     }
 
-    public function loadOrderItems()
+    // ============================================
+    // Load Order Items
+    // ============================================
+
+    public function loadOrderItems(): void
     {
         try {
             if ($this->product_id) {
@@ -93,69 +105,78 @@ class Checkout extends Component
                     ->where('active', 1)
                     ->where('show', 1)
                     ->findOrFail($this->product_id);
+
                 if ($product->in_stock !== 1) {
                     $this->dispatch('ui:error', message: 'პროდუქტი არ არის მარაგში', type: 'error');
-                    return $this->redirect(route('web.products.index'));
+                    $this->redirect(route('web.products.index'));
+                    return;
                 }
 
                 $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-                $price = !empty($product->price?->discount_price)
+                $price       = !empty($product->price?->discount_price)
                     ? $product->price->discount_price
                     : $product->price?->regular_price;
-                $this->orderItems = collect([
-                    [
-                        'id' => $product->id,
-                        'name' => $translation->title,
-                        'sku' => $product->sku,
-                        'image' => $product->main_image,
-                        'price' => $price,
-                        'quantity' => $this->quantity,
-                        'total' => $price * $this->quantity,
-                    ]
-                ]);
+
+                $this->orderItems = collect([[
+                    'id'       => $product->id,
+                    'name'     => $translation->title,
+                    'sku'      => $product->sku,
+                    'image'    => $product->main_image,
+                    'price'    => $price,
+                    'quantity' => $this->quantity,
+                    'total'    => $price * $this->quantity,
+                ]]);
+
             } else {
                 $this->loadCartFromDatabase();
                 $cartItems = Cart::getContent();
 
                 if ($cartItems->isEmpty()) {
                     $this->dispatch('ui:error', message: 'თქვენი კალათა ცარიელია');
-                    return $this->redirect(route('web.main.index'));
+                    $this->redirect(route('web.main.index'));
+                    return;
                 }
 
                 $this->orderItems = $cartItems->map(function ($item) {
                     return [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'sku' => $item->attributes->sku ?? null,
-                        'image' => $item->attributes->image ?? null,
-                        'price' => $item->price,
+                        'id'       => $item->id,
+                        'name'     => $item->name,
+                        'sku'      => $item->attributes->sku ?? null,
+                        'image'    => $item->attributes->image ?? null,
+                        'price'    => $item->price,
                         'quantity' => $item->quantity,
-                        'total' => $item->getPriceSum(),
+                        'total'    => $item->getPriceSum(),
                     ];
                 });
             }
+
         } catch (Exception $e) {
             Log::error('Error loading order items: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'ჩვენების ошибка');
-            return redirect()->route('web.main.index');
+            $this->dispatch('ui:error', message: 'ჩვენების შეცდომა');
+            $this->redirect(route('web.main.index'));
         }
     }
 
-    public function calculateTotals()
+    // ============================================
+    // Calculate Totals
+    // ============================================
+
+    public function calculateTotals(): void
     {
         try {
             $this->subtotal = $this->orderItems->sum('total');
-            $this->tax = 0;
-            $this->total = $this->subtotal + $this->tax;
+            $this->tax      = 0;
+            $this->total    = $this->subtotal + $this->tax;
         } catch (Exception $e) {
             Log::error('Error calculating totals: ' . $e->getMessage());
         }
     }
 
-    /**
-     * ✅ Track InitiateCheckout Event with TEST CODE
-     */
-    private function trackInitiateCheckout()
+    // ============================================
+    // Facebook Pixel - InitiateCheckout
+    // ============================================
+
+    private function trackInitiateCheckout(): void
     {
         try {
             $this->checkoutEventId = 'ic_' . time() . '_' . Str::random(6);
@@ -163,10 +184,11 @@ class Checkout extends Component
             $items = [];
             foreach ($this->orderItems as $item) {
                 $items[] = [
-                    'id' => $item['id'],
+                    'id'       => $item['id'],
                     'quantity' => $item['quantity'],
                 ];
             }
+
             app(FacebookPixelService::class)->trackCheckout(
                 value: $this->total,
                 currency: 'GEL',
@@ -174,9 +196,10 @@ class Checkout extends Component
                 params: [],
                 eventId: $this->checkoutEventId
             );
+
             Log::info('✅ InitiateCheckout tracked', [
-                'event_id' => $this->checkoutEventId,
-                'total' => $this->total,
+                'event_id'    => $this->checkoutEventId,
+                'total'       => $this->total,
                 'items_count' => count($items),
             ]);
 
@@ -185,142 +208,28 @@ class Checkout extends Component
         }
     }
 
-    /**
-     * ✅ Place order with validation and scroll to error
-     */
-    public function placeOrder()
+    // ============================================
+    // Place Order
+    // ============================================
+
+    public function placeOrder(): void
     {
         try {
-            // ✅ Validation rules
-            $validated = $this->validate([
-                'address' => 'required|string|max:255',
+            $this->validate([
+                'address'    => 'required|string|max:255',
                 'payment_id' => 'required',
             ], [
-                'address.required' => 'მისამართი აუცილებელია',
-                'address.min' => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
+                'address.required'    => 'მისამართი აუცილებელია',
+                'address.min'         => 'მისამართი უნდა იყოს მინიმუმ 5 სიმბოლოსი',
                 'payment_id.required' => 'გადახდის მეთოდი აუცილებელია',
             ]);
 
-            // ✅ თუ ავტორიზებულია
             if (Auth::check()) {
-                $order = Order::create([
-                    'user_id' => Auth::user()->id,
-                    'payment_id' => $this->payment_id,
-                    'comment' => $this->comment,
-                    'created_by' => Auth::user()->id,
-                    'delivery_amount' => 0,
-                    'amount' => round($this->subtotal),
-                ]);
-
-                foreach ($this->orderItems as $orderItem) {
-                    OrderItem::create([
-                        'product_id' => $orderItem['id'],
-                        'quantity' => $orderItem['quantity'],
-                        'price' => round($orderItem['price']),
-                        'order_id' => $order->id,
-                    ]);
-                }
-
-                OrderDelivery::create([
-                    'order_id' => $order->id,
-                    'address' => $this->address,
-                ]);
-
-                (new \App\Services\Sender\SmsOffice)->send(Auth::user()->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
-                (new \App\Services\Sender\SmsOffice)->send(555700720, 'შემოვიდა ახალი შეკვეთა, შეკვეთის ნომერი '.$order->id);
-
-                // ✅ Facebook Pixel - Lead (ავტორიზებული)
-                $this->trackLead($order, isGuest: false);
-                $this->processPayment($order);
+                $this->placeAuthenticatedOrder();
+            } else {
+                $this->placeGuestOrder();
             }
-            // ✅ თუ არაავტორიზებული (სწრაფი შეძენა)
-            else {
-                // Validation for guest users
-                $this->validate([
-                    'name' => 'required|string|max:255',
-                    'lastname' => 'required|string|max:255',
-                    'email' => 'email',
-                    'phone' => 'required|string',
-                ], [
-                    'name.required' => 'სახელი აუცილებელია',
-                    'lastname.required' => 'გვარი აუცილებელია',
-                    'email.required' => 'ელ.ფოსტა აუცილებელია',
-                    'email.email' => 'ელ.ფოსტა არასწორია',
-                    'phone.required' => 'ტელეფონი აუცილებელია',
-                ]);
 
-                $product = Product::with(['translations', 'price'])->find($this->product_id);
-
-
-                if($product->price->discount_price > 0 OR  !empty($product->price->discount->price)){
-                    $price = $product->price->discount_price;
-                } else {
-                    $price = $product->price->regular_price;
-                }
-                $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-                $check_user = User::where('email', $this->email)->first();
-                if($check_user){
-                    $check_user->update(['email' => $this->email]);
-                }
-
-                $user = User::create([
-                    'name' => $this->name,
-                    'lastname' => $this->lastname,
-                    'email' => $this->email,
-                    'phone' => $this->phone,
-                ]);
-
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'payment_id' => $this->payment_id,
-                    'comment' => $this->comment,
-                    'created_by' => $user->id,
-                    'delivery_amount' => 0,
-                    'amount' => round($this->subtotal),
-                ]);
-
-                OrderItem::create([
-                    'product_id' => $product->id,
-                    'quantity' => $this->quantity,
-                    'price' => round($price),
-                    'order_id' => $order->id,
-                ]);
-
-                OrderDelivery::create([
-                    'order_id' => $order->id,
-                    'address' => $this->address,
-                ]);
-
-                (new \App\Services\Sender\SmsOffice)->send($this->phone, 'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი '.$order->id.' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!');
-
-                // ✅ Track AddToCart for Quick Checkout (Guest)
-                $addToCartEventId = 'atc_' . time() . '_' . Str::random(6);
-
-                app(FacebookPixelService::class)->trackAddToCart(
-                    product: [
-                        'id' => $product->id,
-                        'name' => $translation->title,
-                        'quantity' => $this->quantity,
-                    ],
-                    value: $price * $this->quantity,
-                    currency: 'GEL',
-                    params: [],
-                    eventId: $addToCartEventId
-                );
-
-                Log::info('✅ AddToCart tracked (Quick Checkout)', [
-                    'event_id' => $addToCartEventId,
-                    'product_id' => $product->id,
-                    'product_name' => $translation->title,
-                    'quantity' => $this->quantity,
-                    'value' => $price * $this->quantity,
-                ]);
-
-                // ✅ Facebook Pixel - Lead (არაავტორიზებული)
-                Cart::clear();
-                $this->trackLead($order, isGuest: true);
-                $this->processPayment($order);
-            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errorField = array_key_first($e->errors());
             $this->dispatch('scrollToError', field: $errorField);
@@ -331,106 +240,228 @@ class Checkout extends Component
         }
     }
 
-    /**
-     * ✅ Track Lead - Universal (Order Items-დან პროდუქტები) with TEST CODE
-     */
-    private function trackLead($order, $isGuest = false)
+    // ============================================
+    // Authenticated Order
+    // ============================================
+
+    private function placeAuthenticatedOrder(): void
+    {
+        $order = Order::create([
+            'user_id'         => Auth::id(),
+            'payment_id'      => $this->payment_id,
+            'comment'         => $this->comment,
+            'created_by'      => Auth::id(),
+            'delivery_amount' => 0,
+            'amount'          => round($this->subtotal),
+        ]);
+
+        foreach ($this->orderItems as $orderItem) {
+            OrderItem::create([
+                'product_id' => $orderItem['id'],
+                'quantity'   => $orderItem['quantity'],
+                'price'      => round($orderItem['price']),
+                'order_id'   => $order->id,
+            ]);
+        }
+
+        OrderDelivery::create([
+            'order_id' => $order->id,
+            'address'  => $this->address,
+        ]);
+
+        (new \App\Services\Sender\SmsOffice)->send(
+            Auth::user()->phone,
+            'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი ' . $order->id . ' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!'
+        );
+        (new \App\Services\Sender\SmsOffice)->send(
+            555700720,
+            'შემოვიდა ახალი შეკვეთა, შეკვეთის ნომერი ' . $order->id
+        );
+
+        $this->trackLead($order, isGuest: false);
+        $this->processPayment($order);
+    }
+
+    // ============================================
+    // Guest Order
+    // ============================================
+
+    private function placeGuestOrder(): void
+    {
+        $this->validate([
+            'name'     => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email'    => 'email',
+            'phone'    => 'required|string',
+        ], [
+            'name.required'     => 'სახელი აუცილებელია',
+            'lastname.required' => 'გვარი აუცილებელია',
+            'email.required'    => 'ელ.ფოსტა აუცილებელია',
+            'email.email'       => 'ელ.ფოსტა არასწორია',
+            'phone.required'    => 'ტელეფონი აუცილებელია',
+        ]);
+
+        $product     = Product::with(['translations', 'price'])->findOrFail($this->product_id);
+        $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
+
+        $price = ($product->price->discount_price > 0)
+            ? $product->price->discount_price
+            : $product->price->regular_price;
+
+        // ✅ თუ მომხმარებელი უკვე არსებობს — განახლება, სხვა შემთხვევაში შექმნა
+        $user = User::updateOrCreate(
+            ['email' => $this->email],
+            [
+                'name'     => $this->name,
+                'lastname' => $this->lastname,
+                'phone'    => $this->phone,
+            ]
+        );
+
+        $order = Order::create([
+            'user_id'         => $user->id,
+            'payment_id'      => $this->payment_id,
+            'comment'         => $this->comment,
+            'created_by'      => $user->id,
+            'delivery_amount' => 0,
+            'amount'          => round($this->subtotal),
+        ]);
+
+        OrderItem::create([
+            'product_id' => $product->id,
+            'quantity'   => $this->quantity,
+            'price'      => round($price),
+            'order_id'   => $order->id,
+        ]);
+
+        OrderDelivery::create([
+            'order_id' => $order->id,
+            'address'  => $this->address,
+        ]);
+
+        (new \App\Services\Sender\SmsOffice)->send(
+            $this->phone,
+            'თქვენი შეკვეთა მიღებულია, შეკვეთის ნომერი ' . $order->id . ' ჩვენი ოპერატორი მალე დაგიკავშირდებათ!'
+        );
+
+        $addToCartEventId = 'atc_' . time() . '_' . Str::random(6);
+        app(FacebookPixelService::class)->trackAddToCart(
+            product: [
+                'id'       => $product->id,
+                'name'     => $translation->title,
+                'quantity' => $this->quantity,
+            ],
+            value: $price * $this->quantity,
+            currency: 'GEL',
+            params: [],
+            eventId: $addToCartEventId
+        );
+
+        Log::info('✅ AddToCart tracked (Quick Checkout)', [
+            'event_id'     => $addToCartEventId,
+            'product_id'   => $product->id,
+            'product_name' => $translation->title,
+            'quantity'     => $this->quantity,
+            'value'        => $price * $this->quantity,
+        ]);
+
+        Cart::clear();
+        $this->trackLead($order, isGuest: true);
+        $this->processPayment($order);
+    }
+
+    // ============================================
+    // Facebook Pixel - Lead
+    // ============================================
+
+    private function trackLead(Order $order, bool $isGuest = false): void
     {
         try {
-            $leadEventId = 'lead_' . time() . '_' . Str::random(6);
-            $userData = [];
+            $leadEventId     = 'lead_' . time() . '_' . Str::random(6);
             $contentCategory = $isGuest ? 'quick_checkout' : 'checkout';
 
-            // ✅ თუ Guest User - ფორმის მონაცემები
-            if ($isGuest) {
-                $userData = [
-                    'email' => $this->email,
-                    'phone' => $this->phone,
+            $userData = $isGuest
+                ? [
+                    'email'      => $this->email,
+                    'phone'      => $this->phone,
                     'first_name' => $this->name,
-                    'last_name' => $this->lastname,
-                ];
-            }
-            else {
-                $userData = [
-                    'email' => auth()->user()->email,
-                    'phone' => auth()->user()->phone,
+                    'last_name'  => $this->lastname,
+                ]
+                : [
+                    'email'      => auth()->user()->email,
+                    'phone'      => auth()->user()->phone,
                     'first_name' => auth()->user()->name,
-                    'last_name' => auth()->user()->lastname,
+                    'last_name'  => auth()->user()->lastname,
                 ];
-            }
 
-            // ✅ პროდუქტების ინფორმაცია - Order Items-დან (უკვე შენახულია Database-ში)
-            $contents = [];
-            $contentIds = [];
+            $contents     = [];
+            $contentIds   = [];
             $contentNames = [];
 
-            // Load fresh order items with product relations
-            $orderItems = OrderItem::with('product.translations', 'product.price')
+            $orderItems = OrderItem::with(['product.translations', 'product.price'])
                 ->where('order_id', $order->id)
                 ->get();
 
             foreach ($orderItems as $orderItem) {
                 $product = $orderItem->product;
-                if ($product) {
-                    $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-
-                    $contents[] = [
-                        'id' => $product->id,
-                        'quantity' => $orderItem->quantity,
-                        'item_price' => $orderItem->price,
-                    ];
-                    $contentIds[] = $product->id;
-                    $contentNames[] = $translation->title ?? 'Product #' . $product->id;
+                if (!$product) {
+                    continue;
                 }
-            }
 
-            $customData = [
-                'value' => $order->amount,
-                'currency' => 'GEL',
-                'content_category' => $contentCategory,
-                'content_type' => 'product',
-                'contents' => $contents,
-                'content_ids' => $contentIds,
-                'content_name' => implode(', ', array_slice($contentNames, 0, 3)),
-                'num_items' => count($contents),
-            ];
+                $translation    = $product->translation(app()->getLocale()) ?? $product->translation('ka');
+                $contents[]     = [
+                    'id'         => $product->id,
+                    'quantity'   => $orderItem->quantity,
+                    'item_price' => $orderItem->price,
+                ];
+                $contentIds[]   = $product->id;
+                $contentNames[] = $translation->title ?? 'Product #' . $product->id;
+            }
 
             app(FacebookPixelService::class)->trackLead(
                 userData: $userData,
-                customData: $customData,
+                customData: [
+                    'value'            => $order->amount,
+                    'currency'         => 'GEL',
+                    'content_category' => $contentCategory,
+                    'content_type'     => 'product',
+                    'contents'         => $contents,
+                    'content_ids'      => $contentIds,
+                    'content_name'     => implode(', ', array_slice($contentNames, 0, 3)),
+                    'num_items'        => count($contents),
+                ],
                 eventId: $leadEventId
             );
 
             Log::info('✅ Facebook Pixel Lead tracked', [
-                'order_id' => $order->id,
-                'event_id' => $leadEventId,
-                'is_guest' => $isGuest,
-                'amount' => $order->amount,
+                'order_id'       => $order->id,
+                'event_id'       => $leadEventId,
+                'is_guest'       => $isGuest,
+                'amount'         => $order->amount,
                 'products_count' => count($contents),
-                'content_ids' => $contentIds,
-                'product_names' => array_slice($contentNames, 0, 3),
             ]);
 
         } catch (Exception $e) {
             Log::error('Facebook Pixel Lead error: ' . $e->getMessage(), [
                 'order_id' => $order->id ?? null,
-                'trace' => $e->getTraceAsString(),
+                'trace'    => $e->getTraceAsString(),
             ]);
         }
     }
 
-    /**
-     * ✅ Process payment based on method
-     */
-    private function processPayment($order)
+    // ============================================
+    // Process Payment
+    // ============================================
+
+    private function processPayment(Order $order): void
     {
         try {
             switch ($this->payment_id) {
                 case '3':
-                    // BOG Payment
-                    return $this->redirect((new BOGPayment)->createPaymentOrder($order));
+                    $this->redirect((new BOGPayment)->createPaymentOrder($order));
+                    break;
+
                 case '4':
-                    // Installment
                     if ($order->amount < 100) {
                         $this->dispatch('ui:error', message: 'განვადების თანხა უნდა აღემატებოდეს 100 ლარს');
                     } else {
@@ -440,10 +471,10 @@ class Checkout extends Component
                         );
                     }
                     break;
+
                 case '5':
-                    // Part installment
                     if ($order->amount < 100) {
-                        $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემადებოს 100 ლარს!');
+                        $this->dispatch('ui:error', message: 'ნაწილ-ნაწილ თანხა უნდა აღემატებოდეს 100 ლარს!');
                     } else {
                         $this->dispatch('bog:installment-part',
                             amount: $order->amount,
@@ -451,50 +482,69 @@ class Checkout extends Component
                         );
                     }
                     break;
+
                 case '7':
                     if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
                         $tbcInstallment = new LaravelTbcInstallment();
-                        $products = [];
-                        foreach ($order->items as $product) {
+                        $products       = [];
+
+                        foreach ($order->items as $item) {
                             $products[] = [
-                                'name' => $product->product->translation('ka')->title,
-                                'price' => round($product->price + ($product->price * 0.05)),
-                                'quantity' => $product->quantity,
+                                'name'     => $item->product->translation('ka')->title,
+                                'price'    => round($item->price + ($item->price * 0.05)),
+                                'quantity' => $item->quantity,
                             ];
                         }
+
                         $tbcInstallment->addProducts($products);
-                        $response = $tbcInstallment->applyInstallmentApplication($order->id, round($order->amount + ($order->amount * 0.05)));
+                        $response = $tbcInstallment->applyInstallmentApplication(
+                            $order->id,
+                            round($order->amount + ($order->amount * 0.05))
+                        );
+
                         if ($response['status_code'] === 200) {
-                            $redirectUri = $tbcInstallment->getRedirectUri();
-                            return redirect($redirectUri);
+                            $this->redirect($tbcInstallment->getRedirectUri());
                         }
                     }
                     break;
+
                 case '9':
                     if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'კრედო განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
-                        return $this->redirect(route('credo-create-order', ['order_id' => $order['id']]));
+                        $this->redirect(route('credo-create-order', ['order_id' => $order->id]));
                     }
                     break;
+
                 case '2':
                     $this->dispatch('ui:error', message: 'შეკვეთა მიღებულია!');
+                    $this->redirect('/checkout/success');
+                    break;
+
                 default:
-                    return $this->redirect('/checkout/success');
+                    $this->redirect('/checkout/success');
+                    break;
             }
+
         } catch (Exception $e) {
             Log::error('Payment processing error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'გადახდის დამუშავება ვერ მოხერხდა');
         }
     }
 
+    // ============================================
+    // Render
+    // ============================================
+
     public function render()
     {
         return view('livewire.web.cart.checkout', [
-            'payment_list' => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
+            'payment_list'      => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
             'checkout_event_id' => $this->checkoutEventId ?? null,
+            'total'             => $this->total,                       // ✅ დაემატა
+            'orderItems'        => count($this->orderItems ?? []),     // ✅ რიცხვი
         ])->layout('livewire.web.layout');
     }
 }
