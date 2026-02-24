@@ -63,30 +63,11 @@ class Index extends Component
         $this->normalizeBrands();
         $this->normalizeSpecs();
         $this->eventId = ($this->currentCategory ? 'cv_' : 'pv_') . time() . '_' . Str::random(6);
-        $this->trackCategoryView(); // ✅ გასწორდა: mount-ში ეძახება
     }
 
     // ============================================
     // Facebook Pixel Tracking
     // ============================================
-
-    private function trackCategoryView(): void
-    {
-        if (empty($this->currentCategory)) {
-            return;
-        }
-
-        // ✅ გასწორდა: ერთხელ იძახება და ინახება
-        $this->categoryProductIds = $this->getProductIdsForCategory();
-
-        app(FacebookPixelService::class)->trackCustomEvent('CategoryView', [
-            'content_name'     => $this->currentCategory->translation('ka')->title,
-            'content_category' => $this->category_slug,
-            'content_ids'      => $this->categoryProductIds, // ✅ cached
-            'content_type'     => 'product',
-            'event_source_url' => url()->current(),
-        ], $this->eventId);
-    }
 
     private function getProductIdsForCategory(): array
     {

@@ -123,6 +123,7 @@ class FacebookPixelService
                 'quantity' => $product['quantity'] ?? 1,
             ]
         ];
+
         $customData = [
             'value'        => $value,
             'currency'     => $currency,
@@ -131,12 +132,36 @@ class FacebookPixelService
             'content_type' => 'product',
             'content_ids'  => [$product['id'] ?? null],
         ];
+
+        // ✅ ავტორიზირებული მომხმარებლის მონაცემები
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            $userData = [];
+
+            if (!empty($user->email)) {
+                $userData['em'] = hash('sha256', strtolower(trim($user->email)));
+            }
+
+            if (!empty($user->phone)) {
+                // ✅ ტელეფონი — მხოლოდ ციფრები, sha256
+                $phone = preg_replace('/[^0-9]/', '', $user->phone);
+                $userData['ph'] = hash('sha256', $phone);
+            }
+
+            if (!empty($userData)) {
+                $customData['user_data'] = $userData;
+            }
+        }
+
         if (!empty($params['event_source_url'])) {
             $customData['event_source_url'] = $params['event_source_url'];
         }
+
         if ($eventId) {
             $customData['event_id'] = $eventId;
         }
+
         return $this->trackEvent('AddToCart', $customData);
     }
     /**
@@ -159,6 +184,26 @@ class FacebookPixelService
             'content_type' => 'product',
             'content_ids'  => [$product['id'] ?? null],
         ];
+
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            $userData = [];
+
+            if (!empty($user->email)) {
+                $userData['em'] = hash('sha256', strtolower(trim($user->email)));
+            }
+
+            if (!empty($user->phone)) {
+                // ✅ ტელეფონი — მხოლოდ ციფრები, sha256
+                $phone = preg_replace('/[^0-9]/', '', $user->phone);
+                $userData['ph'] = hash('sha256', $phone);
+            }
+
+            if (!empty($userData)) {
+                $customData['user_data'] = $userData;
+            }
+        }
 
         // ✅ event_source_url params-დან
         if (!empty($params['event_source_url'])) {
