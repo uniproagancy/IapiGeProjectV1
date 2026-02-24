@@ -143,4 +143,12 @@ class BOGInstallment
         ];
     }
 
+    public function installmentCallback($installment_order_id)
+    {
+        $callback = Http::withToken($this->getToken())
+            ->post('https://installment.bog.ge/v1/installment/checkout/'.$installment_order_id)
+            ->json();
+        dd($callback);
+    }
+
 }

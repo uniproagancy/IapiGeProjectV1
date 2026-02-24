@@ -34,13 +34,13 @@ class BOGInstallmentController extends Controller
         Log::warning($request);
     }
 
-    public function installmentCheck(Request $request): void
+    public function installmentCheck(Request $request)
     {
         $orders = Order::whereIn('payment_id', [4,5])->where('payment_status_id', 1)->get();
         if(!empty($orders)) {
             foreach($orders as $order) {
                 if(!empty($order->transaction->payment_order_id)) {
-
+                    return (new \App\Services\Payments\BOGInstallment)->installmentCallback($order->transaction->payment_order_id);
                 }
             }
         }
