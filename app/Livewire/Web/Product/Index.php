@@ -232,6 +232,8 @@ class Index extends Component
             $url .= '?' . http_build_query($params);
         }
 
+        dd($url);
+
         $this->redirect($url, navigate: true);
     }
 
