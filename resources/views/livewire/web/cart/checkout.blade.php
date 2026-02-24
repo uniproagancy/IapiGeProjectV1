@@ -29,8 +29,6 @@
         </div>
     </div>
 </main>
-
-
 @section('page_scripts')
     <script src="https://webstatic.bog.ge/bog-sdk/bog-sdk.js?version=2&client_id=57315"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
