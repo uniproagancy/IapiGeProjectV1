@@ -145,10 +145,9 @@ class BOGInstallment
 
     public function installmentCallback($installment_order_id)
     {
-        $callback = Http::withToken($this->getToken())
+        return Http::withToken($this->getToken())
             ->get('https://installment.bog.ge/v1/installment/checkout/'.$installment_order_id)
             ->json();
-        dd($callback);
     }
 
 }
