@@ -83,7 +83,8 @@ class View extends Component
                 $contentIds[] = $item->product_id;
             }
 
-            app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchase(
+            app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithTest(
+                testCode:'TEST8409',
                 value: $order->amount,
                 currency: 'GEL',
                 params: [
