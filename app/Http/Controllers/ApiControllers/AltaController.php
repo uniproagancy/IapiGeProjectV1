@@ -38,10 +38,10 @@ class AltaController extends Controller
             $response = $this->soapClient->GetPriceList($params);
             AltaID::truncate();
             foreach($response->PriceList->items->item as $item) {
-                if($this->parseQtyText($item->qtyText)['quantity'] > 2) {
+                if($this->parseQtyText($item->qty_text)['quantity'] > 2) {
                     AltaID::create([
                         'product_id' => $item->item,
-                        'quantity' => $this->parseQtyText($item->qtyText)['quantity']
+                        'quantity' => $this->parseQtyText($item->qty_text)['quantity']
                     ]);
                 }
             }
