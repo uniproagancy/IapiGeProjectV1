@@ -8,8 +8,7 @@ Route::prefix('zoommer')->group(function () {
 });
 
 Route::prefix('alta')->group(function () {
-    Route::get('/scan', '\App\Http\Controllers\ApiControllers\AltaController@scan');
-    Route::get('/ids', '\App\Http\Controllers\ApiControllers\AltaController@AltaIDS');
+    Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
 });
 
 Route::prefix('citrus')->group(function () {
