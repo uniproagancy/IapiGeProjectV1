@@ -10,7 +10,7 @@ class AltaController extends Controller
 {
     //
     private $soapClient;
-    private $wsdlUrl = 'http://extra.alta.com.ge/soap?wsdl'; // შენი WSDL URL
+    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL'; // შენი WSDL URL
 
     public function __construct()
     {
