@@ -937,8 +937,6 @@ class FacebookPixelService
                 'user_data' => [
                     'client_ip_address' => request()->ip(),
                     'client_user_agent' => request()->userAgent(),
-                    'em' => hash('sha256', 'test@example.com'),
-                    'ph' => hash('sha256', '1234567890'),
                 ],
             ];
 

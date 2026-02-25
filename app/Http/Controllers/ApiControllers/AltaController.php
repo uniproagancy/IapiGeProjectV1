@@ -3,58 +3,40 @@
 namespace App\Http\Controllers\ApiControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\AltaID;
-use App\Models\Product\Product;
-use App\Services\Products\AltaProduct;
-use App\Services\Products\AltaService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use SoapClient;
+use Exception;
 
 class AltaController extends Controller
 {
     //
-    private $priceService;
+    private $soapClient;
+    private $wsdlUrl = 'http://extra.alta.com.ge/soap?wsdl'; // შენი WSDL URL
 
-    public function __construct(AltaService $priceService)
-    {
-        $this->priceService = $priceService;
-    }
-
-    public function scan()
-    {
-        return app(AltaService::class)->setIdRange(1, 60000)->scanAllIds();
-    }
-
-    public function altaTrash()
+    public function __construct()
     {
         try {
-            $username = 'UNIPRO_GP';
-            $password = 'unipro2020';
-
-            $priceList = $this->priceService->getPriceList(
-                $username,
-                $password,
-            );
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $priceList
+            $this->soapClient = new SoapClient($this->wsdlUrl, [
+                'trace' => 1,
+                'exceptions' => true,
+                'encoding' => 'UTF-8'
             ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
+        } catch (Exception $e) {
+            throw new Exception('SOAP კლიენტის შეცდომა: ' . $e->getMessage());
         }
     }
 
-    public function updateActive()
+    public function getProducts()
     {
-        $ids = AltaID::all();
-        foreach($ids as $id) {
-            Product::where(['sku' => 'ALTA-'.$id['product_id']])->update(['active' => 1, 'show' => 1]);
-            Log::warning('ALTA-'.$id['product_id'].' Updated');
+        try {
+            $params = [
+                'user' => 'UNIPRO_CHI',
+                'password' => 'CHI1457160',
+                'item' => ''
+            ];
+            $response = $this->soapClient->GetPriceList($params);
+            dd($response);
+        } catch (Exception $e) {
+            throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
     }
 }
