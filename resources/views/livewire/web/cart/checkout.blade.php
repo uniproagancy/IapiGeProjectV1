@@ -107,7 +107,6 @@
     <script>
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('pixel:lead', (data) => {
-                console.log(data);
                 if (typeof fbq !== 'undefined') {
                     fbq('track', 'Lead', {
                         value: data.value,

@@ -50,7 +50,6 @@ class BOGPaymentController extends Controller
         $status = $request->body['order_status']['key'] ?? null;
 
         if ($status === 'completed') {
-            // ✅ მხოლოდ თუ ჯერ არ არის გადახდილი
             if ($order->payment_status_id !== 2) {
                 $order->update(['payment_status_id' => 2]);
                 $this->trackPurchase($order->fresh(['items', 'items.product']));
