@@ -6,12 +6,18 @@ use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Route;
 use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
+use App\Models\Product\Product;
+
 Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
 Route::get('/facebook-discount-feed', '\App\Http\Controllers\FacebookFeedController@getDiscountFeed')->middleware('doNotCacheResponse')->name('facebook.get-discount-feed');
 
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
+
     Route::name('web.')->group(function () {
+        Route::get('/update-alta', function (\Illuminate\Http\Request $request) {
+            Product::where('sku', 'LIKE', '%ALTA-%')->update(['show' => 0]);
+        })->middleware('doNotCacheResponse');
 
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
 
