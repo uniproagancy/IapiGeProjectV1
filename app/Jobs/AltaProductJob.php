@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductFullSpecificationItem;
@@ -110,19 +111,11 @@ class AltaProductJob implements ShouldQueue
         if (empty($productData['id'])) {
             throw new Exception('Product ID is required');
         }
-
-        $b2bStock = $this->checkB2BStock($productData['barCode']);
-
-        Log::info("📦 Stock check for {$productData['id']}", [
-            'b2b_stock_found' => $b2bStock['found'],
-            'b2b_qty'         => $b2bStock['quantity'],
-        ]);
-
+        $b2bStock = AltaID::where('product_id', $productData['barCode'])->first();
         if (Product::where('sku', $productData['barCode'])->exists()) {
             $this->updateExistingProduct($productData, $b2bStock);
         } else {
-            // ✅ გასწორდა: array-ის სწორი შემოწმება
-            if ($b2bStock['found'] && $b2bStock['quantity'] >= 1) {
+            if ($b2bStock['quantity'] >= 2) {
                 $this->createNewProduct($productData, $b2bStock);
             } else {
                 Log::info("⏭️  Skipping product (no B2B stock): {$productData['id']}");
@@ -280,7 +273,7 @@ class AltaProductJob implements ShouldQueue
     // Create New Product
     // ============================================
 
-    private function createNewProduct(array $productData, array $b2bStock): void
+    private function createNewProduct(array $productData, $b2bStock): void
     {
         DB::transaction(function () use ($productData, $b2bStock) {
             try {
@@ -526,19 +519,11 @@ class AltaProductJob implements ShouldQueue
                         Log::warning("⚠️  Failed to download image: {$urlToFetch}");
                         continue;
                     }
-
                     $imageSize = strlen($response->body());
-                    if ($imageSize > self::MAX_IMAGE_SIZE) {
-                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$urlToFetch}");
-                        continue;
-                    }
-
                     $ext      = $this->getImageExtension($imageUrl);
                     $filename = Str::random(40) . '.' . $ext;
                     $path     = "uploads/products/{$product->id}/{$filename}";
-
                     Storage::disk('public')->put($path, $response->body());
-
                     if ($index === 0 && !$mainImageSet) {
                         $product->update(['main_image' => $path]);
                         $mainImageSet = true;
@@ -552,7 +537,6 @@ class AltaProductJob implements ShouldQueue
                     }
 
                     Log::info("✅ Downloaded image: {$filename}");
-
                 } catch (Exception $e) {
                     Log::warning("⚠️  Error downloading image: {$e->getMessage()}");
                     continue;

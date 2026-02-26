@@ -4,114 +4,86 @@ namespace App\Console\Commands;
 
 use App\Services\Products\AltaService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class ScrapeAltaProducts extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'alta:scrape 
-                            {--start=1 : Start product ID}
-                            {--end=60000 : End product ID}
-                            {--concurrency=5 : Concurrent requests (1-10)}
-                            {--delay=100 : Delay in milliseconds (50-1000)}';
+    protected $signature = 'alta:scan
+        {--start= : საწყისი ID}
+        {--end= : საბოლოო ID}
+        {--concurrency=5 : პარალელური მოთხოვნები}
+        {--chunk=50 : chunk-ის ზომა}
+        {--delay=100 : დაყოვნება ms-ში}
+        {--no-scraper : scraper-ის გარეშე}
+        {--resume= : ID-დან გაგრძელება}
+        {--ids= : კონკრეტული ID-ები, მძიმით გამოყოფილი}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Scrape ALTA products by ID range';
+    protected $description = 'Alta პროდუქტების სკანირება';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(AltaService $service): void
     {
-        try {
-            // ✅ Get arguments
-            $start = (int)$this->option('start');
-            $end = (int)$this->option('end');
-            $concurrency = (int)$this->option('concurrency');
-            $delay = (int)$this->option('delay');
-
-            // ✅ Validate
-            if ($start >= $end) {
-                $this->error('❌ Start ID must be less than End ID');
-                return 1;
-            }
-
-            if ($concurrency < 1 || $concurrency > 10) {
-                $this->error('❌ Concurrency must be between 1-10');
-                return 1;
-            }
-
-            if ($delay < 50 || $delay > 1000) {
-                $this->error('❌ Delay must be between 50-1000 ms');
-                return 1;
-            }
-
-            // ✅ Show info
-            $this->info('');
-            $this->info('🔄 ALTA Products Scraper');
-            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->info("Start ID:      {$start}");
-            $this->info("End ID:        {$end}");
-            $this->info("Total IDs:     " . ($end - $start + 1));
-            $this->info("Concurrency:   {$concurrency}");
-            $this->info("Delay:         {$delay}ms");
-            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->info('');
-
-            if (!$this->confirm('Start scraping?')) {
-                $this->info('✅ Cancelled');
-                return 0;
-            }
-
-            // ✅ Create service
-            $service = new AltaService();
-
-            // ✅ Run scraping
-            $this->info('🚀 Starting scrape...');
-            $this->newLine();
-
-            $stats = $service
-                ->setIdRange($start, $end)
-                ->setConcurrency($concurrency)
-                ->setDelayMs($delay)
-                ->scanAllIds();
-
-            // ✅ Show results
-            $this->newLine();
-            $this->info('✅ Scrape completed!');
-            $this->info('');
-            $this->info('📊 Statistics:');
-            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->line("Total IDs:        {$stats['total']}");
-            $this->line("Queued:           {$stats['queued']}");
-            $this->line("Null:             {$stats['null']}");
-            $this->line("Skipped:          {$stats['skipped']}");
-            $this->line("Errors:           {$stats['errors']}");
-            $this->line("Rate Limited:     {$stats['rate_limited']}");
-            $this->line("Duration:         {$stats['duration']}s");
-            $this->line("Rate:             {$stats['rate']}");
-            $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            $this->newLine();
-
-            // ✅ Log
-            Log::info('✅ ALTA scraping completed via command', $stats);
-
-            return 0;
-
-        } catch (\Exception $e) {
-            $this->error("❌ Error: {$e->getMessage()}");
-            Log::error('❌ ALTA scrape command error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return 1;
+        // ✅ კონკრეტული ID-ების სკანირება
+        if ($this->option('ids')) {
+            $ids = array_map('intval', explode(',', $this->option('ids')));
+            $this->info('🔍 სკანირება კონკრეტული ID-ებისთვის: ' . implode(', ', $ids));
+            $stats = $service->scanSpecificIds($ids);
+            $this->printStats($stats);
+            return;
         }
+
+        // ✅ start და end სავალდებულოა
+        $start = (int) $this->option('start');
+        $end   = (int) $this->option('end');
+
+        if (!$start || !$end) {
+            $this->error('❌ --start და --end სავალდებულოა');
+            return;
+        }
+
+        $service
+            ->setIdRange($start, $end)
+            ->setConcurrency((int) $this->option('concurrency'))
+            ->setChunkSize((int) $this->option('chunk'))
+            ->setDelayMs((int) $this->option('delay'))
+            ->useScraper(!$this->option('no-scraper'));
+
+        // ✅ სტატისტიკის გამოტანა
+        $this->info('📊 სკანირების პარამეტრები:');
+        $this->table(
+            ['პარამეტრი', 'მნიშვნელობა'],
+            collect($service->getStats())->map(fn ($v, $k) => [$k, $v])->values()->toArray()
+        );
+
+        if (!$this->confirm('დაიწყოს სკანირება?', true)) {
+            return;
+        }
+
+        // ✅ გაგრძელება კონკრეტული ID-დან
+        if ($resumeId = $this->option('resume')) {
+            $this->info("⏩ გაგრძელება ID {$resumeId}-დან");
+            $stats = $service->resumeFromId((int) $resumeId);
+        } else {
+            $stats = $service->scanAllIds();
+        }
+
+        $this->printStats($stats);
+    }
+
+    private function printStats(array $stats): void
+    {
+        $this->info('');
+        $this->info('✅ სკანირება დასრულდა:');
+        $this->table(
+            ['სტატუსი', 'რაოდენობა'],
+            [
+                ['სულ',           $stats['total']        ?? 0],
+                ['დამატებული',    $stats['queued']       ?? 0],
+                ['ცარიელი',       $stats['null']         ?? 0],
+                ['გამოტოვებული',  $stats['skipped']      ?? 0],
+                ['შეცდომა',       $stats['errors']       ?? 0],
+                ['Rate Limited',  $stats['rate_limited'] ?? 0],
+                ['დრო',           ($stats['duration']    ?? 0) . 's'],
+                ['სიჩქარე',       $stats['rate']         ?? 'N/A'],
+            ]
+        );
     }
 }
