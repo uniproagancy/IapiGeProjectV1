@@ -52,7 +52,7 @@ class TBCInstallmentController extends Controller
                 $response = Http::withHeaders([
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $this->token,
+                    'Authorization' => 'Bearer ' . $this->token()['access_token'],
                 ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", [
                     'merchantKey' => '416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d',
                 ]);
