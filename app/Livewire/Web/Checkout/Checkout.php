@@ -5,6 +5,7 @@ namespace App\Livewire\Web\Checkout;
 use App\Models\Order\Order;
 use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderItem;
+use App\Models\Order\OrderTransaction;
 use App\Models\Payments\Payment;
 use App\Models\Product\Product;
 use App\Models\User\User;
@@ -296,7 +297,6 @@ class Checkout extends Component
         ], [
             'name.required'     => 'სახელი აუცილებელია',
             'lastname.required' => 'გვარი აუცილებელია',
-            'email.required'    => 'ელ.ფოსტა აუცილებელია',
             'email.email'       => 'ელ.ფოსტა არასწორია',
             'phone.required'    => 'ტელეფონი აუცილებელია',
         ]);
@@ -308,7 +308,6 @@ class Checkout extends Component
             ? $product->price->discount_price
             : $product->price->regular_price;
 
-        // ✅ თუ მომხმარებელი უკვე არსებობს — განახლება, სხვა შემთხვევაში შექმნა
         $user = User::updateOrCreate(
             ['email' => $this->email],
             [
@@ -509,8 +508,15 @@ class Checkout extends Component
                             $order->id,
                             round($order->amount + ($order->amount * 0.05))
                         );
-
                         if ($response['status_code'] === 200) {
+                            OrderTransaction::create([
+                                'order_id' => $order->id,
+                                'payment_order_id' => $tbcInstallment->getSessionId(),
+                                'url' => $tbcInstallment->getRedirectUri(),
+                                'amount' => $order->amount,
+                                'status' => 1,
+                                'type' => 'tbc_installment',
+                            ]);
                             $this->redirect($tbcInstallment->getRedirectUri());
                         }
                     }
