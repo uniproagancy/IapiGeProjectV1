@@ -36,7 +36,7 @@ Route::prefix('bog')->group(function () {
 });
 
 Route::prefix('tbc')->group(function () {
-    Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCPaymentController@status')->name('tbc.installment-status');
+    Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCInstallmentController@status')->name('tbc.installment-status');
 });
 
 Route::prefix('credo')->group(function () {
