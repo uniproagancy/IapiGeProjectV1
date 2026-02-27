@@ -37,7 +37,7 @@ class TBCInstallmentController extends Controller
                 ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$order->payment_order_id}/status", [
                     'merchantKey' => env('TBC_INSTALLMENT_MERCHANT_KEY'),
                 ]);
-                dd($response->json());
+                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
 
 //                $newStatus = $orderData['installment_status'] === 'success' ? 2 : 3;
 //
