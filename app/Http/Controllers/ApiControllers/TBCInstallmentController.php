@@ -31,13 +31,19 @@ class TBCInstallmentController extends Controller
                 continue;
             }
             try {
-                $response = Http::withHeaders([
-                    'Accept'       => 'application/json',
-                    'Content-Type' => 'application/json',
-                ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$order->payment_order_id}/status", [
-                    'merchantKey' => env('TBC_INSTALLMENT_MERCHANT_KEY'),
+
+                $client = new \GuzzleHttp\Client();
+
+                $response = $client->request('GET', 'https://test-api.tbcbank.ge/v1/online-installments/applications/%7BsessionId%7D/status', [
+                    'body' => '{"merchantKey":"416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d"}',
+                    'headers' => [
+                        'accept' => 'application/json',
+                        'content-type' => 'application/json',
+                    ],
                 ]);
-                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
+
+                dd($response->getBody());
+//                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
 
 //                $newStatus = $orderData['installment_status'] === 'success' ? 2 : 3;
 //
