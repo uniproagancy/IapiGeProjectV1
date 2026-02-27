@@ -34,7 +34,7 @@ class TBCInstallmentController extends Controller
 
                 $client = new \GuzzleHttp\Client();
 
-                $response = $client->request('GET', 'https://test-api.tbcbank.ge/v1/online-installments/applications/%7BsessionId%7D/status', [
+                $response = $client->request('GET', 'https://api.tbcbank.ge/v1/online-installments/applications/%7BsessionId%7D/status', [
                     'body' => '{"merchantKey":"416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d"}',
                     'headers' => [
                         'accept' => 'application/json',
