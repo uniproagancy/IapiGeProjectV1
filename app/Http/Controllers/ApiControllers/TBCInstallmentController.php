@@ -65,26 +65,20 @@ class TBCInstallmentController extends Controller
                     ->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status");
 
                 $data   = $response->json();
-                dd($data);
-//                $status = $data['status'] ?? $data['installmentStatus'] ?? null;
-//
-//                Log::info('TBC Installment status', [
-//                    'order_id'   => $order->id,
-//                    'session_id' => $sessionId,
-//                    'status'     => $status,
-//                    'response'   => $data,
-//                ]);
-//
-//                if ($status === 'Confirmed') {
-//                    // ✅ მხოლოდ თუ ჯერ არ არის გადახდილი
-//                    if ($order->payment_status_id !== 2) {
-//                        $order->update(['payment_status_id' => 2]);
-//                        $this->trackPurchase($order->fresh(['items', 'items.product']));
-//                    }
-//                } elseif (in_array($status, ['Rejected', 'Cancelled', 'Expired'])) {
-//                    $order->update(['payment_status_id' => 3]);
-//                }
-
+                if($data['status'] === 0) {
+                    $order->update(['payment_status_id' => 1]);
+                }
+                else if($data['status'] === 2) {
+                    $order->update(['payment_status_id' => 2]);
+                    $this->trackPurchase($order->fresh(['items', 'items.product']));
+                } else {
+                    $order->update(['payment_status_id' => 3]);
+                }
+                Log::info('TBC Installment status', [
+                    'order_id'   => $order->id,
+                    'session_id' => $sessionId,
+                    'response'   => $data,
+                ]);
             } catch (\Exception $e) {
                 Log::error('TBC status check error: ' . $e->getMessage(), [
                     'order_id' => $order->id,
