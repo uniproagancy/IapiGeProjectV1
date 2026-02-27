@@ -18,15 +18,15 @@ class TBCInstallmentController extends Controller
 
     public function token()
     {
-        $token = Http::withHeaders([
-            'Accept'       => 'application/json',
-            'Content-Type' => 'application/json',
-            'client_id'    => env('TBC_INSTALLMENT_API_KEY'),
-            'client_secret' => env('TBC_INSTALLMENT_API_SECRET'),
-            'merchant_key' => env('TBC_INSTALLMENT_MERCHANT_KEY'),
+
+        $response = Http::withHeaders([
+            'Accept'        => 'application/json',
+            'Content-Type'  => 'application/json',
+            'client_id'     => 'rpaBGYDgUP6qC07OxkJjxN3jf6SLcwsZ',
+            'client_secret' => 'TBC_INSTALLMENT_API_SECRET=tyttcQg6eDCiW1Y1', // ✅ შეცვალე სწორი secret-ით
         ])->withBody('{"grant_type":"client_credentials","scope":"online_installments"}', 'application/json')
             ->post('https://api.tbcbank.ge/oauth/token');
-        return $token;
+        return $response;
     }
 
 
