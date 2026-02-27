@@ -292,7 +292,7 @@ class Checkout extends Component
         $this->validate([
             'name'     => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email'    => 'email',
+            'email'    => 'nullable|email',
             'phone'    => 'required|string',
         ], [
             'name.required'     => 'სახელი აუცილებელია',
@@ -308,14 +308,26 @@ class Checkout extends Component
             ? $product->price->discount_price
             : $product->price->regular_price;
 
-        $user = User::updateOrCreate(
-            ['email' => $this->email],
-            [
+        // ✅ გასწორდა: email ცარიელია თუ არა შევამოწმოთ
+        if (!empty($this->email)) {
+            // ✅ email გვაქვს — ვეძებთ ამ email-ით
+            $user = User::updateOrCreate(
+                ['email' => $this->email],
+                [
+                    'name'     => $this->name,
+                    'lastname' => $this->lastname,
+                    'phone'    => $this->phone,
+                ]
+            );
+        } else {
+            // ✅ email არ გვაქვს — ყოველთვის ახალი მომხმარებელი
+            $user = User::create([
                 'name'     => $this->name,
                 'lastname' => $this->lastname,
                 'phone'    => $this->phone,
-            ]
-        );
+                'email'    => null,
+            ]);
+        }
 
         $order = Order::create([
             'user_id'         => $user->id,
