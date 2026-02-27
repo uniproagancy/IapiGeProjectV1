@@ -33,7 +33,6 @@ class TBCInstallmentController extends Controller
 
 
     public function status() {
-        dd($this->token());
         $orders = Order::whereIn('payment_id', [7])
             ->where('payment_status_id', 1)
             ->get();
@@ -47,13 +46,11 @@ class TBCInstallmentController extends Controller
                 continue;
             }
             try {
-
                 $sessionId = $order->transaction->payment_order_id; // ✅ შეცვალე
-
                 $response = Http::withHeaders([
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $this->token()['access_token'],
+                    'Authorization' => 'Bearer ' .$this->token(),
                 ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", [
                     'merchantKey' => '416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d',
                 ]);
