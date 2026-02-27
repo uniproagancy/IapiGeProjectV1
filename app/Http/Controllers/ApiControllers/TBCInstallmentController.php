@@ -38,10 +38,10 @@ class TBCInstallmentController extends Controller
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
                 ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", [
-                    'merchantKey' => env('TBC_MERCHANT_KEY'),
+                    'merchantKey' => '416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d',
                 ]);
 
-                dd($response->json());
+                dd("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", $response->json());
 
 //                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
 
