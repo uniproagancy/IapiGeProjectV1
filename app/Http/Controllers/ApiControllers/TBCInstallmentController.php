@@ -16,6 +16,19 @@ class TBCInstallmentController extends Controller
 
     }
 
+    public function token()
+    {
+        $token = Http::withHeaders([
+            'Accept'       => 'application/json',
+            'Content-Type' => 'application/json',
+            'client_id'    => env('TBC_INSTALLMENT_CAMPAIGN_ID'),
+            'client_secret' => env('TBC_INSTALLMENT_API_SECRET'),
+        ])->withBody('{"grant_type":"client_credentials","scope":"online_installments"}', 'application/json')
+            ->post('https://api.tbcbank.ge/oauth/token');
+        return $token;
+    }
+
+
     public function status() {
 
         $orders = Order::whereIn('payment_id', [7])
@@ -37,6 +50,7 @@ class TBCInstallmentController extends Controller
                 $response = Http::withHeaders([
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->token,
                 ])->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", [
                     'merchantKey' => '416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d',
                 ]);
