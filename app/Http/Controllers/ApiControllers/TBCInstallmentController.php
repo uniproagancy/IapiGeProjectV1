@@ -30,6 +30,7 @@ class TBCInstallmentController extends Controller
 
 
     public function status() {
+        dd($this->token());
 
         $orders = Order::whereIn('payment_id', [7])
             ->where('payment_status_id', 1)
@@ -55,7 +56,6 @@ class TBCInstallmentController extends Controller
                     'merchantKey' => '416353635-82138e94-8cd4-4553-98ef-195f7dfdbe3d',
                 ]);
 
-                dd("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status", $response->json());
 
 //                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
 
