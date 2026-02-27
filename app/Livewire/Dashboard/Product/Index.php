@@ -52,6 +52,7 @@ class Index extends Component
         'per_page' => ['except' => 10],
         'brand_id' => ['except' => 0],
         'category_id' => ['except' => 0],
+        'supplier_id' => ['except' => 0],
         'with_trashed' => ['except' => false],
         'show_web' => ['except' => false],
         'status_active' => ['except' => false],
@@ -134,7 +135,7 @@ class Index extends Component
 
     public function resetFilters()
     {
-        $this->reset(['search_query', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted']);
+        $this->reset(['search_query', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted','supplier_id']);
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
@@ -210,6 +211,8 @@ class Index extends Component
             ->when($this->category_id, fn($q) => $q->where('category_id', $this->category_id)
             )
             ->when($this->brand_id, fn($q) => $q->where('brand_id', $this->brand_id)
+            )
+            ->when($this->supplier_id, fn($q) => $q->where('supplier_id', $this->supplier_id)
             )
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
             )
