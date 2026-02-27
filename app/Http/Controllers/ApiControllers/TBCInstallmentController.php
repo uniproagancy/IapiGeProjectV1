@@ -21,8 +21,9 @@ class TBCInstallmentController extends Controller
         $token = Http::withHeaders([
             'Accept'       => 'application/json',
             'Content-Type' => 'application/json',
-            'client_id'    => env('TBC_INSTALLMENT_CAMPAIGN_ID'),
+            'client_id'    => env('TBC_INSTALLMENT_API_KEY'),
             'client_secret' => env('TBC_INSTALLMENT_API_SECRET'),
+            'merchant_key' => env('TBC_INSTALLMENT_MERCHANT_KEY'),
         ])->withBody('{"grant_type":"client_credentials","scope":"online_installments"}', 'application/json')
             ->post('https://api.tbcbank.ge/oauth/token');
         return $token;
