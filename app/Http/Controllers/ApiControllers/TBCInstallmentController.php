@@ -26,7 +26,7 @@ class TBCInstallmentController extends Controller
             'client_secret' => 'TBC_INSTALLMENT_API_SECRET=tyttcQg6eDCiW1Y1', // ✅ შეცვალე სწორი secret-ით
         ])->withBody('{"grant_type":"client_credentials","scope":"online_installments"}', 'application/json')
             ->post('https://api.tbcbank.ge/oauth/token');
-        return $response;
+        return $response->json();
     }
 
 
