@@ -35,6 +35,10 @@ Route::prefix('bog')->group(function () {
     Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createPartInstallment')->name('bog.create-part-installment-order');
 });
 
+Route::prefix('tbc')->group(function () {
+    Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCPaymentController@status')->name('tbc.installment-status');
+});
+
 Route::prefix('credo')->group(function () {
     Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('credo-create-order');
 });
