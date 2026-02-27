@@ -37,6 +37,7 @@ class Index extends Component
 
     public $category_id = null;
     public $brand_id = null;
+    public $supplier_id = null;
 
     protected $listeners = [
         'delete',
