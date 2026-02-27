@@ -42,7 +42,7 @@ class TBCInstallmentController extends Controller
                     ],
                 ]);
 
-                dd($response->getBody());
+                print_r($response->getBody());
 //                dd(env('TBC_INSTALLMENT_MERCHANT_KEY'), $response->json());
 
 //                $newStatus = $orderData['installment_status'] === 'success' ? 2 : 3;
