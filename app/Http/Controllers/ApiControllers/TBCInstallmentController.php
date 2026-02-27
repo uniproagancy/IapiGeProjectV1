@@ -64,7 +64,8 @@ class TBCInstallmentController extends Controller
                 ]), 'application/json')
                     ->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status");
 
-                $data   = $response->json();
+                $data = $response->json();
+                dd($data);
                 if($data['status'] === 0) {
                     $order->update(['payment_status_id' => 1]);
                 }
