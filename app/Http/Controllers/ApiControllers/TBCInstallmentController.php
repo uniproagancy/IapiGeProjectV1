@@ -57,7 +57,7 @@ class TBCInstallmentController extends Controller
 //                }
 
             } catch (\Exception $e) {
-                Log::error('BOGInstallment callback error: ' . $e->getMessage(), [
+                Log::error('TBC callback error: ' . $e->getMessage(), [
                     'order_id' => $order->id,
                 ]);
             }
