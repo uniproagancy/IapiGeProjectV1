@@ -33,6 +33,7 @@ class TBCInstallmentController extends Controller
 
 
     public function status() {
+        dd($this->token());
         $orders = Order::whereIn('payment_id', [7])
             ->where('payment_status_id', 1)
             ->get();
