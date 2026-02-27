@@ -31,7 +31,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
         Route::get('/checkout/success', '\App\Http\Controllers\OrderStatusController@success');
         Route::get('/checkout/reject', '\App\Http\Controllers\OrderStatusController@reject');
-        Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->name('checkout.index');
+        Route::get('/checkout', App\Livewire\Web\Checkout\Checkout::class)->middleware('doNotCacheResponse')->name('checkout.index');
 
         Route::group(['middleware' => 'auth'], function () {
             Route::get('/user/{page?}', App\Livewire\Web\User\Index::class)->name('user.index');
