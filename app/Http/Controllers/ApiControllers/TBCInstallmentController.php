@@ -28,7 +28,7 @@ class TBCInstallmentController extends Controller
             'grant_type' => 'client_credentials',
             'scope'      => 'online_installments',
         ]);
-        return $response->json();
+        return $response->json()['access_token'];
     }
 
 
