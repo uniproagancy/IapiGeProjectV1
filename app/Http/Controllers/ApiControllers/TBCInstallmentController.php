@@ -65,11 +65,10 @@ class TBCInstallmentController extends Controller
                     ->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status");
 
                 $data = $response->json();
-                dd($data);
-                if($data['status'] === 0) {
+                if($data['statusId'] === 0) {
                     $order->update(['payment_status_id' => 1]);
                 }
-                else if($data['status'] === 2) {
+                else if($data['statusId'] === 2) {
                     $order->update(['payment_status_id' => 2]);
                     $this->trackPurchase($order->fresh(['items', 'items.product']));
                 } else {
