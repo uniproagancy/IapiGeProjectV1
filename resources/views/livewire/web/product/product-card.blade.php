@@ -57,8 +57,8 @@
                 {{-- ფასდაკლების badge --}}
                 @if(!empty($product->price->discount_percent))
                     <span class="badge bg-danger position-absolute top-0 start-0 mt-2 ms-2 mt-lg-3 ms-lg-3 z-2">
-                    -{{ $product->price->discount_percent }}%
-                </span>
+                        -{{ $product->price->discount_percent }}%
+                    </span>
                 @endif
 
                 {{-- სურათი --}}
@@ -66,7 +66,7 @@
                     <img src="{{ $imageUrl }}"
                          alt="{{ $title }}"
                          loading="lazy"
-                         class="product-card-img">
+                         style="object-fit: contain; width: 100%; height: 100%; mix-blend-mode: multiply;">
                 </div>
             </a>
         </div>
