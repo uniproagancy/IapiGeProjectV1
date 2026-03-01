@@ -23,7 +23,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
                 ]);
             }
         })->middleware('doNotCacheResponse');
-
+        Route::middleware(['lscache:3600'])->group(function () {
         Route::get('/', App\Livewire\Web\Main\Index::class)->name('main.index');
 
         Route::get('/contact', App\Livewire\Web\Main\Contact::class)->name('main.contact');
@@ -49,7 +49,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
         Route::prefix('/static')->name('static.')->group(function () {
             Route::get('/{page?}', App\Livewire\Web\Main\StaticPages::class)->name('index');
         });
-
+        });
         Route::get('/logout', function (\Illuminate\Http\Request $request) {
             \Illuminate\Support\Facades\Auth::logout();
             $request->session()->invalidate();
