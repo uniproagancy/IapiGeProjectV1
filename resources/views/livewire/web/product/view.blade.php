@@ -34,7 +34,7 @@
                 @include('livewire.web.product.purchase-section')
             </div>
             @if(!empty($product->translation('ka')->description))
-            <div class="col-12">
+            <div class="col-12 mt-3">
                 <div class="row row-cols-1 row-cols-md-1">
                     <div class="col mb-3 mb-md-0">
                         <div class="pe-lg-2 pe-xl-3">
