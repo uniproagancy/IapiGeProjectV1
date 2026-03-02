@@ -67,7 +67,6 @@
                 SALE: {{ $salePrice }} ₾
             </span>
         </div>
-
         {{-- ბარათით ყიდვა --}}
         <div class="d-flex align-items-center justify-content-between p-2 rounded"
              style="border: 1px solid #dee2e6; cursor: pointer;"
@@ -113,20 +112,6 @@
         შეკვეთა
     </a>
 </div>
-
-{{-- მიწოდების ინფო --}}
-<div class="d-flex align-items-center pb-2 mt-3">
-    <h3 class="h6 mb-0 font-neue">მიწოდება</h3>
-</div>
-<table class="table table-borderless fs-sm mb-2">
-    <tbody>
-    <tr>
-        <td class="py-2 ps-0">მიწოდება</td>
-        <td class="py-2 text-center">მთელი ქვეყნის მასშტაბით</td>
-    </tr>
-    </tbody>
-</table>
-
 <script>
     function selectPaymentOption(value, el) {
         // ✅ radio-ს დაჭერა
