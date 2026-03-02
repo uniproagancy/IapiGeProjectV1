@@ -10,35 +10,24 @@ use App\Models\User\User;
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Exception;
 
 class QuickOrder extends Component
 {
-    public int    $productId;
-    public int    $quantity  = 1;
-    public string $name      = '';
-    public string $phone     = '';
+    public int $productId;
+    public int $quantity = 1;
 
-    public bool   $success   = false;
+    #[Validate('required|string|max:255', message: 'სახელი და გვარი აუცილებელია')]
+    public string $name = '';
 
-    protected function rules(): array
-    {
-        return [
-            'name'     => 'required|string|max:255',
-            'phone'    => 'required|string|min:9|max:20',
-            'delivery' => 'required|in:courier,installment,bank,card',
-        ];
-    }
+    #[Validate('required|string|min:9|max:20', message: 'ტელეფონის ნომერი აუცილებელია')]
+    public string $phone = '';
 
-    protected function messages(): array
-    {
-        return [
-            'name.required'  => 'სახელი და გვარი აუცილებელია',
-            'phone.required' => 'ტელეფონის ნომერი აუცილებელია',
-            'phone.min'      => 'ტელეფონის ნომერი არასწორია',
-        ];
-    }
+    public string $delivery = 'courier';
+
+    public bool $success = false;
 
     public function placeOrder(): void
     {
@@ -52,16 +41,16 @@ class QuickOrder extends Component
                 : $product->price->regular_price;
 
             $user = User::create([
-                'name'  => $this->name,
-                'lastname'  => '',
-                'phone' => $this->phone,
-                'email' => null,
+                'name'     => $this->name,
+                'lastname' => '',
+                'phone'    => $this->phone,
+                'email'    => null,
             ]);
 
             $order = Order::create([
                 'user_id'         => $user->id,
                 'payment_id'      => 2,
-                'comment'         => 'სწრაფი შეკვეთა — მიწოდება: ',
+                'comment'         => 'სწრაფი შეკვეთა — მიწოდება: ' . $this->delivery,
                 'created_by'      => $user->id,
                 'delivery_amount' => 0,
                 'amount'          => round($price * $this->quantity),
