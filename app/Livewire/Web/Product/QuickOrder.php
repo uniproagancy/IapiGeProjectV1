@@ -47,10 +47,17 @@ class QuickOrder extends Component
                 'email'    => null,
             ]);
 
+            $deliveryPaymentMap = [
+                'courier'     => 10,
+                'installment' => 11,
+                'bank'        => 12,
+                'card'        => 13,
+            ];
+
             $order = Order::create([
                 'user_id'         => $user->id,
-                'payment_id'      => 2,
-                'comment'         => 'სწრაფი შეკვეთა — მიწოდება: ' . $this->delivery,
+                'payment_id'      => $deliveryPaymentMap[$this->delivery] ?? 10,
+                'comment'         => $this->comment ?? '',
                 'created_by'      => $user->id,
                 'delivery_amount' => 0,
                 'amount'          => round($price * $this->quantity),
@@ -94,8 +101,7 @@ class QuickOrder extends Component
             $eventId     = 'lead_' . time() . '_' . Str::random(6);
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackLeadWithTest(
-                testCode: 'TEST97470',
+            app(FacebookPixelService::class)->trackLead(
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $this->name,

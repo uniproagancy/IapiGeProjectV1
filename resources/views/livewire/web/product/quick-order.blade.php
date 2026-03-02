@@ -17,7 +17,7 @@
 
         <div class="text-center mb-3">
             <span class="fw-semibold" style="color: #e91e63; font-size: 14px;">
-                ✓ უფასო მიწოდება ყველა ქალაქსა და სოფელში
+                ✓ მიწოდება მთელი ქვეყნის მასშტაბით
             </span>
         </div>
 
