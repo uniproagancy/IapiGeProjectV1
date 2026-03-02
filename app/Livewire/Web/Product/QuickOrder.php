@@ -19,7 +19,6 @@ class QuickOrder extends Component
     public int    $quantity  = 1;
     public string $name      = '';
     public string $phone     = '';
-    public string $delivery  = 'courier';
 
     public bool   $success   = false;
 
@@ -54,6 +53,7 @@ class QuickOrder extends Component
 
             $user = User::create([
                 'name'  => $this->name,
+                'lastname'  => '',
                 'phone' => $this->phone,
                 'email' => null,
             ]);
@@ -61,7 +61,7 @@ class QuickOrder extends Component
             $order = Order::create([
                 'user_id'         => $user->id,
                 'payment_id'      => 2,
-                'comment'         => 'სწრაფი შეკვეთა — მიწოდება: ' . $this->delivery,
+                'comment'         => 'სწრაფი შეკვეთა — მიწოდება: ',
                 'created_by'      => $user->id,
                 'delivery_amount' => 0,
                 'amount'          => round($price * $this->quantity),
