@@ -86,12 +86,41 @@ class QuickOrder extends Component
             );
 
             $this->trackLead($order, $product);
+            $this->trackInitiateCheckout($order, $product, $price);
 
             $this->success = true;
 
         } catch (Exception $e) {
             Log::error('QuickOrder error: ' . $e->getMessage());
             $this->addError('phone', 'შეცდომა მოხდა, სცადეთ ისევ');
+        }
+    }
+
+    private function trackInitiateCheckout(Order $order, Product $product, float $price): void
+    {
+        try {
+            $eventId = 'ic_' . time() . '_' . Str::random(6);
+
+            app(FacebookPixelService::class)->trackCheckout(
+                value: $order->amount,
+                currency: 'GEL',
+                items: [[
+                    'id'       => $product->id,
+                    'quantity' => $this->quantity,
+                ]],
+                params: [],
+                eventId: $eventId
+            );
+
+            Log::info('✅ InitiateCheckout tracked (QuickOrder)', [
+                'event_id'   => $eventId,
+                'order_id'   => $order->id,
+                'product_id' => $product->id,
+                'amount'     => $order->amount,
+            ]);
+
+        } catch (Exception $e) {
+            Log::warning('QuickOrder InitiateCheckout pixel error: ' . $e->getMessage());
         }
     }
 
