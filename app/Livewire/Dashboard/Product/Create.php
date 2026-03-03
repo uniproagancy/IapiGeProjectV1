@@ -199,7 +199,7 @@ class Create extends Component
             });
 
             $this->dispatch('ui:success', message: 'პროდუქტი წარმატებით დაემატა!');
-            $this->resetForm();
+            $this->redirect(route('dashboard.products.index'));
 
         } catch (Exception $e) {
             Log::error('❌ Product create error: ' . $e->getMessage(), [
@@ -207,24 +207,6 @@ class Create extends Component
             ]);
             $this->dispatch('ui:error', message: 'შეცდომა მოხდა, სცადეთ ისევ');
         }
-    }
-
-    // ============================================
-    // Reset Form
-    // ============================================
-
-    private function resetForm(): void
-    {
-        $this->reset([
-            'category_id', 'brand_id', 'supplier_id',
-            'sku', 'quantity', 'in_stock', 'preorder',
-            'dealer_price', 'regular_price', 'discount_price',
-            'title_ka', 'title_en', 'title_ru',
-            'description_ka', 'description_en', 'description_ru',
-            'keywords_ka', 'keywords_en', 'keywords_ru',
-            'main_image', 'additionalImages',
-        ]);
-        $this->active = 1;
     }
 
     // ============================================
