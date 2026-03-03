@@ -129,3 +129,7 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
         });
     });
 });
+
+Route::post('/dashboard/product/image/upload', [
+    \App\Http\Controllers\Dashboard\ProductImageUploadController::class, 'upload'
+])->name('dashboard.product.image.upload')->middleware('auth');

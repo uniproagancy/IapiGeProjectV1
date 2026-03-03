@@ -5,13 +5,13 @@ namespace App\Livewire\Dashboard\Product;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductSupplier;
 use App\Models\Product\ProductTranslation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Exception;
@@ -50,6 +50,9 @@ class Create extends Component
     public $keywords_en    = '';
     public $keywords_ru    = '';
 
+    // ✅ დამატებითი სურათები Dropzone-დან
+    public array $additionalImages = [];
+
     // ============================================
     // Validation
     // ============================================
@@ -70,14 +73,33 @@ class Create extends Component
     {
         return [
             'category_id.required'   => 'კატეგორია აუცილებელია',
+            'category_id.exists'     => 'კატეგორია არასწორია',
             'brand_id.required'      => 'ბრენდი აუცილებელია',
+            'brand_id.exists'        => 'ბრენდი არასწორია',
             'supplier_id.required'   => 'მომწოდებელი აუცილებელია',
+            'supplier_id.exists'     => 'მომწოდებელი არასწორია',
             'title_ka.required'      => 'დასახელება ქართულად აუცილებელია',
             'regular_price.required' => 'ფასი აუცილებელია',
+            'regular_price.numeric'  => 'ფასი უნდა იყოს რიცხვი',
+            'regular_price.min'      => 'ფასი არ შეიძლება იყოს უარყოფითი',
             'main_image.required'    => 'მთავარი სურათი აუცილებელია',
             'main_image.image'       => 'სურათის ფორმატი არასწორია',
             'main_image.max'         => 'სურათი არ უნდა აღემატებოდეს 5MB-ს',
         ];
+    }
+
+    // ============================================
+    // Dropzone Upload Listener
+    // ============================================
+
+    public function dzUploaded(string $path): void
+    {
+        $this->additionalImages[] = $path;
+
+        Log::info('📸 Dropzone image uploaded', [
+            'path'  => $path,
+            'total' => count($this->additionalImages),
+        ]);
     }
 
     // ============================================
@@ -108,7 +130,7 @@ class Create extends Component
                 // ✅ ფასის შექმნა
                 ProductPrice::create([
                     'product_id'     => $product->id,
-                    'dealer_price'   => (float) $this->dealer_price ?: 0,
+                    'dealer_price'   => (float) ($this->dealer_price ?: 0),
                     'regular_price'  => (float) $this->regular_price,
                     'discount_price' => !empty($this->discount_price)
                         ? (float) $this->discount_price
@@ -151,28 +173,44 @@ class Create extends Component
                     ]);
                 }
 
-                // ✅ სურათის შენახვა
+                // ✅ მთავარი სურათის შენახვა
                 $path = $this->main_image->store(
                     'uploads/products/' . $product->id,
                     'public'
                 );
-
                 $product->update(['main_image' => $path]);
 
-                Log::info('✅ Product created', ['product_id' => $product->id]);
+                // ✅ დამატებითი სურათები Dropzone-დან
+                if (!empty($this->additionalImages)) {
+                    $images = array_map(fn ($imagePath) => [
+                        'product_id' => $product->id,
+                        'path'       => $imagePath,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ], $this->additionalImages);
+
+                    ProductImage::insert($images);
+                }
+
+                Log::info('✅ Product created', [
+                    'product_id'       => $product->id,
+                    'additional_images' => count($this->additionalImages),
+                ]);
             });
 
             $this->dispatch('ui:success', message: 'პროდუქტი წარმატებით დაემატა!');
             $this->resetForm();
 
         } catch (Exception $e) {
-            Log::error('❌ Product create error: ' . $e->getMessage());
+            Log::error('❌ Product create error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
             $this->dispatch('ui:error', message: 'შეცდომა მოხდა, სცადეთ ისევ');
         }
     }
 
     // ============================================
-    // Reset
+    // Reset Form
     // ============================================
 
     private function resetForm(): void
@@ -184,7 +222,7 @@ class Create extends Component
             'title_ka', 'title_en', 'title_ru',
             'description_ka', 'description_en', 'description_ru',
             'keywords_ka', 'keywords_en', 'keywords_ru',
-            'main_image',
+            'main_image', 'additionalImages',
         ]);
         $this->active = 1;
     }
@@ -200,9 +238,11 @@ class Create extends Component
             'categories' => ProductCategory::where('parent_id', 0)
                 ->where('active', '!=', 0)
                 ->where('id', '!=', 1)
-                ->with('children.translations')
+                ->with(['translations', 'children.translations'])
                 ->get(),
-            'brands'     => ProductBrand::where('active', 1)->get(),
+            'brands'     => ProductBrand::where('active', 1)
+                ->with('translations')
+                ->get(),
         ])->layout('livewire.dashboard.layout');
     }
 }
