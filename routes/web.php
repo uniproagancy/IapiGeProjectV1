@@ -103,7 +103,7 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
         Route::prefix('products')->group(function () {
             Route::get('/', App\Livewire\Dashboard\Product\Index::class)->name('product.index');
             Route::get('/create', App\Livewire\Dashboard\Product\Create::class)->name('product.create');
-            Route::get('/update/{product_id}', App\Livewire\Dashboard\Product\Update::class)->name('product.update');
+            Route::get('/update/{id}', App\Livewire\Dashboard\Product\Update::class)->name('product.update');
 
             Route::get('/categories', App\Livewire\Dashboard\ProductCategory\Index::class)->name('product.category.index');
             Route::get('/brands', App\Livewire\Dashboard\ProductBrand\Index::class)->name('product.brand.index');
