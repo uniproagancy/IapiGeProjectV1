@@ -199,7 +199,7 @@ class Create extends Component
             });
 
             $this->dispatch('ui:success', message: 'პროდუქტი წარმატებით დაემატა!');
-            $this->redirect(route('dashboard.products.index'));
+            $this->redirect(route('dashboard.product.index'));
 
         } catch (Exception $e) {
             Log::error('❌ Product create error: ' . $e->getMessage(), [
