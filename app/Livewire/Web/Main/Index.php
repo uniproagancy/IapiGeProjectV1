@@ -47,7 +47,7 @@ class Index extends Component
                         ->where('active', 1)
                         ->where('show', 1)
                     )
-                    ->limit(20), // ✅ მაქსიმუმ 20 პროდუქტი თითო პრომოუშენზე
+                    ->limit(20),
                 'products.product' => fn ($q) => $q
                     ->select('id', 'main_image', 'category_id', 'brand_id')
                     ->where('active', 1)
