@@ -50,8 +50,8 @@ class Create extends Component
     public $keywords_en    = '';
     public $keywords_ru    = '';
 
-    // ✅ დამატებითი სურათები Dropzone-დან
-    public array $additionalImages = [];
+    // ✅ დამატებითი სურათები — Livewire native
+    public $additional_images = [];
 
     // ============================================
     // Validation
@@ -60,46 +60,35 @@ class Create extends Component
     protected function rules(): array
     {
         return [
-            'category_id'   => 'required|exists:db_product_categories,id',
-            'brand_id'      => 'required|exists:db_product_brands,id',
-            'supplier_id'   => 'required|exists:db_product_suppliers,id',
-            'title_ka'      => 'required|string|max:255',
-            'regular_price' => 'required|numeric|min:0',
-            'main_image'    => 'required|image|max:5120',
+            'category_id'        => 'required|exists:db_product_categories,id',
+            'brand_id'           => 'required|exists:db_product_brands,id',
+            'supplier_id'        => 'required|exists:db_product_suppliers,id',
+            'title_ka'           => 'required|string|max:255',
+            'regular_price'      => 'required|numeric|min:0',
+            'main_image'         => 'required|image|max:5120',
+            'additional_images.*' => 'image|max:5120',
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'category_id.required'   => 'კატეგორია აუცილებელია',
-            'category_id.exists'     => 'კატეგორია არასწორია',
-            'brand_id.required'      => 'ბრენდი აუცილებელია',
-            'brand_id.exists'        => 'ბრენდი არასწორია',
-            'supplier_id.required'   => 'მომწოდებელი აუცილებელია',
-            'supplier_id.exists'     => 'მომწოდებელი არასწორია',
-            'title_ka.required'      => 'დასახელება ქართულად აუცილებელია',
-            'regular_price.required' => 'ფასი აუცილებელია',
-            'regular_price.numeric'  => 'ფასი უნდა იყოს რიცხვი',
-            'regular_price.min'      => 'ფასი არ შეიძლება იყოს უარყოფითი',
-            'main_image.required'    => 'მთავარი სურათი აუცილებელია',
-            'main_image.image'       => 'სურათის ფორმატი არასწორია',
-            'main_image.max'         => 'სურათი არ უნდა აღემატებოდეს 5MB-ს',
+            'category_id.required'    => 'კატეგორია აუცილებელია',
+            'category_id.exists'      => 'კატეგორია არასწორია',
+            'brand_id.required'       => 'ბრენდი აუცილებელია',
+            'brand_id.exists'         => 'ბრენდი არასწორია',
+            'supplier_id.required'    => 'მომწოდებელი აუცილებელია',
+            'supplier_id.exists'      => 'მომწოდებელი არასწორია',
+            'title_ka.required'       => 'დასახელება ქართულად აუცილებელია',
+            'regular_price.required'  => 'ფასი აუცილებელია',
+            'regular_price.numeric'   => 'ფასი უნდა იყოს რიცხვი',
+            'regular_price.min'       => 'ფასი არ შეიძლება იყოს უარყოფითი',
+            'main_image.required'     => 'მთავარი სურათი აუცილებელია',
+            'main_image.image'        => 'სურათის ფორმატი არასწორია',
+            'main_image.max'          => 'სურათი არ უნდა აღემატებოდეს 5MB-ს',
+            'additional_images.*.image' => 'სურათის ფორმატი არასწორია',
+            'additional_images.*.max'   => 'სურათი არ უნდა აღემატებოდეს 5MB-ს',
         ];
-    }
-
-    // ============================================
-    // Dropzone Upload Listener
-    // ============================================
-
-    public function dzUploaded(string $path): void
-    {
-        $this->additionalImages[] = $path;
-
-        Log::info('📸 Dropzone image uploaded', [
-            'path'  => $path,
-            'total' => count($this->additionalImages),
-        ]);
     }
 
     // ============================================
@@ -174,27 +163,30 @@ class Create extends Component
                 }
 
                 // ✅ მთავარი სურათის შენახვა
-                $path = $this->main_image->store(
+                $mainPath = $this->main_image->store(
                     'uploads/products/' . $product->id,
                     'public'
                 );
-                $product->update(['main_image' => $path]);
+                $product->update(['main_image' => $mainPath]);
 
-                // ✅ დამატებითი სურათები Dropzone-დან
-                if (!empty($this->additionalImages)) {
-                    $images = array_map(fn ($imagePath) => [
-                        'product_id' => $product->id,
-                        'path'       => $imagePath,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ], $this->additionalImages);
+                // ✅ დამატებითი სურათები — Livewire native upload
+                if (!empty($this->additional_images)) {
+                    foreach ($this->additional_images as $image) {
+                        $path = $image->store(
+                            'uploads/products/' . $product->id,
+                            'public'
+                        );
 
-                    ProductImage::insert($images);
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'path'       => $path,
+                        ]);
+                    }
                 }
 
                 Log::info('✅ Product created', [
-                    'product_id'       => $product->id,
-                    'additional_images' => count($this->additionalImages),
+                    'product_id'        => $product->id,
+                    'additional_images' => count($this->additional_images ?? []),
                 ]);
             });
 

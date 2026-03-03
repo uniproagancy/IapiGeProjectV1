@@ -13,7 +13,7 @@
             <div class="content-body">
                 <div class="row">
 
-                    {{-- ✅ მარცხენა კოლონა --}}
+                    {{-- მარცხენა კოლონა --}}
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-header">
@@ -77,7 +77,7 @@
                                         @enderror
                                     </div>
 
-                                    {{-- ✅ ფასები — wire:model გასწორდა --}}
+                                    {{-- ფასები --}}
                                     <div class="col-4 mb-1">
                                         <label class="form-label">მომწოდ. ფასი</label>
                                         <input type="number"
@@ -171,7 +171,7 @@
                         </div>
                     </div>
 
-                    {{-- ✅ მარჯვენა კოლონა --}}
+                    {{-- მარჯვენა კოლონა --}}
                     <div class="col-md-8">
 
                         {{-- ტექსტური ინფო --}}
@@ -270,7 +270,7 @@
                             <div class="card-body">
 
                                 {{-- მთავარი სურათი --}}
-                                <div class="col-md-12 mb-2">
+                                <div class="col-md-12 mb-3">
                                     <label class="form-label">
                                         მთავარი სურათი <span class="text-danger">*</span>
                                     </label>
@@ -282,7 +282,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
 
-                                    {{-- ✅ preview --}}
+                                    {{-- preview --}}
                                     @if($main_image)
                                         <div class="mt-2">
                                             <img src="{{ $main_image->temporaryUrl() }}"
@@ -292,16 +292,28 @@
                                     @endif
                                 </div>
 
-                                {{-- ✅ Dropzone — wire:ignore რჩება --}}
-                                <div class="col-md-12" wire:ignore>
+                                {{-- ✅ დამატებითი სურათები — Livewire native --}}
+                                <div class="col-md-12">
                                     <label class="form-label">დამატებითი სურათები</label>
-                                    <div id="productDropzone"
-                                         class="dropzone dropzone-area"
-                                         style="min-height: 200px;">
-                                        <div class="dz-message font-neue" style="font-size: 16px;">
-                                            დააჭირე ან ჩააგდე სურათი ასატვირთად!
+                                    <input type="file"
+                                           class="form-control @error('additional_images.*') border-danger is-invalid @enderror"
+                                           wire:model="additional_images"
+                                           accept="image/*"
+                                           multiple>
+                                    @error('additional_images.*')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+
+                                    {{-- preview --}}
+                                    @if(!empty($additional_images))
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            @foreach($additional_images as $img)
+                                                <img src="{{ $img->temporaryUrl() }}"
+                                                     alt="preview"
+                                                     style="height: 80px; width: 80px; object-fit: cover; border-radius: 6px;">
+                                            @endforeach
                                         </div>
-                                    </div>
+                                    @endif
                                 </div>
 
                             </div>
@@ -322,22 +334,4 @@
             top: 9rem;
         }
     </style>
-    <script src="{{ asset('dashboard-assets/vendors/js/file-uploaders/dropzone.min.js') }}"></script>
-    <script>
-        document.addEventListener('livewire:init', function () {
-            const dropzone = new Dropzone("#productDropzone", {
-                url: "{{ route('dashboard.product.image.upload') }}", // ✅ სწორი URL
-                paramName: "file",
-                maxFilesize: 5,
-                acceptedFiles: "image/*",
-                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
-                success: function (file, response) {
-                    Livewire.dispatch('dzUploaded', {path: response.path});
-                },
-                error: function (file, message) {
-                    console.error('Dropzone error:', message);
-                }
-            });
-        });
-    </script>
 @endsection
