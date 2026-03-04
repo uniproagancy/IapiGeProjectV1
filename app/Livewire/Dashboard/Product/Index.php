@@ -233,7 +233,6 @@ class Index extends Component
         ProductPrice::updateOrCreate(
             ['product_id' => $product->id],
             [
-                'dealer_price'   => (float) ($this->priceEditDealerPrice ?: 0),
                 'regular_price'  => (float) $this->priceEditRegularPrice,
                 'discount_price' => !empty($this->priceEditDiscountPrice)
                     ? (float) $this->priceEditDiscountPrice

@@ -339,14 +339,6 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-2">
-                        <label class="form-label">მომწოდებლის ფასი</label>
-                        <input type="number"
-                               step="0.01"
-                               class="form-control"
-                               wire:model="priceEditDealerPrice"
-                               placeholder="0.00">
-                    </div>
-                    <div class="mb-2">
                         <label class="form-label">ფასი <span class="text-danger">*</span></label>
                         <input type="number"
                                step="0.01"
