@@ -122,7 +122,7 @@ class Index extends Component
 
     public function render()
     {
-        $orders = Order::with(['user', 'items', 'status', 'payment'])
+        $orders = Order::with(['user', 'items', 'orderStatus', 'paymentStatus', 'payment'])
             ->when($this->search_query, fn($q) =>
             $q->where('id', 'like', "%{$this->search_query}%")
                 ->orWhereHas('user', fn($u) =>
