@@ -330,6 +330,49 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" wire:ignore.self id="priceEditModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ფასის რედაქტირება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">მომწოდებლის ფასი</label>
+                        <input type="number"
+                               step="0.01"
+                               class="form-control"
+                               wire:model="priceEditDealerPrice"
+                               placeholder="0.00">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">ფასი <span class="text-danger">*</span></label>
+                        <input type="number"
+                               step="0.01"
+                               class="form-control @error('priceEditRegularPrice') border-danger is-invalid @enderror"
+                               wire:model="priceEditRegularPrice"
+                               placeholder="0.00">
+                        @error('priceEditRegularPrice')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">ფასდაკლების ფასი</label>
+                        <input type="number"
+                               step="0.01"
+                               class="form-control"
+                               wire:model="priceEditDiscountPrice"
+                               placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updatePrice">შენახვა</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -408,6 +451,18 @@
             if (modal) {
                 modal.hide();
             }
+        });
+
+        Livewire.on('price_edit_modal_open', () => {
+            const modalEl = document.getElementById('priceEditModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        });
+
+        Livewire.on('price_edit_modal_close', () => {
+            const modalEl = document.getElementById('priceEditModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
         });
     </script>
 @endsection

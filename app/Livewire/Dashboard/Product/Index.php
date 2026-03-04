@@ -6,6 +6,7 @@ namespace App\Livewire\Dashboard\Product;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductSupplier;
 
 use Livewire\Component;
@@ -38,6 +39,11 @@ class Index extends Component
     public $category_id = null;
     public $brand_id = null;
     public $supplier_id = null;
+
+    public $priceEditProductId = null;
+    public $priceEditDealerPrice = 0;
+    public $priceEditRegularPrice = 0;
+    public $priceEditDiscountPrice = null;
 
     protected $listeners = [
         'delete',
@@ -199,6 +205,45 @@ class Index extends Component
         $this->selectedProducts = [];
         $this->dispatch('brand_modal_close');
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა წარმატებით!', title: 'შეტყობინება');
+    }
+
+    public function priceEditModal($productId): void
+    {
+        $product = Product::with('price')->findOrFail($productId);
+
+        $this->priceEditProductId    = $product->id;
+        $this->priceEditDealerPrice  = $product->price->dealer_price ?? 0;
+        $this->priceEditRegularPrice = $product->price->regular_price ?? 0;
+        $this->priceEditDiscountPrice = $product->price->discount_price;
+
+        $this->dispatch('price_edit_modal_open');
+    }
+
+    public function updatePrice(): void
+    {
+        $this->validate([
+            'priceEditRegularPrice' => 'required|numeric|min:0',
+        ], [
+            'priceEditRegularPrice.required' => 'ფასი აუცილებელია',
+            'priceEditRegularPrice.numeric'  => 'ფასი უნდა იყოს რიცხვი',
+        ]);
+
+        $product = Product::with('price')->findOrFail($this->priceEditProductId);
+
+        ProductPrice::updateOrCreate(
+            ['product_id' => $product->id],
+            [
+                'dealer_price'   => (float) ($this->priceEditDealerPrice ?: 0),
+                'regular_price'  => (float) $this->priceEditRegularPrice,
+                'discount_price' => !empty($this->priceEditDiscountPrice)
+                    ? (float) $this->priceEditDiscountPrice
+                    : null,
+            ]
+        );
+
+        $this->priceEditProductId = null;
+        $this->dispatch('price_edit_modal_close');
+        $this->dispatch('ui:success', message: 'ფასი განახლდა წარმატებით!');
     }
 
     public function render()
