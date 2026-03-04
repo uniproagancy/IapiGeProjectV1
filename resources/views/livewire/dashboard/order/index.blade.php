@@ -75,12 +75,6 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        {{-- Pagination --}}
-                        <div class="px-2 py-1">
-                            {{ $orders->links() }}
-                        </div>
-
                     @else
                         <div class="px-2">
                             <div class="alert alert-warning" role="alert">
@@ -91,10 +85,10 @@
                             </div>
                         </div>
                     @endif
-
                 </div>
             </div>
         </div>
+        {{ $orders->links() }}
     </div>
 
     {{-- Filter Modal --}}
