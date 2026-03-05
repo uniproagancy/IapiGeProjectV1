@@ -53,7 +53,6 @@
                         </span>
                     </div>
                 @endif
-                <span class="text-muted" style="font-size: 13px;">ფასი: {{ $formattedPrice }} ₾</span>
             </div>
 
             <div class="d-flex align-items-center justify-content-between p-2 rounded"
