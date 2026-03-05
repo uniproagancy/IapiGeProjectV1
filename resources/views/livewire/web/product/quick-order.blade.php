@@ -42,17 +42,17 @@
                         background: {{ $delivery === 'installment' ? '#f0f5ff' : '' }};
                         cursor: pointer;"
                  wire:click="$set('delivery', 'installment')">
-                @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)--}}
-                <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1" style="margin-bottom: 6px">
-                        <span class="badge text-bg-success">თვეში @if(!empty($product->price->discount_price))
-                                {{ number_format($product->price->discount_price / 24) }} @else {{ number_format($product->price->regular_price / 24) }} @endif ₾ -დან
-                        </span>
-                </div>
-                @endif
                 <div class="d-flex align-items-center gap-2">
                     <input type="radio" wire:model="delivery" value="installment" class="form-check-input mt-0">
                     <label class="mb-0" style="cursor: pointer; font-size: 14px;">განვადება</label>
                 </div>
+                @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)
+                    <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1" style="margin-bottom: 6px">
+                        <span class="badge text-bg-success">თვეში @if(!empty($product->price->discount_price))
+                                {{ number_format($product->price->discount_price / 24) }} @else {{ number_format($product->price->regular_price / 24) }} @endif ₾ -დან
+                        </span>
+                    </div>
+                @endif
                 <span class="text-muted" style="font-size: 13px;">ფასი: {{ $formattedPrice }} ₾</span>
             </div>
 
