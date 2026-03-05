@@ -26,7 +26,7 @@ class ProductExcelImportJob implements ShouldQueue
 
     public function handle(): void
     {
-        $fullPath    = Storage::disk('local')->path($this->filePath);
+        $fullPath = Storage::disk('public')->path($this->filePath);
         $spreadsheet = IOFactory::load($fullPath);
         $sheet       = $spreadsheet->getActiveSheet();
         $rows        = $sheet->toArray();

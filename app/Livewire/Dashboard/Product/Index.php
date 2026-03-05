@@ -109,7 +109,7 @@ class Index extends Component
 
         try {
             \App\Jobs\ProductExcelImportJob::dispatch(
-                $this->excel_file->store('imports', 'local')
+                $this->excel_file->store('imports', 'public')
             );
 
             $this->dispatch('ui:success', message: 'ფაილი მიღებულია, დამუშავება დაიწყო!');
