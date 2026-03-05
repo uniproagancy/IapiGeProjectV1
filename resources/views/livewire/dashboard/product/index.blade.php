@@ -22,10 +22,15 @@
                                     </div>
                                 </div>
                             @endif
-                            <button type="button" class="btn btn-icon btn-info mx-50" data-bs-toggle="modal"
-                                    data-bs-target="#uploadProductExcelModal">
-                                <i data-feather="upload"></i>
-                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
+                                    განახლების ატვირთვა
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
+                                </div>
+                            </div>
                             <div class="btn-group">
                                 <button class="btn btn-icon btn-primary dropdown-toggle px-1" type="button"
                                         id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -179,7 +184,7 @@
         </div>
         {{ $products->links() }}
     </div>
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelModal" tabindex="-1">
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadExcel">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
