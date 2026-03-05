@@ -21,7 +21,8 @@ class Product extends Model
         'quantity',
         'in_stock',
         'active',
-        'show'
+        'show',
+        'draft',
     ];
 
     public function translations()
