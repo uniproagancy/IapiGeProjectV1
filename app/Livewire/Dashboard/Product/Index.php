@@ -47,6 +47,8 @@ class Index extends Component
     public $priceEditRegularPrice = 0;
     public $priceEditDiscountPrice = null;
 
+    public bool $draft = false;
+
     protected $listeners = [
         'delete',
         'restore',
@@ -56,6 +58,7 @@ class Index extends Component
     ];
 
     protected $queryString = [
+        'draft' => ['except' => false],
         'search_query' => ['except' => ''],
         'order_dir' => ['except' => 'desc'],
         'per_page' => ['except' => 10],
@@ -289,6 +292,10 @@ class Index extends Component
             ->when($this->unsorted === true, fn($q) => $q->whereIn('category_id', [3,4])
             )
             ->when($this->no_stock === true, fn($q) => $q->where('in_stock', 0)
+            )
+            ->when($this->draft === true,
+                fn($q) => $q->where('draft', 1),
+                fn($q) => $q->where('draft', 0)->orWhereNull('draft')
             )
             ->when($this->with_trashed, fn($q) => $q->withTrashed())
             ->orderBy('id', $this->order_dir);

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Product\Product;
 use App\Models\Product\ProductPrice;
+use App\Models\Product\ProductTranslation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -11,6 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ProductExcelImportJob implements ShouldQueue
@@ -33,8 +35,8 @@ class ProductExcelImportJob implements ShouldQueue
 
         $stats = [
             'updated'  => 0,
+            'created'  => 0,
             'skipped'  => 0,
-            'notfound' => 0,
         ];
 
         foreach ($rows as $index => $row) {
@@ -64,9 +66,39 @@ class ProductExcelImportJob implements ShouldQueue
                     ->where('title', 'like', '%' . trim($name) . '%');
             })->where('sku', 'LIKE', '%GL-%')->first();
 
+            // ✅ პროდუქტი ვერ მოიძებნა — draft-ად შევქმნათ
             if (!$product) {
-                Log::info("⏭️ Not found: {$name}");
-                $stats['notfound']++;
+                $product = Product::create([
+                    'category_id' => 4,
+                    'brand_id'    => 6,
+                    'supplier_id' => 4,
+                    'sku'         => null,
+                    'quantity'    => $qty,
+                    'in_stock'    => $qty > 0 ? 1 : 0,
+                    'active'      => 0,
+                    'show'        => 0,
+                    'draft'       => 1,
+                    'main_image'  => null,
+                ]);
+
+                ProductTranslation::create([
+                    'product_id' => $product->id,
+                    'locale'     => 'ka',
+                    'title'      => $name,
+                    'slug'       => Str::slug($name) . '-' . $product->id,
+                ]);
+
+                if ($price > 0) {
+                    ProductPrice::create([
+                        'product_id'     => $product->id,
+                        'dealer_price'   => $price,
+                        'regular_price'  => $price,
+                        'discount_price' => $discountPrice,
+                    ]);
+                }
+
+                Log::info("✨ Draft created: {$name} | ProductID: {$product->id} | qty: {$qty} | price: {$price}");
+                $stats['created']++;
                 continue;
             }
 
@@ -91,7 +123,6 @@ class ProductExcelImportJob implements ShouldQueue
 
         Log::info('📊 Excel import done', $stats);
 
-        // ✅ public disk — შეცვლილია local-დან
         Storage::disk('public')->delete($this->filePath);
     }
 }

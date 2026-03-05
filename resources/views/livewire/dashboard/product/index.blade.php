@@ -298,6 +298,11 @@
                                wire:model.lazy="unsorted">
                         <label class="form-check-label" for="unsorted">დაუხარისხებელი</label>
                     </div>
+                    <div class="mb-1 form-check form-check-primary">
+                        <input type="checkbox" class="form-check-input" id="draft"
+                               wire:model.lazy="draft">
+                        <label class="form-check-label" for="draft">მხოლოდ Draft</label>
+                    </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
                         <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
