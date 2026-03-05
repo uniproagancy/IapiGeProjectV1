@@ -108,7 +108,7 @@ class Index extends Component
         ]);
 
         try {
-            \App\Jobs\ProductExcelImportJob::dispatch(
+            \App\Jobs\ProductExcelImportJob::dispatchSync(
                 $this->excel_file->store('imports', 'public')
             );
 
