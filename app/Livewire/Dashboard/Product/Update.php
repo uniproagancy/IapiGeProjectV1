@@ -53,6 +53,8 @@ class Update extends Component
     public $keywords_en    = '';
     public $keywords_ru    = '';
 
+    public $draft = 0;
+
     // ✅ დამატებითი სურათები
     public $additional_images  = [];
     public $existing_images    = [];
@@ -79,6 +81,7 @@ class Update extends Component
         $this->in_stock           = $product->in_stock;
         $this->preorder           = $product->preorder;
         $this->current_main_image = $product->main_image;
+        $this->draft = $product->draft ?? 0;
 
         // ✅ ფასები
         if ($product->price) {
@@ -183,6 +186,8 @@ class Update extends Component
                     'active'      => (int) $this->active,
                     'in_stock'    => (int) $this->in_stock,
                     'preorder'    => (int) $this->preorder,
+                    'draft' => (int) $this->draft,
+
                 ]);
 
                 // ✅ ფასის განახლება

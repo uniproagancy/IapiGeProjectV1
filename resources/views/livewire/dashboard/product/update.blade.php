@@ -150,6 +150,13 @@
                                                        wire:model="preorder">
                                                 <label class="form-check-label" for="preorder">წინასწარი შეკვეთით</label>
                                             </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       id="draft"
+                                                       wire:model="draft">
+                                                <label class="form-check-label" for="draft">Draft</label>
+                                            </div>
                                         </div>
                                     </div>
 
