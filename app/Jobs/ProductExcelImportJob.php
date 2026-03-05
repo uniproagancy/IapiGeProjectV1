@@ -61,7 +61,7 @@ class ProductExcelImportJob implements ShouldQueue
             $product = Product::whereHas('translations', function ($q) use ($name) {
                 $q->where('locale', 'ka')
                     ->where('title', 'like', '%' . trim($name) . '%');
-            })->first();
+            })->where('sku', 'LIKE', '%GL-%')->first();
 
             if (!$product) {
                 Log::info("⏭️ Not found: {$name}");
