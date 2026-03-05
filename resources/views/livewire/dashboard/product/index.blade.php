@@ -275,9 +275,13 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="no_stock" wire:model.lazy="no_stock">
-                        <label class="form-check-label" for="no_stock">ნულოვანი ნაშთი</label>
+                    <div class="mb-1">
+                        <label class="form-label">ნაშთი</label>
+                        <select class="form-select" wire:model.lazy="no_stock">
+                            <option value="">ყველა</option>
+                            <option value="0">მხოლოდ ნულოვანი ნაშთი</option>
+                            <option value="1">არსებული ნაშთიანი</option>
+                        </select>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
                         <input type="checkbox" class="form-check-input" id="status_active"

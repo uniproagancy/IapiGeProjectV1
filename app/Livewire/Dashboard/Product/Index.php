@@ -24,7 +24,7 @@ class Index extends Component
     public bool $with_trashed = false;
     public bool $show_web = false;
     public bool $status_active = false;
-    public bool $no_stock = false;
+    public $no_stock = null;
     public bool $unsorted = false;
 
     public array $selectedProducts = [];
@@ -291,7 +291,10 @@ class Index extends Component
             )
             ->when($this->unsorted === true, fn($q) => $q->whereIn('category_id', [3,4])
             )
-            ->when($this->no_stock === true, fn($q) => $q->where('in_stock', 0)
+            ->when($this->no_stock !== null && $this->no_stock !== '',
+                fn($q) => $this->no_stock === '1'
+                    ? $q->where('quantity', '>', 0)
+                    : $q->where('quantity', 0)
             )
             ->when($this->draft === true,
                 fn($q) => $q->where('draft', 1),
