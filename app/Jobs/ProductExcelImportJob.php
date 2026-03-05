@@ -77,21 +77,17 @@ class ProductExcelImportJob implements ShouldQueue
 
             // ✅ ფასის განახლება
             if ($price > 0) {
-                ProductPrice::updateOrCreate(
-                    ['product_id' => $product->id],
+                ProductPrice::where('product_id', $product->id)->update(
                     [
                         'dealer_price'  => $price,
                         'regular_price' => $price,
                     ]
                 );
             }
-
-            Log::info("✅ Updated: {$name} | qty: {$qty} | price: {$price}");
+            Log::info("✅ Updated: {$name} | ProductID: {$product->id} | qty: {$qty} | price: {$price}");
             $stats['updated']++;
         }
-
         Log::info('📊 Excel import done', $stats);
-
         Storage::disk('local')->delete($this->filePath);
     }
 }
