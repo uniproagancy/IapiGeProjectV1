@@ -31,6 +31,8 @@ class Index extends Component
     public bool $selectAll = false;
     public array $currentPageIds = [];
 
+    public $excel_file;
+
     public $selectedCategory = null;
     public $selectedBrand = null;
     public $selectedSubcategory = null;
@@ -94,6 +96,29 @@ class Index extends Component
         $product->show = !$product->show;
         $product->save();
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა წარმატებით!', title: 'შეტყობინება');
+    }
+
+    public function uploadExcel(): void
+    {
+        $this->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+        ], [
+            'excel_file.required' => 'ფაილი აუცილებელია',
+            'excel_file.mimes'    => 'მხოლოდ Excel ფაილი',
+        ]);
+
+        try {
+            \App\Jobs\ProductExcelImportJob::dispatch(
+                $this->excel_file->store('imports', 'local')
+            );
+
+            $this->dispatch('ui:success', message: 'ფაილი მიღებულია, დამუშავება დაიწყო!');
+            $this->reset('excel_file');
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Excel upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+        }
     }
 
     public function deleteModal($productId)
