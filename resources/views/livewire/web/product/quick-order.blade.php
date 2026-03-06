@@ -15,6 +15,7 @@
         </div>
         <script>
             if (typeof fbq !== 'undefined') {
+                console.log(123);
                 fbq('track', 'Purchase', {
                     value: {{ $this->orderAmount }},
                     currency: 'GEL',
