@@ -86,7 +86,7 @@ class QuickOrder extends Component
             );
 
             $this->trackLead($order, $product);
-            $this->trackInitiateCheckout($order, $product, $price);
+            $this->trackPurchase($order, $product, $price);
 
             $this->success = true;
 
@@ -96,23 +96,30 @@ class QuickOrder extends Component
         }
     }
 
-    private function trackInitiateCheckout(Order $order, Product $product, float $price): void
+    private function trackPurchase(Order $order, Product $product, float $price): void
     {
         try {
-            $eventId = 'ic_' . time() . '_' . Str::random(6);
+            $eventId     = 'purchase_' . time() . '_' . Str::random(6);
+            $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackCheckout(
+            app(FacebookPixelService::class)->trackPurchase(
                 value: $order->amount,
                 currency: 'GEL',
                 items: [[
-                    'id'       => $product->id,
-                    'quantity' => $this->quantity,
+                    'id'         => $product->id,
+                    'quantity'   => $this->quantity,
+                    'item_price' => $price,
                 ]],
-                params: [],
+                params: [
+                    'content_name' => $translation->title ?? '',
+                    'content_type' => 'product',
+                    'content_ids'  => [$product->id],
+                    'num_items'    => $this->quantity,
+                ],
                 eventId: $eventId
             );
 
-            Log::info('✅ InitiateCheckout tracked (QuickOrder)', [
+            Log::info('✅ Purchase tracked (QuickOrder)', [
                 'event_id'   => $eventId,
                 'order_id'   => $order->id,
                 'product_id' => $product->id,
@@ -120,7 +127,7 @@ class QuickOrder extends Component
             ]);
 
         } catch (Exception $e) {
-            Log::warning('QuickOrder InitiateCheckout pixel error: ' . $e->getMessage());
+            Log::warning('QuickOrder Purchase pixel error: ' . $e->getMessage());
         }
     }
 
