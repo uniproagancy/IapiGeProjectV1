@@ -13,24 +13,6 @@
             <div class="fw-semibold font-neue mb-1">შეკვეთა მიღებულია!</div>
             <div class="text-muted" style="font-size: 13px;">ჩვენი ოპერატორი მალე დაგიკავშირდებათ</div>
         </div>
-        <script>
-            if (typeof fbq !== 'undefined') {
-                console.log(123);
-                fbq('track', 'Purchase', {
-                    value: {{ $this->orderAmount }},
-                    currency: 'GEL',
-                    content_ids: [{{ $this->productId }}],
-                    content_type: 'product',
-                    contents: [{
-                        id: {{ $this->productId }},
-                        quantity: {{ $this->quantity }}
-                    }],
-                    num_items: {{ $this->quantity }}
-                }, {
-                    eventID: '{{ $this->purchaseEventId }}'
-                });
-            }
-        </script>
     @else
 
         <div class="text-center mb-3">
@@ -128,6 +110,28 @@
                 <span class="spinner-border spinner-border-sm"></span>
             </span>
         </button>
-
     @endif
+        @if($success)
+            @script
+            <script>
+                if (typeof fbq !== 'undefined') {
+                    console.log('Purchase event firing');
+                    fbq('track', 'Purchase', {
+                        value: {{ $this->orderAmount }},
+                        currency: 'GEL',
+                        content_ids: [{{ $this->productId }}],
+                        content_type: 'product',
+                        contents: [{
+                            id: {{ $this->productId }},
+                            quantity: {{ $this->quantity }}
+                        }],
+                        num_items: {{ $this->quantity }}
+                    }, {
+                        eventID: '{{ $this->purchaseEventId }}'
+                    });
+                }
+            </script>
+            @endscript
+        @endif
 </div>
+
