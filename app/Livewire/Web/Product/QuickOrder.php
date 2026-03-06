@@ -105,15 +105,15 @@ class QuickOrder extends Component
             app(FacebookPixelService::class)->trackPurchase(
                 value: $order->amount,
                 currency: 'GEL',
-                items: [[
-                    'id'         => $product->id,
-                    'quantity'   => $this->quantity,
-                    'item_price' => $price,
-                ]],
                 params: [
-                    'content_name' => $translation->title ?? '',
+                    'contents' => [[
+                        'id'         => $product->id,
+                        'quantity'   => $this->quantity,
+                        'item_price' => $price,
+                    ]],
                     'content_type' => 'product',
                     'content_ids'  => [$product->id],
+                    'content_name' => $translation->title ?? '',
                     'num_items'    => $this->quantity,
                 ],
                 eventId: $eventId
@@ -130,7 +130,6 @@ class QuickOrder extends Component
             Log::warning('QuickOrder Purchase pixel error: ' . $e->getMessage());
         }
     }
-
     private function trackLead(Order $order, Product $product): void
     {
         try {
