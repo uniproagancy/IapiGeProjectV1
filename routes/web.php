@@ -88,43 +88,76 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
         Route::middleware(['check.role'])->group(function () {
             Route::get('/', App\Livewire\Dashboard\Main\Index::class)->name('main');
 
-        //USERS
-        Route::prefix('users')->group(function () {
-            Route::get('/', App\Livewire\Dashboard\User\Index::class)->name('user.index');
-            Route::get('/view/{user_id}/{page?}', App\Livewire\Dashboard\User\View::class)->name('user.view');
-        });
+            //USERS
+            Route::prefix('users')->group(function () {
+                Route::get('/', App\Livewire\Dashboard\User\Index::class)->name('user.index');
+                Route::get('/view/{user_id}/{page?}', App\Livewire\Dashboard\User\View::class)->name('user.view');
+            });
 
-        //COMPANIES
-        Route::prefix('companies')->group(function () {
-            Route::get('/', App\Livewire\Dashboard\Company\Index::class)->name('company.index');
-        });
+            //COMPANIES
+            Route::prefix('companies')->group(function () {
+                Route::get('/', App\Livewire\Dashboard\Company\Index::class)->name('company.index');
+            });
 
-        //PRODUCTS
-        Route::prefix('products')->group(function () {
-            Route::get('/', App\Livewire\Dashboard\Product\Index::class)->name('product.index');
-            Route::get('/create', App\Livewire\Dashboard\Product\Create::class)->name('product.create');
-            Route::get('/update/{id}', App\Livewire\Dashboard\Product\Update::class)->name('product.update');
+            //PRODUCTS
+            Route::prefix('products')->group(function () {
+                Route::get('/', App\Livewire\Dashboard\Product\Index::class)->name('product.index');
+                Route::get('/create', App\Livewire\Dashboard\Product\Create::class)->name('product.create');
+                Route::get('/update/{id}', App\Livewire\Dashboard\Product\Update::class)->name('product.update');
 
-            Route::get('/categories', App\Livewire\Dashboard\ProductCategory\Index::class)->name('product.category.index');
-            Route::get('/brands', App\Livewire\Dashboard\ProductBrand\Index::class)->name('product.brand.index');
-        });
+                Route::get('/categories', App\Livewire\Dashboard\ProductCategory\Index::class)->name('product.category.index');
+                Route::get('/brands', App\Livewire\Dashboard\ProductBrand\Index::class)->name('product.brand.index');
 
-        //ORDERS
-        Route::prefix('orders')->group(function () {
-            Route::get('/', App\Livewire\Dashboard\Order\Index::class)->name('order.index');
-            Route::get('/view/{order_id}', App\Livewire\Dashboard\Order\View::class)->name('order.view');
-            Route::get('/view/{order_id}/invoice/download', [InvoiceController::class, 'invoiceDownload'])
-                ->name('order.invoice.download');
-            Route::get('/view/{order_id}/invoice/send', [InvoiceController::class, 'invoiceSend'])
-                ->name('order.invoice.send');
-        });
+                // JSON იმპორტი — დააგდე ფაილი: storage/app/import/products_import.json
+                // გახსენი: /dashboard/products/run-import?category=ID&supplier=ID
+                Route::get('/run-import', function () {
+                    $file = storage_path('app/import/products_import.json');
 
-        Route::get('/logout', function (\Illuminate\Http\Request $request) {
-            \Illuminate\Support\Facades\Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            return \Illuminate\Support\Facades\Redirect::route('dashboard.login');
-        })->name('logout');
+                    if (!file_exists($file)) {
+                        return 'ფაილი ვერ მოიძებნა: ' . $file;
+                    }
+
+                    $products = json_decode(file_get_contents($file), true);
+
+                    if (!$products) {
+                        return 'JSON წაკითხვა ვერ მოხდა';
+                    }
+
+                    $categoryId = (int) request('category');
+                    $supplierId = (int) request('supplier');
+                    $brandId    = 143;
+
+                    if (!$categoryId || !$supplierId) {
+                        return 'მიუთითე: ?category=ID&supplier=ID';
+                    }
+
+                    \App\Jobs\Product\ImportProductsJob::dispatch(
+                        products: $products,
+                        categoryId: $categoryId,
+                        brandId: $brandId,
+                        supplierId: $supplierId,
+                    );
+
+                    return '✅ იმპორტი დაიწყო — ' . count($products) . ' პროდუქტი. შეამოწმე logs.';
+                })->name('product.run-import');
+            });
+
+            //ORDERS
+            Route::prefix('orders')->group(function () {
+                Route::get('/', App\Livewire\Dashboard\Order\Index::class)->name('order.index');
+                Route::get('/view/{order_id}', App\Livewire\Dashboard\Order\View::class)->name('order.view');
+                Route::get('/view/{order_id}/invoice/download', [InvoiceController::class, 'invoiceDownload'])
+                    ->name('order.invoice.download');
+                Route::get('/view/{order_id}/invoice/send', [InvoiceController::class, 'invoiceSend'])
+                    ->name('order.invoice.send');
+            });
+
+            Route::get('/logout', function (\Illuminate\Http\Request $request) {
+                \Illuminate\Support\Facades\Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return \Illuminate\Support\Facades\Redirect::route('dashboard.login');
+            })->name('logout');
 
         });
     });
