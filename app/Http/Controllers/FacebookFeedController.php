@@ -46,6 +46,16 @@ class FacebookFeedController extends Controller
             try {
                 Log::info("Processing product ID: {$product->id}");
 
+                // Skip category 21 products under 30 GEL
+                if ($product->category_id == 21) {
+                    $price = $product->price->regular_price ?? 0;
+                    $discount = $product->price->discount_price ?? 0;
+                    if ($price < 30 || ($discount > 0 && $discount < 30)) {
+                        Log::info("Product {$product->id} skipped: category 21 with price under 30 GEL");
+                        continue;
+                    }
+                }
+
                 // Get product image
                 $productImage = $this->getProductImage($product);
                 Log::debug("Product {$product->id} image: {$productImage}");
@@ -182,6 +192,16 @@ class FacebookFeedController extends Controller
         foreach ($products as $product) {
             try {
                 Log::info("Processing product ID: {$product->id}");
+
+                // Skip category 21 products under 30 GEL
+                if ($product->category_id == 21) {
+                    $price = $product->price->regular_price ?? 0;
+                    $discount = $product->price->discount_price ?? 0;
+                    if ($price < 30 || ($discount > 0 && $discount < 30)) {
+                        Log::info("Product {$product->id} skipped: category 21 with price under 30 GEL");
+                        continue;
+                    }
+                }
 
                 // Get product image
                 $productImage = $this->getProductImage($product);
