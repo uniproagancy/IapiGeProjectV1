@@ -131,7 +131,7 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                         return 'მიუთითე: ?category=ID&supplier=ID';
                     }
 
-                    \App\Jobs\Product\ImportProductsJob::dispatch(
+                    \App\Jobs\ImportProductsJob::dispatch(
                         products: $products,
                         categoryId: $categoryId,
                         brandId: $brandId,

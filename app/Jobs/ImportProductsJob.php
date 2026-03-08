@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Product;
+namespace App\Jobs;
 
 use App\Models\Product\Product;
 use App\Models\Product\ProductImage;
