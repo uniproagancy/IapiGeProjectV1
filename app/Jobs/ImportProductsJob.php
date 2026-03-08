@@ -105,9 +105,9 @@ class ImportProductsJob implements ShouldQueue
             // ── 2. ფასი ───────────────────────────────────────────────────────
             $priceData = [
                 'dealer_price'   => 0,
-                'regular_price'  => (float) ($data['regular_price'] ?? 0),
+                'regular_price'  => (float) ($data['regular_price'] + 20 ?? 0),
                 'discount_price' => !empty($data['discount_price'])
-                    ? (float) $data['discount_price']
+                    ? (float) $data['discount_price'] + 20
                     : null,
             ];
 
