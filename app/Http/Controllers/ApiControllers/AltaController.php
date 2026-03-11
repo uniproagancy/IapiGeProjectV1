@@ -48,6 +48,7 @@ class AltaController extends Controller
                     'show' => $show,
                     'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
                 ]);
+                Log::info('ALTA-'.$item->item.' Quantity Updated');
             }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
