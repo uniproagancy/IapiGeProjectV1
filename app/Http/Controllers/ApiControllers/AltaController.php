@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApiControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\AltaID;
+use App\Models\Product\Product;
 use Illuminate\Support\Facades\Log;
 use SoapClient;
 use Exception;
@@ -39,11 +40,14 @@ class AltaController extends Controller
             AltaID::truncate();
             foreach($response->PriceList->items->item as $item) {
                 if($this->parseQtyText($item->qty_text)['quantity'] > 2) {
-                    AltaID::create([
-                        'product_id' => $item->item,
-                        'quantity' => $this->parseQtyText($item->qty_text)['quantity']
-                    ]);
+                    $show = 1;
+                } else {
+                    $show = 0;
                 }
+                Product::where('sku', 'ALTA-'.$item->item)->update([
+                    'show' => $show,
+                    'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
+                ]);
             }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
