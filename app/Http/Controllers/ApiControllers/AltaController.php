@@ -38,26 +38,20 @@ class AltaController extends Controller
             ];
             $response = $this->soapClient->GetPriceList($params);
             AltaID::truncate();
+            Product::where('sku', 'LIKE', '%ALTA-%')->update([
+                'show' => 0
+            ]);
             foreach($response->PriceList->items->item as $item) {
                 if($this->parseQtyText($item->qty_text)['quantity'] > 2) {
                     $show = 1;
                 } else {
                     $show = 0;
                 }
-                $product = Product::where('sku', 'ALTA-'.$item->item)->first();
-                if(!empty($product)) {
-                    $product->update([
-                        'show' => $show,
-                        'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
-                    ]);
-                    Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].' Show status:'.$show);
-                } else {
-                    $product->update([
-                        'show' => 0,
-                        'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
-                    ]);
-                    Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].'Product not in B2b');
-                }
+                Product::where('sku', 'ALTA-'.$item->item)->update([
+                    'show' => $show,
+                    'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
+                ]);
+                Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].' Show status:'.$show);
             }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
