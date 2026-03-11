@@ -44,11 +44,20 @@ class AltaController extends Controller
                 } else {
                     $show = 0;
                 }
-                Product::where('sku', 'ALTA-'.$item->item)->update([
-                    'show' => $show,
-                    'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
-                ]);
-                Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].' Show status:'.$show);
+                $product = Product::where('sku', 'ALTA-'.$item->item)->first();
+                if(!empty($product)) {
+                    $product->update([
+                        'show' => $show,
+                        'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
+                    ]);
+                    Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].' Show status:'.$show);
+                } else {
+                    $product->update([
+                        'show' => 0,
+                        'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
+                    ]);
+                    Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].'Product not in B2b');
+                }
             }
         } catch (Exception $e) {
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
