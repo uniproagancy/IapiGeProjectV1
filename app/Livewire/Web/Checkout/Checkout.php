@@ -110,6 +110,7 @@ class Checkout extends Component
     {
         try {
             if ($this->product_id) {
+                Log::warning('product load from url');
                 $product = Product::with(['translations', 'price'])
                     ->where('active', 1)
                     ->where('show', 1)
@@ -140,6 +141,7 @@ class Checkout extends Component
                 ];
 
             } else {
+                Log::warning('product load from cart');
                 $this->loadCartFromDatabase();
                 $cartItems = Cart::getContent();
 
