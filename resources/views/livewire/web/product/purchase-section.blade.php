@@ -36,7 +36,6 @@
         @endif
     </div>
     @foreach($product->variations as $variation)
-        @if($variation === 1)
         <div class="mb-4">
             <div class="d-flex">
                 <small class="px-1">{{ $variation->name }}: </small>
@@ -60,7 +59,6 @@
                 @endforeach
             </div>
         </div>
-        @endif
     @endforeach
     @include('livewire.web.product.delivery-info')
     @if(Route::is('web.products.view'))
