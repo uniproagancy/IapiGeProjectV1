@@ -36,7 +36,7 @@
         @endif
     </div>
     @foreach($product->variations as $variation)
-        @if($variation->show === 1)
+        @if($variation === 1)
         <div class="mb-4">
             <div class="d-flex">
                 <small class="px-1">{{ $variation->name }}: </small>
@@ -44,7 +44,7 @@
             </div>
             <div class="d-flex flex-wrap gap-2">
                 @foreach($variation->items as $item)
-                    @if(!empty($item->product))
+                    @if(!empty($item->product) && $item->product->show === 1)
                         @php
                             $slug = \App\Models\Product\ProductTranslation::where('product_id', $item->product->id)->where('locale', 'ka')->first();
                         @endphp
