@@ -65,6 +65,14 @@ class Checkout extends Component
     public function mount(): void
     {
         try {
+            // ✅ #[Url] პროპერტი mount()-ში შეიძლება ჯერ არ იყოს set,
+            // ამიტომ request()-იდანაც ვკითხულობთ
+            $productId = $this->product_id ?? request('product_id');
+
+            if (!empty($productId)) {
+                $this->product_id = $productId;
+            }
+
             if (count(Cart::getContent()) > 0 || !empty($this->product_id)) {
                 $this->loadOrderItems();
                 $this->calculateTotals();
@@ -78,11 +86,11 @@ class Checkout extends Component
             }
 
             if (auth()->check()) {
-                $user            = auth()->user();
-                $this->name      = $user->name ?? '';
-                $this->lastname  = $user->lastname ?? '';
-                $this->email     = $user->email;
-                $this->phone     = $user->phone ?? '';
+                $user               = auth()->user();
+                $this->name         = $user->name ?? '';
+                $this->lastname     = $user->lastname ?? '';
+                $this->email        = $user->email;
+                $this->phone        = $user->phone ?? '';
                 $this->verify_phone = $user->verify_phone ?? '';
             }
 
@@ -118,7 +126,7 @@ class Checkout extends Component
                     ? $product->price->discount_price
                     : $product->price?->regular_price;
 
-                // ✅ plain array (არა collect)
+                // ✅ plain array
                 $this->orderItems = [
                     [
                         'id'       => $product->id,
@@ -141,7 +149,7 @@ class Checkout extends Component
                     return;
                 }
 
-                // ✅ plain array (არა collection)
+                // ✅ plain array
                 $this->orderItems = $cartItems->map(function ($item) {
                     return [
                         'id'       => $item->id,
@@ -169,7 +177,7 @@ class Checkout extends Component
     public function calculateTotals(): void
     {
         try {
-            // ✅ collect() გამოვიყენოთ, რადგან $this->orderItems ყოველთვის plain array-ია
+            // ✅ collect() — plain array-ც მიიღება
             $this->subtotal = collect($this->orderItems)->sum('total');
             $this->tax      = 0;
             $this->total    = $this->subtotal + $this->tax;
