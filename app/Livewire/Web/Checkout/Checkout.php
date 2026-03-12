@@ -118,15 +118,18 @@ class Checkout extends Component
                     ? $product->price->discount_price
                     : $product->price?->regular_price;
 
-                $this->orderItems = collect([[
-                    'id'       => $product->id,
-                    'name'     => $translation->title,
-                    'sku'      => $product->sku,
-                    'image'    => $product->main_image,
-                    'price'    => $price,
-                    'quantity' => $this->quantity,
-                    'total'    => $price * $this->quantity,
-                ]]);
+                // ✅ plain array (არა collect)
+                $this->orderItems = [
+                    [
+                        'id'       => $product->id,
+                        'name'     => $translation->title,
+                        'sku'      => $product->sku,
+                        'image'    => $product->main_image,
+                        'price'    => $price,
+                        'quantity' => $this->quantity,
+                        'total'    => $price * $this->quantity,
+                    ]
+                ];
 
             } else {
                 $this->loadCartFromDatabase();
@@ -138,6 +141,7 @@ class Checkout extends Component
                     return;
                 }
 
+                // ✅ plain array (არა collection)
                 $this->orderItems = $cartItems->map(function ($item) {
                     return [
                         'id'       => $item->id,
@@ -148,7 +152,7 @@ class Checkout extends Component
                         'quantity' => $item->quantity,
                         'total'    => $item->getPriceSum(),
                     ];
-                });
+                })->values()->toArray();
             }
 
         } catch (Exception $e) {
@@ -165,7 +169,8 @@ class Checkout extends Component
     public function calculateTotals(): void
     {
         try {
-            $this->subtotal = $this->orderItems->sum('total');
+            // ✅ collect() გამოვიყენოთ, რადგან $this->orderItems ყოველთვის plain array-ია
+            $this->subtotal = collect($this->orderItems)->sum('total');
             $this->tax      = 0;
             $this->total    = $this->subtotal + $this->tax;
         } catch (Exception $e) {
@@ -308,9 +313,7 @@ class Checkout extends Component
             ? $product->price->discount_price
             : $product->price->regular_price;
 
-        // ✅ გასწორდა: email ცარიელია თუ არა შევამოწმოთ
         if (!empty($this->email)) {
-            // ✅ email გვაქვს — ვეძებთ ამ email-ით
             $user = User::updateOrCreate(
                 ['email' => $this->email],
                 [
@@ -320,7 +323,6 @@ class Checkout extends Component
                 ]
             );
         } else {
-            // ✅ email არ გვაქვს — ყოველთვის ახალი მომხმარებელი
             $user = User::create([
                 'name'     => $this->name,
                 'lastname' => $this->lastname,
@@ -522,12 +524,12 @@ class Checkout extends Component
                         );
                         if ($response['status_code'] === 200) {
                             OrderTransaction::create([
-                                'order_id' => $order->id,
+                                'order_id'         => $order->id,
                                 'payment_order_id' => $tbcInstallment->getSessionId(),
-                                'url' => $tbcInstallment->getRedirectUri(),
-                                'amount' => $order->amount,
-                                'status' => 1,
-                                'type' => 'tbc_installment',
+                                'url'              => $tbcInstallment->getRedirectUri(),
+                                'amount'           => $order->amount,
+                                'status'           => 1,
+                                'type'             => 'tbc_installment',
                             ]);
                             $this->redirect($tbcInstallment->getRedirectUri());
                         }
@@ -567,8 +569,8 @@ class Checkout extends Component
         return view('livewire.web.cart.checkout', [
             'payment_list'      => Payment::where('active', 1)->orderBy('sortable', 'ASC')->get(),
             'checkout_event_id' => $this->checkoutEventId ?? null,
-            'total'             => $this->total,                       // ✅ დაემატა
-            'orderItemsCount'        => count($this->orderItems ?? []),     // ✅ რიცხვი
+            'total'             => $this->total,
+            'orderItemsCount'   => count($this->orderItems ?? []),
         ])->layout('livewire.web.layout');
     }
 }
