@@ -173,8 +173,6 @@ class FacebookFeedController extends Controller
 
         // Get products
         $products = Product::where('active', 1)
-            ->where('in_stock', 1)
-            ->where('quantity', '>', 0)
             ->where('show', 1)
             ->whereHas('price', function ($query) {
                 $query->where('discount_price', '>', 0);
