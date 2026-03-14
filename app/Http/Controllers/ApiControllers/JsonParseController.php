@@ -23,7 +23,22 @@ class JsonParseController extends Controller
         $jsonContent = file_get_contents($jsonPath);
         $data = json_decode($jsonContent, true);
         foreach ($data as $item) {
-            dd($item);
+            $product = Product::where('sku', 'COMFO-'.$item['external_id'])->first();
+            if($item['quantity'] > 2) {
+                $show = 1;
+            } else {
+                $show = 0;
+            }
+            $product->update(['quantity' => $item['quantity'], 'show' => $show]);
+            if($item['discount_price'] > 0) {
+                $discount_price = $item['discount_price'];
+            } else {
+                $discount_price = NULL;
+            }
+            ProductPrice::where(['product_id' => $product->id])->update([
+                'regular_price' => $item['regular_price'],
+                'discount_price' => $discount_price,
+            ]);
         }
     }
 }
