@@ -22,8 +22,8 @@ class JsonParseController extends Controller
         $jsonPath = storage_path('app/Json2.json');
         $jsonContent = file_get_contents($jsonPath);
         $data = json_decode($jsonContent, true);
-        foreach ($data['categories'] as $category) {
-
+        foreach ($data as $item) {
+            dd($item);
         }
     }
 }
