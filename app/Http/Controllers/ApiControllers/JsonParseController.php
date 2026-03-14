@@ -44,8 +44,8 @@ class JsonParseController extends Controller
                 : null;
 
             ProductPrice::where('product_id', $product->id)->update([
-                'regular_price'  => $item['regular_price'],
-                'discount_price' => $discount_price,
+                'regular_price'  => $item['regular_price'] + 20,
+                'discount_price' => $discount_price + 20,
             ]);
         }
     }
