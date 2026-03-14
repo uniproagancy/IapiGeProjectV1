@@ -22,21 +22,29 @@ class JsonParseController extends Controller
         $jsonPath = storage_path('app/Json2.json');
         $jsonContent = file_get_contents($jsonPath);
         $data = json_decode($jsonContent, true);
+
         foreach ($data as $item) {
             $product = Product::where('sku', 'COMFO-'.$item['external_id'])->first();
-            if($item['quantity'] > 2) {
-                $show = 1;
-            } else {
-                $show = 0;
+
+            if (!$product) {
+                Log::warning('Product not found: COMFO-' . $item['external_id']);
+                continue;
             }
-            $product->update(['quantity' => $item['quantity'], 'show' => $show]);
-            if($item['discount_price'] > 0) {
-                $discount_price = $item['discount_price'];
-            } else {
-                $discount_price = NULL;
-            }
-            ProductPrice::where(['product_id' => $product->id])->update([
-                'regular_price' => $item['regular_price'],
+
+            $quantity = (int) filter_var($item['quantity'], FILTER_SANITIZE_NUMBER_INT);
+            $show = $quantity > 2 ? 1 : 0;
+
+            $product->update([
+                'quantity' => $quantity,
+                'show'     => $show,
+            ]);
+
+            $discount_price = (!empty($item['discount_price']) && $item['discount_price'] > 0)
+                ? $item['discount_price']
+                : null;
+
+            ProductPrice::where('product_id', $product->id)->update([
+                'regular_price'  => $item['regular_price'],
                 'discount_price' => $discount_price,
             ]);
         }
