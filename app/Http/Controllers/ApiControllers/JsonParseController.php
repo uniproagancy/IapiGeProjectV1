@@ -23,17 +23,7 @@ class JsonParseController extends Controller
         $jsonContent = file_get_contents($jsonPath);
         $data = json_decode($jsonContent, true);
         foreach ($data['categories'] as $category) {
-            $product = ProductCategory::find($category['id']);
-            if(!empty($product)) {
-                $product->update([
-                    'google_category_id' => 0,
-                    'facebook_category_id' => 0,
-                ]);
-                $product->update([
-                    'google_category_id' => $category['google_category_id'],
-                    'facebook_category_id' => $category['facebook_category_id'],
-                ]);
-            }
+
         }
     }
 }

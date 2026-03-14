@@ -1,865 +1,3693 @@
-{
-  "total": 172,
-  "categories": [
-    {
-      "id": 5,
-      "google_category_id": 604,
-      "facebook_category_id": 339
-    },
-    {
-      "id": 6,
-      "google_category_id": 604,
-      "facebook_category_id": 339
-    },
-    {
-      "id": 7,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 8,
-      "google_category_id": 222,
-      "facebook_category_id": 238
-    },
-    {
-      "id": 9,
-      "google_category_id": 278,
-      "facebook_category_id": 227
-    },
-    {
-      "id": 10,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 11,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 12,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 13,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 14,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 15,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 16,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 17,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 18,
-      "google_category_id": 267,
-      "facebook_category_id": 206
-    },
-    {
-      "id": 19,
-      "google_category_id": 201,
-      "facebook_category_id": 209
-    },
-    {
-      "id": 20,
-      "google_category_id": 5122,
-      "facebook_category_id": 207
-    },
-    {
-      "id": 21,
-      "google_category_id": 264,
-      "facebook_category_id": 207
-    },
-    {
-      "id": 22,
-      "google_category_id": 686,
-      "facebook_category_id": 335
-    },
-    {
-      "id": 23,
-      "google_category_id": 2849,
-      "facebook_category_id": 336
-    },
-    {
-      "id": 24,
-      "google_category_id": 2849,
-      "facebook_category_id": 336
-    },
-    {
-      "id": 25,
-      "google_category_id": 680,
-      "facebook_category_id": 338
-    },
-    {
-      "id": 26,
-      "google_category_id": 604,
-      "facebook_category_id": 339
-    },
-    {
-      "id": 27,
-      "google_category_id": 684,
-      "facebook_category_id": 944
-    },
-    {
-      "id": 28,
-      "google_category_id": 604,
-      "facebook_category_id": 339
-    },
-    {
-      "id": 29,
-      "google_category_id": 604,
-      "facebook_category_id": 339
-    },
-    {
-      "id": 30,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 31,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 32,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 33,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 34,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 35,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 36,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 37,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 38,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 39,
-      "google_category_id": 404,
-      "facebook_category_id": 218
-    },
-    {
-      "id": 40,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 41,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 42,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 43,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 44,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 45,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 46,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 47,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 48,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 49,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 50,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 51,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 52,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 53,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 54,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 55,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 56,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 57,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 58,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 59,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 60,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 61,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 62,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 63,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 64,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 65,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 66,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 67,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 68,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 69,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 70,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 71,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 72,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 73,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 74,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 75,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 76,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 77,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 78,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 79,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 80,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 81,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 82,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 83,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 84,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 85,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 86,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 87,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 88,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 89,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 90,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 91,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 92,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 93,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 94,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 95,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 96,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 97,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 98,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 99,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 100,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 101,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 102,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 103,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 104,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 105,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 106,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 107,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 108,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 109,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 110,
-      "google_category_id": 328,
-      "facebook_category_id": 230
-    },
-    {
-      "id": 111,
-      "google_category_id": 285,
-      "facebook_category_id": 229
-    },
-    {
-      "id": 112,
-      "google_category_id": 302,
-      "facebook_category_id": 227
-    },
-    {
-      "id": 113,
-      "google_category_id": 278,
-      "facebook_category_id": 232
-    },
-    {
-      "id": 114,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 115,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 116,
-      "google_category_id": 305,
-      "facebook_category_id": 219
-    },
-    {
-      "id": 117,
-      "google_category_id": 283,
-      "facebook_category_id": 237
-    },
-    {
-      "id": 118,
-      "google_category_id": 285,
-      "facebook_category_id": 229
-    },
-    {
-      "id": 119,
-      "google_category_id": 345,
-      "facebook_category_id": 222
-    },
-    {
-      "id": 120,
-      "google_category_id": 342,
-      "facebook_category_id": 228
-    },
-    {
-      "id": 121,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 122,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 123,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 124,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 125,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 126,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 127,
-      "google_category_id": 500002,
-      "facebook_category_id": 238
-    },
-    {
-      "id": 128,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 129,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 130,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 131,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 132,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 133,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 134,
-      "google_category_id": 686,
-      "facebook_category_id": 335
-    },
-    {
-      "id": 135,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 136,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 137,
-      "google_category_id": 5139,
-      "facebook_category_id": 1310
-    },
-    {
-      "id": 138,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 139,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 140,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 141,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 142,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 143,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 144,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 145,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 146,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 147,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 148,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 149,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 150,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 151,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 152,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 153,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 154,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 155,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 156,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 157,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 158,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 159,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 160,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 161,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 162,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 163,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 164,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 165,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 166,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 167,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 168,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 169,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 170,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 171,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 172,
-      "google_category_id": 505771,
-      "facebook_category_id": 207
-    },
-    {
-      "id": 173,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 174,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 175,
-      "google_category_id": null,
-      "facebook_category_id": null
-    },
-    {
-      "id": 176,
-      "google_category_id": null,
-      "facebook_category_id": null
-    }
-  ]
-}
+[
+  {
+    "external_id": 451,
+    "title_ka": "ყავის მაგიდა ფიჭვის ფაქტურით (50*50)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 150,
+    "discount_price": 89.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-ფიჭვის-ფაქტურით-5050-451/",
+    "main_image": "https://comfo.ge/images/detailed/15/iJckF6d1yCHoIKBNPpgOOsPY8RjJZt.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/KamwgsKvaQiyuFuP4y4UYEjOtALV0P.jpeg"
+    ]
+  },
+  {
+    "external_id": 534,
+    "title_ka": "თეთრი ყავის მაგიდა გორგოლაჭებზე (CT1-B)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 89,
+    "discount_price": 59.9,
+    "quantity": 49,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/თეთრი-ყავის-მაგიდა-გორგოლაჭებზე-ct1-b-534/",
+    "main_image": "https://comfo.ge/images/detailed/15/wWwscZHUq0c8lZcw8ysCZRLX8gLJ95.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/tSpB11GLLr62bKch6oeWECtKUN03WJ.png",
+      "https://comfo.ge/images/detailed/15/CfHDbL1q0ERxCtk27rs14sDc2kwYyj.png",
+      "https://comfo.ge/images/detailed/15/apZf4yWTfhmBEfIFyFra7wCBpbtFxV.png",
+      "https://comfo.ge/images/detailed/15/6iMY8Tc4B9D3qtGmS7jJqnxdaQ1qFq.png"
+    ]
+  },
+  {
+    "external_id": 637,
+    "title_ka": "ლეპტოპის მაგიდა თეთრი (BF-637)",
+    "category_ka": "ლეპტოპის მაგიდა",
+    "regular_price": 94,
+    "discount_price": 59.9,
+    "quantity": 29,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-თეთრი-bf-637/",
+    "main_image": "https://comfo.ge/images/detailed/15/nXoce93mPJZELk4rw1dTXbjJSCy2jy.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/yL6xqtgDbCCkkKAzeY8UOMjvtXOGpt.jpeg",
+      "https://comfo.ge/images/detailed/15/UPEQqbjxauHwE5G53lPmB8Bd5A4PFe.jpeg",
+      "https://comfo.ge/images/detailed/15/Gp5TA1Esn1jK7bk0QMvOXZyiRRqoAw.jpeg",
+      "https://comfo.ge/images/detailed/15/rX9oGRShgHgdzKlxbQ5YlyDeZkH97o.jpeg",
+      "https://comfo.ge/images/detailed/15/CT7CT0jsGsJR5JCg6vMzjM3kJIbd8T.jpeg",
+      "https://comfo.ge/images/detailed/15/t3KuVB1SHucSpMlxviAtJthFjNWcKE.jpeg"
+    ]
+  },
+  {
+    "external_id": 560,
+    "title_ka": "6-დონიანი კედლის თარო თეთრი",
+    "category_ka": "თარო",
+    "regular_price": 226,
+    "discount_price": 129.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/6-დონიანი-კედლის-თარო-თეთრი-560/",
+    "main_image": "https://comfo.ge/images/detailed/15/KnquuEH6qXkpTPSlMhm3seJ858Jwn2.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/fpFeWm5qfGAYv6xjp69EfEKhBZeaGa.jpg",
+      "https://comfo.ge/images/detailed/15/km5P6dSG0yDhgMTZUQ9T65HbzzS9RC.jpg"
+    ]
+  },
+  {
+    "external_id": 15,
+    "title_ka": "თეთრი 3-დონიანი თარო (15)",
+    "category_ka": "თარო",
+    "regular_price": 169,
+    "discount_price": 89.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/თეთრი-3-დონიანი-თარო-15/",
+    "main_image": "https://comfo.ge/images/detailed/14/3g0sIjD5hV4cokl3n0FfLxH0SfC2FN.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/WdkzK2CeucELLW3x9WEgiBx7n13S2q.png",
+      "https://comfo.ge/images/detailed/14/PsPnHRQovwzzwGa6MJoWDjG1EEfzgG.png",
+      "https://comfo.ge/images/detailed/14/11Pr41fg5puvvjQtW6t6XivWSFe18K.png",
+      "https://comfo.ge/images/detailed/14/k1xKIsq1msqkGibXh02dlTLghHNN13.png",
+      "https://comfo.ge/images/detailed/14/yaAu5SZT5Q2KKY9C7j0rsxBiOO2E30.png",
+      "https://comfo.ge/images/detailed/14/3Okxyb9mEl9wYWYpXaFZ9JX7IHWgns.png",
+      "https://comfo.ge/images/detailed/14/3029CDELD4y1PyzgoLSjhSAYOQqPxA.png"
+    ]
+  },
+  {
+    "external_id": 21,
+    "title_ka": "თეთრი 5-დონიანი თარო (21)",
+    "category_ka": "თარო",
+    "regular_price": 264,
+    "discount_price": 159.9,
+    "quantity": 1,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/თეთრი-5-დონიანი-თარო-21/",
+    "main_image": "https://comfo.ge/images/detailed/14/sOtUMMmVuGRQEaBPO6bjUV6qwqcWXR.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/HGeQBhalaov9rYLsF60i0wU9IAO1Z8.png",
+      "https://comfo.ge/images/detailed/14/GecaWcRkuFODHr5WaHi5aaoa6p8KiQ.png",
+      "https://comfo.ge/images/detailed/14/1AhjGLREi2RE0ubSU6UKoe1LUgB9h3.png",
+      "https://comfo.ge/images/detailed/14/k2yiZRet2b4A1kAKLlBgPPbk9Ik93O.png",
+      "https://comfo.ge/images/detailed/14/UnRaVQF8ptIJ4bEtZIDfQH3enaxSjp.png",
+      "https://comfo.ge/images/detailed/14/cFQbpEbKoikSqhL5K7dvZTnosZoR5E.png"
+    ]
+  },
+  {
+    "external_id": 271,
+    "title_ka": "ლეპტოპის მაგიდა მუქი ხის ფაქტურით (271)",
+    "category_ka": "ლეპტოპის მაგიდა",
+    "regular_price": 94,
+    "discount_price": 69.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-მუქი-ხის-ფაქტურით-271/",
+    "main_image": "https://comfo.ge/images/detailed/14/PT6buqluQv75DyzD0LyGx1L0PCOf5O.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/HarNsi4g89qjAqsMkbKOM7eiExmZRP.jpeg",
+      "https://comfo.ge/images/detailed/14/zz0aaCSG8bzYKFsCnTye7hVUMJckf3.jpeg",
+      "https://comfo.ge/images/detailed/14/hqxMBmu1bqO0fGDO4UgOy9T8IS1Sji.jpeg",
+      "https://comfo.ge/images/detailed/14/KKWajnKuvSpIUAezM8uW7L0x7eHX5P.jpeg"
+    ]
+  },
+  {
+    "external_id": 473,
+    "title_ka": "დასადგმელი საათი  D-300-3 (473)",
+    "category_ka": "საათები",
+    "regular_price": 49,
+    "discount_price": 14.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-საათი-d-300-3-473/",
+    "main_image": "https://comfo.ge/images/detailed/15/goVtZELCoAE9a6P7gfDQtlxXfw9uJv.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/Fo6HkApq3o6CSFfs16Po2H3WMAxEgJ.jpg",
+      "https://comfo.ge/images/detailed/15/agZLQUnYxWaiKnSqkTQCOQBUpnTi9l.jpg"
+    ]
+  },
+  {
+    "external_id": 658,
+    "title_ka": "სარკე თაროთი AYN-1000-SET-3",
+    "category_ka": "სარკეები",
+    "regular_price": 49,
+    "discount_price": 24.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/sarkeebi/sarkeebi/სარკე-თაროთი-ayn-1000-set-3-658/",
+    "main_image": "https://comfo.ge/images/detailed/15/KCwXpbSGsKb2du0AhxIN2PJAaxPTFz.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/JdgRWbKDwUoF5nyDgbBkLW6SY1OlDL.jpg"
+    ]
+  },
+  {
+    "external_id": 665,
+    "title_ka": "წიგნების 4-დონიანი კედლის თეთრი თარო  (665)",
+    "category_ka": "თარო",
+    "regular_price": 169,
+    "discount_price": 89.9,
+    "quantity": 5,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/წიგნების-4-დონიანი-კედლის-თეთრი-თარო-665/",
+    "main_image": "https://comfo.ge/images/detailed/15/s6KFYzTKnT9mkgDyol8oTKfZ9noVyE.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/lazIDVZqGSVVHJbttTRntn5DrFpOlc.png",
+      "https://comfo.ge/images/detailed/15/s0ksAebkarZNIn3iIlNAoWsFSjLgMT.png",
+      "https://comfo.ge/images/detailed/15/AeP9TlhQCIJg70e5wl59cvXDVfLoCy.png",
+      "https://comfo.ge/images/detailed/15/FcbIx61tSE1jUyVjoXvucb9CxAuoUf.jpeg"
+    ]
+  },
+  {
+    "external_id": 734,
+    "title_ka": "მაღვიძარა საათი MS-100 (734)",
+    "category_ka": "საათები",
+    "regular_price": 29.0,
+    "discount_price": 9.0,
+    "quantity": 4,
+    "link": "https://comfo.ge/saatebi/saatebi/მაღვიძარა-საათი-ms-100-734/",
+    "main_image": "https://comfo.ge/images/detailed/16/1o8u8SYtKfYKnLtcueoKjq5evzLxJO.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/S9bLjEYd7xtn1ch2QD1OdJTS5P552N.jpg",
+      "https://comfo.ge/images/detailed/16/1ZpfBKheu99Aa6OeyY3kMbhlOemB2q.jpg",
+      "https://comfo.ge/images/detailed/16/MYZoVVg2h2Om5svJlF29CNqyeVWCR9.jpg",
+      "https://comfo.ge/images/detailed/16/87IAfOdvJRqTpixuIHyJxxW4Fv5nYw.jpg"
+    ]
+  },
+  {
+    "external_id": 740,
+    "title_ka": "საათი სარკე AYN-040-R-02 (740)",
+    "category_ka": "საათები",
+    "regular_price": 149,
+    "discount_price": 59,
+    "quantity": 2,
+    "link": "https://comfo.ge/saatebi/saatebi/საათი-სარკე-ayn-040-r-02-740/",
+    "main_image": "https://comfo.ge/images/detailed/16/ZAoCYemKEZu03CrQDtAtUghZmpbPkb.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 752,
+    "title_ka": "ფეხსაცმლის კარადა უჯრით და თაროებით (BF-752)",
+    "category_ka": "კარადა",
+    "regular_price": 499,
+    "discount_price": 289.9,
+    "quantity": 13,
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-კარადა-უჯრით-და-თაროებით-bf-752/",
+    "main_image": "https://comfo.ge/images/detailed/16/XePcMmlZrn6ScIDHop8Kal2Y0FVYYz.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/8UHYGxvcQtDaU7Ep6ZHzHBBYXuLjp5.jpeg",
+      "https://comfo.ge/images/detailed/16/mGJl2f9XI3x7apbdFIPSPDBt27TX0X.png",
+      "https://comfo.ge/images/detailed/16/r2rhmVyrLF8rOtTLranD0WDBWEQsIW.png",
+      "https://comfo.ge/images/detailed/16/XRRp6CK1C4cxkaTTbUdbqMWhj5WEKe.jpeg"
+    ]
+  },
+  {
+    "external_id": 535,
+    "title_ka": "საოფისე სამეცადინო მაგიდა ორმხრივი თაროთი (MS1-B) (535)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 299,
+    "discount_price": 199.9,
+    "quantity": 11,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-ორმხრივი-თაროთი-ms1-b-535/",
+    "main_image": "https://comfo.ge/images/detailed/15/4B7vmzde4jXjrjfE5JzjZMZ5zHICUg.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/tLpZu10gQgsyiInwCi3j79YkbykQRH.png",
+      "https://comfo.ge/images/detailed/15/4YC23BTYmWGifd17SOJqt3Vr8Q7dnd.png",
+      "https://comfo.ge/images/detailed/15/g5mnCF1BMg86J1RCrk6WqKAv72rx0S.png"
+    ]
+  },
+  {
+    "external_id": 759,
+    "title_ka": "4-დონიანი კედლის თარო ფიჭვის ფაქტურით (BF-759)",
+    "category_ka": "თარო",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 25,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-კედლის-თარო-ფიჭვის-ფაქტურით-bf-759/",
+    "main_image": "https://comfo.ge/images/detailed/16/oWWpV5lBTlzty9kovrPvMCZvDqU3li.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/lGYmwPzaV3P1fI1tnV3N2AAb9I3sbR.jpeg",
+      "https://comfo.ge/images/detailed/16/Y5ON5GGDHXEBJ8TRWKRnObOduJnxD8.png"
+    ]
+  },
+  {
+    "external_id": 777,
+    "title_ka": "6 დონიანი მრავალფუნქციური კარადა 4 კარით ფიჭვის ფაქტურით (BF-777)",
+    "category_ka": "კარადა",
+    "regular_price": 499,
+    "discount_price": 379.9,
+    "quantity": 10,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/6-დონიანი-მრავალფუნქციური-კარადა-4-კარით-ფიჭვის-ფაქტურით-bf-777/",
+    "main_image": "https://comfo.ge/images/detailed/16/51RLJvJEkNAk3a8XT9VO1RAKFupEeQ.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/seYYX56fwAqvkCZpSiFXwaBWAzZ865.png",
+      "https://comfo.ge/images/detailed/16/Qxji5296hDU4nloOdeJYJJNzfwS93W.png",
+      "https://comfo.ge/images/detailed/16/ilVF8IlgQSNOi707A6o6YDrrvBn0S3.png",
+      "https://comfo.ge/images/detailed/16/X0WWnTzEnl2jadIAvd9uxQnGJ8dDHB.png",
+      "https://comfo.ge/images/detailed/16/rxwigtJbYMo8XgTUn5IvaQx4NOAsx8.png",
+      "https://comfo.ge/images/detailed/16/8bzfeoUGiDshPlD7a3gGZEXyLZ9PLH.jpeg"
+    ]
+  },
+  {
+    "external_id": 18,
+    "title_ka": "ტელევიზორის მაგიდა მეტალის კარკასით და ფიჭვის ფაქტურით",
+    "category_ka": "ტელევიზორის მაგიდა",
+    "regular_price": 265,
+    "discount_price": 139.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-მეტალის-კარკასით-და-ფიჭვის-ფაქტურით-18/",
+    "main_image": "https://comfo.ge/images/detailed/14/fxilyp7hMYQIKJC8WwdvFSe5fY2sPf.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/bQWHsiRPEbkZmlUqJwAWwXfuegoVMf.png",
+      "https://comfo.ge/images/detailed/14/F6NdbUM3fB5gUY1hfKEVnlPIzF7bkl.png",
+      "https://comfo.ge/images/detailed/14/xtfh8oRoZ0ZmPg1834fLI5mplUsKyF.png",
+      "https://comfo.ge/images/detailed/14/XKVwso94noTeGgtVmKIanIGOUwyU44.png",
+      "https://comfo.ge/images/detailed/14/wXpvRegUJdUnklQzWf696U0BXhyi4F.png"
+    ]
+  },
+  {
+    "external_id": 696,
+    "title_ka": "მრავალფუნქციური ორგანაიზერი ფიჭვის ფაქტურით პლასტმასის კალათით (BF-696)",
+    "category_ka": "თარო",
+    "regular_price": 399,
+    "discount_price": 179.9,
+    "quantity": 7,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-ორგანაიზერი-ფიჭვის-ფაქტურით-პლასტმასის-კალათით-bf-696/",
+    "main_image": "https://comfo.ge/images/detailed/15/ejoKlRzEOjbmHL0dTLr9UXQOQjhEka.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/u7BIWIfZoU3c1iM0kmR7sf6nxFdujV.png",
+      "https://comfo.ge/images/detailed/15/B0vh35rLkiTsMFSQIUaQWNwOcmFcoe.png",
+      "https://comfo.ge/images/detailed/15/C1PifyIVH0gLg89MvKgcU3ww7nJYOt.png",
+      "https://comfo.ge/images/detailed/15/isy9CKqXAjHSjovFxxpJTIO4H5Vrmv.png",
+      "https://comfo.ge/images/detailed/15/lZon3qZ0OTUJfxMZ2WGoO7XVyS90ir.png",
+      "https://comfo.ge/images/detailed/15/jBUjiYr4j0XdgMZZfz9lvx6SPFg0mu.png"
+    ]
+  },
+  {
+    "external_id": 760,
+    "title_ka": "4-დონიანი კედლის თარო მუქი ხის ფაქტურით (BF-760)",
+    "category_ka": "თარო",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-კედლის-თარო-მუქი-ხის-ფაქტურით-bf-760/",
+    "main_image": "https://comfo.ge/images/detailed/16/PdKibistr3wt6Lci0zWTh2xahmlcKg.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/MvAJkh2aLNOM6jvgHkAWMgXfWXzLRB.jpg",
+      "https://comfo.ge/images/detailed/16/8C4vUDr8esgIzCrK7h6BGxXNQU2ycE.png"
+    ]
+  },
+  {
+    "external_id": 799,
+    "title_ka": "მეტალის კედლის ტანსაცმლის საკიდი (BF-799)",
+    "category_ka": "თარო",
+    "regular_price": 99,
+    "discount_price": 49.9,
+    "quantity": 12,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/მეტალის-აბაზანის-კედლის-საკიდი-bf-799/",
+    "main_image": "https://comfo.ge/images/detailed/16/n9uutmtA6OYU6EsRXUBgwIf9NRdtuo.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/KS98PT3GefCGJ8zdhzWsTNDCC3uWZP.jpeg",
+      "https://comfo.ge/images/detailed/16/fl90xS4bxPtq6orDYIrEKABm6xR8ZR.jpeg",
+      "https://comfo.ge/images/detailed/16/IyAOjHnjTgfABKIGYx5nTC5ccXYOTl.jpeg"
+    ]
+  },
+  {
+    "external_id": 693,
+    "title_ka": "მრავალფუნქციური თეთრი ორგანაიზერი პლასტმასის კალათით (BF-693)",
+    "category_ka": "თარო",
+    "regular_price": 349,
+    "discount_price": 179.9,
+    "quantity": 8,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-693/",
+    "main_image": "https://comfo.ge/images/detailed/15/DF7sK5eF80FZaRPRhXL3Ty5uJHHa6N.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/qOQGheuTtQWtH7uavzqkoF5CpAxNBh.jpeg",
+      "https://comfo.ge/images/detailed/15/mYuIaQtyOnXVzCE5hKoOstnuj3ozxV.jpeg",
+      "https://comfo.ge/images/detailed/15/SF2u06Cm0xqjqdSkFRFS7rlipD3Z67.jpeg",
+      "https://comfo.ge/images/detailed/15/rUYASwV9WvcPJ7uScmA0huaQKcCbKn.jpeg",
+      "https://comfo.ge/images/detailed/15/BMiRpMrXHMAOdMVQiB0TUfo0Jbi33k.jpeg",
+      "https://comfo.ge/images/detailed/15/9RwtqVFH5wTC8j0TpvM4pWCEJeXqek.jpeg"
+    ]
+  },
+  {
+    "external_id": 695,
+    "title_ka": "მრავალფუნქციური თეთრი ორგანაიზერი პლასტმასის კალათით (BF-695)",
+    "category_ka": "თარო",
+    "regular_price": 399,
+    "discount_price": 159.9,
+    "quantity": 11,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-695/",
+    "main_image": "https://comfo.ge/images/detailed/15/agIuiLDYtm9KqGbsmGJULHH9WXch4N.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/ro50JNLoYP3T8aYxEZ4v9p3TXrDmUY.png",
+      "https://comfo.ge/images/detailed/15/bFgr3i7D8NNH3GrWRfsBg85Pe0jraG.png",
+      "https://comfo.ge/images/detailed/15/lCY20TAQHnFwJsAAdoOTNzHQRiDjmV.png",
+      "https://comfo.ge/images/detailed/15/mrxL9ILX38Q4pt3llrgEWTuithJ5wu.png",
+      "https://comfo.ge/images/detailed/15/STF02l2ApNGq7K0KSfJcDQKqJvXi8l.png",
+      "https://comfo.ge/images/detailed/15/EK0ZMzlFeUQHipXTXMv12nLG4E1ira.png"
+    ]
+  },
+  {
+    "external_id": 761,
+    "title_ka": "4-დონიანი კედლის თეთრი თარო (BF-761)",
+    "category_ka": "თარო",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 6,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-კედლის-თეთრი-თარო-bf-761/",
+    "main_image": "https://comfo.ge/images/detailed/16/SB5PNJ9tN3pV6NasD31iNNOp4WxG0a.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/2xn2Ngpv214LMQYzIrxqYpDmlP3TqT.jpeg",
+      "https://comfo.ge/images/detailed/16/Wv4LfwllUm6vW36lizuiMp4p2J1pHB.png"
+    ]
+  },
+  {
+    "external_id": 765,
+    "title_ka": "3 დონიანი წიგნების თარო ფიჭვის ფაქტურით (BF-765)",
+    "category_ka": "თარო",
+    "regular_price": 149,
+    "discount_price": 79.9,
+    "quantity": 23,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/3-დონიანი-წიგნების-თარო-ფიჭვის-ფაქტურით-bf-765/",
+    "main_image": "https://comfo.ge/images/detailed/16/xE1xinOxsPPfPt6sr9qqaAwh8cZJkd.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/W1emKbjJyBmm1oNC0KHnt80jq3xWaf.jpeg",
+      "https://comfo.ge/images/detailed/16/vkYkLabN9btLRxLcmrwaVIMTdF7CJa.jpeg",
+      "https://comfo.ge/images/detailed/16/f7Er19zMxUVbgcK0Xu1SriseKIZIB4.jpeg",
+      "https://comfo.ge/images/detailed/16/CdddwePcrsTvv4dmyySw2NDmuy5MLF.jpeg",
+      "https://comfo.ge/images/detailed/16/kH1rV2NSPIqcYB2ufU7VZEDSrtq2C8.jpeg"
+    ]
+  },
+  {
+    "external_id": 772,
+    "title_ka": "5 დონიანი მრავალფუნქციური კარადა მუქი ხის ფაქტურით (BF-772)",
+    "category_ka": "კარადა",
+    "regular_price": 399,
+    "discount_price": 189.9,
+    "quantity": 30,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/5-დონიანი-მრავალფუნქციური-კარადა-მუქი-ხის-ფაქტურით-bf-772/",
+    "main_image": "https://comfo.ge/images/detailed/16/GMIqGuMSalNC2nBVPwcLCxwM594GkC.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/1R8ZsVCx0gIoZ1c6Fd237BZkOVvJjw.jpg",
+      "https://comfo.ge/images/detailed/16/7DX2bvXuLSUornWwUAfq8npozZrEyV.jpg",
+      "https://comfo.ge/images/detailed/16/6abPOXQ8pOxerGfnTj1YLw8OzRueO4.jpg"
+    ]
+  },
+  {
+    "external_id": 559,
+    "title_ka": "6-დონიანი კედლის თარო მუქი ხის ფაქტური (559)",
+    "category_ka": "თარო",
+    "regular_price": 226,
+    "discount_price": 129.9,
+    "quantity": 11,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/6-დონიანი-კედლის-თარო-მუქი-ხის-ფაქტური-559/",
+    "main_image": "https://comfo.ge/images/detailed/15/bfXrhy3D8BkrVETHp3mDcX5glgpnT6.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/OQ7qbWqjWecYQdc22KI0oyChz91Z0Q.jpg",
+      "https://comfo.ge/images/detailed/15/9sAtFx17fwwpGym0KSHPOXp3hfXBwo.jpg",
+      "https://comfo.ge/images/detailed/15/R6lMwWZGXznAAdOf7LEr7ojyvoyuaJ.jpg"
+    ]
+  },
+  {
+    "external_id": 677,
+    "title_ka": "სამზარეულოს კარადა ფიჭვის ფაქტურით (BF-677)",
+    "category_ka": "კარადა",
+    "regular_price": 568,
+    "discount_price": 299.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/samzareulo/karada/სამზარეულოს-კარადა-ფიჭვის-ფაქტურით-bf-677/",
+    "main_image": "https://comfo.ge/images/detailed/15/CGvwUs0bbWW0CvxYBWNHZK1H023J9F.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/5kGOaLqrTfmUzM7AWorcf8MoT2UV0q.png"
+    ]
+  },
+  {
+    "external_id": 23,
+    "title_ka": "ლეპტოპის მაგიდა ფიჭვის ფაქტურით (23)",
+    "category_ka": "ლეპტოპის მაგიდა",
+    "regular_price": 94,
+    "discount_price": 69.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-ფიჭვის-ფაქტურით-23/",
+    "main_image": "https://comfo.ge/images/detailed/14/QbsJUGNLD3wCLPGDUPFa3b57cC7nGj.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/A10QwwLgFzwrj8v6kzOPAQy58tOvwu.png",
+      "https://comfo.ge/images/detailed/14/aXZbnKw89P68Kyap46XyHpFWMFuhD8.png",
+      "https://comfo.ge/images/detailed/14/sNQX6xx9tPExQ4YQ2Kl3MXJ8BsFlN5.png",
+      "https://comfo.ge/images/detailed/14/8FFJLVJkR5Lkyta3VNm7RrJPv2pXm5.png",
+      "https://comfo.ge/images/detailed/14/2metapWiZTKqVVkyHoU0cKnJl2nEo7.png"
+    ]
+  },
+  {
+    "external_id": 916,
+    "title_ka": "პლასტმასის მაგიდა თეთრი (SP916)",
+    "category_ka": "მაგიდები",
+    "regular_price": 359,
+    "discount_price": 69,
+    "quantity": 1,
+    "link": "https://comfo.ge/gare-aveji/magidebi/პლასტმასის-მაგიდა-თეთრი-sp916/",
+    "main_image": "https://comfo.ge/images/detailed/16/JzgqKgIhPdSEeLy5cdbi6oVYqKnzC7.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/2VK8F9egd8snqTr3YDM0qKNX5ns95W.png"
+    ]
+  },
+  {
+    "external_id": 778,
+    "title_ka": "6 დონიანი მრავალფუნქციური თეთრი კარადა 4 კარით (BF-778)",
+    "category_ka": "კარადა",
+    "regular_price": 499,
+    "discount_price": 379.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/6-დონიანი-მრავალფუნქციური-თეთრი-კარადა-4-კარით-bf-778/",
+    "main_image": "https://comfo.ge/images/detailed/16/NDgEuJx4tH5uj3rJIyQRbrVluqM3AU.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/7S0dsr2Cn443ifp4pUWZSVl46CgTFI.jpeg",
+      "https://comfo.ge/images/detailed/16/xpcqvUftRz5X8cgCJbwX8440AYGSZN.jpeg",
+      "https://comfo.ge/images/detailed/16/OMARr775H26OAsT3y7x0KEqkaqDMiC.jpeg",
+      "https://comfo.ge/images/detailed/16/gVRi7L786Mg8KOkrQPcliuq67nsq6s.jpeg",
+      "https://comfo.ge/images/detailed/16/XkUrwYnDvGrI1dimJCYkUqE8YVadqn.jpeg",
+      "https://comfo.ge/images/detailed/16/mDXp5Fh6aadnFMmaTEpzv5yJ45WJmg.jpeg"
+    ]
+  },
+  {
+    "external_id": 546,
+    "title_ka": "კედლის საათი D-1988-08 (546)",
+    "category_ka": "საათები",
+    "regular_price": 59,
+    "discount_price": 35,
+    "quantity": 11,
+    "link": "https://comfo.ge/saatebi/saatebi/კედლის-საათი-d-1988-08-546/",
+    "main_image": "https://comfo.ge/images/detailed/15/X0lsqEn44nvAConpag9bgN6UHMqrxD.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 900,
+    "title_ka": "დასადგმელი საათი D-300-K (900)",
+    "category_ka": "საათები",
+    "regular_price": 49,
+    "discount_price": 14.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-საათი-d-300-k-900/",
+    "main_image": "https://comfo.ge/images/detailed/16/WpqbVjTcOrp0u3QRNTEBfR69rFWv14.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 901,
+    "title_ka": "დასადგმელი საათი D-300-A (901)",
+    "category_ka": "საათები",
+    "regular_price": 49.0,
+    "discount_price": 19.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-საათი-d-300-a-901/",
+    "main_image": "https://comfo.ge/images/detailed/16/PoeThjbcCUrOj7WcmFjSASTu5H3GFP.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 902,
+    "title_ka": "დასადგმელი საათი D-300-G (902)",
+    "category_ka": "საათები",
+    "regular_price": 49,
+    "discount_price": 14.9,
+    "quantity": 23,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-საათი-d-300-g-902/",
+    "main_image": "https://comfo.ge/images/detailed/16/y1iTL9EzXX1DyAKVEA7jSJ0Ggt6ZQl.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 904,
+    "title_ka": "კედლის საათი D-217-F-1 (904)",
+    "category_ka": "საათები",
+    "regular_price": 49,
+    "discount_price": 19,
+    "quantity": 6,
+    "link": "https://comfo.ge/saatebi/saatebi/კედლის-საათი-d-217-f-1-904/",
+    "main_image": "https://comfo.ge/images/detailed/16/llsa5h0GvBnmHhSPhhKxnucSNWeQxX.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 906,
+    "title_ka": "საათი ბუხრის ეფექტით (906)",
+    "category_ka": "საათები",
+    "regular_price": 199,
+    "discount_price": 49.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/saatebi/saatebi/საათი-ბუხრის-ეფექტით-906/",
+    "main_image": "https://comfo.ge/images/detailed/16/GVDyswH9DvpwxvjLnNry103r3BXfL7.png",
+    "additional_images": []
+  },
+  {
+    "external_id": 892,
+    "title_ka": "პლასტმასის ყავის მაგიდა ყავისფერი (SP892)",
+    "category_ka": "მაგიდები",
+    "regular_price": 39,
+    "discount_price": 14,
+    "quantity": "50+",
+    "link": "https://comfo.ge/gare-aveji/magidebi/პლასტმასის-ყავის-მაგიდა-მუქი-ყავისფერი-sp892/",
+    "main_image": "https://comfo.ge/images/detailed/16/vfqW8jsC3ODxZp1aO3RSs0up5xYa7M.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/RmAun2i6XvIiVvQNfNZmcTZNmir0S5.jpeg"
+    ]
+  },
+  {
+    "external_id": 915,
+    "title_ka": "პლასტმასის მაგიდა შავი (SP915)",
+    "category_ka": "მაგიდები",
+    "regular_price": 359,
+    "discount_price": 99,
+    "quantity": 4,
+    "link": "https://comfo.ge/gare-aveji/magidebi/პლასტმასის-მაგიდა-შავი-sp915/",
+    "main_image": "https://comfo.ge/images/detailed/16/i3at4I3iJPMPn1dMdAp9OLmYHNmnn3.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/3YUzIymHOGSE69bLIOCwNFZnLIqaiB.png"
+    ]
+  },
+  {
+    "external_id": 945,
+    "title_ka": "ორსართულიანი საწოლი თეთრი 90*200 (MM945)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 649,
+    "discount_price": 449,
+    "quantity": 5,
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ორსართულიანი-საწოლი-თეთრი-90200-mm945/",
+    "main_image": "https://comfo.ge/images/detailed/16/PPkOamCjrVf2mW1YdxkMEBvma9WMll.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/inbR0ijvfUXnLVVU2o3xHr5obyG7Di.jpg",
+      "https://comfo.ge/images/detailed/16/k55E0nP9nEJXkJj41qObfL6lmmzzbc.jpg",
+      "https://comfo.ge/images/detailed/16/xiK8pDR4hnoIIByNFBmODM8iEm6CXV.jpg",
+      "https://comfo.ge/images/detailed/16/R6dyrz5OnUyOokc20ejlXdnSSrL76B.jpg"
+    ]
+  },
+  {
+    "external_id": 947,
+    "title_ka": "ორსართულიანი საწოლი შავი 140*200-90*200 (MM947)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 749,
+    "discount_price": 499,
+    "quantity": 31,
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ორსართულიანი-საწოლი-შავი-140200-90200-mm947/",
+    "main_image": "https://comfo.ge/images/detailed/16/NepfaPn2330bsnCzi1DCqBMWZRR10v.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/7gmARQ1kKAz72391AfOVZq4e577jg5.jpg",
+      "https://comfo.ge/images/detailed/16/7ggjtleNc5FnBoQ7zjRWK7omI1BLf0.jpg",
+      "https://comfo.ge/images/detailed/16/SZy2AJqjBoEE821dcQD3wBSZ49UZ4j.jpg",
+      "https://comfo.ge/images/detailed/16/wK5fWsu1EqEulEJdyHF36gtp6MeD0y.jpg",
+      "https://comfo.ge/images/detailed/16/y9NyMsx9tHt0xL2Uv5i3PI2vrVkt6c.jpg"
+    ]
+  },
+  {
+    "external_id": 948,
+    "title_ka": "ორსართულიანი საწოლი თეთრი 140*200-90*200 (MM948)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 749,
+    "discount_price": 499,
+    "quantity": 6,
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ორსართულიანი-საწოლი-თეთრი-140200-90200-mm948/",
+    "main_image": "https://comfo.ge/images/detailed/16/KGw44GMgxH1J6c82eC0TdXkT0Caa23.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/k8LojJvWp0UjqF7FE38v1KjJzyhSFO.png",
+      "https://comfo.ge/images/detailed/16/6yvQHqfcGq7cDRPKAFGg7mLPvfatD3.png",
+      "https://comfo.ge/images/detailed/16/XIg1O4QEtTXD89fIQ0wTEGhGO5j6wf.png"
+    ]
+  },
+  {
+    "external_id": 950,
+    "title_ka": "ორსართულიანი საწოლი შავი 90*200 (MM950)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 499.0,
+    "discount_price": 349.0,
+    "quantity": 2,
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ორსართულიანი-საწოლი-შავი-90200-mm950/",
+    "main_image": "https://comfo.ge/images/detailed/16/v4WsIkI8CLsTs788kEXoDAdBniiNJa.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/Gb10asCjtjNeGQUKLl3tHQV1VV63Xl.jpg",
+      "https://comfo.ge/images/detailed/16/4AW6wRuPGqiQ1jOa10TAMMaIn7Hr6T.jpg",
+      "https://comfo.ge/images/detailed/16/VdkeQlkESSSAeEFSqtylJFXhpck7Pw.jpg"
+    ]
+  },
+  {
+    "external_id": 954,
+    "title_ka": "4 დონიანი ფეხსაცმლის თარო (MS954)",
+    "category_ka": "თარო",
+    "regular_price": 24,
+    "discount_price": 15,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-ფეხსაცმლის-თარო-ms954/",
+    "main_image": "https://comfo.ge/images/detailed/16/KSlOYpmR1TPRusAPyrngG8BeHGfAmv.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/2mJEVfOgNb8pgIsP0DIWSEgRwTmXgL.jpeg",
+      "https://comfo.ge/images/detailed/16/J8UumkgS0HVnL0f9BYBXPxzkcIbGaM.jpeg",
+      "https://comfo.ge/images/detailed/16/Pi4j3pra9vrW8j7P0gc6I79j6LrhSX.jpeg",
+      "https://comfo.ge/images/detailed/16/zc9gkOCc1AT1eOV81RiBoRkst3TLl1.jpeg",
+      "https://comfo.ge/images/detailed/16/1p3Rf8VgsG66kfmViOO5t6JXxbtfvL.jpeg",
+      "https://comfo.ge/images/detailed/16/kShzygA9Mvr4xMxJXbpeYv3lscLtaq.jpeg",
+      "https://comfo.ge/images/detailed/16/E8CUy0Vfn34UOFFCCyQvjawn4zymQA.jpeg"
+    ]
+  },
+  {
+    "external_id": 42,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა მუქი ხის ფაქტურით (42)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 276,
+    "discount_price": 159.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-მუქი-ხის-ფაქტურით-42/",
+    "main_image": "https://comfo.ge/images/detailed/14/pobYZyLnkvrc1tN46B1u5xqc2irSFj.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/WKWw7r40nSuFsBlvuZsBXAREKVIwFd.png",
+      "https://comfo.ge/images/detailed/14/HHOpG7M1KGmsxSU02kyw5pX2gR7m1q.png",
+      "https://comfo.ge/images/detailed/14/8zv8z88ij0KFM2kLbejZ1TDytqb5x7.png",
+      "https://comfo.ge/images/detailed/14/Q8v5mlLtvrz8lyuLZuxyqBh0QQOfKo.png",
+      "https://comfo.ge/images/detailed/14/fWbIUAE7vvzYJgeoGmnPzZKruNbkN0.png"
+    ]
+  },
+  {
+    "external_id": 139,
+    "title_ka": "მეტალის შავი ტანსაცმლის საკიდი (139)",
+    "category_ka": "თარო",
+    "regular_price": 84,
+    "discount_price": 49.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/sakidi/მეტალის-შავი-ტანსაცმლის-საკიდი-139/",
+    "main_image": "https://comfo.ge/images/detailed/14/6UHnFPjGCUZu0h2HHwqEqF3ej9566B.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/t5I6VeK8BoN1gYGTPZxYNexAPdMIKG.png",
+      "https://comfo.ge/images/detailed/14/JJQz8WiLEqDN3TbtjBNIuBmsAsJWid.png",
+      "https://comfo.ge/images/detailed/14/eYARvpTQaH3LPiGRBljqobtZAd49Ra.png"
+    ]
+  },
+  {
+    "external_id": 140,
+    "title_ka": "მეტალის თეთრი ტანსაცმლის საკიდი (140)",
+    "category_ka": "თარო",
+    "regular_price": 84,
+    "discount_price": 49.9,
+    "quantity": 39,
+    "link": "https://comfo.ge/sadzinebeli/sakidi/მეტალის-თეთრი-ტანსაცმლის-საკიდი-140/",
+    "main_image": "https://comfo.ge/images/detailed/14/zwPbzkcSAU8eulB2LSrDO0N7gbmTDU.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/aWY4RVLflwj8zHUfoW8yEWcQeec0pv.png",
+      "https://comfo.ge/images/detailed/14/RYf7wUjo2u5Rn4M5r5UxMwyDf8Wr8T.png",
+      "https://comfo.ge/images/detailed/14/SlwLrVoom3RgkxlKlg9pjhvCV1GZnC.png"
+    ]
+  },
+  {
+    "external_id": 540,
+    "title_ka": "ყავის მაგიდა კალათით ფიჭვის ფაქტურით (540)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 131,
+    "discount_price": 79.9,
+    "quantity": 44,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-კალათით-ფიჭვის-ფაქტურით-540/",
+    "main_image": "https://comfo.ge/images/detailed/15/RsDQ5ui5thl2Add14hl0oYSVOBkAq9.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/A8ieu0xuSVQeouAdmWcIZxiBbs5WYu.png",
+      "https://comfo.ge/images/detailed/15/bs8V6JPnu0uRSqSBsJ2ttzt9UXdudI.png",
+      "https://comfo.ge/images/detailed/15/JWG1QGZd4VpqdlqfVi7qZHcKEIhxin.png",
+      "https://comfo.ge/images/detailed/15/cZa7vvmUz8L6eqPbOzXBBXM1YIpgM2.png",
+      "https://comfo.ge/images/detailed/15/EGIwGMH3meK6j5OtIZpB1BjSYZFcqV.png"
+    ]
+  },
+  {
+    "external_id": 556,
+    "title_ka": "ყავის მაგიდა კალათით მუქი ხის ფაქტურით (556)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 131,
+    "discount_price": 79.9,
+    "quantity": 5,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-კალათით-მუქი-ხის-ფაქტურით-556/",
+    "main_image": "https://comfo.ge/images/detailed/15/1XBf9ZG82AwzBBzeinl2Mwwht7fesB.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/X2phbxqiFzTEoahrWriSsz4GbFpSFM.png",
+      "https://comfo.ge/images/detailed/15/q3RsajsgJD5fjHjrhm8oKXzmDPwbzT.png",
+      "https://comfo.ge/images/detailed/15/WYNwK5ayd1V3ymVpsqJwZKADO0NAWG.png",
+      "https://comfo.ge/images/detailed/15/P8EkoKR593cDJaYgvaxroRCmfaru2d.png",
+      "https://comfo.ge/images/detailed/15/Kmp7QEZ7qRHsrvdxAfYWkdjB57EmoN.png",
+      "https://comfo.ge/images/detailed/15/LaIhl3FlK2EucnG9tuvjblb9uJ3WXh.png"
+    ]
+  },
+  {
+    "external_id": 664,
+    "title_ka": "წიგნების 4-დონიანი კედლის თარო ფიჭვის ფაქტურით (664)",
+    "category_ka": "თარო",
+    "regular_price": 169,
+    "discount_price": 99.9,
+    "quantity": 15,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/წიგნების-4-დონიანი-კედლის-თარო-ფიჭვის-ფაქტურით-664/",
+    "main_image": "https://comfo.ge/images/detailed/15/4VTCdlPUF9WREmnI5VnIUH8AFKbJZ3.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/BFKF0tHr1fLCCRQA5wjSp8svoh3cTc.png",
+      "https://comfo.ge/images/detailed/15/C4r8MkDqUQHOFqXKUDnYUmEgG1Iarz.png",
+      "https://comfo.ge/images/detailed/15/yDD3iPzu3WMkYnEMSRAydXdDdqcSOA.png",
+      "https://comfo.ge/images/detailed/15/7ALfYQGtmFaCwx5UEhd7SzdzA6wzI5.jpeg"
+    ]
+  },
+  {
+    "external_id": 691,
+    "title_ka": "მრავალფუნქციური თეთრი ორგანაიზერი პლასტმასის კალათით (BF-691)",
+    "category_ka": "თარო",
+    "regular_price": 499.0,
+    "discount_price": 199.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-691/",
+    "main_image": "https://comfo.ge/images/detailed/15/gysts86GabrBODgsS8992Iw5aZQIKs.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/8qpPjDsLtyxwh3GBlfrZHzUVwri4JT.png",
+      "https://comfo.ge/images/detailed/15/dvR5yaCQVTPUgBH0ydoQWOfU5OLEIP.png",
+      "https://comfo.ge/images/detailed/15/gtmX55kU7gdWqqmDCMLbM4BewAT7ki.png",
+      "https://comfo.ge/images/detailed/15/2F7L6HrqNIpb7zNO4Haz3APNtgJ1u5.png",
+      "https://comfo.ge/images/detailed/15/Q9gN6UfbXcYYDZ9V0iepQFtU7A162s.png",
+      "https://comfo.ge/images/detailed/15/Agc5M4LmOABLc2E65WaNfLQJ319edb.png",
+      "https://comfo.ge/images/detailed/15/29ipTLqUXKKNu13hUjapM4BfAjNUoJ.png"
+    ]
+  },
+  {
+    "external_id": 700,
+    "title_ka": "ტუმბო შავი მეტალის ფეხებზე (BF-700)",
+    "category_ka": "ტუმბო",
+    "regular_price": 129,
+    "discount_price": 69.9,
+    "quantity": 6,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-შავი-მეტალის-ფეხებზე-bf-700/",
+    "main_image": "https://comfo.ge/images/detailed/15/1TKZJcWN09X2JTjfOxDLVoYyTmery0.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/GeQC7rWvFeq0NdkSifVZUqTIQy4dbT.png",
+      "https://comfo.ge/images/detailed/15/ETbRJY0QOCssnJ5hjtnEAxwZ1JJpmR.png",
+      "https://comfo.ge/images/detailed/15/WT0MMljprmK3yWQje9pkampm4r9Uyb.jpg"
+    ]
+  },
+  {
+    "external_id": 842,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა (60*90) მუხის ფაქტურით (BF-842)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 139.0,
+    "discount_price": 99.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-6090-მუხის-ფაქტურით-bf-842/",
+    "main_image": "https://comfo.ge/images/detailed/16/ioVZsu21BgyUACZk5NAEFGS2w2xGYN.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/kAvNttoPeLVqhAoKeNhfBU8yR1JY40.jpg",
+      "https://comfo.ge/images/detailed/16/Lb4kPite8G9sLxZ0wb2CVDJqtBKwJD.jpg",
+      "https://comfo.ge/images/detailed/16/bnIaSix4jEC1MXnirgmt4Cj5cV7OYf.png"
+    ]
+  },
+  {
+    "external_id": 514,
+    "title_ka": "ლეპტოპის მაგიდა ფიჭვის ფაქტურით (LP1-A) (514)",
+    "category_ka": "ლეპტოპის მაგიდა",
+    "regular_price": 59,
+    "discount_price": 39.9,
+    "quantity": 36,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-ფიჭვის-ფაქტურით-lp1-a-514/",
+    "main_image": "https://comfo.ge/images/detailed/15/7l5GKYSQWHyBlCjlXIMe5LbA2tnhUt.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/En3w5yzPdzCxrJYoUo4ZktgXWbdMmt.png",
+      "https://comfo.ge/images/detailed/15/ORUVVJbxgt1QZ14DOk39NpG52tLDub.png"
+    ]
+  },
+  {
+    "external_id": 574,
+    "title_ka": "ტუმბო შავი KM1-G (574)",
+    "category_ka": "ტუმბო",
+    "regular_price": 120,
+    "discount_price": 69.9,
+    "quantity": 15,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-შავი-km1-g-574/",
+    "main_image": "https://comfo.ge/images/detailed/15/Gmzm3ibbXFOU5wUGvanqSJVNRBk8rb.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/KC7Kyot5PfUmrSHzTVnhm6p2dHsvUp.jpg",
+      "https://comfo.ge/images/detailed/15/hXkkdedsoWNdERzgQ0gAJs4VD7g4Vs.jpg",
+      "https://comfo.ge/images/detailed/15/7UpOZX26uf3VHdoh0FRBMHmKhIHNGE.png"
+    ]
+  },
+  {
+    "external_id": 575,
+    "title_ka": "ტუმბო ფიჭვის ფაქტურით KM2-A (575)",
+    "category_ka": "ტუმბო",
+    "regular_price": 120.0,
+    "discount_price": 69.9,
+    "quantity": 6,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-ფიჭვის-ფაქტურით-km2-a-575/",
+    "main_image": "https://comfo.ge/images/detailed/15/Ppp6HxUW3v5CnRZSQRMzA08oiG9Rmm.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/uekZQNAPV7eiGEgs7B3GujRnMHm8EQ.jpg",
+      "https://comfo.ge/images/detailed/15/wHZEXff071VweeD8KtKZ2BuABnHQsB.jpg",
+      "https://comfo.ge/images/detailed/15/Nbx4YL3FnOrne2WAoImDoixqUocL3Z.jpg",
+      "https://comfo.ge/images/detailed/15/TJPH0a1USC5mjVfFp262BoIrptZirM.png"
+    ]
+  },
+  {
+    "external_id": 964,
+    "title_ka": "ყავის მაგიდა 3 ცალი (GF964)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 149,
+    "discount_price": 89.9,
+    "quantity": 7,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-3-ცალი-gf964/",
+    "main_image": "https://comfo.ge/images/detailed/16/QmHSzxE1b94jbHQ2twaUVYwCSMebDz.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/b2a3IewCs7l6roqSbGpOufdWAx52k4.png"
+    ]
+  },
+  {
+    "external_id": 966,
+    "title_ka": "ყავის მაგიდა 3 ცალი (GF966)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 104,
+    "discount_price": 79.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-3-ცალი-gf966/",
+    "main_image": "https://comfo.ge/images/detailed/16/fPLLHFg0S8qWcuzoQeXX0IO6ufeBWW.JPG",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/z8MWAXBSK6mqRDLmrpgj0vpURcnmq2.png"
+    ]
+  },
+  {
+    "external_id": 968,
+    "title_ka": "ყავის მაგიდა (GF968)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 104,
+    "discount_price": 69.9,
+    "quantity": 17,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-gf968/",
+    "main_image": "https://comfo.ge/images/detailed/16/8BAvAAhCfpuWLvhnop1rcstvUlcxyA.JPG",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/sUu3EUdqAMXaKNgTM73Ad0aqOcf5qd.png"
+    ]
+  },
+  {
+    "external_id": 969,
+    "title_ka": "ყავის მაგიდა (GF969)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 104,
+    "discount_price": 69.9,
+    "quantity": 4,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-gf969/",
+    "main_image": "https://comfo.ge/images/detailed/16/ERx6XtbG0xJvEvrZoCy7p9dTwlb8Q9.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/FbmX7nlb1MObQELJADnkddtD4n7a6T.png"
+    ]
+  },
+  {
+    "external_id": 970,
+    "title_ka": "მცირე სადგამი / მაგიდა (GF970)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 39,
+    "discount_price": 25,
+    "quantity": 30,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/მცირე-სადგამი-მაგიდა-gf970/",
+    "main_image": "https://comfo.ge/images/detailed/16/MMetrsNCVo5N6Sskl5TSYwOIga0vPa.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/gpgF3V76pS4XAyoeNIaNuVakuQJD2i.png",
+      "https://comfo.ge/images/detailed/16/0RpHbyY986D6TzxNe3ZOJcAPIbStVH.png",
+      "https://comfo.ge/images/detailed/16/9TtJXard26L1MqEjhJSkbtHlpAgbNF.png",
+      "https://comfo.ge/images/detailed/16/lvrkJxH3cYy9A669m7gpGao4EpAPfU.png",
+      "https://comfo.ge/images/detailed/16/JRGM1p3ASn4VuO2viJylH8zhKNta3S.png",
+      "https://comfo.ge/images/detailed/16/Xe2Yy9I374L3xFY8K6AY53YKgQtrVZ.png",
+      "https://comfo.ge/images/detailed/16/Src2DztDIi5McAXKqsLuQh2Mwx2Ik5.png"
+    ]
+  },
+  {
+    "external_id": 974,
+    "title_ka": "კუთხის 6-დონიანი თარო ფიჭვის ფაქტურით (GF974)",
+    "category_ka": "თარო",
+    "regular_price": 209,
+    "discount_price": 149.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/კუთხის-6-დონიანი-თარო-ფიჭვის-ფაქტურით-gf974/",
+    "main_image": "https://comfo.ge/images/detailed/16/ZqecXro9WfeE457IwNdBq34azbtT2R.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/EU9k6j80bdUkOBfqVsAgbVLvmCC9Pl.jpg",
+      "https://comfo.ge/images/detailed/16/Nm1qx6eYAt3GafYE8SdT4IFoUCNDEy.png",
+      "https://comfo.ge/images/detailed/16/zMNfyHfeb5v88t6meIMQjUdieMYIyA.png",
+      "https://comfo.ge/images/detailed/16/wK5RgX0puXttIagTvpHxJZE0cW5Fv8.png",
+      "https://comfo.ge/images/detailed/16/acNmjjsFDudO8cQQb9KCj7QtDZqTHI.jpg",
+      "https://comfo.ge/images/detailed/16/kAsLy30N7QthcNWj0eccLUnEbJvyUR.png"
+    ]
+  },
+  {
+    "external_id": 983,
+    "title_ka": "დეკორატიურლი 3 დონიანი თარო (GF983)",
+    "category_ka": "თარო",
+    "regular_price": 119,
+    "discount_price": 75,
+    "quantity": 2,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/დეკორატიურლი-3-დონიანი-თარო-gf983/",
+    "main_image": "https://comfo.ge/images/detailed/17/FWTSZohIDTxGtsALwKuRo4VorvgoGI.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/m2EzgaQkStaeDv4eQ5SYIXlRQsKqje.png",
+      "https://comfo.ge/images/detailed/17/8xEKbjXtBmlTDtX2sfQTZBEYXOMKCg.png",
+      "https://comfo.ge/images/detailed/17/IUX18aLAgdlUKPCCKv6IvYxyNCP8wx.png",
+      "https://comfo.ge/images/detailed/17/bMosRt6rd7yUu2bHNZou2K7g0dloOI.png"
+    ]
+  },
+  {
+    "external_id": 771,
+    "title_ka": "5 დონიანი მრავალფუნქციური კარადა ფიჭვის ფაქტურით (BF-771)",
+    "category_ka": "კარადა",
+    "regular_price": 399,
+    "discount_price": 289.9,
+    "quantity": 11,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/5-დონიანი-მრავალფუნქციური-კარადა-ფიჭვის-ფაქტურით-bf-771/",
+    "main_image": "https://comfo.ge/images/detailed/16/w4HvE4ZYCYKDxXSVnt6EnoIGVXdQ1I.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/W2cqxtEoK7nws3pbgT6d1nN3HZTKWl.jpeg",
+      "https://comfo.ge/images/detailed/16/UL5DlPnoqSPUpPmNDfnjJ77u8XTUGh.jpeg",
+      "https://comfo.ge/images/detailed/16/o3UCjwt8coMHIAyFR8hxUuCUTTalPZ.jpeg",
+      "https://comfo.ge/images/detailed/16/UyWPXVYZBiXRHmT3nhChhvkvS87BUn.jpeg",
+      "https://comfo.ge/images/detailed/16/hcjAW5yFFlu661h8wTdEOR2noKSAvx.jpeg",
+      "https://comfo.ge/images/detailed/16/eoJLW53dh1cccZtI9ma8RMQF4fKysD.jpeg",
+      "https://comfo.ge/images/detailed/16/5UpZYYVp6jL66akdyEsSoPBmtWl9kT.jpeg"
+    ]
+  },
+  {
+    "external_id": 773,
+    "title_ka": "5 დონიანი მრავალფუნქციური თეთრი კარადა (BF-773)",
+    "category_ka": "კარადა",
+    "regular_price": 399,
+    "discount_price": 289.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/5-დონიანი-მრავალფუნქციური-თეთრი-კარადა-bf-773/",
+    "main_image": "https://comfo.ge/images/detailed/16/KoNvlRhQNamw5870jpUTAainLeLPxS.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/tiXJAgTo6FL4gaiOdAMNaVWAGYFu5g.jpeg",
+      "https://comfo.ge/images/detailed/16/cwgaX1W6cd7RYMWI6ntpZWyUDWmLWt.jpeg",
+      "https://comfo.ge/images/detailed/16/P2580Jv1ujTR3lvMbr0tcShEhuYAyZ.jpeg",
+      "https://comfo.ge/images/detailed/16/eAf1xqvjFFsD1Y7XP2256TiCAjxsGj.jpeg",
+      "https://comfo.ge/images/detailed/16/CsJLA3SPulSwowhnj6Eqm9OjQAk3bM.jpeg",
+      "https://comfo.ge/images/detailed/16/GsCkFcK2LTaP9mkUY2AldLQblYHVoW.jpeg",
+      "https://comfo.ge/images/detailed/16/heSnWxrSmiWpW8FkRZ2tEo3IOsRH3N.jpeg"
+    ]
+  },
+  {
+    "external_id": 874,
+    "title_ka": "პლასტმასის სკამი ანტრაციტი (SP874)",
+    "category_ka": "სკამები და სავარძლები",
+    "regular_price": 49,
+    "discount_price": 17,
+    "quantity": 6,
+    "link": "https://comfo.ge/gare-aveji/skamebi-da-savardzlebi/პლასტმასის-სკამი-ანტრაციტი-sp874/",
+    "main_image": "https://comfo.ge/images/detailed/16/tCOuMFjdgFNLAw0nR5OCkBbgnOJ5eu.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/L4d7sbU8HM8WvNVIGBAdITJRlF6dlc.png"
+    ]
+  },
+  {
+    "external_id": 932,
+    "title_ka": "ერთადგილიანი საწოლი თეთრი 90*200 (MM932)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 279,
+    "discount_price": 199,
+    "quantity": 48,
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-თეთრი-90200-mm932/",
+    "main_image": "https://comfo.ge/images/detailed/16/77MYXEHSuilaobatODhyGkvDVSo9cI.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/Fp4c4jz4myYhN8Ra4xEPwBfPXd0Bke.jpg",
+      "https://comfo.ge/images/detailed/16/jtMuHzitHEeeS8bA8xjoJgX1xUpQaP.jpg",
+      "https://comfo.ge/images/detailed/16/H0TeAoWurLJMdFINPLluzz3ZpoEaK8.jpg",
+      "https://comfo.ge/images/detailed/16/MsS50N0r19dngzj7qCPDrRkRB4FRz7.jpg"
+    ]
+  },
+  {
+    "external_id": 933,
+    "title_ka": "ერთადგილიანი საწოლი შავი 90*200 (MM933)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 279,
+    "discount_price": 199,
+    "quantity": 41,
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-შავი-90200-mm933/",
+    "main_image": "https://comfo.ge/images/detailed/16/w5KIhn8OoNutK5S5ealtiCwzgOMoxP.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/yyoTy1FsJ2bNniP1dVxIqGnfyqtYFo.jpg",
+      "https://comfo.ge/images/detailed/16/M46oVIUo7j5uJ37TnjU7FRMoTI9RjI.jpg",
+      "https://comfo.ge/images/detailed/16/Bd5nJcvoqhFHf6HoFP6pr6bQ4cocX7.jpg",
+      "https://comfo.ge/images/detailed/16/emBV3PUdNxgiF0NZdF87k5jwQU8wm3.jpg",
+      "https://comfo.ge/images/detailed/16/ShBM4cS0VDiYq6ri1znP8bYeuXpsuW.jpg"
+    ]
+  },
+  {
+    "external_id": 934,
+    "title_ka": "ორადგილიანი საწოლი თეთრი 160*200 (MM934)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 369,
+    "discount_price": 279,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-თეთრი-160200-mm934/",
+    "main_image": "https://comfo.ge/images/detailed/16/tcbUMMQVdE6nK9GuuaEi5F3qHIdJMJ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/rGP0WbeWvnm1LBhVhE0GzHF9Ptq09i.jpg",
+      "https://comfo.ge/images/detailed/16/4mCpng6PNboBhjHxg1Ijpj97fj7TFa.jpg",
+      "https://comfo.ge/images/detailed/16/XuAW7ffhiRClF4eHlS4zshIDWZfc9n.jpg",
+      "https://comfo.ge/images/detailed/16/itKdCTDLBGzHNsyejYNgwkoGjlcudd.jpg"
+    ]
+  },
+  {
+    "external_id": 935,
+    "title_ka": "ორადგილიანი საწოლი შავი 160*200 (MM935)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 369,
+    "discount_price": 279,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-შავი-160200-mm935/",
+    "main_image": "https://comfo.ge/images/detailed/16/TTR773ydMbXBAcwEZL6TPkRhRUeUKQ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/VjSMw32k2aACgIX6n3JdhqD8IUT2Q8.jpg",
+      "https://comfo.ge/images/detailed/16/VTxP7yWYvF2R0wE4xmnzmlWBDl3YKm.jpg",
+      "https://comfo.ge/images/detailed/16/5M994PJQSltMmjQEH49C4EgUItKPla.jpg",
+      "https://comfo.ge/images/detailed/16/r0kzgrL53Gz3g5jCQPNkMuKTpNfx9b.jpg",
+      "https://comfo.ge/images/detailed/16/kusggnMSlgfj1DO2mZeunDytnGSsc6.jpg"
+    ]
+  },
+  {
+    "external_id": 936,
+    "title_ka": "ერთადგილიანი საწოლი თეთრი 90*200 (MM936)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 299,
+    "discount_price": 229,
+    "quantity": 33,
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-თეთრი-90200-mm936/",
+    "main_image": "https://comfo.ge/images/detailed/16/5cgObbkssiXV6PS9MI2R0iWPFcH0Us.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/KEfTGPTCY1DudzUvuzzCbV9V4kU3z0.jpeg"
+    ]
+  },
+  {
+    "external_id": 937,
+    "title_ka": "ერთადგილიანი საწოლი შავი 90*200 (MM937)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 299,
+    "discount_price": 229,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-შავი-90200-mm937/",
+    "main_image": "https://comfo.ge/images/detailed/16/RybYh9tBotkQTidN3HffiEzgji3kx1.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/pb89WhHOba9FYFZN9XbX7UeykGi5IM.jpg",
+      "https://comfo.ge/images/detailed/16/joYc8kXdjygBgFetsKzEga6nEVTmKj.jpg",
+      "https://comfo.ge/images/detailed/16/W8JGxD765ElZMnhrqI7q5yNjUkFrD1.jpg",
+      "https://comfo.ge/images/detailed/16/gZf3RfcDnxr0SYtN2ZXGuWjpPexD4A.jpg",
+      "https://comfo.ge/images/detailed/16/Npn7DCD1TViSRR9mhTcm8xfNKGYa41.jpg",
+      "https://comfo.ge/images/detailed/16/aDSta58q5w33R9QDfqXqgW0iDQiTiA.jpg"
+    ]
+  },
+  {
+    "external_id": 938,
+    "title_ka": "ორადგილიანი საწოლი თეთრი 160*200 (MM938)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 429,
+    "discount_price": 329,
+    "quantity": 16,
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-თეთრი-160200-mm938/",
+    "main_image": "https://comfo.ge/images/detailed/16/ZVhDBqMC3enyOWZhPSTgZcTnVlIIOH.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/w0YtMmK9KDN5KkwXzeyACKhclY66ir.png",
+      "https://comfo.ge/images/detailed/16/K5Cy6FFfnYA8X5q2PQPdsKKyL4Ti8H.jpg",
+      "https://comfo.ge/images/detailed/16/ttOSQwKovJAnjZ2GOxhcpkNTfEMxWU.jpg"
+    ]
+  },
+  {
+    "external_id": 939,
+    "title_ka": "ორადგილიანი საწოლი შავი 160*200 (MM939)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 429,
+    "discount_price": 329,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-შავი-160200-mm939/",
+    "main_image": "https://comfo.ge/images/detailed/16/aPZRQPyiBD9ljDM54VK65Cx57d9cFE.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/uwzGNI8ZSnzBaHAGf5VEi10tzbx70R.png",
+      "https://comfo.ge/images/detailed/16/0zAyOwuqBbdTO6yaMCTxaos7h3qhoJ.jpg",
+      "https://comfo.ge/images/detailed/16/l2p2UofAHigeKa3ZIDfe5nVjNCm50a.jpg"
+    ]
+  },
+  {
+    "external_id": 940,
+    "title_ka": "ერთადგილიანი საწოლი თეთრი 90*200 (MM940)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 299,
+    "discount_price": 229,
+    "quantity": 30,
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-თეთრი-90200-mm940/",
+    "main_image": "https://comfo.ge/images/detailed/16/4xVQFyoRxyQkFoDMQyBglZVEJn3Adc.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/lyYyoecuGIlbFHRYRKTwNPeSjUVQKI.png",
+      "https://comfo.ge/images/detailed/16/J4vbchnJQ4vcfzsEKtufpjZnGxhiem.png",
+      "https://comfo.ge/images/detailed/16/aq9Td5qbdlfQ3OfvObwSC7kIZroGHU.jpg"
+    ]
+  },
+  {
+    "external_id": 941,
+    "title_ka": "ერთადგილიანი საწოლი შავი 90*200 (MM941)",
+    "category_ka": "ერთადგილიანი საწოლი",
+    "regular_price": 299,
+    "discount_price": 229,
+    "quantity": 31,
+    "link": "https://comfo.ge/sadzinebeli/ertadgiliani-sawoli/ერთადგილიანი-საწოლი-შავი-90200-mm941/",
+    "main_image": "https://comfo.ge/images/detailed/16/kfxP7dRe7NrxRqbN0U2qLr63GGyVjj.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/OceZ6cyJjZ97tPgkk6tiXy18eznsTa.png",
+      "https://comfo.ge/images/detailed/16/0pbxo6O6sM5ZU95JpnPS2VJLEbIlEC.png",
+      "https://comfo.ge/images/detailed/16/03NiyqE48alvzdvKj1fSqlve9qX7Rc.jpg"
+    ]
+  },
+  {
+    "external_id": 942,
+    "title_ka": "ორადგილიანი საწოლი თეთრი 160*200 (MM942)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 429,
+    "discount_price": 329,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-თეთრი-160200-mm942/",
+    "main_image": "https://comfo.ge/images/detailed/16/sh4Bx5vzT9ixtT8F4LjfaNVbsSE6Qn.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/hDmpIXdyCTllrCuMPJB6dxq4ScZmiK.jpg",
+      "https://comfo.ge/images/detailed/16/ZNO99Lm1nPmAnl7KTu3i48DBHBdUpK.png",
+      "https://comfo.ge/images/detailed/16/dez0BMYnCxEXlnMzEMi6QlVGA0g4g7.png",
+      "https://comfo.ge/images/detailed/16/zIk5f7wNs3yuV1EyNLpLXC6jfB2DYs.png",
+      "https://comfo.ge/images/detailed/16/5hAZFyvt2aEkPEU5NffZpy0N8BLzof.png"
+    ]
+  },
+  {
+    "external_id": 943,
+    "title_ka": "ორადგილიანი საწოლი შავი 160*200 (MM943)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 429,
+    "discount_price": 329,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-საწოლი-შავი-160200-mm943/",
+    "main_image": "https://comfo.ge/images/detailed/16/4BMHpBEnOOrvD9a9QDdSRW5z5pQSeS.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/amzyYu7KEL22MVzwVQ24KgQhhCHvY2.jpg",
+      "https://comfo.ge/images/detailed/16/SlwgL7cTgoplkNXukGa5FPR7X3uIiB.png",
+      "https://comfo.ge/images/detailed/16/Rk8fvIfHruIXk1l3XlsE2M9LbTbPlp.png",
+      "https://comfo.ge/images/detailed/16/PRCJ7hY3svf9m3Y5FvT0Vr3pxSD2y6.png",
+      "https://comfo.ge/images/detailed/16/u8VAqy7IGgkCXXb0RWExaqv9a2b3Qt.png"
+    ]
+  },
+  {
+    "external_id": 1051,
+    "title_ka": "ტრანსფორმერი ორსართულიანი მეტალის საწოლი თეთრი 90*200 (MM1051)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 649,
+    "discount_price": 449,
+    "quantity": 35,
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ტრანსფორმერი-ორსართულიანი-მეტალის-საწოლი-თეთრი-90200-mm1051/",
+    "main_image": "https://comfo.ge/images/detailed/17/ncDtmDTIHeyavTsfMXPKS7XNL2wsGs.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/XOvVjr4Xh3wRJ2YZIxuzcXJs3ml5kZ.jpg",
+      "https://comfo.ge/images/detailed/17/MS3Pz5tDd0B7dksLGwyrRsChkM9jaR.jpg",
+      "https://comfo.ge/images/detailed/17/5qhhYWrPub7sznSPjn11E8TQjOjCRI.jpg",
+      "https://comfo.ge/images/detailed/17/UegajLbwfNp85r0E9NnT3FP4gvDmEj.jpg",
+      "https://comfo.ge/images/detailed/17/pCtdBBewpbJozrvFvToy05vOIGEuWp.jpg",
+      "https://comfo.ge/images/detailed/17/yObHvD9xtZpoNjVRbF68YKdE9MOLze.jpg",
+      "https://comfo.ge/images/detailed/17/DiXWvUB6WmTveAdDU4Bj2roaiJl4BI.jpg"
+    ]
+  },
+  {
+    "external_id": 1052,
+    "title_ka": "ტრანსფორმერი ორსართულიანი მეტალის საწოლი შავი 90*200 (MM1052)",
+    "category_ka": "ორსართულიანი საწოლი",
+    "regular_price": 649,
+    "discount_price": 449,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/orsartuliani-sawoli/ტრანსფორმერი-ორსართულიანი-მეტალის-საწოლი-შავი-90200-mm1052/",
+    "main_image": "https://comfo.ge/images/detailed/17/1czDbWRDc1vELSr2nu5Xlb5bE2g7xk.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Ks9J5vcmU8IQkXYS2RcE22l99ceuwc.jpg",
+      "https://comfo.ge/images/detailed/17/PattPbO5mYhbhGh3xDW9UxLNaoF0B1.jpg",
+      "https://comfo.ge/images/detailed/17/5WqJgnVtLFMmZdhQdGkWuotXWV5NaU.jpg"
+    ]
+  },
+  {
+    "external_id": 1054,
+    "title_ka": "ორადგილიანი მეტალის საწოლი შავი 140*200 (MM1054)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 329,
+    "discount_price": 259,
+    "quantity": 4,
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-მეტალის-საწოლი-შავი-140200-mm1054/",
+    "main_image": "https://comfo.ge/images/detailed/17/lRSItpa6zQGB2Zv0OTwvKWcLQQcxYC.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Tu80DVcjiXIs65husKdxx14sDpOqw0.jpg",
+      "https://comfo.ge/images/detailed/17/Tk8iHscAXkfNpFbMDis3W6TdaNvOdk.jpg",
+      "https://comfo.ge/images/detailed/17/Zye00aGlKBYfHoC7K8jkz5Ha2YNdn7.jpg",
+      "https://comfo.ge/images/detailed/17/WxOVGQNBH3RybI8p6PxSHwycJ3RSz4.jpg"
+    ]
+  },
+  {
+    "external_id": 1055,
+    "title_ka": "ორადგილიანი მეტალის საწოლი თეთრი 140*200 (MM1055)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 379,
+    "discount_price": 299,
+    "quantity": 13,
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-მეტალის-საწოლი-თეთრი-140200-mm1055/",
+    "main_image": "https://comfo.ge/images/detailed/17/AAv8z7rXJDtiaZIB6QgBA6Q0XZNJYr.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/85i6yv7qshdaaXP8jDBAxtlem9N0WH.jpg",
+      "https://comfo.ge/images/detailed/17/ujCiBt8tdddQMKJWT0d68858dtEZns.png",
+      "https://comfo.ge/images/detailed/17/ApmoeRinoIGjdYcpJJ7lpo1z4ysOlA.png",
+      "https://comfo.ge/images/detailed/17/umJvFYALViPfpIFR1EsbOltGhrZKvi.png",
+      "https://comfo.ge/images/detailed/17/BOz8XKRPZ5S7KMZqqTKV9CbbGCt7ti.png",
+      "https://comfo.ge/images/detailed/17/gwpDNyo9XfIlYkmlepRjYQj0U6HDFp.png"
+    ]
+  },
+  {
+    "external_id": 1056,
+    "title_ka": "ორადგილიანი მეტალის საწოლი შავი 140*200 (MM1056)",
+    "category_ka": "ორადგილიანი საწოლი",
+    "regular_price": 379,
+    "discount_price": 299,
+    "quantity": 23,
+    "link": "https://comfo.ge/sadzinebeli/oradgiliani-sawoli/ორადგილიანი-მეტალის-საწოლი-შავი-140200-mm1056/",
+    "main_image": "https://comfo.ge/images/detailed/17/DutQ5KX7QBVzJEEsU3whWqbB3jL09f.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/mxxJJWFE6oF0FqWu2a0GxmhEDt6pqu.jpg",
+      "https://comfo.ge/images/detailed/17/EisiY7EkWOoAhKtA7xIBhd0kQjoTLE.png",
+      "https://comfo.ge/images/detailed/17/AsNn9Ybtqj4sYWf4Ry0I6uIbWFah1n.png",
+      "https://comfo.ge/images/detailed/17/5iAYCwKNJ48ZeWUXK2hpuFVv9Rzn8A.png",
+      "https://comfo.ge/images/detailed/17/y7mzDZf9uqTJmfV1AaencmxOLkAPwr.png",
+      "https://comfo.ge/images/detailed/17/VMnNV5H9WnQosegFx9ePwZznU3TNvy.png",
+      "https://comfo.ge/images/detailed/17/9vydOY7R1FPqO39UKYS8LTEK2GXgvE.png"
+    ]
+  },
+  {
+    "external_id": 997,
+    "title_ka": "კომოდი 4 უჯრით ფიჭვის ფაქტურით (FD997)",
+    "category_ka": "კარადა",
+    "regular_price": 499,
+    "discount_price": 399.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კომოდი-4-უჯრით-ფიჭვის-ფაქტურით-fd997/",
+    "main_image": "https://comfo.ge/images/detailed/17/kp8pIccvbUpa8fQkgRnmJRwLuqaxI0.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Wd6rcyrDyYlf5DWZE8B2EKarWVOIiN.png",
+      "https://comfo.ge/images/detailed/17/R0aWi7VpqZ9ACrbO7BhjtBKS72moyP.png"
+    ]
+  },
+  {
+    "external_id": 998,
+    "title_ka": "კომოდი 4 უჯრით თეთრი (FD998)",
+    "category_ka": "კარადა",
+    "regular_price": 499,
+    "discount_price": 399.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კომოდი-4-უჯრით-თეთრი-fd998/",
+    "main_image": "https://comfo.ge/images/detailed/17/YUOVh1wP1JUuKlW4dwPvbbN5WSZCl4.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/XfzNlXyZQhkqWMXFL6eBge0f4rqhR8.png",
+      "https://comfo.ge/images/detailed/17/bmkENEXHmssUXkvi8kZPESNENmaHnx.png"
+    ]
+  },
+  {
+    "external_id": 1001,
+    "title_ka": "ტანსაცმლის საკიდი თაროებით ფიჭვის ფაქტურით (FD1001)",
+    "category_ka": "თარო",
+    "regular_price": 249,
+    "discount_price": 189.9,
+    "quantity": 17,
+    "link": "https://comfo.ge/sadzinebeli/sakidi/ტანსაცმლის-საკიდი-თაროებით-ფიჭვის-ფაქტურით-fd1001/",
+    "main_image": "https://comfo.ge/images/detailed/17/7mdnBZnQuQUC2yxj0ZX40jWZdiO2ut.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/URXP1EDSCVxLQdknIb8bHaURi74gkx.jpg",
+      "https://comfo.ge/images/detailed/17/70OoGgCW1NdbwjYjisqmA6FRU2RvhP.jpg"
+    ]
+  },
+  {
+    "external_id": 1009,
+    "title_ka": "მიკროტალღურის თარო ფიჭვის ფაქტურით (FD1009)",
+    "category_ka": "თარო",
+    "regular_price": 79,
+    "discount_price": 65,
+    "quantity": 15,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/მიკროტალღურის-თარო-ფიჭვის-ფაქტურით-fd1009/",
+    "main_image": "https://comfo.ge/images/detailed/17/sJJ45E1uT6mVfUTnuq9mGHkXPozAYt.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/X4ZM28BCAFG0ljhW70R7a1Yntz6nfm.jpg"
+    ]
+  },
+  {
+    "external_id": 1011,
+    "title_ka": "კუთხის 4 დონიანი თარო ფიჭვის ფაქტურით (FD1011)",
+    "category_ka": "თარო",
+    "regular_price": 129,
+    "discount_price": 99.9,
+    "quantity": 27,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/კუთხის-4-დონიანი-თარო-ფიჭვის-ფაქტურით-fd1011/",
+    "main_image": "https://comfo.ge/images/detailed/17/Sm6y1GuI1b9hBhY47nYtn7enddAf1M.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/hVTbqFzMLrew81GOh0VF9kyBzjF17t.jpg"
+    ]
+  },
+  {
+    "external_id": 1012,
+    "title_ka": "კუთხის 4 დონიანი თეთრი თარო (FD1012)",
+    "category_ka": "თარო",
+    "regular_price": 129,
+    "discount_price": 99.9,
+    "quantity": 10,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/კუთხის-4-დონიანი-თეთრი-თარო-fd1012/",
+    "main_image": "https://comfo.ge/images/detailed/17/aMuGtmIOvGtPqLI5Rxw1BqJG9vzozi.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/m6ZvOfkDuxjXB0gQyO8zTYeDoaE0nt.jpg"
+    ]
+  },
+  {
+    "external_id": 1018,
+    "title_ka": "4 დონიანი თეთრი თარო (FD1018)",
+    "category_ka": "თარო",
+    "regular_price": 89,
+    "discount_price": 75,
+    "quantity": 4,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-თეთრი-თარო-fd1018/",
+    "main_image": "https://comfo.ge/images/detailed/17/3UGr3QGE8sFykaGBn1M0i5DOUbIepE.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/tYKlZN5mCdEskxjzGJiL7ZpIY5RQc4.jpg"
+    ]
+  },
+  {
+    "external_id": 1021,
+    "title_ka": "სამზარეულოს მაგიდა 4 სკამით ფიჭვის ფაქტურით (FD1021)",
+    "category_ka": "სამზარეულოს მაგიდა და სკამები",
+    "regular_price": 649,
+    "discount_price": 499,
+    "quantity": 7,
+    "link": "https://comfo.ge/samzareulo/samzareulos-magida-da-skamebi/სამზარეულოს-მაგიდა-4-სკამით-ფიჭვის-ფაქტურით-fd1021/",
+    "main_image": "https://comfo.ge/images/detailed/17/hXxQHitxsqjz0KvOsSxsWbiYqTuLwj.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1022,
+    "title_ka": "სამზარეულოს მაგიდა 4 სკამით თეთრი (FD1022)",
+    "category_ka": "სამზარეულოს მაგიდა და სკამები",
+    "regular_price": 649,
+    "discount_price": 499,
+    "quantity": 8,
+    "link": "https://comfo.ge/samzareulo/samzareulos-magida-da-skamebi/სამზარეულოს-მაგიდა-4-სკამით-თეთრი-fd1022/",
+    "main_image": "https://comfo.ge/images/detailed/17/jEm8BNnMOfgweWUfZPnsBiOxzaXngv.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1030,
+    "title_ka": "ფეხსაცმლის კარადა ფიჭვის ფაქტურით (FD1030)",
+    "category_ka": "კარადა",
+    "regular_price": 249,
+    "discount_price": 199.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-კარადა-ფიჭვის-ფაქტურით-fd1030/",
+    "main_image": "https://comfo.ge/images/detailed/17/MDDuAsl4rn09w0V60YP18yBeHbR76l.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/LsAypeSdxZuAoS5GfDJwOxruE3n4QI.jpg",
+      "https://comfo.ge/images/detailed/17/TM3SrRT3USePcjW6wqOBrHX3dgQ4eK.jpg"
+    ]
+  },
+  {
+    "external_id": 1032,
+    "title_ka": "ტუმბო ფიჭვის ფაქტურით (FD1032)",
+    "category_ka": "ტუმბო",
+    "regular_price": 89,
+    "discount_price": 69.9,
+    "quantity": 8,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-ფიჭვის-ფაქტურით-fd1032/",
+    "main_image": "https://comfo.ge/images/detailed/17/8X5OsbDUiTxJSoA9dnwGCE5A0oJYdo.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/BWcEwRASMq8nHhniZV2FEGxjosob9k.jpg",
+      "https://comfo.ge/images/detailed/17/G1ilUFdyHU9YBcbvlZVzFwIK0LsH1O.jpg"
+    ]
+  },
+  {
+    "external_id": 1034,
+    "title_ka": "ტუმბო მეტალის ფეხებზე ფიჭვის ფაქტურით (FD1034)",
+    "category_ka": "ტუმბო",
+    "regular_price": 95,
+    "discount_price": 69.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-მეტალის-ფეხებზე-ფიჭვის-ფაქტურით-fd1034/",
+    "main_image": "https://comfo.ge/images/detailed/17/5fAYINN1QuIdEccSYhuFXQC2GQ43RG.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/xrSvbhpZ5ms1xxtS3ryscLTrJn1Pla.jpg",
+      "https://comfo.ge/images/detailed/17/3yRXvdwse4Z1SWvrfu1lz9rNWU9RdX.jpg"
+    ]
+  },
+  {
+    "external_id": 1035,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თეთრი 60*90 (FD1035)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 134,
+    "discount_price": 99.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თეთრი-6090-fd1035/",
+    "main_image": "https://comfo.ge/images/detailed/17/1fkNoeZAiXqks1zLoR2uQZwcWZQyoN.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/3KLJh1We1CnzAqnRuLlyxkG0GzqqgJ.jpg",
+      "https://comfo.ge/images/detailed/17/10j8mwxwRj68QVabH30DEYoxHpLreQ.jpg"
+    ]
+  },
+  {
+    "external_id": 1036,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თაროებით თეთრი 60*120 (FD1036)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 179,
+    "discount_price": 159.9,
+    "quantity": 41,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-თეთრი-60120-fd1036/",
+    "main_image": "https://comfo.ge/images/detailed/17/L4C7nE0AXI1CQgxivGVi49mdHZTymc.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/TgPKC4T9VDTZLknCKzMSnJLvnTUuEY.jpg",
+      "https://comfo.ge/images/detailed/17/8mgH3gzQnlvrU3tDnkeIb8AHa982Ia.jpg"
+    ]
+  },
+  {
+    "external_id": 1033,
+    "title_ka": "ტუმბო თეთრი (FD1033)",
+    "category_ka": "ტუმბო",
+    "regular_price": 89,
+    "discount_price": 69.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-თეთრი-fd1033/",
+    "main_image": "https://comfo.ge/images/detailed/17/rNiAI2FoljnDERn9H4AsErSroHyMR9.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/pw5VGLQMCV952GXMWpmOlZw91NWLIK.jpg",
+      "https://comfo.ge/images/detailed/17/3Fy7TgPcellPnkNw6B2UtpMz5PEWpi.jpg"
+    ]
+  },
+  {
+    "external_id": 28,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა მუქი ხის ფაქტურით (28)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 169,
+    "discount_price": 99.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-მუქი-ხის-ფაქტურით-28/",
+    "main_image": "https://comfo.ge/images/detailed/14/rNj2bQOLoDCEfngoyPBk9yBBuKq2DI.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/3CMTSvH9G1mZkl8CykxH04MPlTDJii.png",
+      "https://comfo.ge/images/detailed/14/pMaBsbbAdhgYx46RlFswe3VMFGsezk.png",
+      "https://comfo.ge/images/detailed/14/A3gWxkwdRV2T26yYFiZVy4ObIHJXF5.png",
+      "https://comfo.ge/images/detailed/14/fz9eZBaD8ZTJ1pq6g6cJztTKvdDOIv.png",
+      "https://comfo.ge/images/detailed/14/qQVHnNclioxX2Ql8aGKidm5S84wI7M.png",
+      "https://comfo.ge/images/detailed/14/AsY1Ax20z9MNZXFR3vF6X68gxRENS9.png"
+    ]
+  },
+  {
+    "external_id": 561,
+    "title_ka": "სამზარეულოს თარო ფიჭვის ფაქტურით (561)",
+    "category_ka": "თარო",
+    "regular_price": 435,
+    "discount_price": 239.9,
+    "quantity": 12,
+    "link": "https://comfo.ge/samzareulo/taro/სამზარეულოს-თარო-ფიჭვის-ფაქტურით-561/",
+    "main_image": "https://comfo.ge/images/detailed/15/0vKdB4PglewDZnUoJTqzZPPp7rCchD.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/YT1qBKYSaZwFnoBFTMp5VclCfBTvxI.jpg"
+    ]
+  },
+  {
+    "external_id": 993,
+    "title_ka": "ფეხსაცმლის თეთრი კარადა თაროებით (BF993)",
+    "category_ka": "კარადა",
+    "regular_price": 399,
+    "discount_price": 299.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-თეთრი-კარადა-თაროებით-bf993/",
+    "main_image": "https://comfo.ge/images/detailed/17/lnwRqkyPjwZlg3gCyDF1Bicu5Pn6Iv.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/v7qJdpwBTFTM6HOmw8Sf0SC5z0tzr8.jpeg",
+      "https://comfo.ge/images/detailed/17/G842knlYZBfOM1Xqo2ZKuL1dbblXEW.jpeg",
+      "https://comfo.ge/images/detailed/17/Y1rpBvMuMU26hOjG0iLOyx7kh7sg2k.png"
+    ]
+  },
+  {
+    "external_id": 1062,
+    "title_ka": "ორთოპედიული ჰიბრიდული მატრასი 160x200 (US1062)",
+    "category_ka": "მატრასები",
+    "regular_price": 649,
+    "discount_price": 499,
+    "quantity": 4,
+    "link": "https://comfo.ge/sadzinebeli/matrasebi/ორთოპედიული-ჰიბრიდული-მატრასი-160x200-us1062/",
+    "main_image": "https://comfo.ge/images/detailed/17/Rod33s81zAuKAC70yE5EvQRpHtpdUO_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/YYuzCYzDJ04MRQXeH3g4Z6FsDlsmxS_small.png",
+      "https://comfo.ge/images/detailed/17/4I13t0JsM3ul3B1WY5YRyTS5MBBjlS_small.png",
+      "https://comfo.ge/images/detailed/17/E9Gyo8gsnL6fhbFUHncS44tKtZF5BJ_small.png",
+      "https://comfo.ge/images/detailed/17/dvUkZP7dSaK2FMGDLFoAXS3p2vy9Y6_small.png"
+    ]
+  },
+  {
+    "external_id": 1063,
+    "title_ka": "Lannister Exclusive ულტრა ორთოპედიული ჰიბრიდული მატრასი 90x200 (US1063)",
+    "category_ka": "მატრასები",
+    "regular_price": 599,
+    "discount_price": 449,
+    "quantity": 3,
+    "link": "https://comfo.ge/sadzinebeli/matrasebi/lannister-exclusive-ულტრა-ორთოპედიული-ჰიბრიდული-მატრასი-90x200-us1063/",
+    "main_image": "https://comfo.ge/images/detailed/17/F1thKiDEoFPygdgz5VujKtqHELkBq9_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/D2TaJqKHNGpgGMzLJpkIzxPPcVfcyL_small.png",
+      "https://comfo.ge/images/detailed/17/G51lZ9Jut07YYRC8ow0Rk3Impw78gw_small.png",
+      "https://comfo.ge/images/detailed/17/G5naKOBj8OWK47JDQIntPWc5CfO8ob_small.png",
+      "https://comfo.ge/images/detailed/17/ghZpc3BOoMtL4zf6kSsRPkPUoLjbw5_small.png",
+      "https://comfo.ge/images/detailed/17/W1z9HXDlTVS41Fym5AP5sRYunwXJ4k_small.png"
+    ]
+  },
+  {
+    "external_id": 1068,
+    "title_ka": "ტრანსფორმერი დივანი კრემისფერი (KG1068)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1699,
+    "discount_price": 999,
+    "quantity": 7,
+    "link": "https://comfo.ge/products-without-category/ტრანსფორმერი-დივანი-კრემისფერი-kg1068/",
+    "main_image": "https://comfo.ge/images/detailed/17/7ZLkQg1Ka9cqAy5L7LtXh1waZgRaTn_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/FQRKMbGejvQDN9HDEkLvojlFxLGRMY_small.png",
+      "https://comfo.ge/images/detailed/17/imWydGOdsnAHiJbXmLTYzjZaJbWIxZ_small.png",
+      "https://comfo.ge/images/detailed/17/KAlKAC41j3FseWsdZtobO4rsB1FiDG_small.png",
+      "https://comfo.ge/images/detailed/17/OFWAq2VuccSoShJafNJw0KUfXojHKF_small.png",
+      "https://comfo.ge/images/detailed/17/NlqUc211vNhDTSRRLIITTIZTotuTvs_small.png"
+    ]
+  },
+  {
+    "external_id": 1069,
+    "title_ka": "ტრანსფორმერი დივანი ნაცრისფერი (KG1069)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1699,
+    "discount_price": 999,
+    "quantity": 6,
+    "link": "https://comfo.ge/products-without-category/ტრანსფორმერი-დივანი-ნაცრისფერი-kg1069/",
+    "main_image": "https://comfo.ge/images/detailed/17/PmImUTKdc0jjJfqxOTuqNeRv6mA6JI_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Xd78kDvWgvrjoe0ARZNkbM0sH2uwL3_small.png",
+      "https://comfo.ge/images/detailed/17/KeWU7gRfDOxWaqffK7pPvZinxPZw5X_small.png",
+      "https://comfo.ge/images/detailed/17/SqOTtsXwvREqXvkcwEUlyQBTAouqCJ_small.png",
+      "https://comfo.ge/images/detailed/17/HNZKlkh1kBqdtTmfWLUxyyCoyqV4ZR_small.png",
+      "https://comfo.ge/images/detailed/17/KhvVJiEOkJFjZyptKX07jU4srDeH54_small.png"
+    ]
+  },
+  {
+    "external_id": 1070,
+    "title_ka": "კუთხის დივანი Flavia კრემისფერი (KG1070)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1499,
+    "discount_price": 899,
+    "quantity": 3,
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-კრემისფერი-kg1070/",
+    "main_image": "https://comfo.ge/images/detailed/17/NVcaW3y2PsHuvA54TqXCY6sWTRdMY3_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/joFVnblSQue7PUT1cbYtuFaG1plJMj_small.jpg",
+      "https://comfo.ge/images/detailed/17/swigw1gbZG3g0nOzfx9mr6BTAF7FZO_small.jpg",
+      "https://comfo.ge/images/detailed/17/Qu8Y2z06cYEPbq6GKOYLLDNMAtX8EV_small.jpg",
+      "https://comfo.ge/images/detailed/17/JOmbGGmiSNqk9e5vC5GUjCS12rc3SS_small.jpg",
+      "https://comfo.ge/images/detailed/17/EsGzljNo1gCxLYoPNSUIJpcpIxxGTs_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1071,
+    "title_ka": "კუთხის დივანი Flavia ნაცრისფერი (KG1071)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1499,
+    "discount_price": 899,
+    "quantity": 2,
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-ნაცრისფერი-kg1071/",
+    "main_image": "https://comfo.ge/images/detailed/17/jR4i7p3ojx2rFZ1ilJ5xmlAa81GlMF_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/senUra7OkeCzcofL8d0LLLfbCmZbDN_small.jpg",
+      "https://comfo.ge/images/detailed/17/iHth4b4VDEKS7qciAAc0DH3dwXCmsz_small.jpg",
+      "https://comfo.ge/images/detailed/17/dPblS7wsWU5HgyiGBfBith1jXHy8LX_small.jpg",
+      "https://comfo.ge/images/detailed/17/vNqjvZigBMcPhCLa8tp2I5jaWk5dRO_small.jpg",
+      "https://comfo.ge/images/detailed/17/ECXgzJ5MU7d2iFfAYnA3O8PKMCsWbq_small.jpg",
+      "https://comfo.ge/images/detailed/17/6MjflwPv8QvbEfnyB0Z8OISI6OOuB1_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1072,
+    "title_ka": "კუთხის დივანი Flavia Velvet ყავისფერი (KG1072) ",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1799.0,
+    "discount_price": 999.0,
+    "quantity": 4,
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-velvet-ყავისფერი-kg1072/",
+    "main_image": "https://comfo.ge/images/detailed/17/LBh1PvVfMjLnsa7P3cOCgX7O6M0IRU_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/76bsr1du4KpHApCmGyaq1NDbRWMiGa_small.jpg",
+      "https://comfo.ge/images/detailed/17/iVhMv9EwxMGWBm4BTACeHyeApPXvcA_small.jpg",
+      "https://comfo.ge/images/detailed/17/cUPXC6MZibpoeXjBLvzXgj5BtIEeoH_small.jpg",
+      "https://comfo.ge/images/detailed/17/OPSyBM8QT948HpxCDw17QxnBAgHvZp_small.jpg",
+      "https://comfo.ge/images/detailed/17/459sU22bDJD5MPCi20lMHLrDZ05b3Q_small.jpg",
+      "https://comfo.ge/images/detailed/17/LsLOnw3xUddjjJ5dE034dvc7QlA60S_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1073,
+    "title_ka": "კუთხის დივანი Flavia Velvet  თეთრი (KG1073)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1799,
+    "discount_price": 999,
+    "quantity": 10,
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-velvet-თეთრი-kg1073/",
+    "main_image": "https://comfo.ge/images/detailed/17/FsoWpVHY8UzGVXk19dad1qjTEqo3eb_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/5zsgTMyIjKnM2OL15KqZPQaXUz375F_small.jpg",
+      "https://comfo.ge/images/detailed/17/8naj62iimA7ebm9XsHXCXSToMtd5iq_small.jpg",
+      "https://comfo.ge/images/detailed/17/9jinQx7dWYDVYR6yeBLmeV70Mw53vL_small.jpg",
+      "https://comfo.ge/images/detailed/17/QXEgWth9QpssY0Y7hgwKzepEUdJCYy_small.jpg",
+      "https://comfo.ge/images/detailed/17/AdRIkP89vnmSRCzB7rlHcG9oTl4ID7_small.jpg",
+      "https://comfo.ge/images/detailed/17/q1Pwi7UI58ZpFldKwumoWsD4XyiLEk_small.jpg",
+      "https://comfo.ge/images/detailed/17/mJseh5wi5NUH0TXOGU8Rab0k1lTTx0_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1078,
+    "title_ka": "კუთხის დივანი Flavia Plus ნაცრისფერი (KG1078)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 2299,
+    "discount_price": 1299,
+    "quantity": 3,
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-plus-ნაცრისფერი-kg1078/",
+    "main_image": "https://comfo.ge/images/detailed/17/hTwpnxy0P1C1dfk422QbFYeRKpW6mJ_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/rT215izDVWyOkHbE5Kt4DlFH5IEeIW_small.jpg",
+      "https://comfo.ge/images/detailed/17/c46xBTtOOKiua3iNcn7rE2kkQJEAtr_small.jpg",
+      "https://comfo.ge/images/detailed/17/3PyRYMg2hzvGPLpBGtB1Tv8IR9NEoM_small.jpg",
+      "https://comfo.ge/images/detailed/17/C0sCQb6XSRMg7aTpov6Msl08K724XX_small.jpg",
+      "https://comfo.ge/images/detailed/17/6nAw2cvxq4X3ozmC1DQjKtGTBYxzp1_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1081,
+    "title_ka": "კუთხის დივანი Flavia პუფით კრემისფერი (KG1081)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1799,
+    "discount_price": 999,
+    "quantity": "#N/A",
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-პუფით-კრემისფერი-kg1081/",
+    "main_image": "https://comfo.ge/images/detailed/17/hQ84y5snsarTYLE6EYg2Awti0fkqUS_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/0471VdpNPEQnRzIPGkr4R53GxDtorh_small.jpg",
+      "https://comfo.ge/images/detailed/17/zGoWVqnZNZmHl5YNNhRVnp2wSzgUkG_small.jpg",
+      "https://comfo.ge/images/detailed/17/N4rixK3Eux43EhWwOBQ9lIARrIfqcy_small.jpg",
+      "https://comfo.ge/images/detailed/17/6psGC94WXHuC06Fmwd7nsWKxcH9KdW_small.jpg",
+      "https://comfo.ge/images/detailed/17/bRzZtHIQECIq2WU3nDHAOYL6dBDN6T_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1082,
+    "title_ka": "კუთხის დივანი Flavia პუფით ნაცრისფერი (KG1082)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1799.0,
+    "discount_price": 999.0,
+    "quantity": "#N/A",
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-პუფით-ნაცრისფერი-kg1082/",
+    "main_image": "https://comfo.ge/images/detailed/17/kkMRHCCgsTItXAFJwrKmVVjA5cOK5t_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/O3Nb33FQmoxe8sB3qC1jrB60Gv9OrS_small.jpg",
+      "https://comfo.ge/images/detailed/17/cAunp8AZiZGyLHBZfuW29Hg7hAZjgq_small.jpg",
+      "https://comfo.ge/images/detailed/17/3H5M2L5eeA1tv1X7r140N7N5y3NMBv_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1084,
+    "title_ka": "კუთხის დივანი Flavia Velvet პუფით თეთრი (KG1084)",
+    "category_ka": "კუთხის დივანი",
+    "regular_price": 1949,
+    "discount_price": 1149,
+    "quantity": "#N/A",
+    "link": "https://comfo.ge/products-without-category/კუთხის-დივანი-flavia-velvet-პუფით-თეთრი-kg1084/",
+    "main_image": "https://comfo.ge/images/detailed/17/qnJ9KeBsBoucJXRabDRSYBinqotwzS_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/8tdHPmvKwX3PHezq9N1fuSNqQKEfwU_small.jpg",
+      "https://comfo.ge/images/detailed/17/ZuulRypiXharSzPobp1QT47kkMa7ix_small.jpg",
+      "https://comfo.ge/images/detailed/17/jZw2CzlNJACjyV7Tl1X4AhTOpqfE5N_small.jpg",
+      "https://comfo.ge/images/detailed/17/mBYfHBAK52d5T4vYIUaX3b2fEjif61_small.jpg",
+      "https://comfo.ge/images/detailed/17/vTHnKijsSMYhfaHqU4SjqCY6jFCIpc_small.jpg",
+      "https://comfo.ge/images/detailed/17/FPoqcyl1yDmUDmlewRrSwoO4TLlBmk_small.jpg"
+    ]
+  },
+  {
+    "external_id": 572,
+    "title_ka": "ტუმბო ფიჭვის ფაქტურით KM1-A (572)",
+    "category_ka": "ტუმბო",
+    "regular_price": 120,
+    "discount_price": 69.9,
+    "quantity": 6,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-ფიჭვის-ფაქტურით-km1-a-572/",
+    "main_image": "https://comfo.ge/images/detailed/15/Wqj6XteH0xcwf3WS5nbBkGD7X7sRsI.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/NDGUW2szPiJpxGGE1m21jFPEq2fXGS.png",
+      "https://comfo.ge/images/detailed/15/xOepHQoZMM4y4sWXlwu1oGUQmFPjKI.png",
+      "https://comfo.ge/images/detailed/15/Iwjxg7MSqvrvEbet03rKyqanmH3c0A.png"
+    ]
+  },
+  {
+    "external_id": 578,
+    "title_ka": "5 დონიანი წიგნების თარო ფიჭვის ფაქტურით KT3-A (578)",
+    "category_ka": "თარო",
+    "regular_price": 278,
+    "discount_price": 159.9,
+    "quantity": 24,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-წიგნების-თარო-ფიჭვის-ფაქტურით-kt3-a-578/",
+    "main_image": "https://comfo.ge/images/detailed/15/Th4FNHcoYlitgHvgDcNj2THb8KtG2y.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/lxz7hGBkLhrsVvwOjb2M7IqxjQl7gN.jpg",
+      "https://comfo.ge/images/detailed/15/YBhfy83mPAR3WZI31pvvd5Ta1vNRor.jpg",
+      "https://comfo.ge/images/detailed/15/JkUTArcQnUn4KlJ9qQaZKVpyGKYHt9.jpg",
+      "https://comfo.ge/images/detailed/15/KqrxcSaccdhQMqjM1rbA0z75tgNtVg.jpg"
+    ]
+  },
+  {
+    "external_id": 579,
+    "title_ka": "5 დონიანი წიგნების თარო თეთრი და ფიჭვის ფაქტურით KT3-BA (579)",
+    "category_ka": "თარო",
+    "regular_price": 278,
+    "discount_price": 159.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-წიგნების-თარო-თეთრი-და-ფიჭვის-ფაქტურით-kt3-ba-579/",
+    "main_image": "https://comfo.ge/images/detailed/15/dRs0NSdnXiG7jDduMigEphnii291br.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/dgMM8eVtIBUW8ebvBoo4J0qJStI3nK.jpg",
+      "https://comfo.ge/images/detailed/15/7ci2SC4W6nzx6FmCB3yGcKdHDvbyc0.jpg",
+      "https://comfo.ge/images/detailed/15/GZ5G9P1qyk5scE9ubyEHmmgXq4vJYA.jpg",
+      "https://comfo.ge/images/detailed/15/aFlpQjb80auU1Cc32zpaIOjJuVxPRJ.jpg"
+    ]
+  },
+  {
+    "external_id": 580,
+    "title_ka": "5 დონიანი წიგნების თარო შავი და ფიჭვის ფაქტურით KT3-GA (580)",
+    "category_ka": "თარო",
+    "regular_price": 278,
+    "discount_price": 159.9,
+    "quantity": 11,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-წიგნების-თარო-შავი-და-ფიჭვის-ფაქტურით-kt3-ga-580/",
+    "main_image": "https://comfo.ge/images/detailed/15/c57VHIexHXEnxIU6SDSIEskWpMiNzd.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/8FJdMeeaEwrXXGNWwA1jG1ctj38enn.jpg",
+      "https://comfo.ge/images/detailed/15/czX5ncrxlt5g3zyVPdbRwrnL6hoQhk.jpg",
+      "https://comfo.ge/images/detailed/15/j5i4yGRgf8hl0rLDpRYUGJQuMXO2LK.jpg",
+      "https://comfo.ge/images/detailed/15/WnPYiKvXLjpqVDrFIcIHf5yJbWmpc7.jpg"
+    ]
+  },
+  {
+    "external_id": 631,
+    "title_ka": "საოფისე სამეცადინო მაგიდა წიგნის თაროებით (MS2-AB) (631)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 339,
+    "discount_price": 199.9,
+    "quantity": 25,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-წიგნის-თაროებით-ms2-ab-631/",
+    "main_image": "https://comfo.ge/images/detailed/15/LpDRESuP2YpS3Vg5ccLrcnoCrtXmqx.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/gIXhQtV5nO87wY1ODJMjaoYxnatYmB.png",
+      "https://comfo.ge/images/detailed/15/w1pHk5u5cZHAn8wzYNvS0wDUZsk4o3.png",
+      "https://comfo.ge/images/detailed/15/H1wiJYN5hOAC41ICBX9iRK5TK9UUD4.png",
+      "https://comfo.ge/images/detailed/15/llQcLD3lQx1M3ecjqp73Xe7wHdouu9.png",
+      "https://comfo.ge/images/detailed/15/ywvXn6mV0A9vLpxaiVt83NBiUGfEjY.png"
+    ]
+  },
+  {
+    "external_id": 632,
+    "title_ka": "საოფისე სამეცადინო მაგიდა წიგნის თაროებით (MS2-AG) (632)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 339,
+    "discount_price": 199.9,
+    "quantity": 45,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-წიგნის-თაროებით-ms2-ag-632/",
+    "main_image": "https://comfo.ge/images/detailed/15/B38VwgcM9DPwpP4ss4MPL4s6QozBrd.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/HlbdpJXQjHry4eYpR4mF8CIOlsrEPg.png",
+      "https://comfo.ge/images/detailed/15/jS2PMW7lUr5BTkTUVImsyC5Y0M68e7.png",
+      "https://comfo.ge/images/detailed/15/BFMYnaaoedCQ7BnlKJeCc9znbpneVh.png",
+      "https://comfo.ge/images/detailed/15/ecxl6eNuOHLhW1fhZo9L1HTl0EaNDd.png"
+    ]
+  },
+  {
+    "external_id": 634,
+    "title_ka": "საოფისე სამეცადინო მაგიდა წიგნის თაროებით (MS2-A) (634)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 339,
+    "discount_price": 199.9,
+    "quantity": 36,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-წიგნის-თაროებით-ms2-a-634/",
+    "main_image": "https://comfo.ge/images/detailed/15/zJkuJTLX0TV9KeG7LPmGDGPfF4PdGO.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/0M6BfbMjoWIRcpJ2020eKjdIig6Eok.png",
+      "https://comfo.ge/images/detailed/15/CR1qTpINmmw5iFJ0nVN9NA9euTjXS0.png",
+      "https://comfo.ge/images/detailed/15/YTp4WUUJToHLvGUrCAkxQ8NqFzEEZh.png",
+      "https://comfo.ge/images/detailed/15/6mkUBC5SwzA8bt3osodH68QMf1sSKa.png"
+    ]
+  },
+  {
+    "external_id": 975,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა ფიჭვის ფაქტურით (GF975)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 179,
+    "discount_price": 119.9,
+    "quantity": 41,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-ფიჭვის-ფაქტურით-gf975/",
+    "main_image": "https://comfo.ge/images/detailed/16/4NWkOQG13auHfhQSy59g4c6XNEROOw.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/T9J1jFADkFbHGXR9whovjXVF5k8FSW.jpg",
+      "https://comfo.ge/images/detailed/16/nHAqoYLwpWhEvTmy8J8wzTunlltHuc.png",
+      "https://comfo.ge/images/detailed/16/nlQRCrkz4eGSENluaw7XKv2VGXuZti.png"
+    ]
+  },
+  {
+    "external_id": 976,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა თეთრი  (GF976)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 179,
+    "discount_price": 99.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თეთრი-gf976/",
+    "main_image": "https://comfo.ge/images/detailed/16/DG824Cm0hJ0ozyZnv4zSfaLA5k10RS.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/SxP99xDbP4NuK9VFdTRt9dVjl6CXln.png",
+      "https://comfo.ge/images/detailed/16/nmff2WiBW6KvSkeLN5bBcWbKVNL8kE.png",
+      "https://comfo.ge/images/detailed/16/WEnR7rkM92R2ZC0S797DtBEQ3LTt1t.jpg",
+      "https://comfo.ge/images/detailed/16/jTUqZOnJDeA4uuKflOnoJVcSCcqunc.png"
+    ]
+  },
+  {
+    "external_id": 982,
+    "title_ka": "დეკორატიურლი თარო 3 ცალი ფიჭვისფერი (GF982)",
+    "category_ka": "თარო",
+    "regular_price": 89,
+    "discount_price": 65,
+    "quantity": 36,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/დეკორატიურლი-თარო-3-ცალი-ფიჭვისფერი-gf982/",
+    "main_image": "https://comfo.ge/images/detailed/16/Umissrq9UpAsJklYhNN7MgAoQMyVPx.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/mlmX5utYNg8VVeiDV1ViqlMozys8RM.png",
+      "https://comfo.ge/images/detailed/16/bJj1MYJWVvmyujNS1TY3DTyM2IL6cX.png",
+      "https://comfo.ge/images/detailed/17/CBxffMh1fMHmlsvsRapAPRJzv5gc1V.png",
+      "https://comfo.ge/images/detailed/17/E7fGcjufQPby1IrQJVymhfmMXry2dY.png",
+      "https://comfo.ge/images/detailed/17/5IiKEnd2nwChsz0Xlmc2PhX5hIRSym.png",
+      "https://comfo.ge/images/detailed/17/9j3wE2BtJMr6Lm0DFXZxzrdvxi2YrD.png"
+    ]
+  },
+  {
+    "external_id": 995,
+    "title_ka": "ტუმბო 2 უჯრით ფიჭვის ფაქტურით (FD995)",
+    "category_ka": "ტუმბო",
+    "regular_price": 199,
+    "discount_price": 149.9,
+    "quantity": 29,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-2-უჯრით-ფიჭვის-ფაქტურით-fd995/",
+    "main_image": "https://comfo.ge/images/detailed/17/ERC8AUlsXs9OXLwjJ1cZ3xxLSBzLUh.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/xv3EjzffdlmlK7S9sgBADjS0wGrmzb.png",
+      "https://comfo.ge/images/detailed/17/0ZKUlNe672zCh3zW8xsn7Sf3LksXf7.png"
+    ]
+  },
+  {
+    "external_id": 1000,
+    "title_ka": "კარადა ფიჭვის ფაქტურით (FD1000)",
+    "category_ka": "კარადა",
+    "regular_price": 389,
+    "discount_price": 299.9,
+    "quantity": 9,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კარადა-ფიჭვის-ფაქტურით-fd1000/",
+    "main_image": "https://comfo.ge/images/detailed/17/VZ66UyTpxTfKcDfaPYTtX7k7b16km9.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/fWm0WjCBGUJr3qdYEGAqcucGgBTdVZ.png",
+      "https://comfo.ge/images/detailed/17/r1VDq40NYzHxlAn4qLkiLhDwPTVWur.png"
+    ]
+  },
+  {
+    "external_id": 1002,
+    "title_ka": "ფეხსაცმლის კარადა ტანსაცმლის საკიდით ფიჭვის ფაქტურით (FD1002)",
+    "category_ka": "კარადა",
+    "regular_price": 389,
+    "discount_price": 299.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-კარადა-ტანსაცმლის-საკიდით-ფიჭვის-ფაქტურით-fd1002/",
+    "main_image": "https://comfo.ge/images/detailed/17/SrtW6UdV9orcxrqSAIGsTq2jTISyDm.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1005,
+    "title_ka": "გასაშლელი კედლის მაგიდა ფიჭვის ფაქტურით (FD1005)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 129,
+    "discount_price": 139.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/გასაშლელი-კედლის-მაგიდა-ფიჭვის-ფაქტურით-fd1005/",
+    "main_image": "https://comfo.ge/images/detailed/17/daflM6Sk09A4XVkfdBo29SfLTgTEnR.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/PvgRUkUSe9Bu9Ys4cHUsdcjR3RZeOR.jpg",
+      "https://comfo.ge/images/detailed/17/5Db7ANtyMNvFlR6AC9TrxOZrNBMu6V.jpg"
+    ]
+  },
+  {
+    "external_id": 1038,
+    "title_ka": "საოფისე სამეცადინო მაგიდა ანტრაციტი 60*90 (FD1038)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 99,
+    "discount_price": 79.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-ანტრაციტი-6090-fd1038/",
+    "main_image": "https://comfo.ge/images/detailed/17/GInnVCfcNT4qgixfBZSjRa33P5LAdY.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/jR1CbZCPWzvZzCjgwvnCVxe83WYylM.jpg",
+      "https://comfo.ge/images/detailed/17/mWmxrYCvpc1icXwiYSdHjtc58v1Ito.jpg"
+    ]
+  },
+  {
+    "external_id": 1039,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თაროებით ფიჭვის ფაქტურით 50*110 (FD1039)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 139,
+    "discount_price": 99.9,
+    "quantity": 18,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-ფიჭვის-ფაქტურით-50110-fd1039/",
+    "main_image": "https://comfo.ge/images/detailed/17/tclzV7PsgIyNwDJzBGxdlhsaf8W52M.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/2lxhvlG69TYrbf7GTWBe7W7fjP6P2R.jpg",
+      "https://comfo.ge/images/detailed/17/KCxDJE6x2zMvOUrskNZiqv0xd36ON3.jpg"
+    ]
+  },
+  {
+    "external_id": 1040,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თაროებით თეთრი 50*110 (FD1040)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 139,
+    "discount_price": 99.9,
+    "quantity": 35,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-თეთრი-50110-fd1040/",
+    "main_image": "https://comfo.ge/images/detailed/17/NPW3YbeFqz9rFSMcYNYRqMh2Aul13j.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/ah4IUjwkGhikzRKnHpxx1YHTZXS8JC.jpg",
+      "https://comfo.ge/images/detailed/17/9XpCQULBeoFvuAJVraxJSQv6NKdPSt.jpg"
+    ]
+  },
+  {
+    "external_id": 1085,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თაროებით ფიჭვის ფაქტურით 60*120 (FD1085)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 179,
+    "discount_price": 159.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/products-without-category/საოფისე-სამეცადინო-მაგიდა-თაროებით-ფიჭვის-ფაქტურით-60120-fd1085/",
+    "main_image": "https://comfo.ge/images/detailed/17/OVO5JebdNnEmv6wV49BJIceM5BIW6a_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/32WDmDHBFUWbZ3PZh92yPwRaGVD0Gb_small.jpg",
+      "https://comfo.ge/images/detailed/17/INhJE9Cj5Zo8BFQkG2KjVFn4YosRoW_small.jpg",
+      "https://comfo.ge/images/detailed/17/IrBAUQ8a3XYjeeIa3L30DJa4ENynrO_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1087,
+    "title_ka": "5-დონიანი თარო თეთრი 150*60 (FD1087)",
+    "category_ka": "თარო",
+    "regular_price": 179,
+    "discount_price": 139.9,
+    "quantity": 1,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თარო-თეთრი-15060-fd1087/",
+    "main_image": "https://comfo.ge/images/detailed/17/FUiv9Ou7XkLS2urK1omT4hm2HcdWMs_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/o2iRCak0haHAoPjNjtXwbWPzV1bUQ0_small.jpg",
+      "https://comfo.ge/images/detailed/17/WMhQvUH7R9GzjTcxZv60f4Hr6fcd2T_small.jpg",
+      "https://comfo.ge/images/detailed/17/7cvpE4vthw4m0Fa0cuHhgLVyrkCVmB_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1088,
+    "title_ka": "3-დონიანი თარო ფიჭვის ფაქტურით 78*60 (FD1088)",
+    "category_ka": "თარო",
+    "regular_price": 129,
+    "discount_price": 79.9,
+    "quantity": 36,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/3-დონიანი-თარო-ფიჭვის-ფაქტურით-7860-fd1088/",
+    "main_image": "https://comfo.ge/images/detailed/17/AFfVoGZPLSFi7nCxStT4wlCNjvjDIe_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/mHiZYHR6VFhy7ZfmGMmWX1VTphpmIQ_small.jpg",
+      "https://comfo.ge/images/detailed/17/jssUrEPYORLv507bzeJ0eeZarCanop_small.jpg",
+      "https://comfo.ge/images/detailed/17/huqIrTwgOPGtCo3FUNmmlT3CDTZ7ue_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1089,
+    "title_ka": "3-დონიანი თარო თეთრი 78*60 (FD1089)",
+    "category_ka": "თარო",
+    "regular_price": 129,
+    "discount_price": 79.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/3-დონიანი-თარო-თეთრი-7860-fd1089/",
+    "main_image": "https://comfo.ge/images/detailed/17/k3uuACZvfe5JDshwZ3v9DNwzlWuIm1_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/mrTbfwLXo61AyYUKY0YF25i59KtQT8_small.jpg",
+      "https://comfo.ge/images/detailed/17/BTxJggSczoZvepqNXMOxmdTvwj8mOf_small.jpg",
+      "https://comfo.ge/images/detailed/17/dK5kpqfxSq5ktukdmXiNx4zfWA89o5_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1090,
+    "title_ka": "5-დონიანი თარო (180*120) ფიჭვის ფაქტურით (FD1090)",
+    "category_ka": "თარო",
+    "regular_price": 279,
+    "discount_price": 239.9,
+    "quantity": 23,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თარო-180120-ფიჭვის-ფაქტურით-fd1090/",
+    "main_image": "https://comfo.ge/images/detailed/17/s9Hmptg41jXbxjHkb43U2y54junDx0_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/3RSZ8yR01iMDKGdnnYOEnTLCsgHRf9_small.png",
+      "https://comfo.ge/images/detailed/17/ZBjzUMjgH30GKm45bz2jxa4walAWAz_small.png"
+    ]
+  },
+  {
+    "external_id": 1091,
+    "title_ka": "წიგნების დეკორატიული თარო ფიჭვის ფაქტურით (FD1091)",
+    "category_ka": "თარო",
+    "regular_price": 169,
+    "discount_price": 119.9,
+    "quantity": 37,
+    "link": "https://comfo.ge/products-without-category/წიგნების-დეკორატიული-თარო-ფიჭვის-ფაქტურით-fd1091/",
+    "main_image": "https://comfo.ge/images/detailed/17/qTep0sARWxOJuabuOd2h8kFysaAynT_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/P1TpRyKfaodn5nmruTkeZ9BkJ3rpzu_small.jpg",
+      "https://comfo.ge/images/detailed/17/9jctSngn4AuUjO1p0JGdzDX5b79VcX_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1092,
+    "title_ka": "წიგნების დეკორატიული თეთრი თარო (FD1092)",
+    "category_ka": "თარო",
+    "regular_price": 169,
+    "discount_price": 119.9,
+    "quantity": 7,
+    "link": "https://comfo.ge/products-without-category/წიგნების-დეკორატიული-თეთრი-თარო-fd1092/",
+    "main_image": "https://comfo.ge/images/detailed/17/pEd2vhPrDuuxc6oFEHhlZW36CDJOVo_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/7F6UyZDQJd7aTKQG2LAIqvoe7J5dIC_small.jpg",
+      "https://comfo.ge/images/detailed/17/6MxYhvR6bKZjqxLYA4hWgnjbw6GRht_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1093,
+    "title_ka": "მცირე სადგამი / მაგიდა ოვალური (GF1093)",
+    "category_ka": "ყავის მაგიდა",
+    "regular_price": 29,
+    "discount_price": 19,
+    "quantity": 7,
+    "link": "https://comfo.ge/products-without-category/მცირე-სადგამი-მაგიდა-ოვალური-gf1093/",
+    "main_image": "https://comfo.ge/images/detailed/17/j1IxqO825riQUDQHufvGRvE5KQYPYS_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/LDn8NmonGMCc54UbsdSt6nkpamzDX1_small.png",
+      "https://comfo.ge/images/detailed/17/WrntxP8samdOiXCkAmDFghVE6PmQTp_small.png",
+      "https://comfo.ge/images/detailed/17/SBgQucDxZMEFQefM6BGmiexM4Vaerb_small.png"
+    ]
+  },
+  {
+    "external_id": 1094,
+    "title_ka": "კუთხის 6-დონიანი თეთრი თარო (GF1094)",
+    "category_ka": "თარო",
+    "regular_price": 199,
+    "discount_price": 149.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/products-without-category/კუთხის-6-დონიანი-თეთრი-თარო-gf1094/",
+    "main_image": "https://comfo.ge/images/detailed/17/s5KDMuYxWg91RT1ilBSpXtzMCu3BFL_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/3ySplaJA6GRTUfNiGMegktYzQTlPLW_small.png",
+      "https://comfo.ge/images/detailed/17/VEuCbEH8xnGajrOu7NMekHEiKo07QW_small.png"
+    ]
+  },
+  {
+    "external_id": 549,
+    "title_ka": "დასადგმელი სარკე AYN-001-AV (549)",
+    "category_ka": "სარკეები",
+    "regular_price": 129,
+    "discount_price": 69.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sarkeebi/sarkeebi/დასადგმელი-სარკე-ayn-001-av-549/",
+    "main_image": "https://comfo.ge/images/detailed/15/RkIxec7oSh1X0YS7es38k2HhVvfjpu.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/Tul3MkpQ1m5DWNz0jjAJMFxti5Qxrw.jpg"
+    ]
+  },
+  {
+    "external_id": 551,
+    "title_ka": "დასადგმელი სარკე AYN-001-K (551)",
+    "category_ka": "სარკეები",
+    "regular_price": 129,
+    "discount_price": 69.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/sarkeebi/sarkeebi/დასადგმელი-სარკე-ayn-001-k-551/",
+    "main_image": "https://comfo.ge/images/detailed/15/xTwo2DNoPVFOUGCuENOVltrbVdRIO6.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/XjaqGZaWJy1ey7e0EtYvpbyjfs0YiM.jpg"
+    ]
+  },
+  {
+    "external_id": 711,
+    "title_ka": "ტორშერი (MS711)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59,
+    "discount_price": 45,
+    "quantity": 1,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms711/",
+    "main_image": "https://comfo.ge/images/detailed/16/qWSD8AyxbGEqdRvgaYRarPDh0qXaan.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 713,
+    "title_ka": "ტორშერი (MS713)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59,
+    "discount_price": 45,
+    "quantity": 29,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms713/",
+    "main_image": "https://comfo.ge/images/detailed/16/UXsrZvALQuBXDvfBSavVGKyUblgtkr.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 714,
+    "title_ka": "ტორშერი (MS714)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59,
+    "discount_price": 45,
+    "quantity": 40,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms714/",
+    "main_image": "https://comfo.ge/images/detailed/16/2B6bTnQ4KSZNIB6vrBN1wqCGaIvIO8.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 715,
+    "title_ka": "ტორშერი (MS715)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59,
+    "discount_price": 45,
+    "quantity": 36,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms715/",
+    "main_image": "https://comfo.ge/images/detailed/16/0qxrcagggUMJG5IGd6rVcpG3vHwgzX.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 806,
+    "title_ka": "ტორშერი (MS806)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59.0,
+    "discount_price": 45.0,
+    "quantity": 23,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms806/",
+    "main_image": "https://comfo.ge/images/detailed/16/dzUlua6KbfUu6GopQFQixkd3hg7A5I.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 856,
+    "title_ka": "ტორშერი (MS856)",
+    "category_ka": "ტორშერი",
+    "regular_price": 59,
+    "discount_price": 45,
+    "quantity": 3,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms856/",
+    "main_image": "https://comfo.ge/images/detailed/16/Lc44d9aEdSTuPSKIQdHnmtqIy7sycV.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/rkwTFesYTSpf3tskpY2v3dBQG2p30w.jpg"
+    ]
+  },
+  {
+    "external_id": 1095,
+    "title_ka": "ტორშერი (MS1095)",
+    "category_ka": "ტორშერი",
+    "regular_price": 139.0,
+    "discount_price": 79.9,
+    "quantity": 2,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms1095/",
+    "main_image": "https://comfo.ge/images/detailed/17/NydmiihXTDMplFprcrVSFmp6aN0pmZ_small.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1096,
+    "title_ka": "ტორშერი (MS1096)",
+    "category_ka": "ტორშერი",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 36,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms1096/",
+    "main_image": "https://comfo.ge/images/detailed/17/IAI8iuVC5cKyAP3jMF5zYl8sQOz3Vw_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/BnVbdh9CRZ4FbTQNu2ynJB21uM9xWD_small.png",
+      "https://comfo.ge/images/detailed/17/La4c7fNukdRMJbpKBqKx0w0qh0Gxtv_small.png"
+    ]
+  },
+  {
+    "external_id": 1097,
+    "title_ka": "ტორშერი (MS1097)",
+    "category_ka": "ტორშერი",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms1097/",
+    "main_image": "https://comfo.ge/images/detailed/17/4Qbnp2U5ruR2AW7cp0HfY0bhHjOnvU_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/hbCt5sCC8lxsxnDXGW99ZHAnc4E82T_small.png"
+    ]
+  },
+  {
+    "external_id": 1098,
+    "title_ka": "ტორშერი (MS1098)",
+    "category_ka": "ტორშერი",
+    "regular_price": 149,
+    "discount_price": 99.9,
+    "quantity": 14,
+    "link": "https://comfo.ge/ganateba/torsheri/ტორშერი-ms1098/",
+    "main_image": "https://comfo.ge/images/detailed/17/XjVdcPGpYJDbMjfgv7cd53QTsssv2y_small.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/tGykxFlEQ6r5bmWYvIakEKMIK8d05t_small.png",
+      "https://comfo.ge/images/detailed/17/QkmU4IFt6wmcKrzbRW7xmxeNfnCqqY_small.png"
+    ]
+  },
+  {
+    "external_id": 1099,
+    "title_ka": "სარკე AYN-002-A (1099)",
+    "category_ka": "სარკეები",
+    "regular_price": 99,
+    "discount_price": 49.9,
+    "quantity": 46,
+    "link": "https://comfo.ge/products-without-category/სარკე-ayn-002-a-1099/",
+    "main_image": "https://comfo.ge/images/detailed/17/KN6XW8wRVM3ruWKrnnHDoGJWiPrOCZ_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/TBV2L5lsz8bBt0JKIV7cDkfI65q31S_small.jpeg"
+    ]
+  },
+  {
+    "external_id": 1100,
+    "title_ka": "სარკე AYN-002-K (1100)",
+    "category_ka": "სარკეები",
+    "regular_price": 99,
+    "discount_price": 49.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/products-without-category/სარკე-ayn-002-k-1100/",
+    "main_image": "https://comfo.ge/images/detailed/17/rjXZr6kezbLjp7StbsBczVg5mJIoGU_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/6P5MWdP2Vua01dZGLSoLiHVRt59isC_small.jpeg"
+    ]
+  },
+  {
+    "external_id": 1101,
+    "title_ka": "პუფი ნაცრისფერი 120 სმ (MH1101)",
+    "category_ka": "პუფი",
+    "regular_price": 329,
+    "discount_price": 199,
+    "quantity": 11,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-ნაცრისფერი-120-სმ-mh1101/",
+    "main_image": "https://comfo.ge/images/detailed/17/2LBz6bojQpt59l0o8A9ZKEc3PIjErM_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1102,
+    "title_ka": "პუფი კრემისფერი 120 სმ (MH1102)",
+    "category_ka": "პუფი",
+    "regular_price": 329,
+    "discount_price": 249,
+    "quantity": 4,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-კრემისფერი-120-სმ-mh1102/",
+    "main_image": "https://comfo.ge/images/detailed/17/TsfwAUvlVdubQaRi97VcT8sH2SFxeb_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1103,
+    "title_ka": "პუფი კრემისფერი (MH1103)",
+    "category_ka": "პუფი",
+    "regular_price": 119,
+    "discount_price": 69,
+    "quantity": 14,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-კრემისფერი-mh1103/",
+    "main_image": "https://comfo.ge/images/detailed/17/GHHjlyE6XoUxAb3pu9knqrsjQThtn7_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1104,
+    "title_ka": "პუფი ნაცრისფერი (MH1104)",
+    "category_ka": "პუფი",
+    "regular_price": 119,
+    "discount_price": 69,
+    "quantity": 9,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-ნაცრისფერი-mh1104/",
+    "main_image": "https://comfo.ge/images/detailed/17/NQGprvI6wZ0Zhnx6u9B41DxWYs5WpY_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1105,
+    "title_ka": "პუფი ბორდოსფერი 90სმ (MH1105)",
+    "category_ka": "პუფი",
+    "regular_price": 119,
+    "discount_price": 69,
+    "quantity": 3,
+    "link": "https://comfo.ge/rbili-aveji/pufi/pufi-bordosferi-90cm-mh1105/",
+    "main_image": "https://comfo.ge/images/detailed/17/8A31BkZEwQkm4cbVfR1azhW60vez7M_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1106,
+    "title_ka": "პუფი სათავსოთი ნაცრისფერი (MH1106)",
+    "category_ka": "პუფი",
+    "regular_price": 149,
+    "discount_price": 99,
+    "quantity": 8,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-სათავსოთი-ნაცრისფერი-mh1106/",
+    "main_image": "https://comfo.ge/images/detailed/17/g4ktt8vTjUwV3hfmWew6fw5zAov7lc_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1107,
+    "title_ka": "ბენჩი სათავსოთი ნაცრისფერი (MH1107)",
+    "category_ka": "პუფი",
+    "regular_price": 279,
+    "discount_price": 149,
+    "quantity": 17,
+    "link": "https://comfo.ge/sadzinebeli/pufi/ბენჩი-სათავსოთი-ნაცრისფერი-mh1107/",
+    "main_image": "https://comfo.ge/images/detailed/17/aF1CxK9A3YIUB5NvjpJ0ADvHNH74bq_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1108,
+    "title_ka": "ბენჩი სათავსოთი კრემისფერი (MH1108)",
+    "category_ka": "პუფი",
+    "regular_price": 279,
+    "discount_price": 149,
+    "quantity": 12,
+    "link": "https://comfo.ge/sadzinebeli/pufi/ბენჩი-სათავსოთი-კრემისფერი-mh1108/",
+    "main_image": "https://comfo.ge/images/detailed/17/MKCrFODFj6qEmb1OwfvrauCfVuOmmv_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1109,
+    "title_ka": "პუფი კრემისფერი (MH1109)",
+    "category_ka": "პუფი",
+    "regular_price": 119,
+    "discount_price": 69,
+    "quantity": 6,
+    "link": "https://comfo.ge/rbili-aveji/pufi/პუფი-კრემისფერი-mh1109/",
+    "main_image": "https://comfo.ge/images/detailed/17/mgomW2c03iBq16wTERNinTaln1wL5K_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1110,
+    "title_ka": "ბენჩი კრემისფერი (MH1110)",
+    "category_ka": "პუფი",
+    "regular_price": 229,
+    "discount_price": 129,
+    "quantity": 12,
+    "link": "https://comfo.ge/sadzinebeli/pufi/ბენჩი-კრემისფერი-mh1110/",
+    "main_image": "https://comfo.ge/images/detailed/17/29ImC3LnYJfms1tJXAqjfUxgsebFI0_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1112,
+    "title_ka": "ბენჩი ნაცრისფერი (MH1112)",
+    "category_ka": "პუფი",
+    "regular_price": 229,
+    "discount_price": 129,
+    "quantity": 11,
+    "link": "https://comfo.ge/sadzinebeli/pufi/ბენჩი-ნაცრისფერი-mh1112/",
+    "main_image": "https://comfo.ge/images/detailed/17/Yv1ErKnFzpzsGQkWD7kkb4D4hWLmhX_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1113,
+    "title_ka": "ორი სავარძელის და პუფის კომლექტი კრემისფერი (MH1113)",
+    "category_ka": "ორი სავარძელის და პუფის კომლექტი",
+    "regular_price": 499,
+    "discount_price": 399,
+    "quantity": 7,
+    "link": "https://comfo.ge/rbili-aveji/ori-savardzelis-da-pufis-kompleqti/ორი-სავარძელის-და-პუფის-კომლექტი-კრემისფერი-mh1113/",
+    "main_image": "https://comfo.ge/images/detailed/17/PFbl1uRikaK47Kaf8Mju8BQibxDuLR_small.png",
+    "additional_images": []
+  },
+  {
+    "external_id": 1114,
+    "title_ka": "ორი სავარძელის და პუფის კომლექტი ნაცრისფერი (MH1114)",
+    "category_ka": "ორი სავარძელის და პუფის კომლექტი",
+    "regular_price": 499,
+    "discount_price": 399,
+    "quantity": 2,
+    "link": "https://comfo.ge/rbili-aveji/ori-savardzelis-da-pufis-kompleqti/ორი-სავარძელის-და-პუფის-კომლექტი-ნაცრისფერი-mh1114/",
+    "main_image": "https://comfo.ge/images/detailed/17/ItKQH2BFkdEhPord1KsZnFFVRnqBCf_small.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1115,
+    "title_ka": "ორი სავარძელის და პუფის კომლექტი ბეჟი (MH1115)",
+    "category_ka": "ორი სავარძელის და პუფის კომლექტი",
+    "regular_price": 599,
+    "discount_price": 399,
+    "quantity": 16,
+    "link": "https://comfo.ge/rbili-aveji/ori-savardzelis-da-pufis-kompleqti/ორი-სავარძელის-და-პუფის-კომლექტი-ბეჟი-mh1115/",
+    "main_image": "https://comfo.ge/images/detailed/17/Sxl9kBErUH1RdSqL1rICpIPqwvIEcn_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1117,
+    "title_ka": "დივანი, ორი სავარძელის და პუფის კომლექტი კრემისფერი (MH1117)",
+    "category_ka": "რბილი ავეჯი",
+    "regular_price": 999,
+    "discount_price": 649,
+    "quantity": 4,
+    "link": "https://comfo.ge/products-without-category/დივანი-ორი-სავარძელის-და-პუფის-კომლექტი-კრემისფერი-mh1117/",
+    "main_image": "https://comfo.ge/images/detailed/17/0AhrpYXZItCXrownQwE21knAObiEbJ_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1118,
+    "title_ka": "სავარძელი ბეჟი (MH1118)",
+    "category_ka": "რბილი ავეჯი",
+    "regular_price": 269,
+    "discount_price": 149,
+    "quantity": 4,
+    "link": "https://comfo.ge/products-without-category/სავარძელი-ბეჟი-mh1118/",
+    "main_image": "https://comfo.ge/images/detailed/17/tbSNyfS8RBKFoSHvT1nvSCafqDa5mX_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 1119,
+    "title_ka": "სავარძელი ნაცრისფერი(MH1119)",
+    "category_ka": "რბილი ავეჯი",
+    "regular_price": 269,
+    "discount_price": 149,
+    "quantity": 15,
+    "link": "https://comfo.ge/products-without-category/სავარძელი-ნაცრისფერი-mh1119/",
+    "main_image": "https://comfo.ge/images/detailed/17/KYrKEjv7otgLdYkA0xdD6lFwVreOCE_small.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 270,
+    "title_ka": "ტანსაცმლის საკიდი მუქი ხის ფაქტურით (270)",
+    "category_ka": "თარო",
+    "regular_price": 74,
+    "discount_price": 29.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/shemosasvleli/sakidi/ტანსაცმლის-საკიდი-მუქი-ხის-ფაქტურით-270/",
+    "main_image": "https://comfo.ge/images/detailed/14/Z1CdIyKZR3bA4kqZ6QhWgt1W8u0xfI.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/M7eL193KZo6P4rqKM6NwEznngiyK3L.png",
+      "https://comfo.ge/images/detailed/14/hGJd237ftSRqaehs5YABwir4vyy44Z.png",
+      "https://comfo.ge/images/detailed/14/5VC2a65LMCu7QsE7XowPJPiV1D2i0K.png"
+    ]
+  },
+  {
+    "external_id": 277,
+    "title_ka": "ტანსაცმლის საკიდი ფიჭვის ფაქტურით (277)",
+    "category_ka": "თარო",
+    "regular_price": 74,
+    "discount_price": 45,
+    "quantity": "50+",
+    "link": "https://comfo.ge/shemosasvleli/sakidi/ტანსაცმლის-საკიდი-ფიჭვის-ფაქტურით-277/",
+    "main_image": "https://comfo.ge/images/detailed/14/kdWcOJ5ZerVsSHSD9EmJncyNjSm68M.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/lU1owkWhW95g5LJWXjlFJDmvhNgrYk.png",
+      "https://comfo.ge/images/detailed/14/Z3jT8purfVDY1rDz2qGza54edeWTPk.png",
+      "https://comfo.ge/images/detailed/14/igMi7ULlfUPLKxTfhLrSdJkKLHTPW7.png"
+    ]
+  },
+  {
+    "external_id": 558,
+    "title_ka": "6-დონიანი კედლის თარო ფიჭვის ფაქტურით (558)",
+    "category_ka": "თარო",
+    "regular_price": 226,
+    "discount_price": 129.9,
+    "quantity": 36,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/6-დონიანი-კედლის-თარო-ფიჭვის-ფაქტურით-558/",
+    "main_image": "https://comfo.ge/images/detailed/15/dX7ABJMQKh0RZSLiFneZeRe4f4xN0m.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/LqYNpDVUx2QVnWwYn53bEXf0r0eyJk.jpeg",
+      "https://comfo.ge/images/detailed/15/ZFH9pc1YyZG7tFXuhJIfmKYY8aJCdz.jpeg"
+    ]
+  },
+  {
+    "external_id": 663,
+    "title_ka": "წიგნების კარადა (BF-663)",
+    "category_ka": "კარადა",
+    "regular_price": 568,
+    "discount_price": 249.9,
+    "quantity": 13,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/წიგნების-კარადა-bf-663/",
+    "main_image": "https://comfo.ge/images/detailed/15/OBCpaNNM9BE5uuXM11AyIxiaWRXMO0.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/TpK7FshjjBqj5fUYD68oUo3fxvQuKt.jpeg",
+      "https://comfo.ge/images/detailed/15/h0z6aiN3Z9ymBluq2b4FGgGPfINhIj.jpeg",
+      "https://comfo.ge/images/detailed/15/JMa0yj5Y0YlfdjamfJGyfeViUU9xyZ.png",
+      "https://comfo.ge/images/detailed/15/xQi8rJVyJPl3Nsn0JcECmB0Hi0rtun.png"
+    ]
+  },
+  {
+    "external_id": 668,
+    "title_ka": "სამზარეულოს კარადა ფიჭვის ფაქტურით (BF-668)",
+    "category_ka": "კარადა",
+    "regular_price": 378,
+    "discount_price": 219.9,
+    "quantity": 10,
+    "link": "https://comfo.ge/samzareulo/karada/სამზარეულოს-კარადა-ფიჭვის-ფაქტურით-bf-668/",
+    "main_image": "https://comfo.ge/images/detailed/15/XiaOPyhUOgPAq5FevFgZjiiayHgkgJ.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/Ky4IsQccNeLcfqeeEaZvmWqgMUKNX2.jpeg",
+      "https://comfo.ge/images/detailed/15/3Sn7FuU31rIGPjwqccZPuZrbNbT9RS.jpeg",
+      "https://comfo.ge/images/detailed/15/sVspJE02juQgv6n6yXqF3QRuTxCwFJ.png"
+    ]
+  },
+  {
+    "external_id": 676,
+    "title_ka": "სამზარეულოს კარადა მუქი ხის ფაქტურით (BF-676)",
+    "category_ka": "კარადა",
+    "regular_price": 378,
+    "discount_price": 219.9,
+    "quantity": 27,
+    "link": "https://comfo.ge/samzareulo/karada/სამზარეულოს-კარადა-მუქი-ხის-ფაქტურით-bf-676/",
+    "main_image": "https://comfo.ge/images/detailed/15/BDeKEO10xG3hRR4J7uZRwQZRuCp8MF.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/FaJgvOURgcxBLCjfXqx8Jyh52xYb6U.jpeg",
+      "https://comfo.ge/images/detailed/15/6H6C6HEcSjsQjEmRSPZoOSZjukamKB.jpeg",
+      "https://comfo.ge/images/detailed/15/fmV9KZMSogdsYPOc6jMUkQmaNXR9FR.png"
+    ]
+  },
+  {
+    "external_id": 678,
+    "title_ka": "სამზარეულოს კარადა მუქი ხის ფაქტურით (BF-678)",
+    "category_ka": "კარადა",
+    "regular_price": 568,
+    "discount_price": 299.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/samzareulo/karada/სამზარეულოს-კარადა-მუქი-ხის-ფაქტურით-bf-678/",
+    "main_image": "https://comfo.ge/images/detailed/15/jVpHDsiUcO71bOeuGIs7UwP1QF8fIX.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/66pDcPP6fNtHNnv3SzAmC3Q9du0Ezr.png"
+    ]
+  },
+  {
+    "external_id": 681,
+    "title_ka": "საოფისე სამეცადინო მაგიდა თაროებით (BF-681)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 498,
+    "discount_price": 199.9,
+    "quantity": 40,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-bf-681/",
+    "main_image": "https://comfo.ge/images/detailed/15/g9kB8VJf8x5zoEV43iBQOqMhhagElI.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/4TT49RRdhDvk7avLeRrnGLeE9uOZPu.png",
+      "https://comfo.ge/images/detailed/15/kAFC479Q85IzJKg72RiKhWNTCP1rKg.png"
+    ]
+  },
+  {
+    "external_id": 682,
+    "title_ka": "წიგნების კარადა (BF-682)",
+    "category_ka": "კარადა",
+    "regular_price": 698,
+    "discount_price": 299.9,
+    "quantity": 6,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/წიგნების-კარადა-bf-682/",
+    "main_image": "https://comfo.ge/images/detailed/15/4aumWfOBroor8yvR3fYIvdCHhtpXG3.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/CbAiQ9prADYfj01c9MJOWQ3NjS1zO1.jpeg",
+      "https://comfo.ge/images/detailed/15/tsvcm51cS3tXI9kOI6VdHu38d5m6pS.jpeg",
+      "https://comfo.ge/images/detailed/15/NY4XFYYBeYl1JyUWCMBvUuwNYUOHwC.png"
+    ]
+  },
+  {
+    "external_id": 687,
+    "title_ka": "ტელევიზორის მაგიდა 160 სმ (BF-687)",
+    "category_ka": "ტელევიზორის მაგიდა",
+    "regular_price": 299,
+    "discount_price": 239.9,
+    "quantity": 41,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-160-სმ-bf-687/",
+    "main_image": "https://comfo.ge/images/detailed/15/5eXggJzE7E6i9sFvQqGP49YKQ22ARP.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/7E41wVUTLoVC9afs5ixxI72tRBGPpX.png",
+      "https://comfo.ge/images/detailed/15/0gprBMhljSFd5TMqa31OTbiTLOycL9.png",
+      "https://comfo.ge/images/detailed/15/HHgj9Qn1tXBMN0s8YXYuW9O9SeTFSa.png"
+    ]
+  },
+  {
+    "external_id": 694,
+    "title_ka": "მრავალფუნქციური ორგანაიზერი ფიჭვის ფაქტურით პლასტმასის კალათით (BF-694)",
+    "category_ka": "თარო",
+    "regular_price": 349,
+    "discount_price": 179.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-ორგანაიზერი-ფიჭვის-ფაქტურით-პლასტმასის-კალათით-bf-694/",
+    "main_image": "https://comfo.ge/images/detailed/15/cHoTeVo9WFdnXttZSss6tNsPywO0D7.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/8Tdp9i2X3DGwQfJm6UMeiwz7l3rfqX.jpeg",
+      "https://comfo.ge/images/detailed/15/QSBMFfyux3kT2YfcmSLrVKdRZp1haI.jpeg",
+      "https://comfo.ge/images/detailed/15/tVIL7KaShGzQdCfeAkd6jsiyVqWy8r.jpeg",
+      "https://comfo.ge/images/detailed/15/H2fSNaqmICrmTiGRt0LehHmUrPFXER.jpeg",
+      "https://comfo.ge/images/detailed/15/0VQ5OF0D5eLdT4lk0HL3YGbo2c9EUH.jpeg",
+      "https://comfo.ge/images/detailed/15/dKHchfRd41S6A0tyRBTEuQwCzgIQ3S.jpeg"
+    ]
+  },
+  {
+    "external_id": 702,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა მუხის ფაქტურით (BF702)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 199,
+    "discount_price": 159.9,
+    "quantity": 26,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-მუხის-ფაქტურით-bf702/",
+    "main_image": "https://comfo.ge/images/detailed/15/j5i1ApliQssF5xcqDGC6pWsN9tdJSa.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/6pYeAdTilr6LbzPwmtorLmWXhXqvfB.jpeg"
+    ]
+  },
+  {
+    "external_id": 757,
+    "title_ka": "ფეხსაცმლის კარადა თაროებით ფიჭვის ფაქტურის (BF-757)",
+    "category_ka": "კარადა",
+    "regular_price": 399,
+    "discount_price": 299.9,
+    "quantity": 32,
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-კარადა-თაროებით-ფიჭვის-ფაქტურის-bf-757/",
+    "main_image": "https://comfo.ge/images/detailed/16/aQuIFYvuAVVFdk5Zkj3AEkkldImozM.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/YquoR7hdHcL0jtM6uDAA2F33Acr3kW.jpeg",
+      "https://comfo.ge/images/detailed/16/c0PNsBM6Fkkkzh3UrjKCa1UMQVaJhF.jpeg",
+      "https://comfo.ge/images/detailed/16/eEGuozfaF40x3RPDQERuudXhzZVxJF.png"
+    ]
+  },
+  {
+    "external_id": 769,
+    "title_ka": "3 დონიანი მრავალფუნქციური კარადა ფიჭვის ფაქტურით (BF-769)",
+    "category_ka": "კარადა",
+    "regular_price": 289,
+    "discount_price": 179.9,
+    "quantity": 8,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/3-დონიანი-მრავალფუნქციური-კარადა-ფიჭვის-ფაქტურით-bf-769/",
+    "main_image": "https://comfo.ge/images/detailed/16/nhM3moUYZxeUuCJ2GRHQgePEQtpx3J.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/3wuFjDifKW32nJkdAA0922fZWYoSWw.jpeg",
+      "https://comfo.ge/images/detailed/16/h9Cw3Cb0L49xppIW3XQnyEB94dK8qN.jpeg",
+      "https://comfo.ge/images/detailed/16/90CCutOZ4QkgLSlk6nG4LrdoTh9xcw.jpeg",
+      "https://comfo.ge/images/detailed/16/iLMBQNPg6bWuEnyUXPlN9Quc8szcsL.jpeg",
+      "https://comfo.ge/images/detailed/16/PcxVrm3UurdkIUCuM21KCSFzoOliGI.jpeg",
+      "https://comfo.ge/images/detailed/16/6bFVYIp3JB0aqISfqSjN8JYW0G8YaD.jpeg",
+      "https://comfo.ge/images/detailed/16/lva5vsbSjPNtM2dQfiZevJJE669Mfv.jpeg",
+      "https://comfo.ge/images/detailed/16/b9cxnQEMZ2xJBvvdocRrLQsHkqZk3p.jpeg"
+    ]
+  },
+  {
+    "external_id": 770,
+    "title_ka": "3 დონიანი მრავალფუნქციური კარადა მუქი ხის ფაქტურით (BF-770)",
+    "category_ka": "კარადა",
+    "regular_price": 289,
+    "discount_price": 179.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/3-დონიანი-მრავალფუნქციური-კარადა-მუქი-ხის-ფაქტურით-bf-770/",
+    "main_image": "https://comfo.ge/images/detailed/16/cvgX90gJue6hMwG2WqWwBh5ztLIDrV.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/fMRszdoWwzjTuqZDaOvbqrBWg39V5k.jpg",
+      "https://comfo.ge/images/detailed/16/xwUcjwhOQEApe8mb9Ardr5hqxH26y1.jpg",
+      "https://comfo.ge/images/detailed/16/2jvQ6aYcz2Md0bq8FKPcAvuceiIlIt.jpg",
+      "https://comfo.ge/images/detailed/16/jOUHKVnxJ9K0O43gNez1r3SScCbZH3.jpg"
+    ]
+  },
+  {
+    "external_id": 784,
+    "title_ka": "6 დონიანი მრავალფუნქციური თეთრი კარადა 180x35 (BF-784)",
+    "category_ka": "კარადა",
+    "regular_price": 349,
+    "discount_price": 199.9,
+    "quantity": 12,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/6-დონიანი-მრავალფუნქციური-თეთრი-კარადა-180x35-bf-784/",
+    "main_image": "https://comfo.ge/images/detailed/16/tV61RGImuxd1fQquES945VKY2tM8XK.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/EWSdzJ108XDXfrxHxg4F7qvIbvz5Cy.jpeg",
+      "https://comfo.ge/images/detailed/16/Er3wCTSDMADeg49hwVGSedOJkbQTuY.jpeg"
+    ]
+  },
+  {
+    "external_id": 794,
+    "title_ka": "მრავალფუნქციური ორგანაიზერი ფიჭვის ფაქტურით და პლასტმასის კალათით (BF-794)",
+    "category_ka": "თარო",
+    "regular_price": 399,
+    "discount_price": 269.9,
+    "quantity": 3,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-ორგანაიზერი-ფიჭვის-ფაქტურით-და-პლასტმასის-კალათით-bf-794/",
+    "main_image": "https://comfo.ge/images/detailed/16/QgboRO7CV8k1iHfDhNidSXFH2Fnzle.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/fWG5ucXqjdpzxRlVJjJbaTWGqa3f5F.jpeg",
+      "https://comfo.ge/images/detailed/16/mvpmekAJMK94DOPUc9vxnbjp13rCAx.jpeg",
+      "https://comfo.ge/images/detailed/16/ViVGZ10A5HDAQAsMaQ1eahwAaSspv0.jpeg",
+      "https://comfo.ge/images/detailed/16/z72qBerHsI1dAG7uQGxQf6VtFkYVtf.jpeg",
+      "https://comfo.ge/images/detailed/16/uVKW8kifGQXYd2YIN86vul18mv8FSB.jpeg"
+    ]
+  },
+  {
+    "external_id": 832,
+    "title_ka": "კარადა 4 თაროთი მუქი დაძველების ეფექტით (BF-832)",
+    "category_ka": "კარადა",
+    "regular_price": 249.0,
+    "discount_price": 149.9,
+    "quantity": 4,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კარადა-4-თაროთი-მუქი-დაძველების-ეფექტით-bf-832/",
+    "main_image": "https://comfo.ge/images/detailed/16/KO9nVMKyvlX5Cxfupk9BWWrzfvN28k.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/hY1csSoTE0ouY1RQ0c1VFQgDAjt1fG.jpg",
+      "https://comfo.ge/images/detailed/16/D4pVuv0xGfmZftfXIiKEh0KDeA2C11.jpg",
+      "https://comfo.ge/images/detailed/16/3jpKXF7rsmcgVNA0RHw7qm9M1WMWfl.jpg",
+      "https://comfo.ge/images/detailed/16/Op1jIlFq3YEqYA3Bg2XmsU20gzdJkI.png"
+    ]
+  },
+  {
+    "external_id": 843,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა თაროებით ფიჭვის ფაქტურით (BF-843)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 299,
+    "discount_price": 199.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-ფიჭვის-ფაქტურით-bf-843/",
+    "main_image": "https://comfo.ge/images/detailed/16/68fay47Uqz3P2CfhPh6y4LclKQUctR.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/TT3Mb1CPWHzvNBirgFVDHAZvDMWCeZ.jpeg",
+      "https://comfo.ge/images/detailed/16/zssUGqiXRx07jquPN3mLxVbze5W3Co.jpeg",
+      "https://comfo.ge/images/detailed/16/7NYAqKq9cT4CA5Jn93pHg6CHM5vdbV.jpeg",
+      "https://comfo.ge/images/detailed/16/f3rrGf8mimZZrfZi5E9OOtE3ZyI2GR.jpeg"
+    ]
+  },
+  {
+    "external_id": 844,
+    "title_ka": "საოფისე/სამეცადინო მაგიდა თაროებით თეთრი (BF-844)",
+    "category_ka": "საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 299,
+    "discount_price": 199.9,
+    "quantity": 38,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-თაროებით-თეთრი-bf-844/",
+    "main_image": "https://comfo.ge/images/detailed/16/ofsxZkTOUjQheh76n5661fdxA2Apj6.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/XZDP7jXdx5mHFVcEgdFbdp3daoQKwP.jpeg",
+      "https://comfo.ge/images/detailed/16/ze70M9JrY2i6P0H3TW1FEhKcMIvcvx.jpeg",
+      "https://comfo.ge/images/detailed/16/KvJOkZfAR6vipO4KVl1LwUgO5mnPxJ.jpeg",
+      "https://comfo.ge/images/detailed/16/vd4NnOphxo0g7F35r0G7RDxXJ535fl.jpeg"
+    ]
+  },
+  {
+    "external_id": 846,
+    "title_ka": "მეტალის საკიდი  (BF-846)",
+    "category_ka": "თარო",
+    "regular_price": 59,
+    "discount_price": 39.9,
+    "quantity": 31,
+    "link": "https://comfo.ge/shemosasvleli/sakidi/მეტალის-საკიდი-bf-846/",
+    "main_image": "https://comfo.ge/images/detailed/16/aoO4j1v5RNme0IPpuSfXJgDCcAXElJ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/97tRjjjMh3yEN4vuiZeQYNwT325x4K.jpg",
+      "https://comfo.ge/images/detailed/16/kUujjHvGKp1iUuCFnW2hGDrMiCHdYp.jpg",
+      "https://comfo.ge/images/detailed/16/iLcIJhuav7UGEQn0jKfscQAJDANzAA.jpg"
+    ]
+  },
+  {
+    "external_id": 1066,
+    "title_ka": "ტელევიზორის მაგიდა ფიჭვის ფაქტურით 180სმ (BF1066)",
+    "category_ka": "ტელევიზორის მაგიდა",
+    "regular_price": 399,
+    "discount_price": 299,
+    "quantity": 21,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-ფიჭვის-ფაქტურით-180სმ-bf1066/",
+    "main_image": "https://comfo.ge/images/detailed/17/Rp5B1q4kfq1A9G2oTg6RjOwLdwZNnI_small.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/TNZ3J7svxXfe7yUJw1iLR1SiDUpTFk_small.jpeg",
+      "https://comfo.ge/images/detailed/17/UwtcnfStfbupjuVXAwBl0dKjC9WxJm_small.jpeg",
+      "https://comfo.ge/images/detailed/17/nkaEoEGayj9FIfIOTrYmfNV8ooRS0h_small.jpeg",
+      "https://comfo.ge/images/detailed/17/ZH9YcqZANyBfKldwDuAjHMId8Bsjhw_small.jpeg"
+    ]
+  },
+  {
+    "external_id": 797,
+    "title_ka": "მრავალფუნქციური კედლის თეთრი ორგანაიზერი პლასტმასის კალათით (BF-797)",
+    "category_ka": "აბაზანის აქსესუარები///ორგანაიზერი",
+    "regular_price": 279,
+    "discount_price": 149.9,
+    "quantity": 9,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-კედლის-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-797/",
+    "main_image": "https://comfo.ge/images/detailed/16/icsnpt2VCuElWKKQWNDtjMc18birz9.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/sn4ZN0sd9ztYcbYvSmLlcWrnukkYaG.jpeg",
+      "https://comfo.ge/images/detailed/16/rcOwP2q3x2d9Yv60JM4He7iBSRRrOL.png"
+    ]
+  },
+  {
+    "external_id": 791,
+    "title_ka": "მრავალფუნქციური თეთრი ორგანაიზერი პლასტმასის კალათით (BF-791)",
+    "category_ka": "აბაზანის აქსესუარები///ორგანაიზერი",
+    "regular_price": 299,
+    "discount_price": 199.9,
+    "quantity": 17,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-791/",
+    "main_image": "https://comfo.ge/images/detailed/16/PH8hYkzA464iDV968wN0XqhRlN333G.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/p4Ww07BLNoC9JPEhF8XFAVrsGH62nh.jpeg",
+      "https://comfo.ge/images/detailed/16/waV7dKkMpcaLwEfcgj4b9JfUfMKfk5.jpeg",
+      "https://comfo.ge/images/detailed/16/nDegfnVhnaF9z7w8TyOll1tAuBINff.jpeg",
+      "https://comfo.ge/images/detailed/16/0Lpqc6ET1d8smS6d2xCaczyjmaxDW8.jpeg",
+      "https://comfo.ge/images/detailed/16/sWIeGwxwau7LE1Pr3RetKDQ32Sonen.jpeg"
+    ]
+  },
+  {
+    "external_id": 792,
+    "title_ka": "მრავალფუნქციური ორგანაიზერი ფიჭვის ფაქტურით და პლასტმასის კალათით (BF-792)",
+    "category_ka": "აბაზანის აქსესუარები///ორგანაიზერი",
+    "regular_price": 299,
+    "discount_price": 199.9,
+    "quantity": 13,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-ორგანაიზერი-ფიჭვის-ფაქტურით-და-პლასტმასის-კალათით-bf-792/",
+    "main_image": "https://comfo.ge/images/detailed/16/6hKRE3h88g58rzKUdoHwaYnTmwJZu0.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/nm65CdHKpBmUuhgdp9cmhE1IvZasMz.jpeg",
+      "https://comfo.ge/images/detailed/16/W0VvMESGwPKCZ6XlLFZaSPPg6Dh7N6.jpeg",
+      "https://comfo.ge/images/detailed/16/dIF0HMTl2vOjGxX6OxDnQ3NoKttsz7.jpeg"
+    ]
+  },
+  {
+    "external_id": 793,
+    "title_ka": "მრავალფუნქციური თეთრი ორგანაიზერი პლასტმასის კალათით (BF-793)",
+    "category_ka": "აბაზანის აქსესუარები///ორგანაიზერი",
+    "regular_price": 399,
+    "discount_price": 269.9,
+    "quantity": 12,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/organaizeri/მრავალფუნქციური-თეთრი-ორგანაიზერი-პლასტმასის-კალათით-bf-793/",
+    "main_image": "https://comfo.ge/images/detailed/16/0m6wndwjeJKYaprR4nzy9klAAS9j91.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/AyF4997q5GdrjzPTnL31YoKRXTEZlx.jpeg",
+      "https://comfo.ge/images/detailed/16/oIChJ76j04ZRyBORVGCnk25WA4wUVp.jpeg",
+      "https://comfo.ge/images/detailed/16/ArdxKJ9Q0HBf5fBL7ydmBUWrKJ0dho.jpeg",
+      "https://comfo.ge/images/detailed/16/vHtRm4BwOywy3Qu3TVwnen5Mcm8uI2.jpeg",
+      "https://comfo.ge/images/detailed/16/Xr5dwLGCuH7r3NXa9JdNxlcPXNOcyC.jpeg"
+    ]
+  },
+  {
+    "external_id": 502,
+    "title_ka": "ყავის მაგიდა ფიჭვის ფაქტურით (105*50) (502)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 264,
+    "discount_price": 149.9,
+    "quantity": 7,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-ფიჭვის-ფაქტურით-10550-502/",
+    "main_image": "https://comfo.ge/images/detailed/15/XVzSg38TgWw1P9WxnNiZKiC0c32ZNf.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/UGCKgkyObhGytcehrUpHgtbhTr3yjB.jpeg"
+    ]
+  },
+  {
+    "external_id": 505,
+    "title_ka": "ყავის მაგიდა გორგოლაჭებზე ფიჭვის ფაქტურით (CT1-A) (505)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 110,
+    "discount_price": 69.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-გორგოლაჭებზე-ფიჭვის-ფაქტურით-ct1-a-505/",
+    "main_image": "https://comfo.ge/images/detailed/15/6Fm3Da8a4PAXlPTViUyObimUcUOkNQ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/ZhUKtWZlHnE1whWoUk1WunpGPJ9RJj.jpg",
+      "https://comfo.ge/images/detailed/15/40AL6m5C2NKS0Okk626q66jt41BaIA.jpg",
+      "https://comfo.ge/images/detailed/15/AWgfAFry55Ii8DdmlZlMJTbMBHrPo3.jpg",
+      "https://comfo.ge/images/detailed/15/YvbFXXGba7w666k76opaGAZlqxob8y.jpg"
+    ]
+  },
+  {
+    "external_id": 507,
+    "title_ka": "ტელევიზორის მაგიდა ფიჭვის ფაქტურით (TV1-A) (507)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 238,
+    "discount_price": 129.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-ფიჭვის-ფაქტურით-tv1-a-507/",
+    "main_image": "https://comfo.ge/images/detailed/15/OkgMMEsZI5CNnKVBaIcGNHjU3PT33H.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/vLJFbFT2ya7bQC2CD6yMvMQSXU0BPk.png",
+      "https://comfo.ge/images/detailed/15/IPF2CiSO7nnRGLmgvKznfOzieEZSWg.png"
+    ]
+  },
+  {
+    "external_id": 508,
+    "title_ka": "ტელევიზორის მაგიდა (TV2-AB) (508)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 229,
+    "discount_price": 169.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-tv2-ab-508/",
+    "main_image": "https://comfo.ge/images/detailed/15/gFEntWbzzdHoqW9cu9RZcfu4YgUNzy.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/OQCcL9kfIEqUBc2BBre9u4QAPYoejv.png",
+      "https://comfo.ge/images/detailed/15/dbf8a1afSMjVRZuAd5Ig7AabNUqBFD.png",
+      "https://comfo.ge/images/detailed/15/Fb2KIEzMMqP8hB86yh7JfqXIKWhMx4.png",
+      "https://comfo.ge/images/detailed/15/Ui2S1QD8FTfdkZUcKxFGKYFX4OyRUj.png"
+    ]
+  },
+  {
+    "external_id": 509,
+    "title_ka": "ტელევიზორის მაგიდა (TV2-A) (509)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 229,
+    "discount_price": 169.9,
+    "quantity": 24,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-tv2-a-509/",
+    "main_image": "https://comfo.ge/images/detailed/15/oxDVv4recFio41zaq9qUZ8uTuO49ir.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/N8wmoy5CSMoj7h4FTmNpJgU5Zs3hg8.png",
+      "https://comfo.ge/images/detailed/15/18NC69Kgbn3KVxWqgu0bRV6TkF39n4.png",
+      "https://comfo.ge/images/detailed/15/koTfMW7vTJtE6skhqHSUMPJi2oaTko.png",
+      "https://comfo.ge/images/detailed/15/eFet50f5KlFla2hhgGbUJvADUeQjdJ.png",
+      "https://comfo.ge/images/detailed/15/ig0pBX3ae60RQuKIPZAddVowz5joxN.png"
+    ]
+  },
+  {
+    "external_id": 542,
+    "title_ka": "ლეპტოპის მაგიდა თეთრი  (LP1-B) (542)",
+    "category_ka": "მისაღები ოთახი///ლეპტოპის მაგიდა",
+    "regular_price": 59,
+    "discount_price": 39.9,
+    "quantity": 31,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-თეთრი-lp1-b-542/",
+    "main_image": "https://comfo.ge/images/detailed/15/ooDatCvdBYUi7eH534dzMQdsRJqZUn.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/wFFF0dSEPPVQO7ZZF6AAJuMwiPEdpP.png",
+      "https://comfo.ge/images/detailed/15/kl2Yi4hJCOCjagiYiVZ8qB3aTtuvb7.png"
+    ]
+  },
+  {
+    "external_id": 543,
+    "title_ka": "ლეპტოპის მაგიდა შავი (LP1-G) (543)",
+    "category_ka": "მისაღები ოთახი///ლეპტოპის მაგიდა",
+    "regular_price": 59,
+    "discount_price": 39.9,
+    "quantity": 21,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-შავი-lp1-g-543/",
+    "main_image": "https://comfo.ge/images/detailed/15/5r9BERbdUyeWhwNdUDRZF5uDlROp7N.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/bifFF08iPpl7lNI3VpZ1tK0mKI2Uhz.png",
+      "https://comfo.ge/images/detailed/15/6FxzckLKXuVowQYe1mNZoxG66CDzgE.png"
+    ]
+  },
+  {
+    "external_id": 563,
+    "title_ka": "2-თაროიანი ყავის მაგიდა (563)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 264,
+    "discount_price": 159.9,
+    "quantity": 44,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/2-თაროიანი-ყავის-მაგიდა-563/",
+    "main_image": "https://comfo.ge/images/detailed/15/pzgvy6HFda5GQEGdNdfR5fK8NamzlZ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/aqwXyVPkJY5o0QXlh5TjN649Eo2phG.jpg",
+      "https://comfo.ge/images/detailed/15/TmmIdmfkqlc4hPSczmKHjbMEqSwzoA.jpg",
+      "https://comfo.ge/images/detailed/15/3OR6PcNrwVKbSUpLEZZlY889z6nD1R.jpg",
+      "https://comfo.ge/images/detailed/15/7ds119yfnqf0U5AxmCRwhFhdVKPbmS.jpg"
+    ]
+  },
+  {
+    "external_id": 581,
+    "title_ka": "სამზარეულოს ორგანაიზერი ფიჭვის ფაქტურით MR2-A (581)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 39,
+    "discount_price": 25,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/სამზარეულოს-ორგანაიზერი-ფიჭვის-ფაქტურით-mr2-a-581/",
+    "main_image": "https://comfo.ge/images/detailed/15/ANR4jsl58jkb81vPL31G8BcZh6tpSU.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/Bzm9Xn5urBc0WMV5o63Kigd8dIiohj.jpg",
+      "https://comfo.ge/images/detailed/15/JT2rtPfS7G7Kr0pOkF5kjCX0AtZeQ5.jpg",
+      "https://comfo.ge/images/detailed/15/bt0tXmrmr1WiK60c9kYJ3WHeL8tB8S.jpg",
+      "https://comfo.ge/images/detailed/15/ILo02XPMfJAB6PGNwRk6utoTi9uaoq.png"
+    ]
+  },
+  {
+    "external_id": 613,
+    "title_ka": "4 დონიანი თარო მუქი ხის ფაქტურით (30*60) (MS613)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 129,
+    "discount_price": 59,
+    "quantity": 12,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-თარო-მუქი-ხის-ფაქტურით-3060-ms613/",
+    "main_image": "https://comfo.ge/images/detailed/15/jHwb5W1jhWZ2Ig3xAcFcxDk6WpTVbl.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/RO1kqa3B1pAMjGE4gwWDZr8TLyvGha.jpg",
+      "https://comfo.ge/images/detailed/15/pLIxUntUIwm0bwX28I5KIqIci6c1rk.jpg"
+    ]
+  },
+  {
+    "external_id": 624,
+    "title_ka": "ტელევიზორის მაგიდა (TV2-BA) (624)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 229,
+    "discount_price": 169.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-tv2-ba-624/",
+    "main_image": "https://comfo.ge/images/detailed/15/mff05L56xABK9h2dBMkRuB1vDPNAZV.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/ALig8AzoS2hSiz4Eby07orwsU65Z8J.png",
+      "https://comfo.ge/images/detailed/15/3KW06XWo4sMuNcjaDFehP8oHBM9eHB.png",
+      "https://comfo.ge/images/detailed/15/GvRizYftjsgQ7OvwsobgmjeSH1nu3O.png",
+      "https://comfo.ge/images/detailed/15/ojgjcD7g77aXE7KmjKEn8qVrHjtm4p.png",
+      "https://comfo.ge/images/detailed/15/Ymf6B8AWzlMTWRanIgyqyHvWqFo6mm.png",
+      "https://comfo.ge/images/detailed/15/67q542QKAE4X2SGeW0x0h9sewGl5sB.png"
+    ]
+  },
+  {
+    "external_id": 636,
+    "title_ka": "ლეპტოპის მაგიდა ფიჭვის ფაქტურით (BF-636)",
+    "category_ka": "მისაღები ოთახი///ლეპტოპის მაგიდა",
+    "regular_price": 94,
+    "discount_price": 59.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-ფიჭვის-ფაქტურით-bf-636/",
+    "main_image": "https://comfo.ge/images/detailed/15/hR9coKNNnQj7xZJI7KEcV7Mry9zDCM.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/LACIL63RD79LtG4ZzTcMYRc92tQcu4.jpeg",
+      "https://comfo.ge/images/detailed/15/Lnv8xNkmBpa4SW8zbYYVKnlIq1N0IH.jpeg",
+      "https://comfo.ge/images/detailed/15/zLLG870xv0MLCnmu22zAGoDbdj7zex.jpeg",
+      "https://comfo.ge/images/detailed/15/3YWFjA9cO8Qx26byhUMqlwWE51Cko9.jpeg",
+      "https://comfo.ge/images/detailed/15/PKmrwTRkycHVywU7I4kmN6VENtTF1G.jpeg",
+      "https://comfo.ge/images/detailed/15/szc2m4RW12MkwqyX3mbYwgQ8BiF3v5.jpeg"
+    ]
+  },
+  {
+    "external_id": 638,
+    "title_ka": "ლეპტოპის მაგიდა შავი (BF-638)",
+    "category_ka": "მისაღები ოთახი///ლეპტოპის მაგიდა",
+    "regular_price": 94,
+    "discount_price": 59.9,
+    "quantity": 35,
+    "link": "https://comfo.ge/misagebi-otaxi/leptopis-magida/ლეპტოპის-მაგიდა-შავი-bf-638/",
+    "main_image": "https://comfo.ge/images/detailed/15/zOfzTuuFJymcZCo8pEPOqjtH0TPFpN.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/DJO5JgvQsbM41SKDQywgeSjJrHdOE2.jpeg",
+      "https://comfo.ge/images/detailed/15/c8wcK7ANaF93zSk54A3ZDbAY9rJTeb.jpeg",
+      "https://comfo.ge/images/detailed/15/chGBkuqufiDoDo4zn2wAM554J8DuI3.jpeg",
+      "https://comfo.ge/images/detailed/15/ZM7p28P4ID1CqAvboKftZLYHkOPUgE.jpeg",
+      "https://comfo.ge/images/detailed/15/QU4HvsB8AXym6F9a3HY6AcFiU9zikt.jpeg",
+      "https://comfo.ge/images/detailed/15/lBoTaXpyjGGprNIs5YzohFOZkbG1aN.jpeg"
+    ]
+  },
+  {
+    "external_id": 641,
+    "title_ka": "ყავის მაგიდა მუქი ხის ფაქტურით (105*50) (641)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 264,
+    "discount_price": 149.9,
+    "quantity": 37,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-მუქი-ხის-ფაქტურით-10550-641/",
+    "main_image": "https://comfo.ge/images/detailed/15/KXRnIPrJVvDl3LZb11JFK6gxn64lNb.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/g5SAYEpdU87Ix53vJaEAvw76kv62tf.jpeg"
+    ]
+  },
+  {
+    "external_id": 654,
+    "title_ka": "კუთხის 5-დონიანი თარო ფიჭვის ფაქტურით (MS654)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 130,
+    "discount_price": 69,
+    "quantity": 1,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/კუთხის-5-დონიანი-თარო-ფიჭვის-ფაქტურით-ms654/",
+    "main_image": "https://comfo.ge/images/detailed/15/a8PrI887zXr40uv5EfbjXVIGxgBpfP.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/jueCRq9YwTsrghJnKOJERcq2kmRcOw.jpg"
+    ]
+  },
+  {
+    "external_id": 686,
+    "title_ka": "ტელევიზორის მაგიდა 160 სმ (BF-686)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 299,
+    "discount_price": 239.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-160-სმ-bf-686/",
+    "main_image": "https://comfo.ge/images/detailed/15/YfC9wfOzqnrbWCCISRPdbTNFCCgSxZ.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/xeG2DYqSReUDcBBWcvwTGJ5TzYOoVK.png",
+      "https://comfo.ge/images/detailed/15/hLX8zBXWT3tWvbZN9dRd3fzG2brqWZ.png",
+      "https://comfo.ge/images/detailed/15/T22GooQJtkTJ610BoNaN6XWIxw9m5s.png"
+    ]
+  },
+  {
+    "external_id": 688,
+    "title_ka": "ტელევიზორის მაგიდა 160 სმ (BF-688)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 299,
+    "discount_price": 239.9,
+    "quantity": 49,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-160-სმ-bf-688/",
+    "main_image": "https://comfo.ge/images/detailed/15/hY8TKaGF5VaXwvwcsTGe018W5OeaoJ.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/15/AyCBwsUIsl4xmotRUFW6wFAUOX7K37.png",
+      "https://comfo.ge/images/detailed/15/kEB53XkOkpK7hOeIdXDwN7smTS3d8u.png",
+      "https://comfo.ge/images/detailed/15/SHR1nHOJiuJhYWA3KMTaXRJrTcK5pc.png"
+    ]
+  },
+  {
+    "external_id": 732,
+    "title_ka": "დასადგმელი მეტალის საათი AYP-835-AK (732)",
+    "category_ka": "საათები///საათები",
+    "regular_price": 129,
+    "discount_price": 34.9,
+    "quantity": 5,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-მეტალის-საათი-ayp-835-ak-732/",
+    "main_image": "https://comfo.ge/images/detailed/16/OosSMrAaFPaDiovq0zb3XN1NiXfon9.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/E6ZMB4LsSaHp4BXKuWqR4vtKxd9cqf.jpg"
+    ]
+  },
+  {
+    "external_id": 733,
+    "title_ka": "დასადგმელი მეტალის საათი AYP-835-K (733)",
+    "category_ka": "საათები///საათები",
+    "regular_price": 129,
+    "discount_price": 29,
+    "quantity": 1,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-მეტალის-საათი-ayp-835-k-733/",
+    "main_image": "https://comfo.ge/images/detailed/16/QD37pJAdVXu6OwKtn3TZbZhHh5PQda.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/AM3f3cYVhjVefVKGST32R2v43FEqEL.jpg"
+    ]
+  },
+  {
+    "external_id": 739,
+    "title_ka": "საათი სარკე AYN-040-F-01 (739)",
+    "category_ka": "საათები///საათები",
+    "regular_price": 149,
+    "discount_price": 79,
+    "quantity": 5,
+    "link": "https://comfo.ge/saatebi/saatebi/საათი-სარკე-ayn-040-f-01-739/",
+    "main_image": "https://comfo.ge/images/detailed/16/i4yMycrUhGq6FhA2pQbbdW7xcO2xNc.jpg",
+    "additional_images": []
+  },
+  {
+    "external_id": 743,
+    "title_ka": "დასადგმელი მეტალის საათი AYP-831-AK (743)",
+    "category_ka": "საათები///საათები",
+    "regular_price": 129.0,
+    "discount_price": 39.0,
+    "quantity": 3,
+    "link": "https://comfo.ge/saatebi/saatebi/დასადგმელი-მეტალის-საათი-ayp-831-ak-743/",
+    "main_image": "https://comfo.ge/images/detailed/16/dgTvT9IfY0ImtFv7Um8ZnKlA6f7plY.jpeg",
+    "additional_images": []
+  },
+  {
+    "external_id": 747,
+    "title_ka": "კონსოლი ფიჭვის ფაქტურით (BF-747)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 399,
+    "discount_price": 269.9,
+    "quantity": 22,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/კონსოლი-ფიჭვის-ფაქტურით-bf-747/",
+    "main_image": "https://comfo.ge/images/detailed/16/JneqZGOZuZkIxafcReCSyqlCO5hPc0.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/62pnrfkoXrEV5bMBbCMBs7Zz8lieFd.png",
+      "https://comfo.ge/images/detailed/16/AbCqYpu3uoJo9havmH0HakC1gxuJtu.png",
+      "https://comfo.ge/images/detailed/16/7ghHEstegptzUqOgbjyOkudIbZM5sJ.png",
+      "https://comfo.ge/images/detailed/16/1QVt5YifHjf85Br9UBErZ832ad4atV.jpeg"
+    ]
+  },
+  {
+    "external_id": 753,
+    "title_ka": "სააბაზანოს კარადა ფიჭვის ფაქტურით (BF-753)",
+    "category_ka": "აბაზანის აქსესუარები///კარადა",
+    "regular_price": 499,
+    "discount_price": 299,
+    "quantity": 2,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/karada/სააბაზანოს-კარადა-ფიჭვის-ფაქტურით-bf-753/",
+    "main_image": "https://comfo.ge/images/detailed/16/UymzqyWCbdQFAXrzSJmVAQFSUHxI7L.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/ZhDAKDTHY60sCu2jT3BubbfGTi4LXX.jpeg",
+      "https://comfo.ge/images/detailed/16/GLBEMw5uopUUTQWdA5khzPww5AMetk.jpeg",
+      "https://comfo.ge/images/detailed/16/IqFnXInpaIZgAeuGHqSefVSot85kkI.jpeg",
+      "https://comfo.ge/images/detailed/16/MEvMgQujXo4xZ7y0UPr2nbxKryIA1p.jpeg",
+      "https://comfo.ge/images/detailed/16/Dbu56bSM7haRJBGL3NnFHPmEYljkty.jpeg"
+    ]
+  },
+  {
+    "external_id": 764,
+    "title_ka": "კომოდი (BF-764)",
+    "category_ka": "მისაღები ოთახი///კარადა",
+    "regular_price": 249,
+    "discount_price": 159.9,
+    "quantity": 25,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კომოდი-bf-764/",
+    "main_image": "https://comfo.ge/images/detailed/16/cdZbyKAdPNyy2JMeQ64co6hcQD6Mvi.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/HSMTHAoM5URwkqJRZyFXZrFNDg3Phn.png",
+      "https://comfo.ge/images/detailed/16/MXShEK43qyY1tiSOcAadNkss8uAsaq.png",
+      "https://comfo.ge/images/detailed/16/jApu1KnG3VsxCRqEVZO2o2OlyCnt3b.png"
+    ]
+  },
+  {
+    "external_id": 783,
+    "title_ka": "6 დონიანი მრავალფუნქციური კარადა ფიჭვის ფაქტურით 180x35 (BF-783)",
+    "category_ka": "მისაღები ოთახი///კარადა",
+    "regular_price": 349,
+    "discount_price": 199.9,
+    "quantity": 33,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/6-დონიანი-მრავალფუნქციური-კარადა-ფიჭვის-ფაქტურით-180x35-bf-783/",
+    "main_image": "https://comfo.ge/images/detailed/16/BPCZX27cvbmvvJJe6nRoFujlppNK1B.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/9E6TPOqaSJYuPOs9Gavc6onU5QSKfI.jpeg",
+      "https://comfo.ge/images/detailed/16/qyUpJa8MKybmQR3SQcfLeLfIQI6fg2.jpeg",
+      "https://comfo.ge/images/detailed/16/rvuQTqT5vi94S3x2C7bzTmdOCbEzLz.jpeg"
+    ]
+  },
+  {
+    "external_id": 17,
+    "title_ka": "ტელევიზორის მაგიდა მეტალის კარკასით და მუქი ხის ფაქტურით (17)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 265,
+    "discount_price": 139.9,
+    "quantity": 35,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-მეტალის-კარკასით-და-მუქი-ხის-ფაქტურით-17/",
+    "main_image": "https://comfo.ge/images/detailed/14/i4DsZ9TtkarFHWbGyeo5nz3Osjq2z3.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/IbOCxwtLxrKD7YpYdYI236qxuGXjrw.png",
+      "https://comfo.ge/images/detailed/14/p5NMmOVGS1q8gSwqkckryA4B8GINGM.png",
+      "https://comfo.ge/images/detailed/14/r2CiJQxYvJIJ9ewb2JzNzjz2bbcHMU.png",
+      "https://comfo.ge/images/detailed/14/WDYP81tB8JiTWr01o0xt3qxfZ0On3V.png",
+      "https://comfo.ge/images/detailed/14/YkiguisKsKtKUCXDytHqoeIEXIZ6oB.png"
+    ]
+  },
+  {
+    "external_id": 45,
+    "title_ka": "თეთრი ტანსაცმლის საკიდი (45)",
+    "category_ka": "შემოსასვლელი///საკიდი",
+    "regular_price": 74,
+    "discount_price": 45,
+    "quantity": "50+",
+    "link": "https://comfo.ge/shemosasvleli/sakidi/თეთრი-ტანსაცმლის-საკიდი-45/",
+    "main_image": "https://comfo.ge/images/detailed/14/n6qseNo0iR0CIoTKgtL4dUxt4Xojav.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/5ZA4WH3QEk8LAyyHc6sGS1HnTYw1Nl.png",
+      "https://comfo.ge/images/detailed/14/PSRyk2iM9cNdAE3Xhs0eTfgAYamrEi.png",
+      "https://comfo.ge/images/detailed/14/nQJUthxt31bOY0FSO0n3rApKyqfbM8.png"
+    ]
+  },
+  {
+    "external_id": 136,
+    "title_ka": "5 დონიანი წიგნების თეთრი თარო (136)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 226,
+    "discount_price": 139.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-წიგნების-თეთრი-თარო-136/",
+    "main_image": "https://comfo.ge/images/detailed/14/hmNjn8pNJ8mz4Kpf0JxYd9nhi1f4G5.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/oHgKX7XAL0zeVVkMLiMqpItna1n6wB.jpeg",
+      "https://comfo.ge/images/detailed/14/hizrzDx16UWRbrRDY7GLQ7H7AF3hwc.jpeg",
+      "https://comfo.ge/images/detailed/14/erUbgqlz2J4y85PWucMorqnij8dTCj.jpeg",
+      "https://comfo.ge/images/detailed/14/PCJsPbccTBSCIa2ErghZe8B98bjBxd.jpeg"
+    ]
+  },
+  {
+    "external_id": 137,
+    "title_ka": "5 დონიანი წიგნების  თარო ფიჭვის ფაქტურით (137)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 227,
+    "discount_price": 139.9,
+    "quantity": 27,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-წიგნების-თარო-ფიჭვის-ფაქტურით-137/",
+    "main_image": "https://comfo.ge/images/detailed/14/DnnMnYXVP7TIr9R5DFV5tHc9HtNCFy.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/NVDpaSSIAhIiWlvlp4dcPECUVS3HaO.jpeg",
+      "https://comfo.ge/images/detailed/14/Lk6KweaEsy4oI85IkU0RbWsXSuMdNY.jpeg",
+      "https://comfo.ge/images/detailed/14/WwOEqXBBHD4R04G5wYLEdOSFpT3ebK.jpeg",
+      "https://comfo.ge/images/detailed/14/ykNkFrICzplCakjH254m46QkmZdlUE.jpeg"
+    ]
+  },
+  {
+    "external_id": 142,
+    "title_ka": "ღია გარდერობი/ფეხსაცმლის თარო ფიჭვის ფაქტურით (142)",
+    "category_ka": "საძინებელი///თარო",
+    "regular_price": 303,
+    "discount_price": 159.9,
+    "quantity": 16,
+    "link": "https://comfo.ge/sadzinebeli/taro/ღია-გარდერობი-ფეხსაცმლის-თარო-ფიჭვის-ფაქტურით-142/",
+    "main_image": "https://comfo.ge/images/detailed/14/C2SbVCrXXZej3B9qX4qdLdg2AZlHsR.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/7V241JGeKMlNF6wJ4vfr3xYXX63AmY.jpeg",
+      "https://comfo.ge/images/detailed/14/8vZiZXzr3rU2AcGgIPlGtl53ppIffF.jpeg",
+      "https://comfo.ge/images/detailed/14/fE32MCdnScvjOvDyoQUdrYUbbRdoZi.jpeg"
+    ]
+  },
+  {
+    "external_id": 144,
+    "title_ka": "სარეცხი მანქანის თარო მუქი ხის ფაქტურით (144)",
+    "category_ka": "აბაზანის აქსესუარები///თარო",
+    "regular_price": 245,
+    "discount_price": 139.9,
+    "quantity": 9,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/taro/სარეცხი-მანქანის-თარო-მუქი-ხის-ფაქტურით-144/",
+    "main_image": "https://comfo.ge/images/detailed/14/DTnA1WFMlDvbP7CoMKNJAPWaChQFcT.jpeg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/14/byCBKJlsPF8ccFrvWBfjMAEaZj7l1I.jpeg",
+      "https://comfo.ge/images/detailed/14/aqdmst2yk2UgZ75359YOZyFWDdEvvK.jpeg",
+      "https://comfo.ge/images/detailed/14/py3AORK2T7dtIeadkywilXUiJKXbwk.jpeg",
+      "https://comfo.ge/images/detailed/14/OoilElTvHNZb3UR1z5DxgOgaaPlZ3N.jpeg"
+    ]
+  },
+  {
+    "external_id": 823,
+    "title_ka": "ტელევიზორის მაგიდა 140 სმ (BF-823)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 279,
+    "discount_price": 199.9,
+    "quantity": 44,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-140-სმ-bf-823/",
+    "main_image": "https://comfo.ge/images/detailed/16/ule2X8IsK6n16IoFwGoFBkcEFw69Xt.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/9Hk1u7FvAEkEmFMsoCD261Lqn7cNaw.png",
+      "https://comfo.ge/images/detailed/16/DJXXWxrmTdSj6gRbRSSC70Cq32hUxq.jpeg",
+      "https://comfo.ge/images/detailed/16/aPlSmFld7go6CMyyCPRKanNiKLexuL.png",
+      "https://comfo.ge/images/detailed/16/MR8mOnIUNfGzuKqO6cMkZXnS5DQCY1.png",
+      "https://comfo.ge/images/detailed/16/2eisrmN5yi4emMiRxjrOfIVIM8kros.png"
+    ]
+  },
+  {
+    "external_id": 824,
+    "title_ka": "ტელევიზორის მაგიდა 140 სმ (BF-824)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 279,
+    "discount_price": 199.9,
+    "quantity": 22,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-140-სმ-bf-824/",
+    "main_image": "https://comfo.ge/images/detailed/16/QAfK8qVyjNxMlLOGLw2aE9Yj2Ex3cs.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/EW8zOYTdnpcRKfpMHYLBdjPcLIELNJ.jpeg",
+      "https://comfo.ge/images/detailed/16/0cQeqFseUIFiMExNPY104pl2XIl2xF.png",
+      "https://comfo.ge/images/detailed/16/kekS1ZR7WCU45HLVK9ykXC2I89YrR8.png",
+      "https://comfo.ge/images/detailed/16/Od70uUWUVSYJSKOScXHMCr9PVM8VwY.png",
+      "https://comfo.ge/images/detailed/16/qytU2LeDLyzMECB2RMokIliifvgdCD.png"
+    ]
+  },
+  {
+    "external_id": 825,
+    "title_ka": "ტელევიზორის მაგიდა 140 სმ (BF-825)",
+    "category_ka": "მისაღები ოთახი///ტელევიზორის მაგიდა",
+    "regular_price": 279,
+    "discount_price": 199.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/misagebi-otaxi/televizoris-magida/ტელევიზორის-მაგიდა-140-სმ-bf-825/",
+    "main_image": "https://comfo.ge/images/detailed/16/Wh88QlWhaMQLvfDGRlzamRxpdsyEB6.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/Ap2NoUEe7AaY6hXvcnzzrqtklnZ3yy.png",
+      "https://comfo.ge/images/detailed/16/Jlo5aORhHVbiXptY1VNzXPBzca12nN.png",
+      "https://comfo.ge/images/detailed/16/ZFT85l6oMjJiAL3RMjyWb5BEZinMvD.jpeg",
+      "https://comfo.ge/images/detailed/16/knVFF9Z0vxJzrEl1D5PM2Z4PIYbEcj.png",
+      "https://comfo.ge/images/detailed/16/zdcfzIbKYQtRipLkzpCGR9ljhfqvol.png"
+    ]
+  },
+  {
+    "external_id": 831,
+    "title_ka": "კარადა 4 თაროთი ფიჭვის ფაქტურით (BF-831)",
+    "category_ka": "მისაღები ოთახი///კარადა",
+    "regular_price": 249,
+    "discount_price": 189.9,
+    "quantity": 27,
+    "link": "https://comfo.ge/misagebi-otaxi/karada/კარადა-4-თაროთი-ფიჭვის-ფაქტურით-bf-831/",
+    "main_image": "https://comfo.ge/images/detailed/16/SrLRE5CKtWUMt1zw6tIEyXcrF6Woto.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/WKhLrkKP0MN6skPKMjx43Z853z1RAH.png",
+      "https://comfo.ge/images/detailed/16/TJv3EUIEBHP5Q5ZHokanrMh5sJRugK.png",
+      "https://comfo.ge/images/detailed/16/1Uk4DPKOw9WewTHqGuZQvQcTNbcIuf.png",
+      "https://comfo.ge/images/detailed/16/wKY0gBCoGbrim9UVeOW4dchaUKvqjc.png"
+    ]
+  },
+  {
+    "external_id": 962,
+    "title_ka": "ყავის მაგიდა (GF962)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 179,
+    "discount_price": 89,
+    "quantity": 15,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-gf962/",
+    "main_image": "https://comfo.ge/images/detailed/16/WyQeqmJesGJY0fAeKCjprzZ0crsde9.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/xelmx1hB7FOqDoy6jfZ8GmJuuMLu4i.png",
+      "https://comfo.ge/images/detailed/16/LSD2vNJJwmJclLCALjEbtCnqWnLzXS.jpg"
+    ]
+  },
+  {
+    "external_id": 963,
+    "title_ka": "ყავის მაგიდა (GF963)",
+    "category_ka": "მისაღები ოთახი///ყავის მაგიდა",
+    "regular_price": 129,
+    "discount_price": 69,
+    "quantity": 9,
+    "link": "https://comfo.ge/misagebi-otaxi/yavis-magida/ყავის-მაგიდა-gf963/",
+    "main_image": "https://comfo.ge/images/detailed/16/IZz4VwjWRF9tldAIOmDxVTPG3xFUoG.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/16/SJP7NnKPhtpfdzzzMFITTtlio9YQk1.jpg"
+    ]
+  },
+  {
+    "external_id": 1015,
+    "title_ka": "3 დონიანი თარო ფიჭვის ფაქტურით (FD1015)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 79,
+    "discount_price": 65,
+    "quantity": 46,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/3-დონიანი-თარო-ფიჭვის-ფაქტურით-fd1015/",
+    "main_image": "https://comfo.ge/images/detailed/17/7QD2DjVptsIIIu8i32y59ZPBZIAIBz.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/8CBS7dVQ7q4Ws9YvhgaB9KBvnBEqBa.jpg"
+    ]
+  },
+  {
+    "external_id": 1016,
+    "title_ka": "3 დონიანი თეთრი თარო (FD1016)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 79,
+    "discount_price": 65,
+    "quantity": 18,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/3-დონიანი-თეთრი-თარო-fd1016/",
+    "main_image": "https://comfo.ge/images/detailed/17/B4xFAlnXY7yVTAz3fU8C5qh24XuAuQ.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/fDg5jFtF65xcFix7JrOej6n6sq227S.jpg"
+    ]
+  },
+  {
+    "external_id": 1017,
+    "title_ka": "4 დონიანი თარო ფიჭვის ფაქტურით (FD1017)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 89,
+    "discount_price": 75,
+    "quantity": 23,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/4-დონიანი-თარო-ფიჭვის-ფაქტურით-fd1017/",
+    "main_image": "https://comfo.ge/images/detailed/17/wuZ00yqnN7KVJqKp78vcELeMiG2VmY.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/aTOwNF8Qnv7ugAieSTKeDcERURJpOG.jpg"
+    ]
+  },
+  {
+    "external_id": 1019,
+    "title_ka": "5 დონიანი თარო ფიჭვის ფაქტურით (FD1019)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 139,
+    "discount_price": 99.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თარო-ფიჭვის-ფაქტურით-fd1019/",
+    "main_image": "https://comfo.ge/images/detailed/17/WIwC40hJtBm3Guv9CLFdijaJzN8TYh.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Sj3HIHujEKTO94gK0lcBJjuIOYcCwC.jpg"
+    ]
+  },
+  {
+    "external_id": 1020,
+    "title_ka": "5 დონიანი თეთრი თარო (FD1020)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 139,
+    "discount_price": 99.9,
+    "quantity": 12,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თეთრი-თარო-fd1020/",
+    "main_image": "https://comfo.ge/images/detailed/17/T1m84M5CDwwgYH0IErmOqYtKmj2mUP.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/s0sHU1a3WHNADsENCOgd452VXmYy6i.jpg",
+      "https://comfo.ge/images/detailed/17/KfndjRFksiCCtsYJGlneinJcThLP0k.jpg"
+    ]
+  },
+  {
+    "external_id": 1026,
+    "title_ka": "სარეცხი მანქანის თეთრი 3 დონიანი თარო (FD1026)",
+    "category_ka": "აბაზანის აქსესუარები///თარო",
+    "regular_price": 99,
+    "discount_price": 79.9,
+    "quantity": 30,
+    "link": "https://comfo.ge/abazanis-aqsesuarebi/taro/სარეცხი-მანქანის-თეთრი-3-დონიანი-თარო-fd1026/",
+    "main_image": "https://comfo.ge/images/detailed/17/ecotXlRIAvRAtWd1apTFDa2kPqb6yb.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/wBpY5602qMimwJjoHbCqprXp5Lio28.jpg"
+    ]
+  },
+  {
+    "external_id": 1027,
+    "title_ka": "5 დონიანი თარო ფიჭვის ფაქტურით (180*88*34) (FD1027)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 199,
+    "discount_price": 169.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თარო-ფიჭვის-ფაქტურით-1808834-fd1027/",
+    "main_image": "https://comfo.ge/images/detailed/17/K45zky1Z4l9cyHrSOfvIcf8ZvYo9I5.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/KYkCiRByzDxGE7Djbd6y0fi0bgn0LG.jpg",
+      "https://comfo.ge/images/detailed/17/vmjbf9GIw2dE8lWENP628zgXCg5bjm.jpg"
+    ]
+  },
+  {
+    "external_id": 1031,
+    "title_ka": "ფეხსაცმლის თეთრი კარადა  (FD1031)",
+    "category_ka": "შემოსასვლელი///ფეხსაცმლის კარადა",
+    "regular_price": 249,
+    "discount_price": 199.9,
+    "quantity": 39,
+    "link": "https://comfo.ge/shemosasvleli/fexsacmlis-karada/ფეხსაცმლის-თეთრი-კარადა-fd1031/",
+    "main_image": "https://comfo.ge/images/detailed/17/g5ZpZNsrr15jcQBJ9j2XzQijAyaNeY.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/bVTY5s9r2DcsinKZw0aH6CNlGMzb22.jpg",
+      "https://comfo.ge/images/detailed/17/NeldqBb70SQXg7OYvPComNvgWnLW8U.jpg"
+    ]
+  },
+  {
+    "external_id": 1086,
+    "title_ka": "5-დონიანი თარო ფიჭვის ფაქტურით 150*60 (FD1086)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 179,
+    "discount_price": 139.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/misagebi-otaxi/taro/5-დონიანი-თარო-ფიჭვის-ფაქტურით-15060-fd1086/",
+    "main_image": "https://comfo.ge/images/detailed/17/9CKBZN1XjHhPT5rk5efm9vdcKeGMKl_small.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/4s0iE6cQeimQAQ1Bd4o7ayguADWXHe_small.jpg",
+      "https://comfo.ge/images/detailed/17/KwwQw2wb2IYYSqFQv1IJ8VQnyUll9s_small.jpg",
+      "https://comfo.ge/images/detailed/17/xjrZJt6CqdomwmD7ntEn2ykhQiYxu0_small.jpg"
+    ]
+  },
+  {
+    "external_id": 1120,
+    "title_ka": "წიგნების თარო ფიჭვის ფაქტურით (FD1120)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 219.9,
+    "discount_price": 129.9,
+    "quantity": 37,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/წიგნების-თარო-ფიჭვის-ფაქტურით-fd1120/",
+    "main_image": "https://comfo.ge/images/detailed/17/Ã§1.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Ã§2.jpg",
+      "https://comfo.ge/images/detailed/17/Ã§3.jpg"
+    ]
+  },
+  {
+    "external_id": 1121,
+    "title_ka": "წიგნების თარო თეთრი (FD1121)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 219.9,
+    "discount_price": 129.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/წიგნების-თარო-თეთრი-fd1121/",
+    "main_image": "https://comfo.ge/images/detailed/17/byz1.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/byz2.jpg",
+      "https://comfo.ge/images/detailed/17/byz3.jpg"
+    ]
+  },
+  {
+    "external_id": 1123,
+    "title_ka": "ტუმბო მეტალის ფეხებზე ანტრაციტი (FD1123)",
+    "category_ka": "საძინებელი///ტუმბო",
+    "regular_price": 119.9,
+    "discount_price": 69.9,
+    "quantity": 28,
+    "link": "https://comfo.ge/sadzinebeli/tumbo/ტუმბო-მეტალის-ფეხებზე-ანტრაციტი-fd1123/",
+    "main_image": "https://comfo.ge/images/detailed/17/ANTR1.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/ANTR2.jpg",
+      "https://comfo.ge/images/detailed/17/ANTR3.jpg"
+    ]
+  },
+  {
+    "external_id": 1124,
+    "title_ka": "ყვავილების სადგამი თარო ფიჭვის ფაქტურით (FD1124)",
+    "category_ka": "მისაღები ოთახი///თარო",
+    "regular_price": 169.9,
+    "discount_price": 99.9,
+    "quantity": 49,
+    "link": "https://comfo.ge/misagebi-otaxi/taro/ყვავილების-სადგამი-თარო-ფიჭვის-ფაქტურით-fd1124/",
+    "main_image": "https://comfo.ge/images/detailed/17/Ã§1_lgsi-98.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Ã§2_6gnd-px.jpg",
+      "https://comfo.ge/images/detailed/17/Ã§3_7yfh-4k.jpg"
+    ]
+  },
+  {
+    "external_id": 1125,
+    "title_ka": "მაგიდა მეტალის ფეხებზე ფიჭვის ფაქტურით (FD1125)",
+    "category_ka": "ოფისი / სამუშაო სივრცე///საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 269.9,
+    "discount_price": 159.9,
+    "quantity": "50+",
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/მაგიდა-მეტალის-ფეხებზე-ფიჭვის-ფაქტურით-fd1125/",
+    "main_image": "https://comfo.ge/images/detailed/17/Ã§1_6d4p-rm.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Ã§2_ggbv-cf.jpg"
+    ]
+  },
+  {
+    "external_id": 1126,
+    "title_ka": "მაგიდა მეტალის ფეხებზე თეთრი (FD1126)",
+    "category_ka": "ოფისი / სამუშაო სივრცე///საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 269.9,
+    "discount_price": 159.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/მაგიდა-მეტალის-ფეხებზე-თეთრი-fd1126/",
+    "main_image": "https://comfo.ge/images/detailed/17/b1.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/b2.jpg"
+    ]
+  },
+  {
+    "external_id": 1127,
+    "title_ka": "5 დონიანი წიგნების თარო ფიჭვის ფაქტურით (FD1127)",
+    "category_ka": "ოფისი / სამუშაო სივრცე///თარო",
+    "regular_price": 239.9,
+    "discount_price": 139.9,
+    "quantity": 39,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/taro/5-დონიანი-წიგნების-თარო-ფიჭვის-ფაქტურით-fd1127/",
+    "main_image": "https://comfo.ge/images/detailed/17/Ã§1_copy.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/Ã§2_copy.jpg"
+    ]
+  },
+  {
+    "external_id": 1128,
+    "title_ka": "5 დონიანი წიგნების თარო თეთრი (FD1128)",
+    "category_ka": "ოფისი / სამუშაო სივრცე///თარო",
+    "regular_price": 239.9,
+    "discount_price": 139.9,
+    "quantity": 20,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/taro/5-დონიანი-წიგნების-თარო-თეთრი-fd1128/",
+    "main_image": "https://comfo.ge/images/detailed/17/b1_r1nf-sl.jpg",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/b2_x9ss-zr.jpg",
+      "https://comfo.ge/images/detailed/17/b3.jpg"
+    ]
+  },
+  {
+    "external_id": 1129,
+    "title_ka": "ყავის მაგიდა გორგოლაჭებზე ფიჭვის ფაქტურით (LP3-A) (1129)",
+    "category_ka": "სამზარეულო///ყავის მაგიდა",
+    "regular_price": 149.9,
+    "discount_price": 99.9,
+    "quantity": 28,
+    "link": "https://comfo.ge/samzareulo/yavis-magida/ყავის-მაგიდა-გორგოლაჭებზე-ფიჭვის-ფაქტურით-lp3-a-1029/",
+    "main_image": "https://comfo.ge/images/detailed/17/4.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/5.png",
+      "https://comfo.ge/images/detailed/17/2.png",
+      "https://comfo.ge/images/detailed/17/3.png"
+    ]
+  },
+  {
+    "external_id": 1130,
+    "title_ka": "საოფისე სამეცადინო მაგიდა კუთხის MS5 (1130)",
+    "category_ka": "ოფისი / სამუშაო სივრცე///საოფისე/სამეცადინო მაგიდები",
+    "regular_price": 499.9,
+    "discount_price": 349.9,
+    "quantity": 19,
+    "link": "https://comfo.ge/opisi-samushao-sivrce/saofise-samecadino-magidebi/საოფისე-სამეცადინო-მაგიდა-კუთხის-ms5-1030/",
+    "main_image": "https://comfo.ge/images/detailed/17/1_bwj1-vp.png",
+    "additional_images": [
+      "https://comfo.ge/images/detailed/17/2_9dj9-wn.png",
+      "https://comfo.ge/images/detailed/17/3_p4qu-yr.png",
+      "https://comfo.ge/images/detailed/17/4_3hxi-a1.png",
+      "https://comfo.ge/images/detailed/17/5_alk1-l2.png"
+    ]
+  }
+]
