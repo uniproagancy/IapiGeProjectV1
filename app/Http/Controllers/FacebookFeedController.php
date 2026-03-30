@@ -13,30 +13,26 @@ class FacebookFeedController extends Controller
     {
         Log::info('Facebook Feed Generation Started');
 
-        // Clear any existing output buffers
         if (ob_get_level()) {
             Log::info('Output buffer cleared, level: ' . ob_get_level());
             ob_end_clean();
         }
         ob_start();
 
-        // Set feed metadata
         LaravelFacebookCatalog::setTitle('Example feed');
         LaravelFacebookCatalog::setDescription('Example feed of the Example shop');
         LaravelFacebookCatalog::setLink('https://example.shop');
         LaravelFacebookCatalog::setCurrency('GEL');
         Log::info('Feed metadata set');
 
-        // Get products
         $products = Product::where('active', 1)
             ->where('show', 1)
+            ->whereHas('category')
             ->with(['translations', 'images', 'price', 'brand.translations', 'category.parent'])
             ->get();
 
         Log::info('Products loaded: ' . $products->count());
 
-        $locale = app()->getLocale();
-        $fallbackLocale = 'ka';
         $successCount = 0;
         $errorCount = 0;
 
@@ -54,20 +50,16 @@ class FacebookFeedController extends Controller
                     }
                 }
 
-                // Get product image
                 $productImage = $this->getProductImage($product);
                 Log::debug("Product {$product->id} image: {$productImage}");
 
-                // Get product price
                 $productPrice = $this->getProductPrice($product);
                 Log::debug("Product {$product->id} price: {$productPrice}");
 
-                // Get additional images
                 $productGallery = $this->getProductGallery($product);
                 Log::debug("Product {$product->id} gallery count: " . count($productGallery));
 
-                // Get translation with fallback
-                $translation = $product->translations->where('locale', 'ka')->first() ?? '';
+                $translation = $product->translations->where('locale', 'ka')->first();
 
                 if (!$translation) {
                     Log::warning("Product {$product->id} has no translation");
@@ -75,43 +67,55 @@ class FacebookFeedController extends Controller
                     continue;
                 }
 
-                $brandTranslation = $product->brand->translations->where('locale', 'ka')->first();
+                $brandTranslation = $product->brand?->translations->where('locale', 'ka')->first();
 
                 if (!$brandTranslation) {
                     Log::warning("Product {$product->id} brand has no translation");
                 }
+
+                $categoryName = $product->category?->translations->where('locale', 'ka')->first()?->title;
+                $parentName   = $product->category?->parent?->translations->where('locale', 'ka')->first()?->title;
+
                 $item = [
-                    'link' => route('web.products.view', $translation->slug),
-                    'id' => $product->id,
-                    'title' => $translation->title,
-                    'image_link' => $productImage,
-                    'description' => strip_tags($translation->description),
-                    'availability' => 'in stock',
-                    'price' => $product->price->regular_price ?? 0,
-                    'sale_price' => $product->price->discount_price ?? 0,
-                    'brand' => $brandTranslation->title ?? 'Unknown',
-                    'google_product_category' => $product->category->google_category_id ?? $product->category->parent->google_category_id,
+                    'link'                       => route('web.products.view', $translation->slug),
+                    'id'                         => $product->id,
+                    'title'                      => $translation->title,
+                    'image_link'                 => $productImage,
+                    'description'                => strip_tags($translation->description),
+                    'availability'               => 'in stock',
+                    'price'                      => $product->price->regular_price ?? 0,
+                    'sale_price'                 => $product->price->discount_price ?? 0,
+                    'brand'                      => $brandTranslation?->title ?? 'Unknown',
+                    'google_product_category'    => $product->category?->google_category_id
+                        ?? $product->category?->parent?->google_category_id
+                            ?? null,
                     'quantity_to_sell_on_facebook' => intval($product->quantity * 10),
-                    'condition' => 'new',
-                    'additional_image_link' => $productGallery,
-                    'product_type' => $product->category->parent->translations->where('locale', 'ka')->first()->title.' > '.$product->category->translations->where('locale', 'ka')->first()->title,
-                    'custom_label_2' => $product->category->parent->translations->where('locale', 'ka')->first()->title,
+                    'condition'                  => 'new',
+                    'additional_image_link'      => $productGallery,
+                    'product_type'               => $parentName && $categoryName
+                        ? $parentName . ' > ' . $categoryName
+                        : ($categoryName ?? ''),
+                    'custom_label_2'             => $parentName ?? '',
                 ];
-                if($productPrice > 150) {
+
+                if ($productPrice > 150) {
                     $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
                 }
-                if($product->price->discount_price > 0 OR !empty($product->price->discount_price)) {
+
+                if (!empty($product->price->discount_price)) {
                     $item['custom_label_1'] = $product->price->discount_price;
                 }
+
                 LaravelFacebookCatalog::addItem($item);
                 $successCount++;
                 Log::info("Product {$product->id} added successfully");
+
             } catch (\Exception $e) {
                 $errorCount++;
                 Log::error("Error processing product {$product->id}: " . $e->getMessage(), [
-                    'exception' => $e,
+                    'exception'  => $e,
                     'product_id' => $product->id,
-                    'trace' => $e->getTraceAsString()
+                    'trace'      => $e->getTraceAsString()
                 ]);
             }
         }
@@ -122,15 +126,11 @@ class FacebookFeedController extends Controller
             $xml = LaravelFacebookCatalog::generate();
             Log::info('XML generated, length: ' . strlen($xml));
 
-            // Debug first 200 characters
-            Log::debug('XML first 200 chars: ' . substr($xml, 0, 200));
-
-            // Check for BOM or whitespace
             $firstChars = substr($xml, 0, 10);
-            $hexDump = bin2hex($firstChars);
+            $hexDump    = bin2hex($firstChars);
             Log::debug('XML first 10 chars HEX: ' . $hexDump);
 
-            if ($hexDump !== '3c3f786d6c207665') { // <?xml ve
+            if ($hexDump !== '3c3f786d6c207665') {
                 Log::warning('XML does not start with proper declaration. HEX: ' . $hexDump);
             }
 
@@ -144,16 +144,13 @@ class FacebookFeedController extends Controller
         } catch (\Exception $e) {
             Log::error('Error generating XML: ' . $e->getMessage(), [
                 'exception' => $e,
-                'trace' => $e->getTraceAsString()
+                'trace'     => $e->getTraceAsString()
             ]);
 
             return response('Error generating feed', 500);
         }
     }
 
-    /**
-     * Get product main image
-     */
     private function getProductImage($product): string
     {
         try {
@@ -174,9 +171,6 @@ class FacebookFeedController extends Controller
         }
     }
 
-    /**
-     * Get product price (discount or regular)
-     */
     private function getProductPrice($product): float
     {
         try {
@@ -192,9 +186,6 @@ class FacebookFeedController extends Controller
         }
     }
 
-    /**
-     * Get product gallery images
-     */
     private function getProductGallery($product): array
     {
         try {
