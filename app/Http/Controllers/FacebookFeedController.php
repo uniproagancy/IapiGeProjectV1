@@ -11,6 +11,7 @@ class FacebookFeedController extends Controller
 {
     public function getFeed()
     {
+        ini_set('memory_limit', '512M');
         Log::info('Facebook Feed Generation Started');
 
         if (ob_get_level()) {
