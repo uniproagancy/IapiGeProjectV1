@@ -162,10 +162,8 @@ class ZoommerProductJob implements ShouldQueue
             $updateData = [
                 'quantity' => $hasStock ? 5 : 0,
                 'in_stock' => $hasStock ? 1 : 0,
+                'show' => $hasStock ? 1 : 0,
             ];
-            if (!in_array($product->category_id, [18, 112, 125])) {
-                $updateData['show'] = $hasStock ? 1 : 0;
-            }
             $product->update($updateData);
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
