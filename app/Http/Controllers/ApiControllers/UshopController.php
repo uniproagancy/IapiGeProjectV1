@@ -47,36 +47,43 @@ class UshopController extends Controller
 
         $imported = 0;
         $updated  = 0;
+        $skipped  = 0;
 
         foreach ($products as $productData) {
-
             try {
+                // ZOOM პროდუქტები გამოვტოვოთ
+                $sku = strtoupper($productData['sku'] ?? '');
+                if (str_contains($sku, 'ZOOM')) {
+                    $skipped++;
+                    continue;
+                }
+
                 // stock / in_stock
+                $quantity = 10;
                 $in_stock = $productData['stock_status'] === 'instock' ? 1 : 0;
 
                 // prices
-                $regularPrice  = (float) ($productData['regular_price'] ?? 0);
-                $salePrice     = !empty($productData['sale_price'])
+                $regularPrice = (float) ($productData['regular_price'] ?? 0);
+                $salePrice    = !empty($productData['sale_price'])
                     ? (float) $productData['sale_price']
                     : null;
 
-                $existingProduct = Product::where('supplier_product_id', $productData['ID'])
-                    ->where('supplier_id', $request->supplier_id ?? 5)
+                $existingProduct = Product::where('sku', $productData['sku'])
                     ->first();
 
                 // ── UPDATE ────────────────────────────────────────────────
                 if ($existingProduct) {
                     $existingProduct->update([
-                        'quantity' => 10,
-                        'in_stock' => 1,
+                        'quantity' => $quantity,
+                        'in_stock' => $in_stock,
                         'show'     => $in_stock,
                     ]);
 
                     $existingProduct->price()->update([
-                        'dealer_price'       => $regularPrice,
-                        'regular_price'      => $regularPrice,
-                        'discount_price'     => $salePrice,
-                        'discount_percent'   => 0,
+                        'dealer_price'     => $regularPrice,
+                        'regular_price'    => $regularPrice,
+                        'discount_price'   => $salePrice,
+                        'discount_percent' => 0,
                     ]);
 
                     $updated++;
@@ -86,14 +93,14 @@ class UshopController extends Controller
                 // ── CREATE ────────────────────────────────────────────────
                 $product = Product::create([
                     'supplier_product_id' => $productData['ID'],
-                    'brand_id'            => 1,
-                    'category_id'         => 182,
+                    'brand_id'            => $request->brand_id,
+                    'category_id'         => $request->category_id,
                     'sku'                 => $productData['sku'],
                     'supplier_id'         => $request->supplier_id ?? 5,
                     'main_image'          => null,
-                    'quantity'            => 10,
-                    'in_stock'            => 1,
-                    'show'                => 1,
+                    'quantity'            => $quantity,
+                    'in_stock'            => $in_stock,
+                    'show'                => $in_stock,
                     'active'              => 1,
                 ]);
 
@@ -138,6 +145,7 @@ class UshopController extends Controller
         return response()->json([
             'imported' => $imported,
             'updated'  => $updated,
+            'skipped'  => $skipped,
         ]);
     }
 
@@ -145,9 +153,6 @@ class UshopController extends Controller
     // HELPERS
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Featured image + gallery images ერთ array-ში
-     */
     private function collectImageUrls(array $productData): array
     {
         $baseUrl = 'https://ushop.ge/wp-content/uploads/';
@@ -213,7 +218,6 @@ class UshopController extends Controller
 
     private function saveSpecifications(Product $product, array $productData): void
     {
-        // ushop-ის მხრიდან categories / brand specs-ის სახით შეიძლება შეინახო
         $specs = [];
 
         if (!empty($productData['categories'])) {
@@ -224,6 +228,17 @@ class UshopController extends Controller
         }
         if (!empty($productData['sku'])) {
             $specs[] = ['name' => 'SKU', 'value' => $productData['sku']];
+        }
+
+        // post_content — HTML strip + plain text სახით
+        if (!empty($productData['post_content'])) {
+            $plainText = strip_tags($productData['post_content']);
+            $plainText = preg_replace('/\s+/', ' ', $plainText);
+            $plainText = trim($plainText);
+
+            if (!empty($plainText)) {
+                $specs[] = ['name' => 'აღწერა', 'value' => $plainText];
+            }
         }
 
         if (empty($specs)) {
