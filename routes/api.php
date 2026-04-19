@@ -44,5 +44,5 @@ Route::prefix('credo')->group(function () {
 });
 
 Route::prefix('ushop')->group(function () {
-    Route::get('/get', '\App\Http\Controllers\ApiControllers\UshopController@index')->name('ushop-index');
+    Route::get('/import', '\App\Http\Controllers\ApiControllers\UshopController@import')->name('ushop-index');
 });
