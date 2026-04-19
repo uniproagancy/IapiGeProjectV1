@@ -98,6 +98,19 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'ushop' => [
+            'driver'    => 'mysql',
+            'host'      => env('USHOP_DB_HOST', '127.0.0.1'),
+            'port'      => env('USHOP_DB_PORT', '3306'),
+            'database'  => env('USHOP_DB_DATABASE', 'unipro_ushop'),
+            'username'  => env('USHOP_DB_USERNAME', 'unipro_ushop'),
+            'password'  => env('USHOP_DB_PASSWORD', ''),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix'    => '',
+            'strict'    => false,
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
