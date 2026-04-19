@@ -52,8 +52,7 @@ class UshopController extends Controller
 
             try {
                 // stock / in_stock
-                $quantity = max(0, (int) ($productData['stock'] ?? 0));
-                $in_stock = $quantity > 0 ? 1 : 0;
+                $in_stock = $productData['stock_status'] === 'instock' ? 1 : 0;
 
                 // prices
                 $regularPrice  = (float) ($productData['regular_price'] ?? 0);
@@ -68,8 +67,8 @@ class UshopController extends Controller
                 // ── UPDATE ────────────────────────────────────────────────
                 if ($existingProduct) {
                     $existingProduct->update([
-                        'quantity' => $quantity,
-                        'in_stock' => $in_stock,
+                        'quantity' => 10,
+                        'in_stock' => 1,
                         'show'     => $in_stock,
                     ]);
 
@@ -89,12 +88,12 @@ class UshopController extends Controller
                     'supplier_product_id' => $productData['ID'],
                     'brand_id'            => 1,
                     'category_id'         => 182,
-                    'sku'                 => 'USHOP-' . $productData['ID'],
+                    'sku'                 => $productData['sku'],
                     'supplier_id'         => $request->supplier_id ?? 5,
                     'main_image'          => null,
-                    'quantity'            => $quantity,
-                    'in_stock'            => $in_stock,
-                    'show'                => $in_stock,
+                    'quantity'            => 10,
+                    'in_stock'            => 1,
+                    'show'                => 1,
                     'active'              => 1,
                 ]);
 
