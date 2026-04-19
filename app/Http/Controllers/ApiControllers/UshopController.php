@@ -226,24 +226,6 @@ class UshopController extends Controller
         if (!empty($productData['brand'])) {
             $specs[] = ['name' => 'ბრენდი', 'value' => $productData['brand']];
         }
-        if (!empty($productData['sku'])) {
-            $specs[] = ['name' => 'SKU', 'value' => $productData['sku']];
-        }
-
-        // post_content — HTML strip + plain text სახით
-        if (!empty($productData['post_content'])) {
-            $plainText = strip_tags($productData['post_content']);
-            $plainText = preg_replace('/\s+/', ' ', $plainText);
-            $plainText = trim($plainText);
-
-            if (!empty($plainText)) {
-                $specs[] = ['name' => 'აღწერა', 'value' => $plainText];
-            }
-        }
-
-        if (empty($specs)) {
-            return;
-        }
 
         $section = ProductFullSpecificationSection::create([
             'product_id' => $product->id,

@@ -51,7 +51,7 @@
                 </div>
             </div>
             @endif
-            @if(count($product->fullSpecifications) > 0)
+            @if(count($product->fullSpecifications) > 100000000)
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
                         <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">
