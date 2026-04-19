@@ -93,10 +93,10 @@ class UshopController extends Controller
                 // ── CREATE ────────────────────────────────────────────────
                 $product = Product::create([
                     'supplier_product_id' => $productData['ID'],
-                    'brand_id'            => $request->brand_id,
-                    'category_id'         => $request->category_id,
+                    'brand_id'            => 1,
+                    'category_id'         => 182,
                     'sku'                 => $productData['sku'],
-                    'supplier_id'         => $request->supplier_id ?? 5,
+                    'supplier_id'         => 7,
                     'main_image'          => null,
                     'quantity'            => $quantity,
                     'in_stock'            => $in_stock,
