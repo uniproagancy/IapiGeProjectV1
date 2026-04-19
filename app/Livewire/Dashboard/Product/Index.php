@@ -289,7 +289,7 @@ class Index extends Component
             )
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active)
             )
-            ->when($this->unsorted === true, fn($q) => $q->whereIn('category_id', [3,4])
+            ->when($this->unsorted === true, fn($q) => $q->whereIn('category_id', [3,4,182])
             )
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
