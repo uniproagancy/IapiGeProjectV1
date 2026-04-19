@@ -19,10 +19,10 @@ class UshopProduct
         ]);
     }
 
-    public function getProduct($url)
+    public function getProduct()
     {
         try {
-            $response = $this->client->request('GET', $this->baseUrl . $url, [
+            $response = $this->client->request('GET', $this->baseUrl, [
                 'headers' => [
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
                     'Accept' => 'application/json',

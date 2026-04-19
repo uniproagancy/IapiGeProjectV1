@@ -11,6 +11,6 @@ class UshopController extends Controller
     //
     public function index()
     {
-        return app(UshopProduct::class)->scanAllIds();
+        return app(UshopProduct::class)->getProduct();
     }
 }
