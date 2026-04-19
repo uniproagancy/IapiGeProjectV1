@@ -28,6 +28,7 @@ class UshopProduct
                     'Accept' => 'application/json',
                 ]
             ]);
+            Log::warning('success');
             dd($response);
         } catch (Exception $e) {
             Log::error('CitrusProduct: ' . $e->getMessage());
