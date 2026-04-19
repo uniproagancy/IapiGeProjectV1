@@ -42,3 +42,7 @@ Route::prefix('tbc')->group(function () {
 Route::prefix('credo')->group(function () {
     Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('credo-create-order');
 });
+
+Route::prefix('ushop')->group(function () {
+    Route::get('/get', '\App\Http\Controllers\ApiControllers\UshopController@index')->name('ushop-index');
+});

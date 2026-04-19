@@ -152,7 +152,6 @@ class ZoommerProductJob implements ShouldQueue
                 $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
             }
 
-            // ✅ Update price
             $product->price()->update([
                 'dealer_price' => $productPrice,
                 'regular_price' => $productPrice,

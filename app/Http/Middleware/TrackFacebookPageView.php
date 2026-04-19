@@ -25,14 +25,6 @@ class TrackFacebookPageView
 
         // ✅ Generate unique cache key for this user + URL
         $cacheKey = 'fb_pageview_' . md5($request->ip() . $request->userAgent() . $request->url());
-
-        Log::info('🔍 Middleware: Checking PageView', [
-            'cache_key'      => $cacheKey,
-            'url'            => $request->url(),
-            'ip'             => $request->ip(),
-            'already_tracked' => Cache::has($cacheKey),
-        ]);
-
         if (!Cache::has($cacheKey)) {
             $eventId = 'pv_' . time() . '_' . Str::random(6);
 
@@ -54,12 +46,6 @@ class TrackFacebookPageView
 
         } else {
             $cached = Cache::get($cacheKey);
-
-            Log::warning('⏭️ Middleware: PageView ALREADY TRACKED', [
-                'cached_event_id' => $cached['event_id'],
-                'tracked_at'      => $cached['tracked_at'],
-            ]);
-
             view()->share('fb_event_id', $cached['event_id']);
         }
 
