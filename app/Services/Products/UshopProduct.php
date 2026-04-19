@@ -28,7 +28,7 @@ class UshopProduct
                     'Accept' => 'application/json',
                 ]
             ]);
-            return json_decode($response->getBody()->getContents(), true);
+            dd($response);
         } catch (Exception $e) {
             Log::error('CitrusProduct: ' . $e->getMessage());
             return [];
