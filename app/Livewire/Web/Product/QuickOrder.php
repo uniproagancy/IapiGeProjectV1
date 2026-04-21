@@ -109,7 +109,7 @@ class QuickOrder extends Component
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
             app(FacebookPixelService::class)->trackLeadWithTest(
-                textCode: 'TEST70354',
+                testCode: 'TEST70354',
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $this->name,
