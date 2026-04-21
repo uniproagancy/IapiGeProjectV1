@@ -108,7 +108,8 @@ class QuickOrder extends Component
             // ✅ $this->leadEventId გამოიყენება — არ გენერირდება ახალი
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackLead(
+            app(FacebookPixelService::class)->trackLeadWithTest(
+                textCode: 'TEST70354',
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $this->name,
