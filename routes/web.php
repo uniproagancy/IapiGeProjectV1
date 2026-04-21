@@ -152,6 +152,14 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                     ->name('order.invoice.send');
             });
 
+            Route::get('/debug-fbp', function () {
+                return [
+                    'request_cookie'  => request()->cookie('_fbp'),
+                    'raw_cookie'      => $_COOKIE['_fbp'] ?? 'NOT FOUND',
+                    'all_cookies'     => array_keys(request()->cookies->all()),
+                ];
+            });
+
             Route::get('/logout', function (\Illuminate\Http\Request $request) {
                 \Illuminate\Support\Facades\Auth::logout();
                 $request->session()->invalidate();
