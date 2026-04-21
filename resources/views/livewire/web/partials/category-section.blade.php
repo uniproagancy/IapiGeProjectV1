@@ -16,7 +16,7 @@
     <div class="position-relative">
         <div class="product-swiper overflow-hidden" data-section="{{ $category->id }}">
             <div class="swiper-wrapper">
-                @foreach($products->orderBy('id', 'DESC') as $product)
+                @foreach($products as $product)
                     <div class="swiper-slide" wire:key="home-product-{{ $product->id }}">
                         @include('livewire.web.product.product-card', ['product' => $product])
                     </div>
