@@ -26,11 +26,12 @@ class QuickOrder extends Component
     public string $phone = '';
 
     public string $delivery = 'courier';
+    public string $comment = '';  // ✅ დამატებული
     public bool $success = false;
 
     // ✅ JS pixel-ისთვის
     public float $orderAmount = 0;
-    public string $purchaseEventId = '';
+    public string $leadEventId = '';  // ✅ ერთი ID — server და JS ერთნაირი
 
     public function placeOrder(): void
     {
@@ -60,7 +61,7 @@ class QuickOrder extends Component
             $order = Order::create([
                 'user_id'         => $user->id,
                 'payment_id'      => $deliveryPaymentMap[$this->delivery] ?? 10,
-                'comment'         => $this->comment ?? '',
+                'comment'         => $this->comment,
                 'created_by'      => $user->id,
                 'delivery_amount' => 0,
                 'amount'          => round($price * $this->quantity),
@@ -88,13 +89,11 @@ class QuickOrder extends Component
                 'სწრაფი შეკვეთა #' . $order->id . ' — ' . $this->name . ' — ' . $this->phone . ' — ' . $this->delivery
             );
 
-            // ✅ event ID გენერაცია — server და JS ერთი ID-ით
-            $this->orderAmount     = $order->amount;
-            $this->purchaseEventId = 'purchase_' . time() . '_' . Str::random(6);
+            // ✅ ერთი ID — server-side და JS client-side ერთნაირია
+            $this->orderAmount  = $order->amount;
+            $this->leadEventId  = 'lead_' . time() . '_' . Str::random(6);
 
             $this->trackLead($order, $product);
-            $this->trackPurchase($order, $product, $price, $this->purchaseEventId);
-
             $this->success = true;
 
         } catch (Exception $e) {
@@ -103,44 +102,10 @@ class QuickOrder extends Component
         }
     }
 
-    private function trackPurchase(Order $order, Product $product, float $price, string $eventId): void
-    {
-        try {
-            $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-
-            app(FacebookPixelService::class)->trackPurchase(
-                value: $order->amount,
-                currency: 'GEL',
-                params: [
-                    'contents' => [[
-                        'id'         => $product->id,
-                        'quantity'   => $this->quantity,
-                        'item_price' => $price,
-                    ]],
-                    'content_type' => 'product',
-                    'content_ids'  => [$product->id],
-                    'content_name' => $translation->title ?? '',
-                    'num_items'    => $this->quantity,
-                ],
-                eventId: $eventId
-            );
-
-            Log::info('✅ Purchase tracked (QuickOrder)', [
-                'event_id'   => $eventId,
-                'order_id'   => $order->id,
-                'product_id' => $product->id,
-                'amount'     => $order->amount,
-            ]);
-
-        } catch (Exception $e) {
-            Log::warning('QuickOrder Purchase pixel error: ' . $e->getMessage());
-        }
-    }
-
     private function trackLead(Order $order, Product $product): void
     {
         try {
-            $eventId     = 'lead_' . time() . '_' . Str::random(6);
+            // ✅ $this->leadEventId გამოიყენება — არ გენერირდება ახალი
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
             app(FacebookPixelService::class)->trackLead(
@@ -162,7 +127,7 @@ class QuickOrder extends Component
                     'content_name'     => $translation->title ?? '',
                     'num_items'        => 1,
                 ],
-                eventId: $eventId
+                eventId: $this->leadEventId  // ✅ იგივე ID რაც JS-ს გაეგზავნება
             );
         } catch (Exception $e) {
             Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
