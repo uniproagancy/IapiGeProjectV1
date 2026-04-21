@@ -115,8 +115,7 @@
             @script
             <script>
                 if (typeof fbq !== 'undefined') {
-                    console.log('Purchase event firing');
-                    fbq('track', 'Purchase', {
+                    fbq('track', 'Lead', {
                         value: {{ $this->orderAmount }},
                         currency: 'GEL',
                         content_ids: [{{ $this->productId }}],
