@@ -26,12 +26,20 @@ class QuickOrder extends Component
     public string $phone = '';
 
     public string $delivery = 'courier';
-    public string $comment = '';  // ✅ დამატებული
+    public string $comment = '';
     public bool $success = false;
 
-    // ✅ JS pixel-ისთვის
     public float $orderAmount = 0;
-    public string $leadEventId = '';  // ✅ ერთი ID — server და JS ერთნაირი
+    public string $leadEventId = '';
+
+    // ✅ სახელი და გვარი explode-ით
+    private function parseName(): array
+    {
+        $parts     = explode(' ', trim($this->name), 2);
+        $firstName = $parts[0] ?? '';
+        $lastName  = $parts[1] ?? '';
+        return [$firstName, $lastName];
+    }
 
     public function placeOrder(): void
     {
@@ -44,9 +52,11 @@ class QuickOrder extends Component
                 ? $product->price->discount_price
                 : $product->price->regular_price;
 
+            [$firstName, $lastName] = $this->parseName();
+
             $user = User::create([
-                'name'     => $this->name,
-                'lastname' => '',
+                'name'     => $firstName,
+                'lastname' => $lastName,
                 'phone'    => $this->phone,
                 'email'    => null,
             ]);
@@ -89,9 +99,8 @@ class QuickOrder extends Component
                 'სწრაფი შეკვეთა #' . $order->id . ' — ' . $this->name . ' — ' . $this->phone . ' — ' . $this->delivery
             );
 
-            // ✅ ერთი ID — server-side და JS client-side ერთნაირია
-            $this->orderAmount  = $order->amount;
-            $this->leadEventId  = 'lead_' . time() . '_' . Str::random(6);
+            $this->orderAmount = $order->amount;
+            $this->leadEventId = 'lead_' . time() . '_' . Str::random(6);
 
             $this->trackLead($order, $product);
             $this->success = true;
@@ -105,13 +114,14 @@ class QuickOrder extends Component
     private function trackLead(Order $order, Product $product): void
     {
         try {
-            // ✅ $this->leadEventId გამოიყენება — არ გენერირდება ახალი
+            [$firstName, $lastName] = $this->parseName();
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
             app(FacebookPixelService::class)->trackLead(
                 userData: [
                     'phone'      => $this->phone,
-                    'first_name' => $this->name,
+                    'first_name' => $firstName,
+                    'last_name'  => $lastName,
                 ],
                 customData: [
                     'value'            => $order->amount,
@@ -127,7 +137,7 @@ class QuickOrder extends Component
                     'content_name'     => $translation->title ?? '',
                     'num_items'        => 1,
                 ],
-                eventId: $this->leadEventId  // ✅ იგივე ID რაც JS-ს გაეგზავნება
+                eventId: $this->leadEventId
             );
         } catch (Exception $e) {
             Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
