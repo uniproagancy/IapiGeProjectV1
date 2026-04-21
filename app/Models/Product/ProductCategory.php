@@ -54,6 +54,7 @@ class ProductCategory extends Model
             ->where('active', 1)
             ->where('show', 1)
             ->with(['translations', 'price'])
+            ->orderBy('id','DESC')
             ->get();
     }
 
