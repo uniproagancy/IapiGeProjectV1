@@ -143,7 +143,8 @@ class QuickOrder extends Component
             $eventId     = 'lead_' . time() . '_' . Str::random(6);
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackLead(
+            app(FacebookPixelService::class)->trackLeadWithTest(
+                testCode:'TEST70354',
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $this->name,
