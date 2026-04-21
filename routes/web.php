@@ -22,7 +22,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
             'all_cookies'     => array_keys(request()->cookies->all()),
         ];
     });
-    
+
     Route::name('web.')->group(function () {
         Route::get('/update-alta', function (\Illuminate\Http\Request $request) {
             foreach(AltaID::all() as $alta) {

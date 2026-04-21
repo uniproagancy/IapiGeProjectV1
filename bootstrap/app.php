@@ -29,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.role' => \App\Http\Middleware\CheckRole::class,
             'doNotCacheResponse' => \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class,
         ]);
+        $middleware->encryptCookies(except: [
+            '_fbp',
+            '_fbc',
+        ]);
         $middleware->web(append: [
             \Spatie\ResponseCache\Middlewares\CacheResponse::class,
             \App\Http\Middleware\TrackFacebookPageView::class,
