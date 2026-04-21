@@ -126,7 +126,7 @@
                         }],
                         num_items: {{ $this->quantity }}
                     }, {
-                        eventID: '{{ $this->purchaseEventId }}'
+                        eventID: '{{ $this->leadEventId }}'
                     });
                 }
             </script>
