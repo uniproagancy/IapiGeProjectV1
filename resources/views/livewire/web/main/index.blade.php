@@ -40,7 +40,7 @@
             </div>
         @endif
         @php
-            $products = $category->getActiveProducts()->take(20)
+            $products = $category->getActiveProducts()->orderBy('id','DESC')->take(20)
         @endphp
         @include('livewire.web.partials.category-section', [
             'category' => $category,
