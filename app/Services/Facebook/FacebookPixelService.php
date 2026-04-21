@@ -749,13 +749,15 @@ class FacebookPixelService
             'client_user_agent' => request()->userAgent(),
         ];
 
-        // ✅ fbc და fbp ყველასთვის - ავტორიზებული თუ guest
-        if (request()->cookie('_fbp')) {
-            $userData['fbp'] = request()->cookie('_fbp');
+        $fbp = request()->cookie('_fbp') ?? ($_COOKIE['_fbp'] ?? null);
+        $fbc = request()->cookie('_fbc') ?? ($_COOKIE['_fbc'] ?? null);
+
+        if ($fbp) {
+            $userData['fbp'] = $fbp;
         }
 
-        if (request()->cookie('_fbc')) {
-            $userData['fbc'] = request()->cookie('_fbc');
+        if ($fbc) {
+            $userData['fbc'] = $fbc;
         }
 
         return $userData;
