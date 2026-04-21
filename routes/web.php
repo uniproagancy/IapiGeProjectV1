@@ -15,6 +15,14 @@ Route::get('/facebook-discount-feed', '\App\Http\Controllers\FacebookFeedControl
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
+    Route::get('/debug-fbp', function () {
+        return [
+            'request_cookie'  => request()->cookie('_fbp'),
+            'raw_cookie'      => $_COOKIE['_fbp'] ?? 'NOT FOUND',
+            'all_cookies'     => array_keys(request()->cookies->all()),
+        ];
+    });
+    
     Route::name('web.')->group(function () {
         Route::get('/update-alta', function (\Illuminate\Http\Request $request) {
             foreach(AltaID::all() as $alta) {
@@ -150,14 +158,6 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                     ->name('order.invoice.download');
                 Route::get('/view/{order_id}/invoice/send', [InvoiceController::class, 'invoiceSend'])
                     ->name('order.invoice.send');
-            });
-
-            Route::get('/debug-fbp', function () {
-                return [
-                    'request_cookie'  => request()->cookie('_fbp'),
-                    'raw_cookie'      => $_COOKIE['_fbp'] ?? 'NOT FOUND',
-                    'all_cookies'     => array_keys(request()->cookies->all()),
-                ];
             });
 
             Route::get('/logout', function (\Illuminate\Http\Request $request) {
