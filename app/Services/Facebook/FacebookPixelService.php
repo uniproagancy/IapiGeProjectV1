@@ -761,7 +761,64 @@ class FacebookPixelService
             return false;
         }
     }
+    public function trackPurchaseWithPixelDataAndTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
+    {
+        try {
+            $customData = ['value' => $value, 'currency' => $currency];
 
+            foreach (['contents', 'content_type', 'content_ids', 'num_items'] as $key) {
+                if (isset($params[$key])) $customData[$key] = $params[$key];
+            }
+
+            $eventData = [
+                'event_name'       => 'Purchase',
+                'event_time'       => time(),
+                'event_source_url' => 'https://iapi.ge/',
+                'action_source'    => 'website',
+                'event_id'         => $eventId,
+            ];
+
+            $userData = [
+                'client_ip_address' => $pixelData->client_ip,
+                'client_user_agent' => $pixelData->client_user_agent,
+            ];
+
+            if ($pixelData->fbp) $userData['fbp'] = $pixelData->fbp;
+            if ($pixelData->fbc) $userData['fbc'] = $pixelData->fbc;
+            if ($pixelData->em)  $userData['em']  = $pixelData->em;
+            if ($pixelData->ph)  $userData['ph']  = $pixelData->ph;
+            if ($pixelData->fn)  $userData['fn']  = $pixelData->fn;
+            if ($pixelData->ln)  $userData['ln']  = $pixelData->ln;
+
+            $eventData['user_data']   = $userData;
+            $eventData['custom_data'] = $customData;
+
+            Log::info('📤 TEST Purchase with pixel data', [
+                'test_code' => $testCode,
+                'event_id'  => $eventId,
+                'has_fbp'   => isset($userData['fbp']),
+                'has_ph'    => isset($userData['ph']),
+            ]);
+
+            $response = Http::timeout(10)->post($this->endpoint, [
+                'data'            => [$eventData],
+                'access_token'    => $this->accessToken,
+                'test_event_code' => $testCode,
+            ]);
+
+            if ($response->successful()) {
+                Log::info('✅ TEST Purchase sent', ['response' => $response->json()]);
+                return true;
+            }
+
+            Log::error('❌ TEST Purchase failed', ['response' => $response->body()]);
+            return false;
+
+        } catch (Exception $e) {
+            Log::error('❌ trackPurchaseWithPixelDataAndTest error: ' . $e->getMessage());
+            return false;
+        }
+    }
     public function getConfig(): array
     {
         return [

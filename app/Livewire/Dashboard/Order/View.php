@@ -88,7 +88,8 @@ class View extends Component
 
             // ✅ pixel data გვაქვს — fbp/fbc/user data-ით გავაგზავნოთ
             if ($pixelData) {
-                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithPixelData(
+                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithPixelDataAndTest(
+                    testCode: 'TEST64942',
                     value:      $order->amount,
                     currency:   'GEL',
                     params: [
