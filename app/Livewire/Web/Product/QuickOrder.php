@@ -119,7 +119,8 @@ class QuickOrder extends Component
 
             $pixelService = app(\App\Services\Facebook\FacebookPixelService::class);
 
-            $pixelService->trackLead(
+            $pixelService->trackLeadWithTest(
+                testCode: 'TEST64942',
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $firstName,
