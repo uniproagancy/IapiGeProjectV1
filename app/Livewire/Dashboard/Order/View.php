@@ -73,7 +73,6 @@ class View extends Component
 
             // ✅ ბაზიდან pixel data
             $pixelData  = OrderPixelData::where('order_id', $order->id)->first();
-            $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
             $contents   = [];
             $contentIds = [];
 
@@ -88,6 +87,7 @@ class View extends Component
 
             // ✅ pixel data გვაქვს — fbp/fbc/user data-ით გავაგზავნოთ
             if ($pixelData) {
+                $eventId    = $pixelData->event_id;
                 app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithPixelDataAndTest(
                     testCode: 'TEST64942',
                     value:      $order->amount,
@@ -102,6 +102,7 @@ class View extends Component
                     pixelData:  $pixelData
                 );
             } else {
+                $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
                 // ✅ pixel data არ არის — ჩვეულებრივ გავაგზავნოთ
                 app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchase(
                     value:    $order->amount,
