@@ -5,6 +5,7 @@ namespace App\Livewire\Dashboard\Order;
 use App\Models\Delivery\DeliveryCompany;
 use App\Models\Order\Order;
 use App\Models\Order\OrderDelivery;
+use App\Models\Order\OrderPixelData;
 use App\Models\Order\OrderStatus;
 use App\Models\Payments\PaymentStatus;
 use Livewire\Component;
@@ -70,6 +71,8 @@ class View extends Component
                 return;
             }
 
+            // ✅ ბაზიდან pixel data
+            $pixelData  = OrderPixelData::where('order_id', $order->id)->first();
             $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
             $contents   = [];
             $contentIds = [];
@@ -83,23 +86,40 @@ class View extends Component
                 $contentIds[] = $item->product_id;
             }
 
-            app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchase(
-                value: $order->amount,
-                currency: 'GEL',
-                params: [
-                    'contents'     => $contents,
-                    'content_ids'  => $contentIds,
-                    'content_type' => 'product',
-                    'num_items'    => count($contents),
-                ],
-                eventId: $eventId
-            );
+            // ✅ pixel data გვაქვს — fbp/fbc/user data-ით გავაგზავნოთ
+            if ($pixelData) {
+                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithPixelData(
+                    value:      $order->amount,
+                    currency:   'GEL',
+                    params: [
+                        'contents'     => $contents,
+                        'content_ids'  => $contentIds,
+                        'content_type' => 'product',
+                        'num_items'    => count($contents),
+                    ],
+                    eventId:    $eventId,
+                    pixelData:  $pixelData
+                );
+            } else {
+                // ✅ pixel data არ არის — ჩვეულებრივ გავაგზავნოთ
+                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchase(
+                    value:    $order->amount,
+                    currency: 'GEL',
+                    params: [
+                        'contents'     => $contents,
+                        'content_ids'  => $contentIds,
+                        'content_type' => 'product',
+                        'num_items'    => count($contents),
+                    ],
+                    eventId: $eventId
+                );
+            }
 
             \Illuminate\Support\Facades\Log::info('✅ Purchase tracked', [
-                'order_id' => $order->id,
-                'event_id' => $eventId,
-                'amount'   => $order->amount,
-                'items'    => count($contents),
+                'order_id'        => $order->id,
+                'event_id'        => $eventId,
+                'has_pixel_data'  => !is_null($pixelData),
+                'amount'          => $order->amount,
             ]);
 
         } catch (\Exception $e) {

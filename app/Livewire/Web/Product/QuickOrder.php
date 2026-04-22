@@ -117,7 +117,9 @@ class QuickOrder extends Component
             [$firstName, $lastName] = $this->parseName();
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackLead(
+            $pixelService = app(\App\Services\Facebook\FacebookPixelService::class);
+
+            $pixelService->trackLead(
                 userData: [
                     'phone'      => $this->phone,
                     'first_name' => $firstName,
@@ -139,11 +141,18 @@ class QuickOrder extends Component
                 ],
                 eventId: $this->leadEventId
             );
-        } catch (Exception $e) {
-            Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
+
+            // ✅ pixel data ბაზაში შენახვა — Purchase-ისთვის გამოვიყენებთ
+            $pixelService->savePixelData($order->id, $this->leadEventId, [
+                'phone'      => $this->phone,
+                'first_name' => $firstName,
+                'last_name'  => $lastName,
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
         }
     }
-
     public function render()
     {
         $product = Product::with(['price'])->findOrFail($this->productId);

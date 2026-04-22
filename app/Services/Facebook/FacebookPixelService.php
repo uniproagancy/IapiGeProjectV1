@@ -649,6 +649,119 @@ class FacebookPixelService
         }
     }
 
+    public function savePixelData(int $orderId, string $eventId, array $userData = []): void
+    {
+        try {
+            $fbp = request()->cookie('_fbp') ?? ($_COOKIE['_fbp'] ?? null);
+            $fbc = request()->cookie('_fbc') ?? ($_COOKIE['_fbc'] ?? null);
+
+            $data = [
+                'order_id'          => $orderId,
+                'event_id'          => $eventId,
+                'fbp'               => $fbp,
+                'fbc'               => $fbc,
+                'client_ip'         => request()->ip(),
+                'client_user_agent' => request()->userAgent(),
+            ];
+
+            if (!empty($userData['email'])) {
+                $data['em'] = hash('sha256', strtolower(trim($userData['email'])));
+            }
+            if (!empty($userData['phone'])) {
+                $phone = preg_replace('/\D/', '', $userData['phone']);
+                if (strlen($phone) >= 9) {
+                    $data['ph'] = hash('sha256', $phone);
+                }
+            }
+            if (!empty($userData['first_name'])) {
+                $data['fn'] = hash('sha256', strtolower(trim($userData['first_name'])));
+            }
+            if (!empty($userData['last_name'])) {
+                $data['ln'] = hash('sha256', strtolower(trim($userData['last_name'])));
+            }
+
+            \App\Models\Order\OrderPixelData::updateOrCreate(
+                ['order_id' => $orderId],
+                $data
+            );
+
+            Log::info('💾 Pixel data saved', [
+                'order_id' => $orderId,
+                'has_fbp'  => !empty($fbp),
+                'has_ph'   => isset($data['ph']),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ savePixelData error: ' . $e->getMessage(), ['order_id' => $orderId]);
+        }
+    }
+
+    /**
+     * ✅ Purchase — ბაზიდან შენახული pixel data-ით
+     */
+    public function trackPurchaseWithPixelData(float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
+    {
+        try {
+            $customData = [
+                'value'    => $value,
+                'currency' => $currency,
+            ];
+
+            foreach (['contents', 'content_type', 'content_ids', 'num_items'] as $key) {
+                if (isset($params[$key])) $customData[$key] = $params[$key];
+            }
+
+            $eventData = [
+                'event_name'       => 'Purchase',
+                'event_time'       => time(),
+                'event_source_url' => 'https://iapi.ge/',
+                'action_source'    => 'website',
+                'event_id'         => $eventId,
+            ];
+
+            // ✅ ბაზიდან შენახული user data
+            $userData = [
+                'client_ip_address' => $pixelData->client_ip,
+                'client_user_agent' => $pixelData->client_user_agent,
+            ];
+
+            if ($pixelData->fbp) $userData['fbp'] = $pixelData->fbp;
+            if ($pixelData->fbc) $userData['fbc'] = $pixelData->fbc;
+            if ($pixelData->em)  $userData['em']  = $pixelData->em;
+            if ($pixelData->ph)  $userData['ph']  = $pixelData->ph;
+            if ($pixelData->fn)  $userData['fn']  = $pixelData->fn;
+            if ($pixelData->ln)  $userData['ln']  = $pixelData->ln;
+
+            $eventData['user_data']   = $userData;
+            $eventData['custom_data'] = $customData;
+
+            Log::info('📤 Purchase with pixel data', [
+                'event_id' => $eventId,
+                'has_fbp'  => isset($userData['fbp']),
+                'has_ph'   => isset($userData['ph']),
+                'has_em'   => isset($userData['em']),
+                'value'    => $value,
+            ]);
+
+            $response = Http::timeout(10)->post($this->endpoint, [
+                'data'         => [$eventData],
+                'access_token' => $this->accessToken,
+            ]);
+
+            if ($response->successful()) {
+                Log::info('✅ Purchase sent', ['response' => $response->json()]);
+                return true;
+            }
+
+            Log::error('❌ Purchase failed', ['response' => $response->body()]);
+            return false;
+
+        } catch (Exception $e) {
+            Log::error('❌ trackPurchaseWithPixelData error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getConfig(): array
     {
         return [
