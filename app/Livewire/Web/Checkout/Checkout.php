@@ -522,7 +522,7 @@ class Checkout extends Component
                         foreach ($order->items as $item) {
                             $products[] = [
                                 'name'     => $item->product->translation('ka')->title,
-                                'price'    => round($item->price + ($item->price * 0.05)),
+                                'price'    => round($item->price + ($item->price * 0.05)) * $item->quantity,
                                 'quantity' => $item->quantity,
                             ];
                         }
