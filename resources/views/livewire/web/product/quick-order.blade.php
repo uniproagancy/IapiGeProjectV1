@@ -13,6 +13,53 @@
             <div class="fw-semibold font-neue mb-1">შეკვეთა მიღებულია!</div>
             <div class="text-muted" style="font-size: 13px;">ჩვენი ოპერატორი მალე დაგიკავშირდებათ</div>
         </div>
+
+        {{-- ✅ polling — purchase_event_id-ს ელოდება --}}
+        @if(empty($this->purchaseEventId))
+            <div wire:poll.5000ms="checkPurchaseEvent"></div>
+        @endif
+
+        {{-- ✅ Lead event --}}
+        @script
+        <script>
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', {
+                    value: {{ $this->orderAmount }},
+                    currency: 'GEL',
+                    content_ids: [{{ $this->productId }}],
+                    content_type: 'product',
+                    contents: [{
+                        id: {{ $this->productId }},
+                        quantity: {{ $this->quantity }}
+                    }],
+                    num_items: {{ $this->quantity }}
+                }, {
+                    eventID: '{{ $this->leadEventId }}'
+                });
+            }
+        </script>
+        @endscript
+
+        {{-- ✅ Purchase event — purchase_event_id მოვიდა რომ --}}
+        @if(!empty($this->purchaseEventId))
+            @script
+            <script>
+                if (typeof fbq !== 'undefined' && !window._purchaseTracked) {
+                    window._purchaseTracked = true;
+                    fbq('track', 'Purchase', {
+                        value: {{ $this->orderAmount }},
+                        currency: 'GEL',
+                        content_ids: [{{ $this->productId }}],
+                        content_type: 'product',
+                        num_items: {{ $this->quantity }}
+                    }, {
+                        eventID: '{{ $this->purchaseEventId }}'
+                    });
+                }
+            </script>
+            @endscript
+        @endif
+
     @else
 
         <div class="text-center mb-3">
@@ -111,26 +158,5 @@
             </span>
         </button>
     @endif
-        @if($success)
-            @script
-            <script>
-                if (typeof fbq !== 'undefined') {
-                    fbq('track', 'Lead', {
-                        value: {{ $this->orderAmount }},
-                        currency: 'GEL',
-                        content_ids: [{{ $this->productId }}],
-                        content_type: 'product',
-                        contents: [{
-                            id: {{ $this->productId }},
-                            quantity: {{ $this->quantity }}
-                        }],
-                        num_items: {{ $this->quantity }}
-                    }, {
-                        eventID: '{{ $this->leadEventId }}'
-                    });
-                }
-            </script>
-            @endscript
-        @endif
-</div>
 
+</div>

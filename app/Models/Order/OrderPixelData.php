@@ -15,6 +15,7 @@ class OrderPixelData extends Model
         'fbc',
         'client_ip',
         'client_user_agent',
+        'purchase_event_id',
         'em',
         'ph',
         'fn',

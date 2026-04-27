@@ -18,6 +18,7 @@ class QuickOrder extends Component
 {
     public int $productId;
     public int $quantity = 1;
+    public int $orderId    = 0; // ✅ დაამატე
 
     #[Validate('required|string|max:255', message: 'სახელი და გვარი აუცილებელია')]
     public string $name = '';
@@ -31,6 +32,8 @@ class QuickOrder extends Component
 
     public float $orderAmount = 0;
     public string $leadEventId = '';
+    public string $purchaseEventId = ''; // ✅ client-side Purchase-ისთვის
+
 
     // ✅ სახელი და გვარი explode-ით
     private function parseName(): array
@@ -99,6 +102,7 @@ class QuickOrder extends Component
                 'სწრაფი შეკვეთა #' . $order->id . ' — ' . $this->name . ' — ' . $this->phone . ' — ' . $this->delivery
             );
 
+            $this->orderId     = $order->id;
             $this->orderAmount = $order->amount;
             $this->leadEventId = 'lead_' . time() . '_' . Str::random(6);
 
@@ -150,6 +154,20 @@ class QuickOrder extends Component
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
+        }
+    }
+    public function checkPurchaseEvent(): void
+    {
+        if (!$this->success || empty($this->orderId)) {
+            return;
+        }
+
+        $pixelData = \App\Models\Order\OrderPixelData::where('order_id', $this->orderId)
+            ->whereNotNull('purchase_event_id')
+            ->first();
+
+        if ($pixelData) {
+            $this->purchaseEventId = $pixelData->purchase_event_id;
         }
     }
     public function render()

@@ -65,68 +65,57 @@ class View extends Component
     {
         try {
             if ($order->items->isEmpty()) {
-                \Illuminate\Support\Facades\Log::warning('⚠️ Purchase: order has no items', [
-                    'order_id' => $order->id,
-                ]);
+                \Illuminate\Support\Facades\Log::warning('⚠️ Purchase: order has no items', ['order_id' => $order->id]);
                 return;
             }
 
-            // ✅ ბაზიდან pixel data
-            $pixelData  = OrderPixelData::where('order_id', $order->id)->first();
+            $pixelData  = \App\Models\Order\OrderPixelData::where('order_id', $order->id)->first();
+            $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
             $contents   = [];
             $contentIds = [];
 
             foreach ($order->items as $item) {
-                $contents[]   = [
-                    'id'         => $item->product_id,
-                    'quantity'   => $item->quantity,
-                    'item_price' => $item->price,
-                ];
+                $contents[]   = ['id' => $item->product_id, 'quantity' => $item->quantity, 'item_price' => $item->price];
                 $contentIds[] = $item->product_id;
             }
 
-            // ✅ pixel data გვაქვს — fbp/fbc/user data-ით გავაგზავნოთ
+            $params = [
+                'contents'     => $contents,
+                'content_ids'  => $contentIds,
+                'content_type' => 'product',
+                'num_items'    => count($contents),
+            ];
+
+            $testCode = config('services.facebook.test_event_code');
+            $service  = app(\App\Services\Facebook\FacebookPixelService::class);
+
             if ($pixelData) {
-                $eventId    = $pixelData->event_id;
-                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchaseWithPixelData(
-                    value:      $order->amount,
-                    currency:   'GEL',
-                    params: [
-                        'contents'     => $contents,
-                        'content_ids'  => $contentIds,
-                        'content_type' => 'product',
-                        'num_items'    => count($contents),
-                    ],
-                    eventId:    $eventId,
-                    pixelData:  $pixelData
-                );
+                if ($testCode) {
+                    $service->trackPurchaseWithPixelDataAndTest($testCode, $order->amount, 'GEL', $params, $eventId, $pixelData);
+                } else {
+                    $service->trackPurchaseWithPixelData($order->amount, 'GEL', $params, $eventId, $pixelData);
+                }
+
+                // ✅ purchase_event_id ბაზაში — client-side deduplication-ისთვის
+                $pixelData->update(['purchase_event_id' => $eventId]);
+
             } else {
-                $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
-                // ✅ pixel data არ არის — ჩვეულებრივ გავაგზავნოთ
-                app(\App\Services\Facebook\FacebookPixelService::class)->trackPurchase(
-                    value:    $order->amount,
-                    currency: 'GEL',
-                    params: [
-                        'contents'     => $contents,
-                        'content_ids'  => $contentIds,
-                        'content_type' => 'product',
-                        'num_items'    => count($contents),
-                    ],
-                    eventId: $eventId
-                );
+                if ($testCode) {
+                    $service->trackPurchaseWithTest($testCode, $order->amount, 'GEL', $params, $eventId);
+                } else {
+                    $service->trackPurchase($order->amount, 'GEL', $params, $eventId);
+                }
             }
 
             \Illuminate\Support\Facades\Log::info('✅ Purchase tracked', [
-                'order_id'        => $order->id,
-                'event_id'        => $eventId,
-                'has_pixel_data'  => !is_null($pixelData),
-                'amount'          => $order->amount,
+                'order_id'       => $order->id,
+                'event_id'       => $eventId,
+                'has_pixel_data' => !is_null($pixelData),
+                'is_test'        => !empty($testCode),
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('❌ Purchase pixel error: ' . $e->getMessage(), [
-                'order_id' => $order->id ?? null,
-            ]);
+            \Illuminate\Support\Facades\Log::error('❌ Purchase pixel error: ' . $e->getMessage(), ['order_id' => $order->id ?? null]);
         }
     }
 
