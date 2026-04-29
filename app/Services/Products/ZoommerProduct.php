@@ -93,8 +93,7 @@ class ZoommerProduct
                         $data = json_decode($body, true);
 
                         if (!isset($data['product']) ||
-                            $data['product'] === null ||
-                            !($data['product']['isInStock'] ?? false)) {
+                            $data['product'] === null) {
                             $stats['null']++;
                             return;
                         }
