@@ -596,10 +596,17 @@ class FacebookPixelService
                 'has_phone' => !empty($user->phone),
                 'has_fbp'   => isset($userData['fbp']),
             ]);
+
         } else {
+            // ✅ guest — session visitor_id გამოვიყენოთ external_id-ად
+            if (session()->has('visitor_id')) {
+                $userData['external_id'] = hash('sha256', session('visitor_id'));
+            }
+
             Log::info('ℹ️ Guest user', [
-                'has_fbp' => isset($userData['fbp']),
-                'has_fbc' => isset($userData['fbc']),
+                'has_fbp'         => isset($userData['fbp']),
+                'has_fbc'         => isset($userData['fbc']),
+                'has_external_id' => isset($userData['external_id']),
             ]);
         }
 
