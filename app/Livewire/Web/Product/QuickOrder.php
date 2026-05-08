@@ -5,6 +5,7 @@ namespace App\Livewire\Web\Product;
 use App\Models\Order\Order;
 use App\Models\Order\OrderDelivery;
 use App\Models\Order\OrderItem;
+use App\Models\Order\OrderPixelData;
 use App\Models\Product\Product;
 use App\Models\User\User;
 use App\Services\Facebook\FacebookPixelService;
@@ -16,32 +17,27 @@ use Exception;
 
 class QuickOrder extends Component
 {
-    public int $productId;
-    public int $quantity = 1;
-    public int $orderId    = 0; // ✅ დაამატე
+    public int    $productId;
+    public int    $quantity       = 1;
+    public int    $orderId        = 0;
 
     #[Validate('required|string|max:255', message: 'სახელი და გვარი აუცილებელია')]
-    public string $name = '';
+    public string $name           = '';
 
     #[Validate('required|string|min:9|max:20', message: 'ტელეფონის ნომერი აუცილებელია')]
-    public string $phone = '';
+    public string $phone          = '';
 
-    public string $delivery = 'courier';
-    public string $comment = '';
-    public bool $success = false;
+    public string $delivery       = 'courier';
+    public string $comment        = '';
+    public bool   $success        = false;
+    public float  $orderAmount    = 0;
+    public string $leadEventId    = '';
+    public string $purchaseEventId = '';
 
-    public float $orderAmount = 0;
-    public string $leadEventId = '';
-    public string $purchaseEventId = ''; // ✅ client-side Purchase-ისთვის
-
-
-    // ✅ სახელი და გვარი explode-ით
     private function parseName(): array
     {
-        $parts     = explode(' ', trim($this->name), 2);
-        $firstName = $parts[0] ?? '';
-        $lastName  = $parts[1] ?? '';
-        return [$firstName, $lastName];
+        $parts = explode(' ', trim($this->name), 2);
+        return [$parts[0] ?? '', $parts[1] ?? ''];
     }
 
     public function placeOrder(): void
@@ -121,12 +117,14 @@ class QuickOrder extends Component
             [$firstName, $lastName] = $this->parseName();
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            $pixelService = app(\App\Services\Facebook\FacebookPixelService::class);
+            $pixelService = app(FacebookPixelService::class);
+
             $pixelService->trackLead(
                 userData: [
-                    'phone'      => $this->phone,
-                    'first_name' => $firstName,
-                    'last_name'  => $lastName,
+                    'phone'       => $this->phone,
+                    'first_name'  => $firstName,
+                    'last_name'   => $lastName,
+                    'external_id' => $order->id, // ✅
                 ],
                 customData: [
                     'value'            => $order->amount,
@@ -138,31 +136,33 @@ class QuickOrder extends Component
                         'quantity'   => $this->quantity,
                         'item_price' => $order->amount / $this->quantity,
                     ]],
-                    'content_ids'      => [$product->id],
-                    'content_name'     => $translation->title ?? '',
-                    'num_items'        => 1,
+                    'content_ids'  => [$product->id],
+                    'content_name' => $translation->title ?? '',
+                    'num_items'    => 1,
                 ],
                 eventId: $this->leadEventId
             );
 
-            // ✅ pixel data ბაზაში შენახვა — Purchase-ისთვის გამოვიყენებთ
+            // ✅ pixel data ბაზაში — Purchase-ისთვის
             $pixelService->savePixelData($order->id, $this->leadEventId, [
                 'phone'      => $this->phone,
                 'first_name' => $firstName,
                 'last_name'  => $lastName,
             ]);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::warning('QuickOrder Lead pixel error: ' . $e->getMessage());
         }
     }
+
+    // ✅ Polling — dashboard-იდან purchase_event_id-ს ელოდება
     public function checkPurchaseEvent(): void
     {
         if (!$this->success || empty($this->orderId)) {
             return;
         }
 
-        $pixelData = \App\Models\Order\OrderPixelData::where('order_id', $this->orderId)
+        $pixelData = OrderPixelData::where('order_id', $this->orderId)
             ->whereNotNull('purchase_event_id')
             ->first();
 
@@ -170,6 +170,7 @@ class QuickOrder extends Component
             $this->purchaseEventId = $pixelData->purchase_event_id;
         }
     }
+
     public function render()
     {
         $product = Product::with(['price'])->findOrFail($this->productId);

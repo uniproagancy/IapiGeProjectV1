@@ -20,6 +20,7 @@ class OrderPixelData extends Model
         'ph',
         'fn',
         'ln',
+        'external_id'
     ];
 
     public function order()
