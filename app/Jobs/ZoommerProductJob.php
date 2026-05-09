@@ -81,6 +81,18 @@ class ZoommerProductJob implements ShouldQueue
         ]);
     }
 
+    // ✅ ფასის კალკულაცია პროცენტული დამატებით
+    private function calculatePrice(float $price): float
+    {
+        if ($price <= 500) {
+            return $price + ($price / 100 * 30);
+        } elseif ($price <= 1500) {
+            return $price + ($price / 100 * 20);
+        } else {
+            return $price + ($price / 100 * 10);
+        }
+    }
+
     public function saveProductWithVariants(array $productData, array $productAvailability): void
     {
         if (empty($productData['id'])) {
@@ -90,7 +102,6 @@ class ZoommerProductJob implements ShouldQueue
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         if (Product::where('supplier_product_id', $productData['id'])->exists()) {
-            // ✅ პროდუქტი არსებობს — ყოველთვის განახლდება stock-ის მიუხედავად
             $this->updateExistingProduct($productData, $hasStock);
         } else {
             if ($hasStock) {
@@ -120,30 +131,20 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            if ($productPrice > 1000) {
-                $productPrice = $productPrice + ($productPrice / 100 * 5);
-            } else {
-                $productPrice = $productPrice + ($productPrice / 100 * 10);
-            }
+            // ✅ ახალი კალკულაცია
+            $productPrice  = $this->calculatePrice((float) $productPrice);
+            $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
-            if ($discountPrice > 1000) {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 5);
-            } else {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
-            }
-
-            // ✅ updateOrCreate — price row არ არსებობს შექმნის, არსებობს განახლდება
             ProductPrice::updateOrCreate(
                 ['product_id' => $product->id],
                 [
                     'dealer_price'     => $productPrice,
                     'regular_price'    => $productPrice,
-                    'discount_price'   => $discountPrice ?: null,
+                    'discount_price'   => $discountPrice,
                     'discount_percent' => $productData['discountPercent'] ?? 0,
                 ]
             );
 
-            // ✅ ნაშთი + ხილვადობა — stock-ის მიხედვით ყოველთვის განახლდება
             $product->update([
                 'quantity' => $hasStock ? 5 : 0,
                 'in_stock' => $hasStock ? 1 : 0,
@@ -226,23 +227,15 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            if ($productPrice > 1000) {
-                $productPrice = $productPrice + ($productPrice / 100 * 5);
-            } else {
-                $productPrice = $productPrice + ($productPrice / 100 * 10);
-            }
-
-            if ($discountPrice > 1000) {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 5);
-            } else {
-                $discountPrice = $discountPrice + ($discountPrice / 100 * 10);
-            }
+            // ✅ ახალი კალკულაცია
+            $productPrice  = $this->calculatePrice((float) $productPrice);
+            $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
             ProductPrice::create([
                 'product_id'       => $product->id,
                 'dealer_price'     => $productPrice,
                 'regular_price'    => $productPrice,
-                'discount_price'   => $discountPrice ?: null,
+                'discount_price'   => $discountPrice,
                 'discount_percent' => $productData['discountPercent'] ?? 0,
             ]);
 
@@ -255,9 +248,9 @@ class ZoommerProductJob implements ShouldQueue
     private function createTranslations(Product $product, array $productData): void
     {
         try {
-            $locales     = ['ka', 'en', 'ru'];
-            $baseSlug    = Str::slug($productData['name'] ?? 'product', '-');
-            $slugWithId  = "{$baseSlug}-{$product->id}";
+            $locales    = ['ka', 'en', 'ru'];
+            $baseSlug   = Str::slug($productData['name'] ?? 'product', '-');
+            $slugWithId = "{$baseSlug}-{$product->id}";
 
             foreach ($locales as $locale) {
                 ProductTranslation::create([
