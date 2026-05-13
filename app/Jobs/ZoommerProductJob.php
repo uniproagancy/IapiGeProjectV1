@@ -84,12 +84,12 @@ class ZoommerProductJob implements ShouldQueue
     // ✅ ფასის კალკულაცია პროცენტული დამატებით
     private function calculatePrice(float $price): float
     {
-        if ($price <= 500) {
-            return $price + ($price / 100 * 30);
-        } elseif ($price <= 1500) {
-            return $price + ($price / 100 * 20);
+        if ($price < 100) {
+            return $price + 30;
+        } elseif ($price <= 500) {
+            return $price + 50;
         } else {
-            return $price + ($price / 100 * 10);
+            return $price + 100;
         }
     }
 
