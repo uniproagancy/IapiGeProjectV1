@@ -51,8 +51,8 @@
                 </div>
             </div>
             @endif
-            @dd($product)
-            @if(count($product->fullSpecifications) > 1)
+            @if($product->supplier_id == 4)
+            @if($product->fullSpecifications))
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
                         <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">
@@ -80,6 +80,7 @@
                         </button>
                     </div>
                 </div>
+            @endif
             @endif
             <div class="col-12">
                 @include('livewire.web.product.similar-products')
