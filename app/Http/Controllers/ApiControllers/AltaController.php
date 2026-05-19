@@ -11,17 +11,16 @@ use Exception;
 
 class AltaController extends Controller
 {
-    //
     private $soapClient;
-    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL'; // შენი WSDL URL
+    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL';
 
     public function __construct()
     {
         try {
             $this->soapClient = new SoapClient($this->wsdlUrl, [
-                'trace' => 1,
+                'trace'      => 1,
                 'exceptions' => true,
-                'encoding' => 'UTF-8'
+                'encoding'   => 'UTF-8',
             ]);
         } catch (Exception $e) {
             throw new Exception('SOAP კლიენტის შეცდომა: ' . $e->getMessage());
@@ -32,28 +31,58 @@ class AltaController extends Controller
     {
         try {
             $params = [
-                'user' => 'UNIPRO_CHI',
+                'user'     => 'UNIPRO_CHI',
                 'password' => 'CHI1457160',
-                'item' => ''
+                'item'     => '',
             ];
+
             $response = $this->soapClient->GetPriceList($params);
+
+            // ✅ AltaID გასუფთავება
             AltaID::truncate();
-            Product::where('sku', 'LIKE', '%ALTA-%')->update([
-                'show' => 0
-            ]);
-            foreach($response->PriceList->items->item as $item) {
-                if($this->parseQtyText($item->qty_text)['quantity'] > 2) {
-                    $show = 1;
-                } else {
-                    $show = 0;
-                }
-                Product::where('sku', 'ALTA-'.$item->item)->update([
-                    'show' => $show,
-                    'quantity' => $this->parseQtyText($item->qty_text)['quantity'],
-                ]);
-                Log::info('ALTA-'.$item->item.' Quantity Updated '.$this->parseQtyText($item->qty_text)['quantity'].' Show status:'.$show);
+
+            // ✅ ყველა Alta პროდუქტი გათიშვა
+            Product::where('sku', 'LIKE', '%ALTA-%')->update(['show' => 0]);
+
+            $items = $response->PriceList->items->item;
+
+            // ✅ single item-ის შემთხვევა array-ად გადაქცევა
+            if (!is_array($items)) {
+                $items = [$items];
             }
+
+            $altaIds = [];
+
+            foreach ($items as $item) {
+                $parsed   = $this->parseQtyText($item->qty_text ?? null);
+                $quantity = $parsed['quantity'];
+                $show     = $quantity > 2 ? 1 : 0;
+
+                // ✅ AltaID-ში შენახვა
+                $altaIds[] = [
+                    'product_id' => (string) $item->item,
+                    'quantity'   => $quantity,
+                ];
+
+                // ✅ Product განახლება
+                Product::where('sku', 'ALTA-' . $item->item)->update([
+                    'show'     => $show,
+                    'quantity' => $quantity,
+                    'in_stock' => $show,
+                    'active'   => $show,
+                ]);
+
+                Log::info('ALTA-' . $item->item . ' Quantity: ' . $quantity . ' Show: ' . $show);
+            }
+
+            // ✅ Bulk insert AltaID
+            if (!empty($altaIds)) {
+                AltaID::insert($altaIds);
+                Log::info('✅ AltaID updated: ' . count($altaIds) . ' items');
+            }
+
         } catch (Exception $e) {
+            Log::error('Alta getProducts error: ' . $e->getMessage());
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
     }
@@ -62,56 +91,39 @@ class AltaController extends Controller
     {
         try {
             if (empty($qtyText)) {
-                return [
-                    'has_stock' => false,
-                    'quantity' => 0,
-                ];
+                return ['has_stock' => false, 'quantity' => 0];
             }
+
             $qtyText = strtolower(trim($qtyText));
+
             if (strpos($qtyText, '>=') === 0) {
-                $minQty = (int)str_replace('>=', '', $qtyText);
-                return [
-                    'has_stock' => true,
-                    'quantity' => max($minQty, 10), // Minimum 10
-                ];
+                $minQty = (int) str_replace('>=', '', $qtyText);
+                return ['has_stock' => true, 'quantity' => max($minQty, 10)];
             }
+
             if (strpos($qtyText, '>') === 0) {
-                $numStr = preg_replace('/[^0-9]/', '', $qtyText);
-                $qty = (int)$numStr;
-                return [
-                    'has_stock' => $qty > 0,
-                    'quantity' => $qty > 0 ? $qty : 0,
-                ];
+                $qty = (int) preg_replace('/[^0-9]/', '', $qtyText);
+                return ['has_stock' => $qty > 0, 'quantity' => $qty];
             }
+
             if (is_numeric($qtyText)) {
-                $qty = (int)$qtyText;
-                return [
-                    'has_stock' => $qty > 0,
-                    'quantity' => $qty,
-                ];
+                $qty = (int) $qtyText;
+                return ['has_stock' => $qty > 0, 'quantity' => $qty];
             }
+
             if (preg_match('/out|not|unavailable|უ/i', $qtyText)) {
-                return [
-                    'has_stock' => false,
-                    'quantity' => 0,
-                ];
+                return ['has_stock' => false, 'quantity' => 0];
             }
+
             if (preg_match('/in stock|available|ხელმ|აქვ/i', $qtyText)) {
-                return [
-                    'has_stock' => true,
-                    'quantity' => 5, // Default quantity
-                ];
+                return ['has_stock' => true, 'quantity' => 5];
             }
-            return [
-                'has_stock' => true,
-                'quantity' => 5,
-            ];
+
+            return ['has_stock' => true, 'quantity' => 5];
+
         } catch (Exception $e) {
             Log::warning("⚠️  qty_text პარსის შეცდომა: {$qtyText} - {$e->getMessage()}");
-            return [
-                'has_stock' => false,
-                'quantity' => 0,
-            ];
+            return ['has_stock' => false, 'quantity' => 0];
         }
     }
 }

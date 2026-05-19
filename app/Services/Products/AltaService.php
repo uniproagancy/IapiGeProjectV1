@@ -9,7 +9,7 @@ use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-class AltaProduct
+class AltaService
 {
     protected string $api_url          = 'https://alta.ge/api/proxy/';
     protected int $concurrent_requests = 5;
