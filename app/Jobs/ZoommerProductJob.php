@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\Translation\GoogleTranslation;
 use Exception;
 
 class ZoommerProductJob implements ShouldQueue
@@ -80,6 +81,7 @@ class ZoommerProductJob implements ShouldQueue
         ]);
     }
 
+    // ✅ ფასის კალკულაცია პროცენტული დამატებით
     private function calculatePrice(float $price): float
     {
         if ($price < 100) {
@@ -129,6 +131,7 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
+            // ✅ ახალი კალკულაცია
             $productPrice  = $this->calculatePrice((float) $productPrice);
             $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
@@ -148,25 +151,6 @@ class ZoommerProductJob implements ShouldQueue
                 'show'     => $hasStock ? 1 : 0,
                 'active'   => $hasStock ? 1 : 0,
             ]);
-
-            // ✅ Short specifications
-            ProductShortSpecification::where('product_id', $product->id)->forceDelete();
-            $this->createShortSpecifications($product, $productData);
-
-            // ✅ Full specifications
-            $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)
-                ->pluck('id');
-            ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-            ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
-            $this->createFullSpecifications($product, $productData);
-
-            if (!empty($productData['description'])) {
-                ProductTranslation::where('product_id', $product->id)
-                    ->where('locale', 'ka')
-                    ->update([
-                        'description' => $productData['description'],
-                    ]);
-            }
 
             Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
 
@@ -243,6 +227,7 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
+            // ✅ ახალი კალკულაცია
             $productPrice  = $this->calculatePrice((float) $productPrice);
             $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
@@ -415,6 +400,8 @@ class ZoommerProductJob implements ShouldQueue
                 return;
             }
 
+            $translator = new GoogleTranslation();
+
             foreach ($productData['mainSpecification'] as $spec) {
                 if (empty($spec['specificationName'])) {
                     continue;
@@ -422,8 +409,8 @@ class ZoommerProductJob implements ShouldQueue
 
                 ProductShortSpecification::create([
                     'product_id' => $product->id,
-                    'name'       => $spec['specificationName'],
-                    'value'      => $spec['specificationMeaning'] ?? '',
+                    'name'       => $translator->translateToGeorgian($spec['specificationName']),
+                    'value'      => $translator->translateToGeorgian($spec['specificationMeaning'] ?? ''),
                 ]);
             }
 
