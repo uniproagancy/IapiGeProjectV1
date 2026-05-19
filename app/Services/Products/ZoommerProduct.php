@@ -69,6 +69,9 @@ class ZoommerProduct
                 'connect_timeout' => 10,
                 'http_errors' => false,
                 'verify' => false, // SSL verification (production-ში true უნდა იყოს)
+                'headers' => [
+                    'Accept-Language' => 'ka',
+                ],
             ]);
 
             $requests = function ($ids) {

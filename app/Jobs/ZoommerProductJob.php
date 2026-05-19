@@ -81,7 +81,6 @@ class ZoommerProductJob implements ShouldQueue
         ]);
     }
 
-    // ✅ ფასის კალკულაცია პროცენტული დამატებით
     private function calculatePrice(float $price): float
     {
         if ($price < 100) {
@@ -131,7 +130,6 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            // ✅ ახალი კალკულაცია
             $productPrice  = $this->calculatePrice((float) $productPrice);
             $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
@@ -151,6 +149,59 @@ class ZoommerProductJob implements ShouldQueue
                 'show'     => $hasStock ? 1 : 0,
                 'active'   => $hasStock ? 1 : 0,
             ]);
+
+            // ✅ Short specifications განახლება
+            if (!empty($productData['mainSpecification'])) {
+                $translator = new GoogleTranslation();
+                foreach ($productData['mainSpecification'] as $spec) {
+                    if (empty($spec['specificationName'])) {
+                        continue;
+                    }
+                    ProductShortSpecification::updateOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'name'       => $translator->translateToGeorgian($spec['specificationName']),
+                        ],
+                        [
+                            'value' => $translator->translateToGeorgian($spec['specificationMeaning'] ?? ''),
+                        ]
+                    );
+                }
+            }
+
+            // ✅ Full specifications განახლება
+            if (!empty($productData['specificationGroup'])) {
+                foreach ($productData['specificationGroup'] as $specificationGroup) {
+                    if (empty($specificationGroup['groupName'])) {
+                        continue;
+                    }
+
+                    $section = ProductFullSpecificationSection::updateOrCreate(
+                        [
+                            'product_id' => $product->id,
+                            'name'       => $specificationGroup['groupName'],
+                        ]
+                    );
+
+                    if (!empty($specificationGroup['specifications'])) {
+                        foreach ($specificationGroup['specifications'] as $spec) {
+                            if (empty($spec['specificationName'])) {
+                                continue;
+                            }
+                            ProductFullSpecificationItem::updateOrCreate(
+                                [
+                                    'section_id' => $section->id,
+                                    'name'       => $spec['specificationName'],
+                                ],
+                                [
+                                    'value'  => $spec['specificationMeaning'] ?? null,
+                                    'filter' => !empty($spec['specificationLinkedUrl']) ? 1 : 0,
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
 
             Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
 
@@ -199,7 +250,7 @@ class ZoommerProductJob implements ShouldQueue
     {
         try {
             $specGroup = collect($productData['specificationGroup'] ?? [])
-                ->firstWhere('groupName', 'Brand');
+                ->firstWhere('groupName', 'ბრენდი');
 
             if (!empty($specGroup) && !empty($specGroup['specifications'][0]['specificationMeaning'])) {
                 $brandName = $specGroup['specifications'][0]['specificationMeaning'];
@@ -227,7 +278,6 @@ class ZoommerProductJob implements ShouldQueue
             $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
             $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
 
-            // ✅ ახალი კალკულაცია
             $productPrice  = $this->calculatePrice((float) $productPrice);
             $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
 
