@@ -18,19 +18,15 @@ class Index extends Component
 {
     use WithPagination;
 
-    // ============================================
-    // Properties
-    // ============================================
-
     public $parentCategories = [];
-    public $subCategories = [];
-    public $currentCategory = null;
-    public $selectedParent = null;
-    public $showAllBrands = false;
-    public $category_slug = null;
-    public $perPage = 12;
-    public $isLoading = false;
-    public string $eventId = '';
+    public $subCategories    = [];
+    public $currentCategory  = null;
+    public $selectedParent   = null;
+    public $showAllBrands    = false;
+    public $category_slug    = null;
+    public $perPage          = 12;
+    public $isLoading        = false;
+    public string $eventId   = '';
     public array $categoryProductIds = [];
 
     #[Url]
@@ -51,10 +47,6 @@ class Index extends Component
     #[Url]
     public bool $onlyDiscounted = false;
 
-    // ============================================
-    // Lifecycle Hooks
-    // ============================================
-
     public function mount($category_slug = null): void
     {
         $this->category_slug = $category_slug;
@@ -64,10 +56,6 @@ class Index extends Component
         $this->normalizeSpecs();
         $this->eventId = 'pv_' . time() . '_' . Str::random(6);
     }
-
-    // ============================================
-    // Facebook Pixel Tracking
-    // ============================================
 
     private function getProductIdsForCategory(): array
     {
@@ -88,10 +76,6 @@ class Index extends Component
             ->map(fn ($id) => (string) $id)
             ->toArray();
     }
-
-    // ============================================
-    // Helper Methods - Normalization
-    // ============================================
 
     private function normalizeBrands(): void
     {
@@ -114,10 +98,6 @@ class Index extends Component
 
         $this->selectedSpecs = array_filter($this->selectedSpecs);
     }
-
-    // ============================================
-    // Helper Methods - Category Loading
-    // ============================================
 
     private function loadParentCategories(): void
     {
@@ -164,10 +144,6 @@ class Index extends Component
                 ->get();
         }
     }
-
-    // ============================================
-    // Category Selection Actions
-    // ============================================
 
     public function toggleShowAllBrands(): void
     {
@@ -228,10 +204,6 @@ class Index extends Component
         ]);
     }
 
-    // ============================================
-    // Filter Actions
-    // ============================================
-
     public function clearPriceFilter(): void
     {
         $this->priceMin  = null;
@@ -275,10 +247,6 @@ class Index extends Component
         $this->isLoading = true;
     }
 
-    // ============================================
-    // Livewire Property Updates
-    // ============================================
-
     public function updatedSelectedBrands(): void
     {
         $this->normalizeBrands();
@@ -317,18 +285,10 @@ class Index extends Component
         $this->isLoading = true;
     }
 
-    // ============================================
-    // Pagination
-    // ============================================
-
     public function loadMore(): void
     {
         $this->perPage += 12;
     }
-
-    // ============================================
-    // Computed Properties
-    // ============================================
 
     #[Computed]
     public function products()
@@ -410,15 +370,19 @@ class Index extends Component
     #[Computed]
     public function specificationSections()
     {
-        // ✅ გასწორდა: cache key კატეგორიის მიხედვით
         $cacheKey = 'spec_sections_' . ($this->currentCategory?->id ?? 'all');
 
-        return cache()->remember($cacheKey, 3600, function () {
-            return ProductFullSpecificationSection::whereHas('filter')
+        return cache()->remember($cacheKey, 86400, function () {
+            return ProductFullSpecificationSection::query()
+                ->select('id', 'name')
+                ->whereHas('filter')
                 ->with(['filter' => fn ($q) => $q
                     ->select('id', 'section_id', 'name', 'value')
+                    ->where('filter', 1)
                     ->orderBy('name')
+                    ->limit(500)
                 ])
+                ->limit(50)
                 ->get()
                 ->map(function ($section) {
                     $section->filter = $section->filter
@@ -429,10 +393,6 @@ class Index extends Component
                 ->groupBy('name');
         });
     }
-
-    // ============================================
-    // Query Builders
-    // ============================================
 
     private function buildProductQuery()
     {
@@ -540,10 +500,6 @@ class Index extends Component
             ->where('discount_price', '>', 0)
         );
     }
-
-    // ============================================
-    // Rendering
-    // ============================================
 
     public function render()
     {
