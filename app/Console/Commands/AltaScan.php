@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Products\AltaProduct;
+use App\Services\Products\AltaService;
 use Illuminate\Console\Command;
 
 class AltaScan extends Command
@@ -17,7 +17,7 @@ class AltaScan extends Command
 
         $this->info('🚀 Alta სკანირება დაიწყო...');
 
-        $service = new AltaProduct(
+        $service = new AltaService(
             startId: (int) $this->option('start'),
             endId:   (int) $this->option('end'),
         );
