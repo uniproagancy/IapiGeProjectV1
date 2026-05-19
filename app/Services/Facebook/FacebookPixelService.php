@@ -17,14 +17,10 @@ class FacebookPixelService
 
     public function __construct()
     {
-        $this->pixelId      = config('services.facebook.pixel_id', '1280014533998229');
-        $this->accessToken  = config('services.facebook.access_token', 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD');
-        $this->apiVersion   = config('services.facebook.api_version', 'v24.0');
-        $this->endpoint     = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
-
-        if (empty($this->pixelId) || empty($this->accessToken)) {
-            Log::warning('⚠️ Facebook Pixel credentials not configured');
-        }
+        $this->pixelId     = config('services.facebook.pixel_id', '1280014533998229');
+        $this->accessToken = config('services.facebook.access_token', 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD');
+        $this->apiVersion  = config('services.facebook.api_version', 'v24.0');
+        $this->endpoint    = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
     }
 
     // ─────────────────────────────────────────────
@@ -63,9 +59,6 @@ class FacebookPixelService
         return $this->trackEventWithTest('Purchase', $customData, $testCode);
     }
 
-    /**
-     * ✅ Purchase — pixel data გარეშე, მაგრამ საბაზო user data მიდის
-     */
     public function trackPurchaseClean(float $value, string $currency = 'GEL', array $params = [], ?string $eventId = null): bool
     {
         try {
@@ -74,7 +67,6 @@ class FacebookPixelService
                 if (isset($params[$key])) $customData[$key] = $params[$key];
             }
 
-            // ✅ საბაზო user data — IP, agent, fbp, fbc
             $baseUserData = $this->buildBaseUserData();
 
             $eventData = [
@@ -88,22 +80,12 @@ class FacebookPixelService
 
             if ($eventId) $eventData['event_id'] = $eventId;
 
-            Log::info('📤 Purchase clean (no pixel data)', [
-                'event_id' => $eventId,
-                'has_fbp'  => isset($baseUserData['fbp']),
-                'has_fbc'  => isset($baseUserData['fbc']),
-                'value'    => $value,
-            ]);
-
             $response = Http::timeout(10)->post($this->endpoint, [
                 'data'         => [$eventData],
                 'access_token' => $this->accessToken,
             ]);
 
-            if ($response->successful()) {
-                Log::info('✅ Purchase clean sent', ['response' => $response->json()]);
-                return true;
-            }
+            if ($response->successful()) return true;
 
             Log::error('❌ Purchase clean failed', ['response' => $response->body()]);
             return false;
@@ -250,15 +232,10 @@ class FacebookPixelService
             $eventKey = $eventName . '_' . md5(json_encode($customData) . request()->url());
 
             if (isset(self::$sentEvents[$eventKey])) {
-                Log::warning("🚫 DUPLICATE EVENT PREVENTED: {$eventName}", [
-                    'event_key'     => $eventKey,
-                    'first_sent_at' => self::$sentEvents[$eventKey]['time'],
-                ]);
                 return false;
             }
 
             if (empty($this->pixelId) || empty($this->accessToken)) {
-                Log::warning("⚠️ Facebook Pixel not configured, skipping: {$eventName}");
                 return false;
             }
 
@@ -278,11 +255,10 @@ class FacebookPixelService
             }
 
             self::$sentEvents[$eventKey] = ['time' => now()->toDateTimeString()];
-            Log::info("✅ Facebook Pixel event sent: {$eventName}", ['response' => $response->json()]);
             return true;
 
         } catch (Exception $e) {
-            Log::error("❌ Error sending Facebook Pixel event: {$e->getMessage()}", ['event' => $eventName]);
+            Log::error("❌ Facebook Pixel event error: {$e->getMessage()}", ['event' => $eventName]);
             return false;
         }
     }
@@ -291,7 +267,6 @@ class FacebookPixelService
     {
         try {
             if (empty($this->pixelId) || empty($this->accessToken)) {
-                Log::warning("⚠️ Facebook Pixel not configured");
                 return false;
             }
 
@@ -303,16 +278,15 @@ class FacebookPixelService
                 'test_event_code' => $testCode,
             ]);
 
-            if ($response->successful()) {
-                Log::info("✅ TEST Event sent: {$eventName}", ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error("❌ TEST Event failed: {$eventName}", ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error("❌ TEST Event failed", ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ trackEventWithTest error: " . $e->getMessage());
             return false;
         }
     }
@@ -321,7 +295,6 @@ class FacebookPixelService
     {
         try {
             if (empty($this->pixelId) || empty($this->accessToken)) {
-                Log::warning("⚠️ Facebook Pixel not configured");
                 return false;
             }
 
@@ -341,60 +314,34 @@ class FacebookPixelService
 
             $userData = $this->buildBaseUserData();
 
-            if (!empty($customUserData['email'])) {
-                $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
-            }
+            if (!empty($customUserData['email']))      $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
+            if (!empty($customUserData['first_name'])) $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
+            if (!empty($customUserData['last_name']))  $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
+            if (!empty($customUserData['city']))       $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
+            if (!empty($customUserData['external_id'])) $userData['external_id'] = hash('sha256', (string) $customUserData['external_id']);
+
             if (!empty($customUserData['phone'])) {
                 $phone = preg_replace('/\D/', '', $customUserData['phone']);
-                if (strlen($phone) >= 9) {
-                    $userData['ph'] = hash('sha256', $phone);
-                }
-            }
-            if (!empty($customUserData['first_name'])) {
-                $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
-            }
-            if (!empty($customUserData['last_name'])) {
-                $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
-            }
-            if (!empty($customUserData['city'])) {
-                $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
-            }
-            // ✅ external_id — guest მომხმარებლისთვის order_id-ზე დაყრდნობით
-            if (!empty($customUserData['external_id'])) {
-                $userData['external_id'] = hash('sha256', (string) $customUserData['external_id']);
+                if (strlen($phone) >= 9) $userData['ph'] = hash('sha256', $phone);
             }
 
             $eventData['user_data'] = $userData;
-
-            if (!empty($customData)) {
-                $eventData['custom_data'] = $customData;
-            }
-
-            Log::info("📤 Sending Facebook Pixel event: {$eventName}", [
-                'has_fbp'         => isset($userData['fbp']),
-                'has_fbc'         => isset($userData['fbc']),
-                'has_phone'       => isset($userData['ph']),
-                'has_email'       => isset($userData['em']),
-                'has_fn'          => isset($userData['fn']),
-                'has_ln'          => isset($userData['ln']),
-                'has_external_id' => isset($userData['external_id']),
-            ]);
+            if (!empty($customData)) $eventData['custom_data'] = $customData;
 
             $response = Http::timeout(10)->post($this->endpoint, [
                 'data'         => [$eventData],
                 'access_token' => $this->accessToken,
             ]);
 
-            if ($response->successful()) {
-                Log::info("✅ Event sent: {$eventName}", ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error("❌ Event failed: {$eventName}", ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error("❌ Event failed", ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ trackEventWithCustomUserData error: " . $e->getMessage());
             return false;
         }
     }
@@ -403,7 +350,6 @@ class FacebookPixelService
     {
         try {
             if (empty($this->pixelId) || empty($this->accessToken)) {
-                Log::warning("⚠️ Facebook Pixel not configured");
                 return false;
             }
 
@@ -423,42 +369,19 @@ class FacebookPixelService
 
             $userData = $this->buildBaseUserData();
 
-            if (!empty($customUserData['email'])) {
-                $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
-            }
+            if (!empty($customUserData['email']))      $userData['em'] = hash('sha256', strtolower(trim($customUserData['email'])));
+            if (!empty($customUserData['first_name'])) $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
+            if (!empty($customUserData['last_name']))  $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
+            if (!empty($customUserData['city']))       $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
+            if (!empty($customUserData['external_id'])) $userData['external_id'] = hash('sha256', (string) $customUserData['external_id']);
+
             if (!empty($customUserData['phone'])) {
                 $phone = preg_replace('/\D/', '', $customUserData['phone']);
-                if (strlen($phone) >= 9) {
-                    $userData['ph'] = hash('sha256', $phone);
-                }
-            }
-            if (!empty($customUserData['first_name'])) {
-                $userData['fn'] = hash('sha256', strtolower(trim($customUserData['first_name'])));
-            }
-            if (!empty($customUserData['last_name'])) {
-                $userData['ln'] = hash('sha256', strtolower(trim($customUserData['last_name'])));
-            }
-            if (!empty($customUserData['city'])) {
-                $userData['ct'] = hash('sha256', strtolower(trim($customUserData['city'])));
-            }
-            // ✅ external_id
-            if (!empty($customUserData['external_id'])) {
-                $userData['external_id'] = hash('sha256', (string) $customUserData['external_id']);
+                if (strlen($phone) >= 9) $userData['ph'] = hash('sha256', $phone);
             }
 
             $eventData['user_data'] = $userData;
-
-            if (!empty($customData)) {
-                $eventData['custom_data'] = $customData;
-            }
-
-            Log::info("📤 Sending TEST Facebook Pixel event: {$eventName}", [
-                'test_code'       => $testCode,
-                'has_fbp'         => isset($userData['fbp']),
-                'has_phone'       => isset($userData['ph']),
-                'has_email'       => isset($userData['em']),
-                'has_external_id' => isset($userData['external_id']),
-            ]);
+            if (!empty($customData)) $eventData['custom_data'] = $customData;
 
             $response = Http::timeout(10)->post($this->endpoint, [
                 'data'            => [$eventData],
@@ -466,16 +389,15 @@ class FacebookPixelService
                 'test_event_code' => $testCode,
             ]);
 
-            if ($response->successful()) {
-                Log::info("✅ TEST Event sent: {$eventName}", ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error("❌ TEST Event failed: {$eventName}", ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error("❌ TEST Event failed", ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
-            Log::error("❌ Error: " . $e->getMessage());
+            Log::error("❌ trackEventWithCustomUserDataAndTest error: " . $e->getMessage());
             return false;
         }
     }
@@ -507,21 +429,9 @@ class FacebookPixelService
             $eventData['custom_data'] = $customData;
         }
 
-        Log::info('📊 Facebook Pixel Event Data', [
-            'event'           => $eventName,
-            'is_authorized'   => auth()->check(),
-            'has_email'       => isset($eventData['user_data']['em']),
-            'has_phone'       => isset($eventData['user_data']['ph']),
-            'has_external_id' => isset($eventData['user_data']['external_id']),
-            'has_fbc'         => isset($eventData['user_data']['fbc']),
-            'has_fbp'         => isset($eventData['user_data']['fbp']),
-            'has_event_id'    => isset($eventData['event_id']),
-        ]);
-
         return $eventData;
     }
 
-    // ✅ საბაზო მონაცემები — IP, Agent, fbp, fbc — ყველასთვის
     private function buildBaseUserData(): array
     {
         $userData = [
@@ -532,7 +442,6 @@ class FacebookPixelService
         $fbp = request()->cookie('_fbp') ?? ($_COOKIE['_fbp'] ?? null);
         $fbc = request()->cookie('_fbc') ?? ($_COOKIE['_fbc'] ?? null);
 
-        // ✅ თუ _fbc cookie არ არის, fbclid URL-დან ავაწყოთ სწორი ფორმატით
         if (empty($fbc)) {
             $fbclid = request()->query('fbclid');
             if ($fbclid) {
@@ -543,15 +452,9 @@ class FacebookPixelService
         if ($fbp) $userData['fbp'] = $fbp;
         if ($fbc) $userData['fbc'] = $fbc;
 
-        Log::info('🍪 buildBaseUserData', [
-            'has_fbp' => isset($userData['fbp']),
-            'has_fbc' => isset($userData['fbc']),
-        ]);
-
         return $userData;
     }
 
-    // ✅ ავტორიზებული მომხმარებლის მონაცემები
     private function buildUserData($user = null): array
     {
         $userData = $this->buildBaseUserData();
@@ -559,55 +462,23 @@ class FacebookPixelService
         if (!$user) $user = auth()->user();
 
         if ($user && auth()->check()) {
-            if (!empty($user->email)) {
-                $userData['em'] = hash('sha256', strtolower(trim($user->email)));
-            }
+            if (!empty($user->email))    $userData['em'] = hash('sha256', strtolower(trim($user->email)));
+            if (!empty($user->name))     $userData['fn'] = hash('sha256', strtolower(trim($user->name)));
+            if (!empty($user->lastname)) $userData['ln'] = hash('sha256', strtolower(trim($user->lastname)));
+            if (!empty($user->city))     $userData['ct'] = hash('sha256', strtolower(trim($user->city)));
+            if (!empty($user->state))    $userData['st'] = hash('sha256', strtolower(trim($user->state)));
+            if (!empty($user->zip))      $userData['zp'] = hash('sha256', strtolower(trim($user->zip)));
+            if (!empty($user->country))  $userData['country'] = hash('sha256', strtolower(trim($user->country)));
+            if (!empty($user->id))       $userData['external_id'] = hash('sha256', (string) $user->id);
+
             if (!empty($user->phone)) {
                 $phone = preg_replace('/\D/', '', $user->phone);
-                if (strlen($phone) >= 9) {
-                    $userData['ph'] = hash('sha256', $phone);
-                }
+                if (strlen($phone) >= 9) $userData['ph'] = hash('sha256', $phone);
             }
-            if (!empty($user->name)) {
-                $userData['fn'] = hash('sha256', strtolower(trim($user->name)));
-            }
-            if (!empty($user->lastname)) {
-                $userData['ln'] = hash('sha256', strtolower(trim($user->lastname)));
-            }
-            if (!empty($user->city)) {
-                $userData['ct'] = hash('sha256', strtolower(trim($user->city)));
-            }
-            if (!empty($user->state)) {
-                $userData['st'] = hash('sha256', strtolower(trim($user->state)));
-            }
-            if (!empty($user->zip)) {
-                $userData['zp'] = hash('sha256', strtolower(trim($user->zip)));
-            }
-            if (!empty($user->country)) {
-                $userData['country'] = hash('sha256', strtolower(trim($user->country)));
-            }
-            if (!empty($user->id)) {
-                $userData['external_id'] = hash('sha256', (string) $user->id);
-            }
-
-            Log::info('✅ Authorized user data added', [
-                'user_id'   => $user->id,
-                'has_email' => !empty($user->email),
-                'has_phone' => !empty($user->phone),
-                'has_fbp'   => isset($userData['fbp']),
-            ]);
-
         } else {
-            // ✅ guest — session visitor_id გამოვიყენოთ external_id-ად
             if (session()->has('visitor_id')) {
                 $userData['external_id'] = hash('sha256', session('visitor_id'));
             }
-
-            Log::info('ℹ️ Guest user', [
-                'has_fbp'         => isset($userData['fbp']),
-                'has_fbc'         => isset($userData['fbc']),
-                'has_external_id' => isset($userData['external_id']),
-            ]);
         }
 
         return $userData;
@@ -623,7 +494,6 @@ class FacebookPixelService
             $fbp = request()->cookie('_fbp') ?? ($_COOKIE['_fbp'] ?? null);
             $fbc = request()->cookie('_fbc') ?? ($_COOKIE['_fbc'] ?? null);
 
-            // ✅ თუ _fbc cookie არ არის, fbclid URL-დან სწორი ფორმატით
             if (empty($fbc)) {
                 $fbclid = request()->query('fbclid');
                 if ($fbclid) {
@@ -638,24 +508,16 @@ class FacebookPixelService
                 'fbc'               => $fbc,
                 'client_ip'         => request()->ip(),
                 'client_user_agent' => request()->userAgent(),
-                // ✅ external_id — order_id-ზე დაყრდნობით
                 'external_id'       => hash('sha256', (string) $orderId),
             ];
 
-            if (!empty($userData['email'])) {
-                $data['em'] = hash('sha256', strtolower(trim($userData['email'])));
-            }
+            if (!empty($userData['email'])) $data['em'] = hash('sha256', strtolower(trim($userData['email'])));
+            if (!empty($userData['first_name'])) $data['fn'] = hash('sha256', strtolower(trim($userData['first_name'])));
+            if (!empty($userData['last_name']))  $data['ln'] = hash('sha256', strtolower(trim($userData['last_name'])));
+
             if (!empty($userData['phone'])) {
                 $phone = preg_replace('/\D/', '', $userData['phone']);
-                if (strlen($phone) >= 9) {
-                    $data['ph'] = hash('sha256', $phone);
-                }
-            }
-            if (!empty($userData['first_name'])) {
-                $data['fn'] = hash('sha256', strtolower(trim($userData['first_name'])));
-            }
-            if (!empty($userData['last_name'])) {
-                $data['ln'] = hash('sha256', strtolower(trim($userData['last_name'])));
+                if (strlen($phone) >= 9) $data['ph'] = hash('sha256', $phone);
             }
 
             \App\Models\Order\OrderPixelData::updateOrCreate(
@@ -663,22 +525,11 @@ class FacebookPixelService
                 $data
             );
 
-            Log::info('💾 Pixel data saved', [
-                'order_id'    => $orderId,
-                'has_fbp'     => !empty($fbp),
-                'has_fbc'     => !empty($fbc),
-                'has_ph'      => isset($data['ph']),
-                'external_id' => true,
-            ]);
-
         } catch (\Exception $e) {
             Log::error('❌ savePixelData error: ' . $e->getMessage(), ['order_id' => $orderId]);
         }
     }
 
-    /**
-     * ✅ Purchase — ბაზიდან შენახული pixel data-ით
-     */
     public function trackPurchaseWithPixelData(float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
     {
         try {
@@ -692,16 +543,13 @@ class FacebookPixelService
                 'client_user_agent' => $pixelData->client_user_agent,
             ];
 
-            if ($pixelData->fbp)         $userData['fbp']         = $pixelData->fbp;
-            if ($pixelData->fbc)         $userData['fbc']         = $pixelData->fbc;
-            if ($pixelData->em)          $userData['em']          = $pixelData->em;
-            if ($pixelData->ph)          $userData['ph']          = $pixelData->ph;
-            if ($pixelData->fn)          $userData['fn']          = $pixelData->fn;
-            if ($pixelData->ln)          $userData['ln']          = $pixelData->ln;
-            // ✅ external_id ბაზიდან
-            if (!empty($pixelData->external_id)) {
-                $userData['external_id'] = $pixelData->external_id;
-            }
+            if ($pixelData->fbp)                   $userData['fbp']         = $pixelData->fbp;
+            if ($pixelData->fbc)                   $userData['fbc']         = $pixelData->fbc;
+            if ($pixelData->em)                    $userData['em']          = $pixelData->em;
+            if ($pixelData->ph)                    $userData['ph']          = $pixelData->ph;
+            if ($pixelData->fn)                    $userData['fn']          = $pixelData->fn;
+            if ($pixelData->ln)                    $userData['ln']          = $pixelData->ln;
+            if (!empty($pixelData->external_id))   $userData['external_id'] = $pixelData->external_id;
 
             $eventData = [
                 'event_name'       => 'Purchase',
@@ -713,28 +561,17 @@ class FacebookPixelService
                 'custom_data'      => $customData,
             ];
 
-            Log::info('📤 Purchase with pixel data', [
-                'event_id'        => $eventId,
-                'has_fbp'         => isset($userData['fbp']),
-                'has_fbc'         => isset($userData['fbc']),
-                'has_ph'          => isset($userData['ph']),
-                'has_em'          => isset($userData['em']),
-                'has_external_id' => isset($userData['external_id']),
-                'value'           => $value,
-            ]);
-
             $response = Http::timeout(10)->post($this->endpoint, [
                 'data'         => [$eventData],
                 'access_token' => $this->accessToken,
             ]);
 
-            if ($response->successful()) {
-                Log::info('✅ Purchase sent', ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error('❌ Purchase failed', ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error('❌ Purchase failed', ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
             Log::error('❌ trackPurchaseWithPixelData error: ' . $e->getMessage());
@@ -742,9 +579,6 @@ class FacebookPixelService
         }
     }
 
-    /**
-     * ✅ Purchase — ბაზიდან შენახული pixel data-ით + test code
-     */
     public function trackPurchaseWithPixelDataAndTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
     {
         try {
@@ -758,15 +592,13 @@ class FacebookPixelService
                 'client_user_agent' => $pixelData->client_user_agent,
             ];
 
-            if ($pixelData->fbp)         $userData['fbp']         = $pixelData->fbp;
-            if ($pixelData->fbc)         $userData['fbc']         = $pixelData->fbc;
-            if ($pixelData->em)          $userData['em']          = $pixelData->em;
-            if ($pixelData->ph)          $userData['ph']          = $pixelData->ph;
-            if ($pixelData->fn)          $userData['fn']          = $pixelData->fn;
-            if ($pixelData->ln)          $userData['ln']          = $pixelData->ln;
-            if (!empty($pixelData->external_id)) {
-                $userData['external_id'] = $pixelData->external_id;
-            }
+            if ($pixelData->fbp)                   $userData['fbp']         = $pixelData->fbp;
+            if ($pixelData->fbc)                   $userData['fbc']         = $pixelData->fbc;
+            if ($pixelData->em)                    $userData['em']          = $pixelData->em;
+            if ($pixelData->ph)                    $userData['ph']          = $pixelData->ph;
+            if ($pixelData->fn)                    $userData['fn']          = $pixelData->fn;
+            if ($pixelData->ln)                    $userData['ln']          = $pixelData->ln;
+            if (!empty($pixelData->external_id))   $userData['external_id'] = $pixelData->external_id;
 
             $eventData = [
                 'event_name'       => 'Purchase',
@@ -778,28 +610,18 @@ class FacebookPixelService
                 'custom_data'      => $customData,
             ];
 
-            Log::info('📤 TEST Purchase with pixel data', [
-                'test_code'       => $testCode,
-                'event_id'        => $eventId,
-                'has_fbp'         => isset($userData['fbp']),
-                'has_fbc'         => isset($userData['fbc']),
-                'has_ph'          => isset($userData['ph']),
-                'has_external_id' => isset($userData['external_id']),
-            ]);
-
             $response = Http::timeout(10)->post($this->endpoint, [
                 'data'            => [$eventData],
                 'access_token'    => $this->accessToken,
                 'test_event_code' => $testCode,
             ]);
 
-            if ($response->successful()) {
-                Log::info('✅ TEST Purchase sent', ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error('❌ TEST Purchase failed', ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error('❌ TEST Purchase failed', ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
             Log::error('❌ trackPurchaseWithPixelDataAndTest error: ' . $e->getMessage());
@@ -827,13 +649,12 @@ class FacebookPixelService
                 'access_token' => $this->accessToken,
             ]);
 
-            if ($response->successful()) {
-                Log::info('✅ Facebook Pixel test successful', ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error('❌ Facebook Pixel test failed', ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error('❌ Facebook Pixel test failed', ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
@@ -859,13 +680,12 @@ class FacebookPixelService
                 'test_event_code' => $testEventCode,
             ]);
 
-            if ($response->successful()) {
-                Log::info('✅ Facebook Pixel test successful', ['response' => $response->json()]);
-                return true;
+            if (!$response->successful()) {
+                Log::error('❌ Facebook Pixel test failed', ['response' => $response->body()]);
+                return false;
             }
 
-            Log::error('❌ Facebook Pixel test failed', ['response' => $response->body()]);
-            return false;
+            return true;
 
         } catch (Exception $e) {
             Log::error('❌ Facebook Pixel test error: ' . $e->getMessage());
