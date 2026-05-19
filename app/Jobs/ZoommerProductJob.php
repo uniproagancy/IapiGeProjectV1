@@ -160,6 +160,14 @@ class ZoommerProductJob implements ShouldQueue
             ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
             $this->createFullSpecifications($product, $productData);
 
+            if (!empty($productData['description'])) {
+                ProductTranslation::where('product_id', $product->id)
+                    ->where('locale', 'ka')
+                    ->update([
+                        'description' => $productData['description'],
+                    ]);
+            }
+
             Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
 
         } catch (Exception $e) {
