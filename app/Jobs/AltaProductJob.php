@@ -19,35 +19,31 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Services\Translation\GoogleTranslation;
 use Exception;
-use SoapClient;
 
 class AltaProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected array $productData = [];
+    protected array $productData         = [];
     protected array $productAvailability = [];
 
-    public int $tries = 3;
-    public int $timeout = 300;
-    public int $maxExceptions = 3;
+    public int $tries             = 3;
+    public int $timeout           = 300;
+    public int $maxExceptions     = 3;
     public int $backoffMultiplier = 2;
 
     private const CACHE_DURATION_BRAND = 24 * 60;
-    private const CACHE_DURATION_TRANSLATION = 30 * 24 * 60;
-    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    private const MAX_IMAGE_SIZE       = 5 * 1024 * 1024;
 
     public function __construct(array $productData = [], array $productAvailability = [])
     {
-        $this->productData = $productData;
+        $this->productData         = $productData;
         $this->productAvailability = $productAvailability;
     }
 
@@ -63,17 +59,17 @@ class AltaProductJob implements ShouldQueue
                 return;
             }
 
-            Log::info("🔄 Processing ALTA product: {$this->productData['id']}", [
+            Log::info("🔄 Processing Alta product: {$this->productData['id']}", [
                 'attempt' => $this->attempts(),
             ]);
 
             $this->saveProductWithVariants($this->productData, $this->productAvailability);
 
-            Log::info("✅ Product saved: {$this->productData['id']}");
+            Log::info("✅ Alta product saved: {$this->productData['id']}");
 
         } catch (Exception $e) {
             $productId = $this->productData['id'] ?? 'unknown';
-            Log::error("❌ Error processing product {$productId}: {$e->getMessage()}", [
+            Log::error("❌ Error processing Alta product {$productId}: {$e->getMessage()}", [
                 'attempt' => $this->attempts(),
                 'trace'   => $e->getTraceAsString(),
             ]);
@@ -81,7 +77,7 @@ class AltaProductJob implements ShouldQueue
             if ($this->attempts() < $this->tries) {
                 $this->release($this->getRetryDelay());
             } else {
-                Log::critical("🚫 Job permanently failed: {$productId}", [
+                Log::critical("🚫 Alta job permanently failed: {$productId}", [
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -96,7 +92,7 @@ class AltaProductJob implements ShouldQueue
     public function failed(Exception $exception): void
     {
         $productId = $this->productData['id'] ?? 'unknown';
-        Log::error("🚨 Job permanently failed for product {$productId}", [
+        Log::error("🚨 Alta job permanently failed for product {$productId}", [
             'error'    => $exception->getMessage(),
             'attempts' => $this->attempts(),
         ]);
@@ -111,14 +107,21 @@ class AltaProductJob implements ShouldQueue
         if (empty($productData['id'])) {
             throw new Exception('Product ID is required');
         }
-        $b2bStock = AltaID::where('product_id', $productData['barCode'])->first();
-        if (Product::where('sku', $productData['barCode'])->exists()) {
-            $this->updateExistingProduct($productData, $b2bStock);
+
+        $b2bStock = AltaID::where('product_id', $productData['barCode'] ?? null)->first();
+
+        if (!$b2bStock) {
+            Log::info("⏭️  Skipping Alta product (not in B2B list): {$productData['id']}");
+            return;
+        }
+
+        if (Product::where('sku', 'ALTA-' . $productData['barCode'])->exists()) {
+            $this->updateExistingProduct($productData, $b2bStock->toArray());
         } else {
-            if ($b2bStock['quantity'] >= 2) {
-                $this->createNewProduct($productData, $b2bStock);
+            if ($b2bStock->quantity >= 2) {
+                $this->createNewProduct($productData, $b2bStock->toArray());
             } else {
-                Log::info("⏭️  Skipping product (no B2B stock): {$productData['id']}");
+                Log::info("⏭️  Skipping new Alta product (insufficient B2B stock): {$productData['id']}");
             }
         }
     }
@@ -133,15 +136,18 @@ class AltaProductJob implements ShouldQueue
             $product = Product::where('sku', 'ALTA-' . $productData['barCode'])->firstOrFail();
 
             DB::transaction(function () use ($product, $productData, $b2bStock) {
-                $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
-                $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
+                $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+                $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-                $product->price()->update([
-                    'dealer_price'     => $productPrice,
-                    'regular_price'    => $productPrice,
-                    'discount_price'   => $discountPrice,
-                    'discount_percent' => $productData['discountPercent'] ?? 0,
-                ]);
+                ProductPrice::updateOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'dealer_price'     => $productPrice,
+                        'regular_price'    => $productPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $productData['discountPercent'] ?? 0,
+                    ]
+                );
 
                 $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
                 $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
@@ -151,24 +157,33 @@ class AltaProductJob implements ShouldQueue
                     'quantity' => $quantity,
                     'in_stock' => $in_stock,
                     'show'     => $show,
+                    'active'   => $show,
                 ]);
+
+                if (!empty($productData['description'])) {
+                    ProductTranslation::where('product_id', $product->id)
+                        ->where('locale', 'ka')
+                        ->update(['description' => $this->sanitizeString($productData['description'])]);
+                }
+
+                ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                $this->createShortSpecifications($product, $productData);
+
+                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)
+                    ->pluck('id');
+                ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                $this->createFullSpecifications($product, $productData);
 
                 if (!empty($productData['images'])) {
                     $this->updateProductImages($product, $productData);
                 }
 
-                Log::info("✏️  Updated product: {$product->id}", [
-                    'quantity'       => $quantity,
-                    'in_stock'       => $in_stock,
-                    'show'           => $show,
-                    'qty_text'       => $b2bStock['qty_text'] ?? null,
-                    'price'          => $productPrice,
-                    'images_updated' => !empty($productData['images']),
-                ]);
+                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
-            Log::error("❌ Error updating product {$productData['id']}: {$e->getMessage()}");
+            Log::error("❌ Error updating Alta product {$productData['id']}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -190,26 +205,24 @@ class AltaProductJob implements ShouldQueue
 
             foreach ($productData['images'] as $index => $imageUrl) {
                 if (in_array($imageUrl, $processedUrls)) {
-                    Log::debug("⏭️  Skipping duplicate image: {$imageUrl}");
                     continue;
                 }
 
                 $processedUrls[] = $imageUrl;
 
                 try {
-                    $urlToFetch = $this->getScrapeUrl($imageUrl);
-                    $response   = Http::timeout(30)
+                    $response = Http::timeout(30)
                         ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
-                        ->get($urlToFetch);
+                        ->get($imageUrl);
 
                     if (!$response->successful()) {
-                        Log::warning("⚠️  Failed to download image: {$urlToFetch}");
+                        Log::warning("⚠️  Failed to download image: {$imageUrl}");
                         continue;
                     }
 
                     $imageSize = strlen($response->body());
                     if ($imageSize > self::MAX_IMAGE_SIZE) {
-                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$urlToFetch}");
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrl}");
                         continue;
                     }
 
@@ -222,7 +235,6 @@ class AltaProductJob implements ShouldQueue
                     if ($index === 0 && !$mainImageSet) {
                         $product->update(['main_image' => $path]);
                         $mainImageSet = true;
-                        Log::info("✅ Set main image: {$filename}");
                     } else {
                         $images[] = [
                             'product_id' => $product->id,
@@ -238,28 +250,24 @@ class AltaProductJob implements ShouldQueue
                 }
             }
 
-            // ✅ გასწორდა: ძველები ყოველთვის წაიშლება
             $oldImages = ProductImage::where('product_id', $product->id)->withTrashed()->get();
             foreach ($oldImages as $oldImage) {
                 try {
                     if (!empty($oldImage->path) && Storage::disk('public')->exists($oldImage->path)) {
                         Storage::disk('public')->delete($oldImage->path);
-                        Log::info("🗑️  Deleted image file: {$oldImage->path}");
                     }
                 } catch (Exception $e) {
-                    Log::warning("⚠️  Error deleting: {$e->getMessage()}");
+                    Log::warning("⚠️  Error deleting old image: {$e->getMessage()}");
                 }
             }
             ProductImage::where('product_id', $product->id)->forceDelete();
 
             if (!empty($images)) {
                 ProductImage::insert($images);
-                Log::info("📦 Bulk inserted " . count($images) . " images");
+                Log::info("📦 Inserted " . count($images) . " images for product {$product->id}");
             }
 
-            // ✅ გასწორდა: main image ვერ დაყენდა — null-ზე დავაყენოთ
             if (!$mainImageSet) {
-                Log::warning("⚠️  Main image not set for product {$product->id}");
                 $product->update(['main_image' => null]);
             }
 
@@ -273,13 +281,11 @@ class AltaProductJob implements ShouldQueue
     // Create New Product
     // ============================================
 
-    private function createNewProduct(array $productData, $b2bStock): void
+    private function createNewProduct(array $productData, array $b2bStock): void
     {
         DB::transaction(function () use ($productData, $b2bStock) {
             try {
-                $brandId = $this->getBrandId($productData);
-
-                // ✅ გასწორდა: მნიშვნელობები პირდაპირ create-ში, ზედმეტი update აღარ არის
+                $brandId  = $this->getBrandId($productData);
                 $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
                 $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
                 $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
@@ -287,9 +293,9 @@ class AltaProductJob implements ShouldQueue
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id'            => $brandId,
-                    'category_id'         => Config::get('services.alta.category_id', 3),
+                    'category_id'         => 3,
                     'sku'                 => 'ALTA-' . ($productData['barCode'] ?? null),
-                    'supplier_id'         => Config::get('services.alta.supplier_id', 2),
+                    'supplier_id'         => 2,
                     'main_image'          => null,
                     'active'              => 1,
                     'quantity'            => $quantity,
@@ -304,10 +310,10 @@ class AltaProductJob implements ShouldQueue
                 $this->downloadAndSaveImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
-                Log::info("✨ Created new product: {$product->id}");
+                Log::info("✨ Created new Alta product: {$product->id}");
 
             } catch (Exception $e) {
-                Log::error("❌ Error creating product: {$e->getMessage()}");
+                Log::error("❌ Error creating Alta product: {$e->getMessage()}");
                 throw $e;
             }
         });
@@ -324,13 +330,13 @@ class AltaProductJob implements ShouldQueue
                 ->firstWhere('groupName', 'Brand');
 
             if (empty($specGroup) || empty($specGroup['specifications'][0])) {
-                return Config::get('services.alta.default_brand_id', 6);
+                return 6;
             }
 
             $brandName = $specGroup['specifications'][0]['specificationMeaning'] ?? null;
 
             if (empty($brandName)) {
-                return Config::get('services.alta.default_brand_id', 6);
+                return 6;
             }
 
             return Cache::remember(
@@ -341,13 +347,13 @@ class AltaProductJob implements ShouldQueue
                         fn ($q) => $q->where('title', 'like', $brandName)
                     )->first();
 
-                    return $brand->id ?? Config::get('services.alta.default_brand_id', 6);
+                    return $brand->id ?? 6;
                 }
             );
 
         } catch (Exception $e) {
-            Log::warning("⚠️  Error finding brand: {$e->getMessage()}");
-            return Config::get('services.alta.default_brand_id', 6);
+            Log::warning("⚠️  Error finding Alta brand: {$e->getMessage()}");
+            return 6;
         }
     }
 
@@ -358,8 +364,8 @@ class AltaProductJob implements ShouldQueue
     private function createPrice(Product $product, array $productData): void
     {
         try {
-            $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
-            $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
+            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
             ProductPrice::create([
                 'product_id'       => $product->id,
@@ -370,7 +376,7 @@ class AltaProductJob implements ShouldQueue
             ]);
 
         } catch (Exception $e) {
-            Log::error("❌ Error creating price: {$e->getMessage()}");
+            Log::error("❌ Error creating price for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -398,7 +404,7 @@ class AltaProductJob implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error("❌ Error creating translations: {$e->getMessage()}");
+            Log::error("❌ Error creating translations for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -438,7 +444,7 @@ class AltaProductJob implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error("❌ Error creating variations: {$e->getMessage()}");
+            Log::error("❌ Error creating variations for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -481,7 +487,7 @@ class AltaProductJob implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error("❌ Error creating specifications: {$e->getMessage()}");
+            Log::error("❌ Error creating specifications for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -503,27 +509,33 @@ class AltaProductJob implements ShouldQueue
 
             foreach ($productData['images'] as $index => $imageUrl) {
                 if (in_array($imageUrl, $processedUrls)) {
-                    Log::debug("⏭️  Skipping duplicate image: {$imageUrl}");
                     continue;
                 }
 
                 $processedUrls[] = $imageUrl;
 
                 try {
-                    $urlToFetch = $this->getScrapeUrl($imageUrl);
-                    $response   = Http::timeout(30)
+                    $response = Http::timeout(30)
                         ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
-                        ->get($urlToFetch);
+                        ->get($imageUrl);
 
                     if (!$response->successful()) {
-                        Log::warning("⚠️  Failed to download image: {$urlToFetch}");
+                        Log::warning("⚠️  Failed to download image: {$imageUrl}");
                         continue;
                     }
+
                     $imageSize = strlen($response->body());
+                    if ($imageSize > self::MAX_IMAGE_SIZE) {
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrl}");
+                        continue;
+                    }
+
                     $ext      = $this->getImageExtension($imageUrl);
                     $filename = Str::random(40) . '.' . $ext;
                     $path     = "uploads/products/{$product->id}/{$filename}";
+
                     Storage::disk('public')->put($path, $response->body());
+
                     if ($index === 0 && !$mainImageSet) {
                         $product->update(['main_image' => $path]);
                         $mainImageSet = true;
@@ -537,6 +549,7 @@ class AltaProductJob implements ShouldQueue
                     }
 
                     Log::info("✅ Downloaded image: {$filename}");
+
                 } catch (Exception $e) {
                     Log::warning("⚠️  Error downloading image: {$e->getMessage()}");
                     continue;
@@ -545,17 +558,16 @@ class AltaProductJob implements ShouldQueue
 
             if (!empty($images)) {
                 ProductImage::insert($images);
-                Log::info("📦 Bulk inserted " . count($images) . " images");
+                Log::info("📦 Bulk inserted " . count($images) . " images for product {$product->id}");
             }
 
-            // ✅ გასწორდა: main image ვერ დაყენდა — null-ზე დავაყენოთ
             if (!$mainImageSet) {
                 Log::warning("⚠️  Main image not set for product {$product->id}");
                 $product->update(['main_image' => null]);
             }
 
         } catch (Exception $e) {
-            Log::error("❌ Error downloading images: {$e->getMessage()}");
+            Log::error("❌ Error downloading images for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
         }
     }
@@ -571,8 +583,7 @@ class AltaProductJob implements ShouldQueue
                 return;
             }
 
-            $translator = new GoogleTranslation();
-            $specs      = [];
+            $specs = [];
 
             foreach ($productData['mainSpecification'] as $spec) {
                 if (empty($spec['specificationName'])) {
@@ -586,22 +597,10 @@ class AltaProductJob implements ShouldQueue
                     continue;
                 }
 
-                $translatedName = Cache::remember(
-                    'alta_translation_' . md5($name),
-                    now()->addMinutes(self::CACHE_DURATION_TRANSLATION),
-                    fn () => $translator->translateToGeorgian($name)
-                );
-
-                $translatedValue = empty($value) ? '' : Cache::remember(
-                    'alta_translation_' . md5($value),
-                    now()->addMinutes(self::CACHE_DURATION_TRANSLATION),
-                    fn () => $translator->translateToGeorgian($value)
-                );
-
                 $specs[] = [
                     'product_id' => $product->id,
-                    'name'       => $translatedName,
-                    'value'      => $translatedValue,
+                    'name'       => $name,
+                    'value'      => $value ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -612,144 +611,14 @@ class AltaProductJob implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error("❌ Error creating short specifications: {$e->getMessage()}");
+            Log::error("❌ Error creating short specifications for Alta product {$product->id}: {$e->getMessage()}");
             throw $e;
-        }
-    }
-
-    // ============================================
-    // SOAP B2B Stock Check
-    // ============================================
-
-    protected function checkB2BStock($sku): array
-    {
-        try {
-            $client = new SoapClient('http://extra.alta.com.ge/b2b/b2bEWS?WSDL', [
-                'trace'              => 1,
-                'exceptions'         => true,
-                'encoding'           => 'UTF-8',
-                'connection_timeout' => 30,
-            ]);
-
-            $result = $client->GetPriceList([
-                'user'     => 'UNIPRO_ICH',
-                'password' => 'CHI1457160',
-                'item'     => intval($sku),
-            ]);
-
-            if (empty($result->PriceList) || empty($result->PriceList->items)) {
-                Log::debug("⚠️  SOAP: No stock found for {$sku}");
-                return [
-                    'found'    => false,
-                    'qty_text' => null,
-                    'in_stock' => false,
-                    'quantity' => 0,
-                ];
-            }
-
-            $item = $result->PriceList->items->item;
-
-            if (!is_array($item)) {
-                $item = [$item];
-            }
-
-            $item = $item[0] ?? null;
-
-            if (empty($item)) {
-                return [
-                    'found'    => false,
-                    'qty_text' => null,
-                    'in_stock' => false,
-                    'quantity' => 0,
-                ];
-            }
-
-            $qtyText   = (string) ($item->qty_text ?? '');
-            $stockData = $this->parseQtyText($qtyText);
-
-            Log::debug("✅ SOAP B2B: Found for {$sku}", [
-                'qty_text' => $qtyText,
-                'in_stock' => $stockData['in_stock'],
-                'quantity' => $stockData['quantity'],
-            ]);
-
-            return [
-                'found'    => true,
-                'qty_text' => $qtyText,
-                'in_stock' => $stockData['in_stock'],
-                'quantity' => $stockData['quantity'],
-            ];
-
-        } catch (Exception $e) {
-            Log::warning("⚠️  SOAP B2B error for {$sku}: {$e->getMessage()}");
-            return [
-                'found'    => false,
-                'qty_text' => null,
-                'in_stock' => false,
-                'quantity' => 0,
-                'error'    => $e->getMessage(),
-            ];
-        }
-    }
-
-    // ============================================
-    // Parse qty_text
-    // ============================================
-
-    protected function parseQtyText(?string $qtyText): array
-    {
-        try {
-            if (empty($qtyText)) {
-                return ['in_stock' => false, 'quantity' => 0, 'text' => $qtyText];
-            }
-
-            $qtyText = strtolower(trim($qtyText));
-
-            if (strpos($qtyText, '>=') === 0) {
-                $minQty = (int) str_replace('>=', '', $qtyText);
-                return ['in_stock' => true, 'quantity' => max($minQty, 10), 'text' => $qtyText];
-            }
-
-            if (strpos($qtyText, '>') === 0) {
-                $qty = (int) preg_replace('/[^0-9]/', '', $qtyText);
-                return ['in_stock' => $qty > 0, 'quantity' => $qty, 'text' => $qtyText];
-            }
-
-            if (is_numeric($qtyText)) {
-                $qty = (int) $qtyText;
-                return ['in_stock' => $qty > 0, 'quantity' => $qty, 'text' => $qtyText];
-            }
-
-            if (preg_match('/out|not|unavailable|უ/i', $qtyText)) {
-                return ['in_stock' => false, 'quantity' => 0, 'text' => $qtyText];
-            }
-
-            if (preg_match('/in stock|available|ხელმ|აქვ/i', $qtyText)) {
-                return ['in_stock' => true, 'quantity' => 5, 'text' => $qtyText];
-            }
-
-            return ['in_stock' => false, 'quantity' => 0, 'text' => $qtyText];
-
-        } catch (Exception $e) {
-            Log::warning("⚠️  qty_text parsing error: {$qtyText}");
-            return ['in_stock' => false, 'quantity' => 0, 'text' => $qtyText];
         }
     }
 
     // ============================================
     // Helpers
     // ============================================
-
-    private function getScrapeUrl(string $imageUrl): string
-    {
-        $token = Config::get('services.alta.scrape_token', '54ca3e2868ca407893b3316c254d6db6c146439c5b3');
-
-        if (empty($token)) {
-            return $imageUrl;
-        }
-
-        return "https://api.scrape.do/?url=" . urlencode($imageUrl) . "&token={$token}";
-    }
 
     private function sanitizeString(?string $value): ?string
     {
