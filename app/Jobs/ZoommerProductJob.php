@@ -117,7 +117,7 @@ class ZoommerProductJob implements ShouldQueue
         }
 
         return collect($availability)
-            ->where('city', 'Tbilisi')
+            ->where('city', 'თბილისი')
             ->contains(fn($store) => $store['inStock'] === true);
     }
 
