@@ -7,19 +7,24 @@
 
 <div class="border rounded p-3 mt-3">
 
-    @if($success)
+    @if($product->show === 0)
+        <div class="text-center py-3">
+            <div class="text-danger mb-2" style="font-size: 40px;">✕</div>
+            <div class="fw-semibold font-neue mb-1">ნაშთი ამოწურულია</div>
+            <div class="text-muted" style="font-size: 13px;">პროდუქტი დროებით მიუწვდომელია</div>
+        </div>
+
+    @elseif($success)
         <div class="text-center py-3">
             <div class="text-success mb-2" style="font-size: 40px;">✓</div>
             <div class="fw-semibold font-neue mb-1">შეკვეთა მიღებულია!</div>
             <div class="text-muted" style="font-size: 13px;">ჩვენი ოპერატორი მალე დაგიკავშირდებათ</div>
         </div>
 
-        {{-- ✅ polling — purchase_event_id-ს ელოდება --}}
         @if(empty($this->purchaseEventId))
             <div wire:poll.5000ms="checkPurchaseEvent"></div>
         @endif
 
-        {{-- ✅ Lead event --}}
         @script
         <script>
             if (typeof fbq !== 'undefined') {
@@ -40,7 +45,6 @@
         </script>
         @endscript
 
-        {{-- ✅ Purchase event — purchase_event_id მოვიდა რომ --}}
         @if(!empty($this->purchaseEventId))
             @script
             <script>
@@ -71,7 +75,6 @@
         <hr class="my-2">
 
         <div class="d-flex flex-column gap-2 mb-3">
-
             <div class="d-flex align-items-center justify-content-between p-2 rounded"
                  style="border: 1px solid {{ $delivery === 'courier' ? '#0d6efd' : '#dee2e6' }};
                         background: {{ $delivery === 'courier' ? '#f0f5ff' : '' }};
@@ -94,9 +97,14 @@
                     <label class="mb-0" style="cursor: pointer; font-size: 14px;">განვადება</label>
                 </div>
                 @if(!empty($product->price->discount_price) && $product->price->discount_price > 100 OR $product->price->regular_price > 100)
-                    <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1" style="margin-bottom: 6px">
-                        <span class="badge text-bg-success">თვეში @if(!empty($product->price->discount_price))
-                                {{ number_format($product->price->discount_price / 24) }} @else {{ number_format($product->price->regular_price / 24) }} @endif ₾ -დან
+                    <div class="d-flex flex-wrap flex-sm-nowrap flex-md-wrap flex-lg-nowrap gap-3 gap-lg-1 gap-xl-1"
+                         style="margin-bottom: 6px">
+                        <span class="badge text-bg-success">თვეში
+                            @if(!empty($product->price->discount_price))
+                                {{ number_format($product->price->discount_price / 24) }}
+                            @else
+                                {{ number_format($product->price->regular_price / 24) }}
+                            @endif ₾ -დან
                         </span>
                     </div>
                 @endif
@@ -125,7 +133,6 @@
                 </div>
                 <span class="text-muted" style="font-size: 13px;">ფასი: {{ $formattedPrice }} ₾</span>
             </div>
-
         </div>
 
         <div class="mb-2">
@@ -157,6 +164,6 @@
                 <span class="spinner-border spinner-border-sm"></span>
             </span>
         </button>
-    @endif
 
+    @endif
 </div>
