@@ -219,6 +219,7 @@
         })
     </script>
 </main>
+
 @section('fb_pixel')
     @if($event_id)
         @php
