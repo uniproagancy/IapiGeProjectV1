@@ -192,7 +192,8 @@
                         <select class="form-select" wire:model.live="quickEditCategoryId">
                             <option value="">— აირჩიეთ —</option>
                             @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">
+                                <option value="{{ $cat->id }}"
+                                        {{ (string)$quickEditCategoryId === (string)$cat->id ? 'selected' : '' }}>
                                     {{ $cat->translations->where('locale', 'ka')->first()->title }}
                                 </option>
                             @endforeach
@@ -204,7 +205,8 @@
                             <select class="form-select" wire:model="quickEditSubcategoryId">
                                 <option value="">— აირჩიეთ —</option>
                                 @foreach($quickEditSubcategories as $sub)
-                                    <option value="{{ $sub['id'] }}">
+                                    <option value="{{ $sub['id'] }}"
+                                            {{ (string)$quickEditSubcategoryId === (string)$sub['id'] ? 'selected' : '' }}>
                                         {{ collect($sub['translations'] ?? [])->where('locale', 'ka')->first()['title'] ?? '' }}
                                     </option>
                                 @endforeach
@@ -216,7 +218,8 @@
                         <select class="form-select" wire:model="quickEditBrandId">
                             <option value="">— აირჩიეთ —</option>
                             @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}">
+                                <option value="{{ $brand->id }}"
+                                        {{ (string)$quickEditBrandId === (string)$brand->id ? 'selected' : '' }}>
                                     {{ $brand->translations->where('locale', 'ka')->first()->title }}
                                 </option>
                             @endforeach
