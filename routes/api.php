@@ -35,14 +35,16 @@ Route::prefix('alta')->group(function () {
         }
     });
     Route::get('/missing-products', function () {
-        $altaIds = \App\Models\AltaID::pluck('product_id')->where('quantity', '>', 0)->toArray();
+        $altaIds = \App\Models\AltaID::where('quantity', '>', 2)
+            ->pluck('product_id')
+            ->toArray();
 
         $existingIds = \App\Models\Product\Product::where('sku', 'LIKE', 'ALTA-%')
             ->pluck('sku')
-            ->map(fn($sku) => ltrim(str_replace('ALTA-', '', $sku), '0'))
+            ->map(fn($sku) => str_replace('ALTA-', '', $sku))
             ->toArray();
 
-        $missing = array_filter($altaIds, fn($id) => !in_array(ltrim((string) $id, '0'), $existingIds));
+        $missing = array_filter($altaIds, fn($id) => !in_array((string) $id, $existingIds));
 
         return response()->json([
             'total_alta'   => count($altaIds),
