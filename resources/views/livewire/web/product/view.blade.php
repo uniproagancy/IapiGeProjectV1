@@ -51,7 +51,7 @@
                 </div>
             </div>
             @endif
-            @if($product->supplier_id == 4)
+            @if($product->supplier_id == 4 OR $product->supplier_id == 2)
             @if($product->fullSpecifications)
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
