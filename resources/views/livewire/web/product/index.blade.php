@@ -1,3 +1,15 @@
+@section('seo')
+    <title>
+        @if($currentCategory)
+            {{ $currentCategory->translation('ka')->title ?? $currentCategory->translation('ka')->title }} - IAPI.GE
+        @else
+            პროდუქციის კატალოგი - IAPI.GE
+        @endif
+    </title>
+    <meta name="description" content="Iapi.Ge">
+    <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+@endsection
+
 @section('page_css')
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
 @endsection
