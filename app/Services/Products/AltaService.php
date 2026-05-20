@@ -102,7 +102,7 @@ class AltaService
 
             $pool = new Pool($client, $requests($ids), [
                 'concurrency' => $this->concurrent_requests,
-                'fulfilled'   => function ($response, $id) use (&$stats) {
+                'fulfilled' => function ($response, $id) use (&$stats) {
                     try {
                         if ($response->getStatusCode() !== 200) {
                             $stats['errors']++;
@@ -113,6 +113,14 @@ class AltaService
                         $data = json_decode($body, true);
 
                         if (!isset($data['product']) || $data['product'] === null) {
+                            $stats['null']++;
+                            return;
+                        }
+
+                        $barCode = $data['product']['barCode'] ?? null;
+
+                        // ✅ მხოლოდ AltaID სიაში არსებული barCode-ები
+                        if (empty($barCode) || !\App\Models\AltaID::where('product_id', (string) $barCode)->exists()) {
                             $stats['null']++;
                             return;
                         }
