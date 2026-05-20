@@ -35,19 +35,19 @@ class Index extends Component
     public $brand_id     = null;
     public $supplier_id  = null;
 
-    // ✅ Quick Edit — ერთიანი modal
-    public $quickEditProductId    = null;
-    public $quickEditCategoryId   = null;
+    // ✅ Quick Edit
+    public $quickEditProductId     = null;
+    public $quickEditCategoryId    = null;
     public $quickEditSubcategoryId = null;
-    public $quickEditBrandId      = null;
-    public $quickEditRegularPrice = 0;
+    public $quickEditBrandId       = null;
+    public $quickEditRegularPrice  = 0;
     public $quickEditDiscountPrice = null;
     public array $quickEditSubcategories = [];
 
     // ✅ Bulk actions
-    public $bulkCategoryId    = null;
-    public $bulkSubcategoryId = null;
-    public $bulkBrandId       = null;
+    public $bulkCategoryId     = null;
+    public $bulkSubcategoryId  = null;
+    public $bulkBrandId        = null;
     public array $bulkSubcategories = [];
 
     protected $listeners = [
@@ -192,7 +192,7 @@ class Index extends Component
     }
 
     // ============================================
-    // ✅ Quick Edit — ერთიანი modal
+    // ✅ Quick Edit
     // ============================================
 
     public function quickEditModal(int $productId): void
@@ -200,22 +200,26 @@ class Index extends Component
         $product = Product::with('price')->findOrFail($productId);
 
         $this->quickEditProductId     = $product->id;
-        $this->quickEditCategoryId    = $product->category_id;
-        $this->quickEditSubcategoryId = null;
         $this->quickEditBrandId       = $product->brand_id;
         $this->quickEditRegularPrice  = $product->price->regular_price ?? 0;
         $this->quickEditDiscountPrice = $product->price->discount_price;
         $this->quickEditSubcategories = [];
+        $this->quickEditCategoryId    = null;
+        $this->quickEditSubcategoryId = null;
 
-        // ✅ კატეგორიის იერარქიის განსაზღვრა
         if ($product->category_id) {
             $category = ProductCategory::find($product->category_id);
-            if ($category && $category->parent_id != 0) {
-                $this->quickEditCategoryId    = $category->parent_id;
-                $this->quickEditSubcategoryId = $category->id;
-                $this->quickEditSubcategories = ProductCategory::where('parent_id', $category->parent_id)->get()->toArray();
-            } else {
-                $this->quickEditSubcategories = ProductCategory::where('parent_id', $product->category_id)->get()->toArray();
+            if ($category) {
+                if ($category->parent_id == 0 || $category->parent_id === null) {
+                    // ✅ პირდაპირ ქვეკატეგორია ვართ root-ზე
+                    $this->quickEditCategoryId    = $category->id;
+                    $this->quickEditSubcategories = ProductCategory::where('parent_id', $category->id)->get()->toArray();
+                } else {
+                    // ✅ ქვეკატეგორია
+                    $this->quickEditCategoryId    = $category->parent_id;
+                    $this->quickEditSubcategoryId = $category->id;
+                    $this->quickEditSubcategories = ProductCategory::where('parent_id', $category->parent_id)->get()->toArray();
+                }
             }
         }
 
@@ -238,6 +242,7 @@ class Index extends Component
 
         $product = Product::findOrFail($this->quickEditProductId);
 
+        // ✅ მხოლოდ ქვეკატეგორია ინახება
         $finalCategoryId = $this->quickEditSubcategoryId ?? $this->quickEditCategoryId;
 
         $product->update([
@@ -249,7 +254,9 @@ class Index extends Component
             ['product_id' => $product->id],
             [
                 'regular_price'  => (float) $this->quickEditRegularPrice,
-                'discount_price' => !empty($this->quickEditDiscountPrice) ? (float) $this->quickEditDiscountPrice : null,
+                'discount_price' => !empty($this->quickEditDiscountPrice)
+                    ? (float) $this->quickEditDiscountPrice
+                    : null,
             ]
         );
 
@@ -316,12 +323,12 @@ class Index extends Component
             ->when($this->search_query, fn($q) => $q->whereHas('translations',
                 fn($subQuery) => $subQuery->where('title', 'like', "%{$this->search_query}%")
             ))
-            ->when($this->show_web === true,    fn($q) => $q->where('show', $this->show_web))
-            ->when($this->category_id,          fn($q) => $q->where('category_id', $this->category_id))
-            ->when($this->brand_id,             fn($q) => $q->where('brand_id', $this->brand_id))
-            ->when($this->supplier_id,          fn($q) => $q->where('supplier_id', $this->supplier_id))
+            ->when($this->show_web === true,      fn($q) => $q->where('show', $this->show_web))
+            ->when($this->category_id,            fn($q) => $q->where('category_id', $this->category_id))
+            ->when($this->brand_id,               fn($q) => $q->where('brand_id', $this->brand_id))
+            ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
-            ->when($this->unsorted === true,    fn($q) => $q->whereIn('category_id', [3, 4, 182]))
+            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
                     ? $q->where('quantity', '>', 0)
@@ -341,7 +348,7 @@ class Index extends Component
         return view('livewire.dashboard.product.index', [
             'products'   => $products,
             'brands'     => ProductBrand::where('active', 1)->get(),
-            'categories' => ProductCategory::where('active', 1)->get(),
+            'categories' => ProductCategory::where('parent_id', 0)->where('active', 1)->get(),
             'suppliers'  => ProductSupplier::where('active', 1)->get(),
         ])->layout('livewire.dashboard.layout');
     }
