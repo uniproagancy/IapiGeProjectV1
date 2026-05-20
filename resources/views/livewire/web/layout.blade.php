@@ -2,8 +2,8 @@
 <html lang="en" data-bs-theme="light" data-pwa="true">
 <head>
     @yield('seo')
-    @yield('og_tags')
     <meta charset="utf-8">
+    <meta name="description" content="@yield('meta_description', 'iapi.ge — ელექტრონიკა, ტელეფონები, სახლის ტექნიკა საუკეთესო ფასად საქართველოში. სწრაფი მიტანა, გარანტია.')">
     <meta name="viewport"
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,6 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     {{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
     {{--    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">--}}
+    @yield('og_tags')
 
     <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2"
           crossorigin>
