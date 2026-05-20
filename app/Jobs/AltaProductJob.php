@@ -233,7 +233,11 @@ class AltaProductJob implements ShouldQueue
 
                 try {
                     $response = Http::timeout(30)
-                        ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                            'Referer'    => 'https://alta.ge/',
+                            'Cookie'     => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
+                        ])
                         ->get($imageUrl);
 
                     if (!$response->successful()) {
@@ -537,7 +541,11 @@ class AltaProductJob implements ShouldQueue
 
                 try {
                     $response = Http::timeout(30)
-                        ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                            'Referer'    => 'https://alta.ge/',
+                            'Cookie'     => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
+                        ])
                         ->get($imageUrl);
 
                     if (!$response->successful()) {
