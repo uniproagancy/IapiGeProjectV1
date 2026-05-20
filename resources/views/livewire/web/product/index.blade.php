@@ -1,6 +1,6 @@
 @section('seo')
     <title>
-       {{  $currentCategory?->translation('ka')->title.' - IAPI.GE' ?? 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge' }}
+       {{  $currentCategory?->translation('ka')->title.' — შეიძინე იაფად | iapi.ge' ?? 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge' }}
     </title>
     <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
 @endsection
