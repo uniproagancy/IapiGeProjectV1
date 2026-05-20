@@ -9,7 +9,7 @@ Route::prefix('zoommer')->group(function () {
 
 Route::prefix('alta')->group(function () {
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
-    Route::get('/alta/test-connection', function () {
+    Route::get('/test-connection', function () {
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(10)
                 ->withHeaders([
@@ -33,6 +33,23 @@ Route::prefix('alta')->group(function () {
                 'error' => $e->getMessage(),
             ]);
         }
+    });
+    Route::get('/missing-products', function () {
+        $altaIds = \App\Models\AltaID::pluck('product_id')->toArray();
+
+        $existingIds = \App\Models\Product\Product::where('sku', 'LIKE', 'ALTA-%')
+            ->pluck('sku')
+            ->map(fn($sku) => ltrim(str_replace('ALTA-', '', $sku), '0'))
+            ->toArray();
+
+        $missing = array_filter($altaIds, fn($id) => !in_array(ltrim((string) $id, '0'), $existingIds));
+
+        return response()->json([
+            'total_alta'   => count($altaIds),
+            'total_exists' => count($existingIds),
+            'missing'      => count($missing),
+            'missing_ids'  => array_values($missing),
+        ]);
     });
 });
 
