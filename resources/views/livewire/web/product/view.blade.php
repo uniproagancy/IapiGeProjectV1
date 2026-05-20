@@ -1,30 +1,7 @@
 @section('seo')
-    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} — შეიძინე იაფად | iapi.ge</title>
+    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} - IAPI.GE</title>
     <meta name="keywords"
           content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
-    @php
-        $price = ($product->price->discount_price && $product->price->discount_price > 0)
-            ? $product->price->discount_price
-            : $product->price->regular_price;
-        $title = $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title;
-        $image = asset('storage/' . $product->main_image);
-        $availability = $product->in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
-    @endphp
-    <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": "{{ $title }}",
-        "image": "{{ $image }}",
-        "offers": {
-            "@type": "Offer",
-            "price": "{{ $price }}",
-            "priceCurrency": "GEL",
-            "availability": "{{ $availability }}",
-            "url": "{{ request()->url() }}"
-        }
-    }
-    </script>
 @endsection
 
 @section('og_tags')
@@ -221,3 +198,30 @@
         })
     </script>
 </main>
+@section('fb_pixel')
+    @if($event_id)
+        @php
+            $actualPrice = ($product->price->discount_price && $product->price->discount_price > 0)
+                ? $product->price->discount_price
+                : $product->price->regular_price;
+        @endphp
+        <script>
+            fbq('track', 'ViewContent', {
+                content_ids: ['{{ $product->id }}'],
+                content_type: 'product',
+                content_name: '{{ $product->translation('ka')->title }}',
+                value: {{ $actualPrice }},
+                currency: 'GEL',
+                contents: [{ id: '{{ $product->id }}', quantity: 1 }]
+            }, {
+                eventID: '{{ $event_id }}'
+            });
+        </script>
+    @endif
+    <script>
+        fbq('track', 'PageView', {}, { eventID: '{{ $eventId2 }}' });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"
+        /></noscript>
+@endsection
