@@ -1,5 +1,5 @@
 @section('seo')
-    <title>IAPI.GE - იაფი მაღაზია</title>
+    <title>IAPI.GE — შეიძინე იაფად | iapi.ge</title>
     <meta name="keywords"
           content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
 @endsection

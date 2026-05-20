@@ -28,6 +28,7 @@
         "phpoffice/phpspreadsheet": "^5.5",
         "predis/predis": "^3.4",
         "spatie/laravel-responsecache": "^7.7",
+        "spatie/laravel-sitemap": "^8.1",
         "symfony/dom-crawler": "^8.0"
     },
     "require-dev": {

@@ -1,23 +1,29 @@
+@php
+    $altText = ($product->translation(app()->getLocale())->title ?? $product->translation('ka')->title) . ' — შეიძინე iapi.ge-ზე';
+@endphp
+
 <div class="product-gallery d-flex gap-3">
     <div class="swiper thumbs-swiper" id="thumbs" style="margin: 10px 0 0 0">
         <div class="swiper-wrapper">
             @if($product->main_image != 1)
-            <div class="swiper-slide">
-                <img src="{{ asset('storage/'.$product->main_image) }}"
-                     class="thumb-img"
-                     loading="lazy"
-                     style="width: 100%; height: 100%; object-fit: cover; display: block;">
-            </div>
-            @endif
-            @if(!empty($product->images))
-            @foreach($product->images as $image)
                 <div class="swiper-slide">
-                    <img src="{{ asset('storage/'.$image->path) }}"
+                    <img src="{{ asset('storage/'.$product->main_image) }}"
+                         alt="{{ $altText }}"
                          class="thumb-img"
                          loading="lazy"
                          style="width: 100%; height: 100%; object-fit: cover; display: block;">
                 </div>
-            @endforeach
+            @endif
+            @if(!empty($product->images))
+                @foreach($product->images as $image)
+                    <div class="swiper-slide">
+                        <img src="{{ asset('storage/'.$image->path) }}"
+                             alt="{{ $altText }}"
+                             class="thumb-img"
+                             loading="lazy"
+                             style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    </div>
+                @endforeach
             @endif
         </div>
     </div>
@@ -25,19 +31,21 @@
         <div class="swiper-wrapper">
             <div class="swiper-slide">
                 <img src="{{ asset('storage/'.$product->main_image) }}"
+                     alt="{{ $altText }}"
                      class="main-img"
                      loading="lazy"
                      style="width: 100%; height: auto; object-fit: contain; max-height: 465px;">
             </div>
             @if(!empty($product->images))
-            @foreach($product->images as $image)
-                <div class="swiper-slide">
-                    <img src="{{ asset('storage/'.$image->path) }}"
-                         class="main-img"
-                         loading="lazy"
-                         style="width: 100%; height: auto; object-fit: contain; max-height: 465px;">
-                </div>
-            @endforeach
+                @foreach($product->images as $image)
+                    <div class="swiper-slide">
+                        <img src="{{ asset('storage/'.$image->path) }}"
+                             alt="{{ $altText }}"
+                             class="main-img"
+                             loading="lazy"
+                             style="width: 100%; height: auto; object-fit: contain; max-height: 465px;">
+                    </div>
+                @endforeach
             @endif
         </div>
         <button class="btn slider-prev"><i class="ci-chevron-left"></i></button>
@@ -103,6 +111,7 @@
         right: 10px;
     }
 </style>
+
 @section('page_scripts')
     <script>
         const thumbs = new Swiper('#thumbs', {

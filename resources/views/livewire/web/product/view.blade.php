@@ -1,16 +1,39 @@
 @section('seo')
-    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} - IAPI.GE</title>
+    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} — შეიძინე იაფად | iapi.ge</title>
     <meta name="keywords"
           content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    @php
+        $price = ($product->price->discount_price && $product->price->discount_price > 0)
+            ? $product->price->discount_price
+            : $product->price->regular_price;
+        $title = $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title;
+        $image = asset('storage/' . $product->main_image);
+        $availability = $product->in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+    @endphp
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "{{ $title }}",
+        "image": "{{ $image }}",
+        "offers": {
+            "@type": "Offer",
+            "price": "{{ $price }}",
+            "priceCurrency": "GEL",
+            "availability": "{{ $availability }}",
+            "url": "{{ request()->url() }}"
+        }
+    }
+    </script>
 @endsection
 
 @section('og_tags')
     <meta property="og:url"
           content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}"/>
-    <meta property="og:type" content="article"/>
+    <meta property="og:type" content="product"/>
     <meta property="og:title"
           content="{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}"/>
-    <meta property="og:image" content="{{ asset('storage/'.$product->main_image) }}"/>
+    <meta property="og:image" content="{{ asset('storage/' . $product->main_image) }}"/>
 @endsection
 
 <main class="content-wrapper">

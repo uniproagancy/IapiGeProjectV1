@@ -64,7 +64,7 @@
                 {{-- სურათი --}}
                 <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                     <img src="{{ $imageUrl }}"
-                         alt="{{ $title }}"
+                         alt="{{ $title }} — შეიძინე iapi.ge-ზე"
                          loading="lazy"
                          style="object-fit: contain; width: 100%; height: 100%; mix-blend-mode: multiply;">
                 </div>
