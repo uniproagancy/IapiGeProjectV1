@@ -1,10 +1,3 @@
-@section('seo')
-    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} - IAPI.GE</title>
-    <meta name="description" content="Iapi.Ge">
-    <meta name="keywords"
-          content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
-@show
-
 @section('og_tags')
     <meta property="og:url"
           content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}"/>
