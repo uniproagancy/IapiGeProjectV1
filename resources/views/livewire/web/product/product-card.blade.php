@@ -60,8 +60,6 @@
                         -{{ $product->price->discount_percent }}%
                     </span>
                 @endif
-
-                {{-- სურათი --}}
                 <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                     <img src="{{ $imageUrl }}"
                          alt="{{ $title }} — შეიძინე iapi.ge-ზე"
