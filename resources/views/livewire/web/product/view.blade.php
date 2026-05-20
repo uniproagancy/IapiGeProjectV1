@@ -1,27 +1,25 @@
 @section('seo')
     <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} — შეიძინე იაფად | iapi.ge</title>
-    <meta name="keywords"
-          content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
     @php
-        $price = ($product->price->discount_price && $product->price->discount_price > 0)
-            ? $product->price->discount_price
-            : $product->price->regular_price;
-        $title = $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title;
-        $image = asset('storage/' . $product->main_image);
+        $price       = ($product->price?->discount_price && $product->price->discount_price > 0) ? $product->price->discount_price : $product->price?->regular_price;
+        $title       = $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title;
+        $image       = asset('storage/' . $product->main_image);
         $availability = $product->in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+        $url         = request()->url();
     @endphp
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "Product",
-            "name": "{{ $title }}",
+            "name": "{{ addslashes($title) }}",
         "image": "{{ $image }}",
         "offers": {
             "@type": "Offer",
             "price": "{{ $price }}",
             "priceCurrency": "GEL",
             "availability": "{{ $availability }}",
-            "url": "{{ request()->url() }}"
+            "url": "{{ $url }}"
         }
     }
     </script>
