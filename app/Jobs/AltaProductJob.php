@@ -179,6 +179,7 @@ class AltaProductJob implements ShouldQueue
                     'in_stock' => $in_stock,
                     'show'     => $show,
                     'active'   => $show,
+                    'brand_id' => $this->getBrandId($productData),
                 ]);
 
                 if (!empty($productData['description'])) {
@@ -352,7 +353,7 @@ class AltaProductJob implements ShouldQueue
     {
         try {
             $specGroup = collect($productData['specificationGroup'] ?? [])
-                ->firstWhere('groupName', 'Brand');
+                ->firstWhere('groupName', 'ბრენდი');
 
             if (empty($specGroup) || empty($specGroup['specifications'][0])) {
                 return 6;
