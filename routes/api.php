@@ -9,11 +9,16 @@ Route::prefix('zoommer')->group(function () {
 
 Route::prefix('alta')->group(function () {
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
-    Route::get('/test-connection', function () {
+    Route::get('/alta/test-connection', function () {
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(10)->get(
-                'https://alta.ge/api/proxy/v1/Products/details?productId=48060'
-            );
+            $response = \Illuminate\Support\Facades\Http::timeout(10)
+                ->withHeaders([
+                    'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept'          => 'application/json',
+                    'Accept-Language' => 'ka',
+                    'Referer'         => 'https://alta.ge/',
+                ])
+                ->get('https://alta.ge/api/proxy/v1/Products/details?productId=48069');
 
             return response()->json([
                 'status'  => $response->status(),
