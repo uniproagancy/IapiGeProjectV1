@@ -1,3 +1,10 @@
+@section('seo')
+    <title>IAPI.GE - იაფი მაღაზია</title>
+    <meta name="description" content="Iapi.Ge">
+    <meta name="keywords"
+          content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+@endsection
+
 <div style="">
     @include('livewire.web.partials.content.hero-slider')
     @include('livewire.web.partials.features')

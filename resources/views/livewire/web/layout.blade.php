@@ -1,12 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light" data-pwa="true">
 <head>
-    @section('seo')
-        <title>IAPI.GE - იაფი მაღაზია</title>
-        <meta name="description" content="Iapi.Ge">
-        <meta name="keywords"
-              content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
-    @show
+    @yield('seo')
     @yield('og_tags')
     <meta charset="utf-8">
     <meta name="viewport"
