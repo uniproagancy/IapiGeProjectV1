@@ -9,29 +9,36 @@
                         <h4 class="card-title">პროდუქციის ჩამონათვალი ({{$products->total()}})</h4>
                         <div>
                             @if(!empty($selectedProducts))
-                                <button class="btn btn-warning btn-sm me-1"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#bulkActionsModal">
-                                    მონიშნული ({{ count($selectedProducts) }})
-                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-icon btn-warning dropdown-toggle px-1" type="button"
+                                            id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i data-feather="list"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" data-bs-toggle="modal"
+                                           data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal"
+                                           data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
+                                    </div>
+                                </div>
                             @endif
                             <div class="btn-group">
-                                <button class="btn btn-info dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
                                     განახლების ატვირთვა
                                 </button>
-                                <div class="dropdown-menu">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
                                 </div>
                             </div>
                             <div class="btn-group">
                                 <button class="btn btn-icon btn-primary dropdown-toggle px-1" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="refresh-cw"></i>
                                 </button>
                             </div>
-                            <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50">
+                            <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
+                               style="font-size: 13px">
                                 <i data-feather="plus-square"></i>
                             </a>
                             <button type="button" class="btn btn-icon btn-outline-primary" data-bs-toggle="modal"
@@ -76,8 +83,7 @@
                                         </td>
                                         <td class="text-start">
                                             <span class="badge badge-light-info">{{ $product->sku }}</span> -
-                                            {{ $product->translations->where('locale', 'ka')->first()->title ?? ' ' }}
-                                        </td>
+                                            {{ $product->translations->where('locale', 'ka')->first()->title ?? ' ' }}</td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
                                                 <span class="badge badge-light-success">{{ $product->price->discount_price ?? '' }} ₾</span>
@@ -89,10 +95,11 @@
                                         </td>
                                         <td>
                                             @if(!empty($product->category->parent->translations))
-                                                {{ $product->category->parent->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            {{ $product->category->parent->translations->where('locale', 'ka')->first()->title ?? '' }}
                                             @endif
                                             @if(!empty($product->category->translations))
-                                                / {{ $product->category->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            /
+                                            {{ $product->category->translations->where('locale', 'ka')->first()->title ?? '' }}
                                             @endif
                                         </td>
                                         <td>
@@ -106,12 +113,12 @@
                                                     <div class="form-check form-switch form-check-success">
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_active_{{ $product->id }}"
-                                                               wire:click="toggleActive({{ $product->id }})"
-                                                                @checked($product->active)/>
+                                                               wire:click="toggleActive({{ $product->id }})" @checked($product->active) />
                                                         <label class="form-check-label"
                                                                for="product_active_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i
+                                                                        data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -123,12 +130,12 @@
                                                     <div class="form-check form-switch form-check-success">
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_show_{{ $product->id }}"
-                                                               wire:click="toggleShow({{ $product->id }})"
-                                                                @checked($product->show)/>
+                                                               wire:click="toggleShow({{ $product->id }})" @checked($product->show) />
                                                         <label class="form-check-label"
                                                                for="product_show_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i
+                                                                        data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -147,8 +154,8 @@
                                                         <i data-feather="edit"></i>
                                                     </a>
                                                     <a href="#" class="text-body"
-                                                       wire:click="quickEditModal({{ $product->id }})">
-                                                        <i class="text-warning" data-feather="zap"></i>
+                                                       wire:click="priceEditModal({{ $product->id }})">
+                                                        <i class="text-success" data-feather="dollar-sign"></i>
                                                     </a>
                                                     <a href="#" class="text-body"
                                                        wire:click="deleteModal({{ $product->id }})">
@@ -167,7 +174,7 @@
                             <div class="alert alert-warning" role="alert">
                                 <div class="alert-body d-flex align-items-center">
                                     <i data-feather="alert-circle" class="me-50"></i>
-                                    <span>ჩამონათვალი ცარიელია!</span>
+                                    <span> ჩამონათვალი ცარიელია!</span>
                                 </div>
                             </div>
                         </div>
@@ -177,138 +184,7 @@
         </div>
         {{ $products->links() }}
     </div>
-
-    {{-- ✅ Quick Edit Modal --}}
-    <div class="modal fade" wire:ignore.self id="quickEditModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">სწრაფი რედაქტირება</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <label class="form-label">კატეგორია</label>
-                        <select class="form-select" wire:model.live="quickEditCategoryId">
-                            <option value="">— აირჩიეთ —</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}"
-                                        {{ (string)$quickEditCategoryId === (string)$cat->id ? 'selected' : '' }}>
-                                    {{ $cat->translations->where('locale', 'ka')->first()->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @if(!empty($quickEditSubcategories))
-                        <div class="mb-2">
-                            <label class="form-label">ქვეკატეგორია</label>
-                            <select class="form-select" wire:model="quickEditSubcategoryId">
-                                <option value="">— აირჩიეთ —</option>
-                                @foreach($quickEditSubcategories as $sub)
-                                    <option value="{{ $sub['id'] }}"
-                                            {{ (string)$quickEditSubcategoryId === (string)$sub['id'] ? 'selected' : '' }}>
-                                        {{ collect($sub['translations'] ?? [])->where('locale', 'ka')->first()['title'] ?? '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-                    <div class="mb-2">
-                        <label class="form-label">ბრენდი</label>
-                        <select class="form-select" wire:model="quickEditBrandId">
-                            <option value="">— აირჩიეთ —</option>
-                            @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}"
-                                        {{ (string)$quickEditBrandId === (string)$brand->id ? 'selected' : '' }}>
-                                    {{ $brand->translations->where('locale', 'ka')->first()->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">ფასი <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01"
-                               class="form-control @error('quickEditRegularPrice') border-danger is-invalid @enderror"
-                               wire:model="quickEditRegularPrice" placeholder="0.00">
-                        @error('quickEditRegularPrice')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">ფასდაკლების ფასი</label>
-                        <input type="number" step="0.01" class="form-control"
-                               wire:model="quickEditDiscountPrice" placeholder="0.00">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" wire:click="quickEditSave">შენახვა</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ✅ Bulk Actions Modal --}}
-    <div class="modal fade" wire:ignore.self id="bulkActionsModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">მასობრივი მოქმედება ({{ count($selectedProducts) }} პროდუქტი)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="fw-semibold mb-1">კატეგორიის შეცვლა</p>
-                    <div class="mb-2">
-                        <select class="form-select" wire:model.live="bulkCategoryId">
-                            <option value="">— კატეგორია —</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">
-                                    {{ $cat->translations->where('locale', 'ka')->first()->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @if(!empty($bulkSubcategories))
-                        <div class="mb-2">
-                            <select class="form-select" wire:model="bulkSubcategoryId">
-                                <option value="">— ქვეკატეგორია —</option>
-                                @foreach($bulkSubcategories as $sub)
-                                    <option value="{{ $sub['id'] }}">
-                                        {{ collect($sub['translations'] ?? [])->where('locale', 'ka')->first()['title'] ?? '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-                    <button class="btn btn-primary btn-sm w-100 mb-3" wire:click="bulkUpdateCategory">
-                        კატეგორიის განახლება
-                    </button>
-                    <hr>
-                    <p class="fw-semibold mb-1">ბრენდის შეცვლა</p>
-                    <div class="mb-2">
-                        <select class="form-select" wire:model="bulkBrandId">
-                            <option value="">— ბრენდი —</option>
-                            @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}">
-                                    {{ $brand->translations->where('locale', 'ka')->first()->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button class="btn btn-primary btn-sm w-100" wire:click="bulkUpdateBrand">
-                        ბრენდის განახლება
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Excel Upload Modal --}}
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self
-         id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadExcel">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
@@ -320,15 +196,20 @@
                         <label class="form-label">აირჩიეთ ფაილი (.xlsx)</label>
                         <input type="file"
                                class="form-control @error('excel_file') border-danger is-invalid @enderror"
-                               wire:model="excel_file" accept=".xlsx,.xls">
+                               wire:model="excel_file"
+                               accept=".xlsx,.xls">
                         @error('excel_file')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1" wire:loading.attr="disabled">
+                        <button type="submit"
+                                class="btn btn-primary me-1"
+                                wire:loading.attr="disabled">
                             <span wire:loading.remove>ატვირთვა</span>
-                            <span wire:loading><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading>
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -336,8 +217,6 @@
             </form>
         </div>
     </div>
-
-    {{-- Filter Modal --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="filterProductModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="applyFilters" wire:keydown.enter="applyFilters">
@@ -359,6 +238,13 @@
                         </select>
                     </div>
                     <div class="mb-1">
+                        <label class="form-label">კატეგორია</label>
+                        <select class="form-select" wire:model.lazy="category_id">
+                            <option value="desc">ახალ დამატებული</option>
+                            <option value="asc">ძველ დამატებული</option>
+                        </select>
+                    </div>
+                    <div class="mb-1">
                         <label class="form-label">ჩვენება</label>
                         <select class="form-select" wire:model.lazy="per_page">
                             <option value="10">10 ჩანაწერი</option>
@@ -373,7 +259,7 @@
                             <option value="">აირჩიეთ ბრენდი</option>
                             @foreach($brands as $brand)
                                 <option value="{{ $brand->id }}">
-                                    {{ $brand->translations->where('locale', 'ka')->first()->title }}
+                                    {{ $brand->translations->where('locale','ka')->first()->title }}
                                 </option>
                             @endforeach
                         </select>
@@ -384,7 +270,7 @@
                             <option value="">აირჩიეთ მომწოდებელი</option>
                             @foreach($suppliers as $supplier)
                                 <option value="{{ $supplier->id }}">
-                                    {{ $supplier->translations->where('locale', 'ka')->first()->name }}
+                                    {{ $supplier->translations->where('locale','ka')->first()->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -412,24 +298,121 @@
                         <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერების ჩვენება</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="unsorted" wire:model.lazy="unsorted">
+                        <input type="checkbox" class="form-check-input" id="unsorted"
+                               wire:model.lazy="unsorted">
                         <label class="form-check-label" for="unsorted">დაუხარისხებელი</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="draft" wire:model.lazy="draft">
+                        <input type="checkbox" class="form-check-input" id="draft"
+                               wire:model.lazy="draft">
                         <label class="form-check-label" for="draft">მხოლოდ Draft</label>
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
-                        <button type="button" class="btn btn-outline-secondary"
-                                wire:click="resetFilters">გასუფთავება</button>
+                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+    <div class="modal fade" wire:ignore.self id="changeCategoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">კატეგორია</label>
+                        <select class="form-select" wire:model.live="selectedCategory">
+                            <option value="">— აირჩიეთ —</option>
+                            @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
+                                <option value="{{ $category->id }}">{{ $category->translations->where('locale', 'ka')->first()->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if(!empty($subcategories))
+                        <div class="mb-2">
+                            <label class="form-label">ქვეკატეგორია</label>
+                            <select class="form-select" wire:model="selectedSubcategory">
+                                <option value="">— აირჩიეთ —</option>
+                                @foreach($subcategories as $subcategory)
+                                    <option value="{{ $subcategory->id }}">{{ $subcategory->translations->where('locale', 'ka')->first()->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updateProductCategory">დადასტურება</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" wire:ignore.self id="priceEditModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ფასის რედაქტირება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">ფასი <span class="text-danger">*</span></label>
+                        <input type="number"
+                               step="0.01"
+                               class="form-control @error('priceEditRegularPrice') border-danger is-invalid @enderror"
+                               wire:model="priceEditRegularPrice"
+                               placeholder="0.00">
+                        @error('priceEditRegularPrice')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">ფასდაკლების ფასი</label>
+                        <input type="number"
+                               step="0.01"
+                               class="form-control"
+                               wire:model="priceEditDiscountPrice"
+                               placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updatePrice">შენახვა</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label"></label>
+                        <select class="form-select" wire:model.live="selectedBrand">
+                            <option value="">— აირჩიეთ —</option>
+                            @foreach($brands->where('active', 1) as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updateProductBrand">დადასტურება</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
 @section('page_scripts')
     <script>
         Livewire.on('swal:deleteModal', data => {
@@ -461,19 +444,39 @@
         });
 
         Livewire.on('filter_modal_close', () => {
-            bootstrap.Modal.getInstance(document.getElementById('filterProductModal'))?.hide();
+            const modalEl = document.getElementById('filterProductModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
         });
 
-        Livewire.on('bulk_modal_close', () => {
-            bootstrap.Modal.getInstance(document.getElementById('bulkActionsModal'))?.hide();
+        Livewire.on('category_modal_close', () => {
+            const modalEl = document.getElementById('changeCategoryModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
         });
 
-        Livewire.on('quick_edit_modal_open', () => {
-            new bootstrap.Modal(document.getElementById('quickEditModal')).show();
+        Livewire.on('brand_modal_close', () => {
+            const modalEl = document.getElementById('changeBrandModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
         });
 
-        Livewire.on('quick_edit_modal_close', () => {
-            bootstrap.Modal.getInstance(document.getElementById('quickEditModal'))?.hide();
+        Livewire.on('price_edit_modal_open', () => {
+            const modalEl = document.getElementById('priceEditModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        });
+
+        Livewire.on('price_edit_modal_close', () => {
+            const modalEl = document.getElementById('priceEditModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
         });
     </script>
 @endsection
