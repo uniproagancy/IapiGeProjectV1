@@ -9,6 +9,24 @@ Route::prefix('zoommer')->group(function () {
 
 Route::prefix('alta')->group(function () {
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
+    Route::get('/test-connection', function () {
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->get(
+                'https://alta.ge/api/proxy/v1/Products/details?productId=48060'
+            );
+
+            return response()->json([
+                'status'  => $response->status(),
+                'success' => $response->successful(),
+                'body'    => $response->json(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
+        }
+    });
 });
 
 Route::prefix('citrus')->group(function () {
