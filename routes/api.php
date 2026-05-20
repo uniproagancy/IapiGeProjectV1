@@ -35,7 +35,7 @@ Route::prefix('alta')->group(function () {
         }
     });
     Route::get('/missing-products', function () {
-        $altaIds = \App\Models\AltaID::pluck('product_id')->where('quantity', '>=', 2)->toArray();
+        $altaIds = \App\Models\AltaID::pluck('product_id')->where('quantity', '>', 2)->toArray();
 
         $existingIds = \App\Models\Product\Product::where('sku', 'LIKE', 'ALTA-%')
             ->pluck('sku')
