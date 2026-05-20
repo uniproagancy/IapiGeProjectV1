@@ -78,9 +78,14 @@ class AltaService
                 'http_errors'     => false,
                 'verify'          => false,
                 'headers'         => [
+                    'Accept'          => 'application/json, text/plain, */*',
                     'Accept-Language' => 'ka',
+                    'Referer'         => 'https://alta.ge/',
+                    'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                    'os'              => 'web',
+                    'Cookie'          => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
                 ],
-                'curl'            => [
+                'curl' => [
                     CURLOPT_DNS_CACHE_TIMEOUT => 300,
                     CURLOPT_IPRESOLVE         => CURL_IPRESOLVE_V4,
                 ],
