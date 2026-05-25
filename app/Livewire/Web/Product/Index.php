@@ -57,26 +57,6 @@ class Index extends Component
         $this->eventId = 'pv_' . time() . '_' . Str::random(6);
     }
 
-    private function getProductIdsForCategory(): array
-    {
-        $query = Product::query()
-            ->where('show', 1)
-            ->where('active', 1);
-
-        if ($this->currentCategory->parent_id === 0) {
-            $childIds = $this->currentCategory->children()->pluck('id');
-            $query->whereIn('category_id', $childIds);
-        } else {
-            $query->where('category_id', $this->currentCategory->id);
-        }
-
-        return $query
-            ->limit(10)
-            ->pluck('id')
-            ->map(fn ($id) => (string) $id)
-            ->toArray();
-    }
-
     private function normalizeBrands(): void
     {
         if (is_string($this->selectedBrands)) {
@@ -370,19 +350,34 @@ class Index extends Component
     #[Computed]
     public function specificationSections()
     {
-        $cacheKey = 'spec_sections_' . ($this->currentCategory?->id ?? 'all');
+        if (empty($this->currentCategory)) {
+            return collect();
+        }
 
-        return cache()->remember($cacheKey, 86400, function () {
+        $categoryId = $this->currentCategory->id;
+        $cacheKey   = 'spec_sections_' . $categoryId;
+
+        return cache()->remember($cacheKey, 3600, function () {
+            $productIds = Product::query()
+                ->where('show', 1)
+                ->where('active', 1)
+                ->when($this->currentCategory->parent_id === 0, function ($q) {
+                    $childIds = $this->currentCategory->children()->pluck('id');
+                    $q->whereIn('category_id', $childIds);
+                }, function ($q) {
+                    $q->where('category_id', $this->currentCategory->id);
+                })
+                ->pluck('id');
+
             return ProductFullSpecificationSection::query()
-                ->select('id', 'name')
+                ->select('id', 'name', 'product_id')
+                ->whereIn('product_id', $productIds)
                 ->whereHas('filter')
                 ->with(['filter' => fn ($q) => $q
                     ->select('id', 'section_id', 'name', 'value')
                     ->where('filter', 1)
-                    ->orderBy('name')
-                    ->limit(500)
+                    ->orderBy('value')
                 ])
-                ->limit(50)
                 ->get()
                 ->map(function ($section) {
                     $section->filter = $section->filter
@@ -419,6 +414,7 @@ class Index extends Component
         $this->applyPriceFilter($query);
         $this->applySearchFilter($query);
         $this->applyDiscountFilter($query);
+        $this->applySpecFilter($query);
     }
 
     private function applyCategoryFilter($query): void
@@ -499,6 +495,31 @@ class Index extends Component
             ->whereNotNull('discount_price')
             ->where('discount_price', '>', 0)
         );
+    }
+
+    private function applySpecFilter($query): void
+    {
+        $specs = array_filter((array) $this->selectedSpecs);
+
+        if (empty($specs)) {
+            return;
+        }
+
+        foreach ($specs as $spec) {
+            if (!str_contains($spec, '::')) {
+                continue;
+            }
+
+            [$name, $value] = explode('::', $spec, 2);
+
+            $query->whereHas('fullSpecifications', function ($q) use ($name, $value) {
+                $q->whereHas('list', function ($item) use ($name, $value) {
+                    $item->where('name', $name)
+                        ->where('value', $value)
+                        ->where('filter', 1);
+                });
+            });
+        }
     }
 
     public function render()

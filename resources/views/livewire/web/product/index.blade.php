@@ -1,12 +1,14 @@
 @section('seo')
     <title>
-        {{ ($currentCategory?->translation('ka')->title ? $currentCategory->translation('ka')->title . ' — შეიძინე იაფად | iapi.ge' : 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge') }}    </title>
+        {{ ($currentCategory?->translation('ka')->title ? $currentCategory->translation('ka')->title . ' — შეიძინე იაფად | iapi.ge' : 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge') }}
+    </title>
     <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
 @endsection
 
 @section('page_css')
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
 @endsection
+
 <div>
     <main class="content-wrapper">
         <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
@@ -33,6 +35,7 @@
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
                 <aside class="col-lg-3">
+                    {{-- ფასის ფილტრი --}}
                     <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                         <h4 class="h6 mb-3 font-neue">ფასი</h4>
                         <div class="d-flex gap-2 mb-3">
@@ -54,8 +57,11 @@
                             </button>
                         @endif
                     </div>
+
                     <div class="offcanvas-start" id="filterSidebar">
                         <div class="offcanvas-body flex-column pt-2 py-lg-0">
+
+                            {{-- კატეგორიები --}}
                             <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
                                 <h4 class="h6 mb-2 font-neue">
                                     {{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}
@@ -100,11 +106,9 @@
                                 @endif
                             </div>
 
-                            <!-- BRAND FILTER -->
+                            {{-- ბრენდი --}}
                             <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                                <h4 class="h6 mb-0 font-neue">
-                                    ბრენდი
-                                </h4>
+                                <h4 class="h6 mb-0 font-neue">ბრენდი</h4>
                                 <div class="expanded" id="brandsList">
                                     @if($brands->count() > 0)
                                         <div class="d-flex flex-column gap-2 mt-3">
@@ -116,7 +120,6 @@
                                                            wire:model.live="selectedBrands"
                                                            value="{{ $brand->id }}"
                                                            id="brand_{{ $brand->id }}">
-
                                                     <label class="form-check-label text-body-emphasis"
                                                            for="brand_{{ $brand->id }}">
                                                         {{ $brand->translation('ka')->title }}
@@ -141,6 +144,37 @@
                                     @endif
                                 </div>
                             </div>
+
+                            {{-- სპეციფიკაციების ფილტრი --}}
+                            @if(!empty($specificationSections) && $specificationSections->count() > 0)
+                                @foreach($specificationSections as $sectionName => $specs)
+                                    <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
+                                        <h4 class="h6 mb-0 font-neue">{{ $sectionName }}</h4>
+                                        <div class="d-flex flex-column gap-2 mt-3">
+                                            @foreach($specs as $specName => $values)
+                                                <div class="mb-2">
+                                                    <p class="text-muted mb-1" style="font-size: 13px;">{{ $specName }}</p>
+                                                    @foreach($values as $item)
+                                                        <div class="form-check">
+                                                            <input type="checkbox"
+                                                                   class="form-check-input"
+                                                                   wire:model.live="selectedSpecs"
+                                                                   value="{{ $specName }}::{{ $item->value }}"
+                                                                   id="spec_{{ md5($specName . $item->value) }}">
+                                                            <label class="form-check-label text-body-emphasis"
+                                                                   for="spec_{{ md5($specName . $item->value) }}">
+                                                                {{ $item->value }}
+                                                            </label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            {{-- მხოლოდ ფასდაკლებული --}}
                             <div class="form-check pt-3 border-top">
                                 <input type="checkbox"
                                        class="form-check-input"
@@ -151,9 +185,11 @@
                                     მხოლოდ ფასდაკლებული
                                 </label>
                             </div>
+
                         </div>
                     </div>
                 </aside>
+
                 <div class="col-lg-9">
                     @if($this->products->count() > 0)
                         <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
