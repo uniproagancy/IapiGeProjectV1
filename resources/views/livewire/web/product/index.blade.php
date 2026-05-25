@@ -106,21 +106,78 @@
                                 @endif
                             </div>
 
-                            {{-- სპეციფიკაციების ფილტრი --}}
+                            {{-- ბრენდი --}}
+                            <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
+                                <h4 class="h6 mb-0 font-neue">ბრენდი</h4>
+                                <div class="expanded" id="brandsList">
+                                    @if($brands->count() > 0)
+                                        <div class="d-flex flex-column gap-2 mt-3">
+                                            @foreach($brands as $index => $brand)
+                                                <div class="form-check"
+                                                     style="{{ $index >= 12 && !$this->showAllBrands ? 'display: none;' : '' }}">
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           wire:model.live="selectedBrands"
+                                                           value="{{ $brand->id }}"
+                                                           id="brand_{{ $brand->id }}">
+                                                    <label class="form-check-label text-body-emphasis"
+                                                           for="brand_{{ $brand->id }}">
+                                                        {{ $brand->translation('ka')->title }}
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                            @if($brands->count() > 12)
+                                                <button class="btn btn-sm btn-outline-secondary w-100 mt-3"
+                                                        type="button"
+                                                        wire:click="toggleShowAllBrands"
+                                                        @click="$event.stopPropagation()">
+                                                    @if($this->showAllBrands)
+                                                        გაკეცე
+                                                    @else
+                                                        ყველას ნახვა ({{ $brands->count() - 12 }} მეტი)
+                                                    @endif
+                                                </button>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <p class="text-muted small mb-0 mt-3">ბრენდები არ მოიძებნა</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- ✅ სპეციფიკაციების ფილტრი — კეცვადი, მონიშნულები ჩანს --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
-                                    <div class="w-100 border rounded mb-3 mb-xl-4">
-                                        {{-- ✅ კეცვადი header --}}
+                                    @php
+                                        // ✅ ამ სექციაში მონიშნული items
+                                        $sectionKey    = 'spec_section_' . md5($specName);
+                                        $selectedInSection = collect($selectedSpecs)->filter(
+                                            fn($s) => str_starts_with($s, $specName . '::')
+                                        );
+                                        $hasSelected   = $selectedInSection->count() > 0;
+                                    @endphp
+                                    <div class="w-100 border rounded mb-3 mb-xl-4 {{ $hasSelected ? 'border-primary' : '' }}">
+                                        {{-- ✅ header --}}
                                         <button class="btn w-100 d-flex justify-content-between align-items-center p-3"
                                                 type="button"
                                                 data-bs-toggle="collapse"
-                                                data-bs-target="#spec_section_{{ md5($specName) }}"
-                                                aria-expanded="false">
-                                            <span class="h6 mb-0 font-neue" style="font-size: 14px;">{{ $specName }}</span>
-                                            <i class="ci-chevron-down fs-sm"></i>
+                                                data-bs-target="#{{ $sectionKey }}"
+                                                aria-expanded="{{ $hasSelected ? 'true' : 'false' }}">
+                                            <span class="h6 mb-0 font-neue {{ $hasSelected ? 'text-primary' : '' }}"
+                                                  style="font-size: 14px;">
+                                                {{ $specName }}
+                                                @if($hasSelected)
+                                                    <span class="badge bg-primary ms-1" style="font-size: 11px;">
+                                                        {{ $selectedInSection->count() }}
+                                                    </span>
+                                                @endif
+                                            </span>
+                                            <i class="ci-chevron-{{ $hasSelected ? 'up' : 'down' }} fs-sm"></i>
                                         </button>
-                                        {{-- ✅ კეცვადი body --}}
-                                        <div class="collapse" id="spec_section_{{ md5($specName) }}">
+
+                                        {{-- ✅ მონიშნულია → გახსნილი, არა → დახურული --}}
+                                        <div class="collapse {{ $hasSelected ? 'show' : '' }}"
+                                             id="{{ $sectionKey }}">
                                             <div class="p-3 pt-0 d-flex flex-column gap-1"
                                                  style="max-height: 250px; overflow-y: auto;">
                                                 @foreach($values as $item)
