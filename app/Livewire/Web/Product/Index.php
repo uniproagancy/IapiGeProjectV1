@@ -6,9 +6,7 @@ use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductFullSpecificationSection;
-use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -382,7 +380,11 @@ class Index extends Component
                 ->map(function ($section) {
                     $section->filter = $section->filter
                         ->groupBy('name')
-                        ->map(fn ($items) => $items->unique('value')->values());
+                        ->map(fn ($items) => $items
+                            ->unique('value')
+                            ->map(fn ($item) => (object) ['value' => $item->value])
+                            ->values()
+                        );
                     return $section;
                 })
                 ->groupBy('name');

@@ -155,17 +155,19 @@
                                                 <div class="mb-2">
                                                     <p class="text-muted mb-1" style="font-size: 13px;">{{ $specName }}</p>
                                                     @foreach($values as $item)
-                                                        <div class="form-check">
-                                                            <input type="checkbox"
-                                                                   class="form-check-input"
-                                                                   wire:model.live="selectedSpecs"
-                                                                   value="{{ $specName }}::{{ $item->value }}"
-                                                                   id="spec_{{ md5($specName . $item->value) }}">
-                                                            <label class="form-check-label text-body-emphasis"
-                                                                   for="spec_{{ md5($specName . $item->value) }}">
-                                                                {{ $item->value }}
-                                                            </label>
-                                                        </div>
+                                                        @if(is_object($item) && isset($item->value))
+                                                            <div class="form-check">
+                                                                <input type="checkbox"
+                                                                       class="form-check-input"
+                                                                       wire:model.live="selectedSpecs"
+                                                                       value="{{ $specName }}::{{ $item->value }}"
+                                                                       id="spec_{{ md5($specName . $item->value) }}">
+                                                                <label class="form-check-label text-body-emphasis"
+                                                                       for="spec_{{ md5($specName . $item->value) }}">
+                                                                    {{ $item->value }}
+                                                                </label>
+                                                            </div>
+                                                        @endif
                                                     @endforeach
                                                 </div>
                                             @endforeach
