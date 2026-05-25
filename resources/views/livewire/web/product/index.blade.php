@@ -147,35 +147,27 @@
 
                             {{-- სპეციფიკაციების ფილტრი --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
-                                @foreach($specificationSections as $sectionName => $specs)
+                                @foreach($specificationSections as $specName => $values)
                                     <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                                        <h4 class="h6 mb-0 font-neue">{{ $sectionName }}</h4>
+                                        <h4 class="h6 mb-0 font-neue">{{ $specName }}</h4>
                                         <div class="d-flex flex-column gap-2 mt-3">
-                                            @foreach($specs as $specName => $values)
-                                                <div class="mb-2">
-                                                    <p class="text-muted mb-1" style="font-size: 13px;">{{ $specName }}</p>
-                                                    @foreach($values as $item)
-                                                        @if(is_object($item) && isset($item->value))
-                                                            <div class="form-check">
-                                                                <input type="checkbox"
-                                                                       class="form-check-input"
-                                                                       wire:model.live="selectedSpecs"
-                                                                       value="{{ $specName }}::{{ $item->value }}"
-                                                                       id="spec_{{ md5($specName . $item->value) }}">
-                                                                <label class="form-check-label text-body-emphasis"
-                                                                       for="spec_{{ md5($specName . $item->value) }}">
-                                                                    {{ $item->value }}
-                                                                </label>
-                                                            </div>
-                                                        @endif
-                                                    @endforeach
+                                            @foreach($values as $item)
+                                                <div class="form-check">
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           wire:model.live="selectedSpecs"
+                                                           value="{{ $specName }}::{{ $item->value }}"
+                                                           id="spec_{{ md5($specName . $item->value) }}">
+                                                    <label class="form-check-label text-body-emphasis"
+                                                           for="spec_{{ md5($specName . $item->value) }}">
+                                                        {{ $item->value }}
+                                                    </label>
                                                 </div>
                                             @endforeach
                                         </div>
                                     </div>
                                 @endforeach
                             @endif
-
                             {{-- მხოლოდ ფასდაკლებული --}}
                             <div class="form-check pt-3 border-top">
                                 <input type="checkbox"

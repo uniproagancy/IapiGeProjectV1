@@ -353,13 +353,15 @@ class Index extends Component
         }
 
         $categoryId = $this->currentCategory->id;
-        $cacheKey   = 'spec_sections_' . $categoryId;
+        $parentId   = $this->currentCategory->parent_id;
+        $cacheKey   = 'spec_sections_v2_' . $categoryId;
 
-        return cache()->remember($cacheKey, 3600, function () {
+        return cache()->remember($cacheKey, 3600, function () use ($parentId) {
+            // ✅ კატეგორიის პროდუქტების ID-ები
             $productIds = Product::query()
                 ->where('show', 1)
                 ->where('active', 1)
-                ->when($this->currentCategory->parent_id === 0, function ($q) {
+                ->when($parentId === 0, function ($q) {
                     $childIds = $this->currentCategory->children()->pluck('id');
                     $q->whereIn('category_id', $childIds);
                 }, function ($q) {
@@ -367,27 +369,30 @@ class Index extends Component
                 })
                 ->pluck('id');
 
-            return ProductFullSpecificationSection::query()
-                ->select('id', 'name', 'product_id')
-                ->whereIn('product_id', $productIds)
-                ->whereHas('filter')
-                ->with(['filter' => fn ($q) => $q
-                    ->select('id', 'section_id', 'name', 'value')
-                    ->where('filter', 1)
-                    ->orderBy('value')
-                ])
-                ->get()
-                ->map(function ($section) {
-                    $section->filter = $section->filter
-                        ->groupBy('name')
-                        ->map(fn ($items) => $items
-                            ->unique('value')
-                            ->map(fn ($item) => (object) ['value' => $item->value])
-                            ->values()
-                        );
-                    return $section;
+            if ($productIds->isEmpty()) {
+                return collect();
+            }
+
+            // ✅ filter=1 მქონე items პირდაპირ, section-ის გავლით
+            $items = \App\Models\Product\ProductFullSpecificationItem::query()
+                ->select('id', 'section_id', 'name', 'value')
+                ->where('filter', 1)
+                ->whereNotNull('value')
+                ->where('value', '!=', '')
+                ->whereHas('section', function ($q) use ($productIds) {
+                    $q->whereIn('product_id', $productIds);
                 })
-                ->groupBy('name');
+                ->get();
+
+            if ($items->isEmpty()) {
+                return collect();
+            }
+
+            // ✅ name-ით დაჯგუფება → unique value-ები
+            return $items
+                ->groupBy('name')
+                ->map(fn ($group) => $group->unique('value')->map(fn ($item) => (object) ['value' => $item->value])->values())
+                ->filter(fn ($values) => $values->count() > 1); // ✅ მხოლოდ 2+ ვარიანტი
         });
     }
 

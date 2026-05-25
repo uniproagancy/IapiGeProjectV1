@@ -19,4 +19,8 @@ class ProductFullSpecificationItem extends Model
         'filter',
     ];
 
+    public function section()
+    {
+        return $this->belongsTo(ProductFullSpecificationSection::class, 'section_id');
+    }
 }
