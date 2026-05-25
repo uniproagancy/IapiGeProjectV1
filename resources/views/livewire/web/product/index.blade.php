@@ -106,68 +106,43 @@
                                 @endif
                             </div>
 
-                            {{-- ბრენდი --}}
-                            <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                                <h4 class="h6 mb-0 font-neue">ბრენდი</h4>
-                                <div class="expanded" id="brandsList">
-                                    @if($brands->count() > 0)
-                                        <div class="d-flex flex-column gap-2 mt-3">
-                                            @foreach($brands as $index => $brand)
-                                                <div class="form-check"
-                                                     style="{{ $index >= 12 && !$this->showAllBrands ? 'display: none;' : '' }}">
-                                                    <input type="checkbox"
-                                                           class="form-check-input"
-                                                           wire:model.live="selectedBrands"
-                                                           value="{{ $brand->id }}"
-                                                           id="brand_{{ $brand->id }}">
-                                                    <label class="form-check-label text-body-emphasis"
-                                                           for="brand_{{ $brand->id }}">
-                                                        {{ $brand->translation('ka')->title }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
-                                            @if($brands->count() > 12)
-                                                <button class="btn btn-sm btn-outline-secondary w-100 mt-3"
-                                                        type="button"
-                                                        wire:click="toggleShowAllBrands"
-                                                        @click="$event.stopPropagation()">
-                                                    @if($this->showAllBrands)
-                                                        გაკეცე
-                                                    @else
-                                                        ყველას ნახვა ({{ $brands->count() - 12 }} მეტი)
-                                                    @endif
-                                                </button>
-                                            @endif
-                                        </div>
-                                    @else
-                                        <p class="text-muted small mb-0 mt-3">ბრენდები არ მოიძებნა</p>
-                                    @endif
-                                </div>
-                            </div>
-
                             {{-- სპეციფიკაციების ფილტრი --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
-                                    <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                                        <h4 class="h6 mb-0 font-neue">{{ $specName }}</h4>
-                                        <div class="d-flex flex-column gap-2 mt-3">
-                                            @foreach($values as $item)
-                                                <div class="form-check">
-                                                    <input type="checkbox"
-                                                           class="form-check-input"
-                                                           wire:model.live="selectedSpecs"
-                                                           value="{{ $specName }}::{{ $item->value }}"
-                                                           id="spec_{{ md5($specName . $item->value) }}">
-                                                    <label class="form-check-label text-body-emphasis"
-                                                           for="spec_{{ md5($specName . $item->value) }}">
-                                                        {{ $item->value }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
+                                    <div class="w-100 border rounded mb-3 mb-xl-4">
+                                        {{-- ✅ კეცვადი header --}}
+                                        <button class="btn w-100 d-flex justify-content-between align-items-center p-3"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#spec_section_{{ md5($specName) }}"
+                                                aria-expanded="false">
+                                            <span class="h6 mb-0 font-neue" style="font-size: 14px;">{{ $specName }}</span>
+                                            <i class="ci-chevron-down fs-sm"></i>
+                                        </button>
+                                        {{-- ✅ კეცვადი body --}}
+                                        <div class="collapse" id="spec_section_{{ md5($specName) }}">
+                                            <div class="p-3 pt-0 d-flex flex-column gap-1"
+                                                 style="max-height: 250px; overflow-y: auto;">
+                                                @foreach($values as $item)
+                                                    <div class="form-check">
+                                                        <input type="checkbox"
+                                                               class="form-check-input"
+                                                               wire:model.live="selectedSpecs"
+                                                               value="{{ $specName }}::{{ $item->value }}"
+                                                               id="spec_{{ md5($specName . $item->value) }}">
+                                                        <label class="form-check-label text-body-emphasis"
+                                                               style="font-size: 13px;"
+                                                               for="spec_{{ md5($specName . $item->value) }}">
+                                                            {{ $item->value }}
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
                             @endif
+
                             {{-- მხოლოდ ფასდაკლებული --}}
                             <div class="form-check pt-3 border-top">
                                 <input type="checkbox"
