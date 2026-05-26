@@ -65,12 +65,21 @@ class ZoommerProduct
 
         try {
             $client = new Client([
-                'timeout' => $this->timeout,
+                'timeout'         => $this->timeout,
                 'connect_timeout' => 10,
-                'http_errors' => false,
-                'verify' => false, // SSL verification (production-ში true უნდა იყოს)
-                'headers' => [
+                'http_errors'     => false,
+                'verify'          => false,
+                'headers'         => [
+                    'Accept'          => 'application/json, text/plain, */*',
                     'Accept-Language' => 'ka',
+                    'Referer'         => 'https://zoommer.ge/',
+                    'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                    'os'              => 'web',
+                    'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
+                ],
+                'curl' => [
+                    CURLOPT_DNS_CACHE_TIMEOUT => 300,
+                    CURLOPT_IPRESOLVE         => CURL_IPRESOLVE_V4,
                 ],
             ]);
 
