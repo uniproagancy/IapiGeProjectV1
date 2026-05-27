@@ -273,7 +273,7 @@ class Index extends Component
     {
         $result = $this->buildProductQuery()
             ->join('db_product_categories', 'db_products.category_id', '=', 'db_product_categories.id')
-            ->orderBy('db_product_categories.sortable')
+            ->orderBy('db_product_categories.sortable', 'ASC')
             ->orderBy('db_products.id', 'DESC')
             ->select('db_products.*')
             ->paginate($this->perPage);
