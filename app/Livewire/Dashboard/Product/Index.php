@@ -60,6 +60,8 @@ class Index extends Component
     public $bulkBrandId       = null;
     public array $bulkSubcategories = [];
 
+    public bool $no_brand = false;
+
     protected $listeners = [
         'delete',
         'restore',
@@ -81,6 +83,7 @@ class Index extends Component
         'status_active' => ['except' => false],
         'no_stock'      => ['except' => false],
         'unsorted'      => ['except' => false],
+        'no_brand' => ['except' => false],
     ];
 
     public function mount(): void
@@ -177,7 +180,7 @@ class Index extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['search_query', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted', 'supplier_id']);
+        $this->reset(['search_query', 'no_brand','order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted', 'supplier_id']);
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
@@ -435,6 +438,7 @@ class Index extends Component
             ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
             ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
+            ->when($this->no_brand === true, fn($q) => $q->whereIn('brand_id', [1, 6]))
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
                     ? $q->where('quantity', '>', 0)

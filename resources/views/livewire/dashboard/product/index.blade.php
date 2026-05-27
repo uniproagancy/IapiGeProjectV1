@@ -316,6 +316,11 @@
                         <label class="form-check-label" for="unsorted">დაუხარისხებელი</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
+                        <input type="checkbox" class="form-check-input" id="no_brand"
+                               wire:model.lazy="no_brand">
+                        <label class="form-check-label" for="no_brand">ბრენდის გარეშე</label>
+                    </div>
+                    <div class="mb-1 form-check form-check-primary">
                         <input type="checkbox" class="form-check-input" id="draft"
                                wire:model.lazy="draft">
                         <label class="form-check-label" for="draft">მხოლოდ Draft</label>
