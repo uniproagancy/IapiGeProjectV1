@@ -7,6 +7,55 @@
 
 @section('page_css')
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
+    <style>
+        .filter-section-btn {
+            background: none;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            border-radius: 0;
+            padding: 10px 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: inherit;
+        }
+        .filter-section-btn:hover {
+            background: none;
+            color: inherit;
+        }
+        .filter-section-btn.has-selected {
+            color: #0d6efd;
+        }
+        .filter-body {
+            padding: 8px 0 4px 0;
+        }
+        .filter-body .form-check {
+            padding: 3px 0 3px 1.5em;
+            margin: 0;
+        }
+        .filter-body .form-check-label {
+            font-size: 13px;
+            cursor: pointer;
+            color: #444;
+        }
+        .filter-body .form-check-input {
+            margin-top: 3px;
+        }
+        .filter-block {
+            margin-bottom: 6px;
+        }
+        .filter-selected-badge {
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: #0d6efd;
+            color: #fff;
+            margin-left: 6px;
+        }
+    </style>
 @endsection
 
 <div>
@@ -35,110 +84,176 @@
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
                 <aside class="col-lg-3">
+
                     {{-- ფასის ფილტრი --}}
-                    <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                        <h4 class="h6 mb-3 font-neue">ფასი</h4>
-                        <div class="d-flex gap-2 mb-3">
-                            <input type="number"
-                                   class="form-control form-control-sm"
-                                   wire:model.live.debounce.500ms="priceMin"
-                                   placeholder="მინ. ₾"
-                                   min="0">
-                            <input type="number"
-                                   class="form-control form-control-sm"
-                                   wire:model.live.debounce.500ms="priceMax"
-                                   placeholder="მაქს. ₾"
-                                   min="0">
+                    <div class="filter-block">
+                        <button class="filter-section-btn"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#filter_price"
+                                aria-expanded="{{ ($priceMin || $priceMax) ? 'true' : 'false' }}">
+                            <span>
+                                ფასი
+                                @if($priceMin || $priceMax)
+                                    <span class="filter-selected-badge">✓</span>
+                                @endif
+                            </span>
+                            <i class="ci-chevron-{{ ($priceMin || $priceMax) ? 'up' : 'down' }} fs-sm"></i>
+                        </button>
+                        <div class="collapse {{ ($priceMin || $priceMax) ? 'show' : '' }}" id="filter_price">
+                            <div class="filter-body">
+                                <div class="d-flex gap-2 mb-2">
+                                    <input type="number"
+                                           class="form-control form-control-sm"
+                                           wire:model.live.debounce.500ms="priceMin"
+                                           placeholder="მინ. ₾"
+                                           min="0">
+                                    <input type="number"
+                                           class="form-control form-control-sm"
+                                           wire:model.live.debounce.500ms="priceMax"
+                                           placeholder="მაქს. ₾"
+                                           min="0">
+                                </div>
+                                @if($priceMin || $priceMax)
+                                    <button wire:click="clearPriceFilter"
+                                            class="btn btn-sm btn-outline-secondary w-100 mt-1"
+                                            style="font-size: 12px;">
+                                        გასუფთავება
+                                    </button>
+                                @endif
+                            </div>
                         </div>
-                        @if($priceMin || $priceMax)
-                            <button wire:click="clearPriceFilter"
-                                    class="btn btn-sm btn-outline-secondary w-100">
-                                ფასის გასუფთავება
-                            </button>
-                        @endif
                     </div>
 
                     <div class="offcanvas-start" id="filterSidebar">
                         <div class="offcanvas-body flex-column pt-2 py-lg-0">
 
                             {{-- კატეგორიები --}}
-                            <div class="w-100 border rounded p-3 p-xl-4 mb-3 mb-xl-4">
-                                <h4 class="h6 mb-2 font-neue">
-                                    {{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}
-                                </h4>
-                                @if(!$selectedParent)
-                                    <ul class="list-unstyled d-block m-0">
-                                        @foreach($parentCategories as $category)
-                                            <li class="nav d-block pt-2 mt-1">
-                                                <a class="nav-link animate-underline fw-normal p-0"
-                                                   href="#"
-                                                   wire:click.prevent="selectParent({{ $category->id }})">
-                                                    <span class="animate-target text-truncate me-3">
-                                                        {{ $category->translation('ka')->title }}
-                                                    </span>
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <ul class="list-unstyled d-block m-0">
-                                        @foreach($subCategories as $subCategory)
-                                            <li class="nav d-block pt-2 mt-1">
-                                                <a class="nav-link animate-underline fw-normal p-0
-                                                   {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : '' }}"
-                                                   href="#"
-                                                   wire:click.prevent="selectChild({{ $subCategory->id }})">
-                                                    <span class="animate-target text-truncate me-3">
-                                                        {{ $subCategory->translation('ka')->title }}
-                                                    </span>
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                        <li class="pt-3">
-                                            <a href="#"
-                                               wire:click.prevent="resetCategories"
-                                               class="text-primary"
-                                               style="font-size: 14px;">
-                                                ← უკან დაბრუნება
-                                            </a>
-                                        </li>
-                                    </ul>
-                                @endif
+                            <div class="filter-block">
+                                <button class="filter-section-btn"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#filter_categories"
+                                        aria-expanded="true">
+                                    <span>{{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}</span>
+                                    <i class="ci-chevron-up fs-sm"></i>
+                                </button>
+                                <div class="collapse show" id="filter_categories">
+                                    <div class="filter-body">
+                                        @if(!$selectedParent)
+                                            <ul class="list-unstyled m-0">
+                                                @foreach($parentCategories as $category)
+                                                    <li class="py-1">
+                                                        <a class="text-body text-decoration-none"
+                                                           style="font-size: 13px;"
+                                                           href="#"
+                                                           wire:click.prevent="selectParent({{ $category->id }})">
+                                                            {{ $category->translation('ka')->title }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <ul class="list-unstyled m-0">
+                                                @foreach($subCategories as $subCategory)
+                                                    <li class="py-1">
+                                                        <a class="text-decoration-none {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : 'text-body' }}"
+                                                           style="font-size: 13px;"
+                                                           href="#"
+                                                           wire:click.prevent="selectChild({{ $subCategory->id }})">
+                                                            {{ $subCategory->translation('ka')->title }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                                <li class="pt-2">
+                                                    <a href="#"
+                                                       wire:click.prevent="resetCategories"
+                                                       class="text-primary"
+                                                       style="font-size: 12px;">
+                                                        ← უკან
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
+
+                            {{-- ბრენდი --}}
+                            @if($brands->count() > 0)
+                                <div class="filter-block">
+                                    <button class="filter-section-btn {{ !empty($selectedBrands) ? 'has-selected' : '' }}"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#filter_brands"
+                                            aria-expanded="{{ !empty($selectedBrands) ? 'true' : 'false' }}">
+                                        <span>
+                                            ბრენდი
+                                            @if(!empty($selectedBrands))
+                                                <span class="filter-selected-badge">{{ count($selectedBrands) }}</span>
+                                            @endif
+                                        </span>
+                                        <i class="ci-chevron-{{ !empty($selectedBrands) ? 'up' : 'down' }} fs-sm"></i>
+                                    </button>
+                                    <div class="collapse {{ !empty($selectedBrands) ? 'show' : '' }}" id="filter_brands">
+                                        <div class="filter-body" style="max-height: 220px; overflow-y: auto;">
+                                            @foreach($brands as $index => $brand)
+                                                <div class="form-check"
+                                                     style="{{ $index >= 12 && !$this->showAllBrands ? 'display: none;' : '' }}">
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           wire:model.live="selectedBrands"
+                                                           value="{{ $brand->id }}"
+                                                           id="brand_{{ $brand->id }}">
+                                                    <label class="form-check-label"
+                                                           for="brand_{{ $brand->id }}">
+                                                        {{ $brand->translation('ka')->title }}
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                            @if($brands->count() > 12)
+                                                <button class="btn btn-link p-0 mt-1"
+                                                        style="font-size: 12px;"
+                                                        type="button"
+                                                        wire:click="toggleShowAllBrands">
+                                                    @if($this->showAllBrands)
+                                                        ნაკლების ჩვენება
+                                                    @else
+                                                        ყველა ({{ $brands->count() - 12 }} მეტი)
+                                                    @endif
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- სპეციფიკაციების ფილტრი --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
                                     @php
-                                        // ✅ ამ სექციაში მონიშნული items
-                                        $sectionKey    = 'spec_section_' . md5($specName);
                                         $selectedInSection = collect($selectedSpecs)->filter(
                                             fn($s) => str_starts_with($s, $specName . '::')
                                         );
-                                        $hasSelected   = $selectedInSection->count() > 0;
+                                        $hasSelected = $selectedInSection->count() > 0;
                                     @endphp
-                                    <div class="w-100 border rounded mb-3 mb-xl-4 {{ $hasSelected ? 'border-primary' : '' }}">
-                                        {{-- ✅ header --}}
-                                        <button class="btn w-100 d-flex justify-content-between align-items-center p-3"
+                                    <div class="filter-block">
+                                        <button class="filter-section-btn {{ $hasSelected ? 'has-selected' : '' }}"
                                                 type="button"
                                                 data-bs-toggle="collapse"
-                                                data-bs-target="#{{ $sectionKey }}"
+                                                data-bs-target="#spec_{{ md5($specName) }}"
                                                 aria-expanded="{{ $hasSelected ? 'true' : 'false' }}">
-                                            <span class="h6 mb-0 font-neue {{ $hasSelected ? 'text-primary' : '' }}"
-                                                  style="font-size: 14px;">
+                                            <span>
                                                 {{ $specName }}
                                                 @if($hasSelected)
-                                                    <span class="badge bg-primary ms-1" style="font-size: 11px;">
-                                                        {{ $selectedInSection->count() }}
-                                                    </span>
+                                                    <span class="filter-selected-badge">{{ $selectedInSection->count() }}</span>
                                                 @endif
                                             </span>
                                             <i class="ci-chevron-{{ $hasSelected ? 'up' : 'down' }} fs-sm"></i>
                                         </button>
-
-                                        {{-- ✅ მონიშნულია → გახსნილი, არა → დახურული --}}
                                         <div class="collapse {{ $hasSelected ? 'show' : '' }}"
-                                             id="{{ $sectionKey }}">
-                                            <div class="p-3 pt-0 d-flex flex-column gap-1"
-                                                 style="max-height: 250px; overflow-y: auto;">
+                                             id="spec_{{ md5($specName) }}">
+                                            <div class="filter-body" style="max-height: 220px; overflow-y: auto;">
                                                 @foreach($values as $item)
                                                     <div class="form-check">
                                                         <input type="checkbox"
@@ -146,8 +261,7 @@
                                                                wire:model.live="selectedSpecs"
                                                                value="{{ $specName }}::{{ $item->value }}"
                                                                id="spec_{{ md5($specName . $item->value) }}">
-                                                        <label class="form-check-label text-body-emphasis"
-                                                               style="font-size: 13px;"
+                                                        <label class="form-check-label"
                                                                for="spec_{{ md5($specName . $item->value) }}">
                                                             {{ $item->value }}
                                                         </label>
@@ -160,15 +274,18 @@
                             @endif
 
                             {{-- მხოლოდ ფასდაკლებული --}}
-                            <div class="form-check pt-3 border-top">
-                                <input type="checkbox"
-                                       class="form-check-input"
-                                       wire:model.live="onlyDiscounted"
-                                       id="discountFilter">
-                                <label class="form-check-label text-body-emphasis fw-medium"
-                                       for="discountFilter">
-                                    მხოლოდ ფასდაკლებული
-                                </label>
+                            <div class="filter-block pt-2">
+                                <div class="form-check">
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           wire:model.live="onlyDiscounted"
+                                           id="discountFilter">
+                                    <label class="form-check-label fw-medium"
+                                           style="font-size: 13px;"
+                                           for="discountFilter">
+                                        მხოლოდ ფასდაკლებული
+                                    </label>
+                                </div>
                             </div>
 
                         </div>
