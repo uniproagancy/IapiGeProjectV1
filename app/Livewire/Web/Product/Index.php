@@ -402,7 +402,7 @@ class Index extends Component
     private function buildProductQuery()
     {
         return Product::query()
-            ->select('id', 'category_id', 'brand_id', 'show', 'active', 'main_image', 'sku')
+            ->select('db_products.id', 'db_products.category_id', 'db_products.brand_id', 'db_products.show', 'db_products.active', 'db_products.main_image', 'db_products.sku')
             ->with([
                 'translations' => fn ($q) => $q
                     ->select('id', 'product_id', 'title', 'slug', 'locale')
@@ -412,8 +412,8 @@ class Index extends Component
                 'brand' => fn ($q) => $q
                     ->select('id', 'logo', 'active'),
             ])
-            ->where('show', 1)
-            ->where('active', 1)
+            ->where('db_products.show', 1)
+            ->where('db_products.active', 1)
             ->tap(fn ($q) => $this->applyAllFilters($q));
     }
 
@@ -435,15 +435,17 @@ class Index extends Component
 
         if ($this->currentCategory->parent_id === 0) {
             $childIds = $this->currentCategory->children()
-                ->whereHas('products', fn ($q) => $q->where('active', 1)->where('show', 1))
+                ->whereHas('products', fn ($q) => $q
+                    ->where('db_products.active', 1)
+                    ->where('db_products.show', 1)
+                )
                 ->pluck('id');
 
-            $query->whereIn('category_id', $childIds);
+            $query->whereIn('db_products.category_id', $childIds);
         } else {
-            $query->where('category_id', $this->currentCategory->id);
+            $query->where('db_products.category_id', $this->currentCategory->id);
         }
     }
-
     private function applyBrandFilter($query): void
     {
         $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
