@@ -176,54 +176,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            {{-- ბრენდი --}}
-                            @if($brands->count() > 0)
-                                <div class="filter-block">
-                                    <div class="filter-section-title {{ !empty($selectedBrands) ? 'has-selected' : '' }}"
-                                         data-bs-toggle="collapse"
-                                         data-bs-target="#filter_brands">
-                                        <span>
-                                            ბრენდი
-                                            @if(!empty($selectedBrands))
-                                                <span class="filter-selected-badge">{{ count($selectedBrands) }}</span>
-                                            @endif
-                                        </span>
-                                        <i class="ci-chevron-down fs-sm"></i>
-                                    </div>
-                                    <div class="collapse show" id="filter_brands">
-                                        <div class="filter-body">
-                                            @foreach($brands as $index => $brand)
-                                                <div class="form-check"
-                                                     @if($index >= 5 && !$this->showAllBrands) style="display:none;" @endif>
-                                                    <input type="checkbox"
-                                                           class="form-check-input"
-                                                           wire:model.live="selectedBrands"
-                                                           value="{{ $brand->id }}"
-                                                           id="brand_{{ $brand->id }}">
-                                                    <label class="form-check-label"
-                                                           for="brand_{{ $brand->id }}">
-                                                        {{ $brand->translation('ka')->title }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
-                                            @if($brands->count() > 5)
-                                                <button class="filter-show-more mt-2"
-                                                        type="button"
-                                                        wire:click="toggleShowAllBrands">
-                                                    @if($this->showAllBrands)
-                                                        ნაკლები ↑
-                                                    @else
-                                                        მეტის ნახვა ({{ $brands->count() - 5 }}) ↓
-                                                    @endif
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- სპეციფიკაციების ფილტრი --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
                                     @php
