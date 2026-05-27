@@ -179,7 +179,6 @@ class AltaProductJob implements ShouldQueue
                     'in_stock' => $in_stock,
                     'show'     => $show,
                     'active'   => $show,
-                    'brand_id' => $this->getBrandId($productData),
                 ]);
 
                 if (!empty($productData['description'])) {

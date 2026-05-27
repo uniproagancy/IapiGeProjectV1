@@ -215,7 +215,7 @@ class ZoommerProductJob implements ShouldQueue
     {
         try {
             $specGroup = collect($productData['specificationGroup'] ?? [])
-                ->firstWhere('groupName', 'Brand');
+                ->firstWhere('groupName', 'ბრენდი');
 
             if (!empty($specGroup) && !empty($specGroup['specifications'][0]['specificationMeaning'])) {
                 $brandName = $specGroup['specifications'][0]['specificationMeaning'];
