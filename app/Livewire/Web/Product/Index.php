@@ -390,7 +390,8 @@ class Index extends Component
             return $items
                 ->groupBy('name')
                 ->map(fn ($group) => $group->unique('value')->map(fn ($item) => (object) ['value' => $item->value])->values())
-                ->filter(fn ($values) => $values->count() > 1); // ✅ მხოლოდ 2+ ვარიანტი
+                ->filter(fn ($values) => $values->count() > 1)
+                ->filter(fn ($values, $name) => strtolower($name) !== 'ბრენდი' && strtolower($name) !== 'brand');
         });
     }
 
