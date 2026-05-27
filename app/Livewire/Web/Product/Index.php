@@ -272,7 +272,7 @@ class Index extends Component
     public function products()
     {
         $result = $this->buildProductQuery()
-            ->orderBy('db_products.id', 'DESC')
+            ->orderBy('db_products.id', 'ASC')
             ->paginate($this->perPage);
         $this->isLoading = false;
         return $result;
