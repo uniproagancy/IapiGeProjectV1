@@ -5,6 +5,8 @@ namespace App\Livewire\Dashboard\Product;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductFullSpecificationItem;
+use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductSupplier;
@@ -21,10 +23,6 @@ class Update extends Component
 {
     use WithFileUploads;
 
-    // ============================================
-    // Properties
-    // ============================================
-
     public $productId;
     public $category_id  = '';
     public $brand_id     = '';
@@ -36,13 +34,12 @@ class Update extends Component
     public $preorder     = 0;
     public $main_image;
     public $current_main_image = null;
+    public $draft        = 0;
 
-    // ✅ ფასები
     public $dealer_price   = 0;
     public $regular_price  = 0;
     public $discount_price = null;
 
-    // ✅ თარგმანები
     public $title_ka       = '';
     public $title_en       = '';
     public $title_ru       = '';
@@ -53,15 +50,13 @@ class Update extends Component
     public $keywords_en    = '';
     public $keywords_ru    = '';
 
-    public $draft = 0;
+    public $additional_images = [];
+    public $existing_images   = [];
 
-    // ✅ დამატებითი სურათები
-    public $additional_images  = [];
-    public $existing_images    = [];
-
-    // ============================================
-    // Mount
-    // ============================================
+    // ✅ სპეციფიკაციები
+    public array $specSections = [];
+    public string $newSectionName = '';
+    public array $newItemInputs = [];
 
     public function mount(int $id): void
     {
@@ -69,6 +64,7 @@ class Update extends Component
             'translations',
             'price',
             'images',
+            'fullSpecifications.list',
         ])->findOrFail($id);
 
         $this->productId          = $product->id;
@@ -81,16 +77,14 @@ class Update extends Component
         $this->in_stock           = $product->in_stock;
         $this->preorder           = $product->preorder;
         $this->current_main_image = $product->main_image;
-        $this->draft = $product->draft ?? 0;
+        $this->draft              = $product->draft ?? 0;
 
-        // ✅ ფასები
         if ($product->price) {
             $this->dealer_price   = $product->price->dealer_price ?? 0;
             $this->regular_price  = $product->price->regular_price ?? 0;
             $this->discount_price = $product->price->discount_price;
         }
 
-        // ✅ თარგმანები
         foreach ($product->translations as $translation) {
             $locale = $translation->locale;
             $this->{"title_{$locale}"}       = $translation->title ?? '';
@@ -98,11 +92,188 @@ class Update extends Component
             $this->{"keywords_{$locale}"}    = $translation->keywords ?? '';
         }
 
-        // ✅ არსებული სურათები
         $this->existing_images = $product->images->map(fn ($img) => [
             'id'   => $img->id,
             'path' => $img->path,
         ])->toArray();
+
+        // ✅ სპეციფიკაციების ჩატვირთვა
+        $this->loadSpecSections($product);
+    }
+
+    private function loadSpecSections(Product $product): void
+    {
+        $this->specSections = $product->fullSpecifications->map(function ($section) {
+            return [
+                'id'       => $section->id,
+                'name'     => $section->name,
+                'items'    => $section->list->map(fn ($item) => [
+                    'id'     => $item->id,
+                    'name'   => $item->name,
+                    'value'  => $item->value,
+                    'filter' => $item->filter,
+                ])->toArray(),
+            ];
+        })->toArray();
+
+        $this->newItemInputs = array_fill_keys(
+            array_column($this->specSections, 'id'),
+            ['name' => '', 'value' => '', 'filter' => 0]
+        );
+    }
+
+    // ============================================
+    // Spec Section methods
+    // ============================================
+
+    public function addSection(): void
+    {
+        $name = trim($this->newSectionName);
+        if (empty($name)) return;
+
+        try {
+            $section = ProductFullSpecificationSection::create([
+                'product_id' => $this->productId,
+                'name'       => $name,
+            ]);
+
+            $this->specSections[] = [
+                'id'    => $section->id,
+                'name'  => $section->name,
+                'items' => [],
+            ];
+            $this->newItemInputs[$section->id] = ['name' => '', 'value' => '', 'filter' => 0];
+            $this->newSectionName = '';
+            $this->dispatch('ui:success', message: 'სექცია დაემატა!');
+
+        } catch (Exception $e) {
+            Log::error('❌ addSection error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+        }
+    }
+
+    public function deleteSection(int $sectionId): void
+    {
+        try {
+            $section = ProductFullSpecificationSection::findOrFail($sectionId);
+            ProductFullSpecificationItem::where('section_id', $sectionId)->forceDelete();
+            $section->forceDelete();
+
+            $this->specSections = array_values(
+                array_filter($this->specSections, fn ($s) => $s['id'] !== $sectionId)
+            );
+            unset($this->newItemInputs[$sectionId]);
+            $this->dispatch('ui:success', message: 'სექცია წაიშალა!');
+
+        } catch (Exception $e) {
+            Log::error('❌ deleteSection error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+        }
+    }
+
+    public function addItem(int $sectionId): void
+    {
+        $input = $this->newItemInputs[$sectionId] ?? [];
+        $name  = trim($input['name'] ?? '');
+        $value = trim($input['value'] ?? '');
+
+        if (empty($name) || empty($value)) return;
+
+        try {
+            $item = ProductFullSpecificationItem::create([
+                'section_id' => $sectionId,
+                'name'       => $name,
+                'value'      => $value,
+                'filter'     => (int) ($input['filter'] ?? 0),
+            ]);
+
+            foreach ($this->specSections as &$section) {
+                if ($section['id'] === $sectionId) {
+                    $section['items'][] = [
+                        'id'     => $item->id,
+                        'name'   => $item->name,
+                        'value'  => $item->value,
+                        'filter' => $item->filter,
+                    ];
+                    break;
+                }
+            }
+
+            $this->newItemInputs[$sectionId] = ['name' => '', 'value' => '', 'filter' => 0];
+            $this->dispatch('ui:success', message: 'სტრიქონი დაემატა!');
+
+        } catch (Exception $e) {
+            Log::error('❌ addItem error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+        }
+    }
+
+    public function deleteItem(int $sectionId, int $itemId): void
+    {
+        try {
+            ProductFullSpecificationItem::findOrFail($itemId)->forceDelete();
+
+            foreach ($this->specSections as &$section) {
+                if ($section['id'] === $sectionId) {
+                    $section['items'] = array_values(
+                        array_filter($section['items'], fn ($i) => $i['id'] !== $itemId)
+                    );
+                    break;
+                }
+            }
+
+            $this->dispatch('ui:success', message: 'სტრიქონი წაიშალა!');
+
+        } catch (Exception $e) {
+            Log::error('❌ deleteItem error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+        }
+    }
+
+    public function toggleFilter(int $sectionId, int $itemId): void
+    {
+        try {
+            $item = ProductFullSpecificationItem::findOrFail($itemId);
+            $item->update(['filter' => !$item->filter]);
+
+            foreach ($this->specSections as &$section) {
+                if ($section['id'] === $sectionId) {
+                    foreach ($section['items'] as &$i) {
+                        if ($i['id'] === $itemId) {
+                            $i['filter'] = (int) !$i['filter'];
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+        } catch (Exception $e) {
+            Log::error('❌ toggleFilter error: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
+    // Image methods
+    // ============================================
+
+    public function deleteImage(int $imageId): void
+    {
+        try {
+            $image = ProductImage::findOrFail($imageId);
+            Storage::disk('public')->delete($image->path);
+            $image->delete();
+
+            $this->existing_images = array_values(array_filter(
+                $this->existing_images,
+                fn ($img) => $img['id'] !== $imageId
+            ));
+
+            $this->dispatch('ui:success', message: 'სურათი წაიშალა');
+        } catch (Exception $e) {
+            Log::error('❌ Image delete error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'სურათის წაშლა ვერ მოხერხდა');
+        }
     }
 
     // ============================================
@@ -140,30 +311,6 @@ class Update extends Component
     }
 
     // ============================================
-    // Delete existing image
-    // ============================================
-
-    public function deleteImage(int $imageId): void
-    {
-        try {
-            $image = ProductImage::findOrFail($imageId);
-            Storage::disk('public')->delete($image->path);
-            $image->delete();
-
-            $this->existing_images = array_filter(
-                $this->existing_images,
-                fn ($img) => $img['id'] !== $imageId
-            );
-
-            $this->dispatch('ui:success', message: 'სურათი წაიშალა');
-
-        } catch (Exception $e) {
-            Log::error('❌ Image delete error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'სურათის წაშლა ვერ მოხერხდა');
-        }
-    }
-
-    // ============================================
     // Save
     // ============================================
 
@@ -173,10 +320,8 @@ class Update extends Component
 
         try {
             DB::transaction(function () {
-
                 $product = Product::findOrFail($this->productId);
 
-                // ✅ პროდუქტის განახლება
                 $product->update([
                     'category_id' => $this->category_id,
                     'brand_id'    => $this->brand_id,
@@ -186,11 +331,9 @@ class Update extends Component
                     'active'      => (int) $this->active,
                     'in_stock'    => (int) $this->in_stock,
                     'preorder'    => (int) $this->preorder,
-                    'draft' => (int) $this->draft,
-
+                    'draft'       => (int) $this->draft,
                 ]);
 
-                // ✅ ფასის განახლება
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
                     [
@@ -202,95 +345,50 @@ class Update extends Component
                     ]
                 );
 
-                // ✅ თარგმანების განახლება
                 $translations = [
-                    'ka' => [
-                        'title'       => $this->title_ka,
-                        'description' => $this->description_ka,
-                        'keywords'    => $this->keywords_ka,
-                    ],
-                    'en' => [
-                        'title'       => $this->title_en,
-                        'description' => $this->description_en,
-                        'keywords'    => $this->keywords_en,
-                    ],
-                    'ru' => [
-                        'title'       => $this->title_ru,
-                        'description' => $this->description_ru,
-                        'keywords'    => $this->keywords_ru,
-                    ],
+                    'ka' => ['title' => $this->title_ka, 'description' => $this->description_ka, 'keywords' => $this->keywords_ka],
+                    'en' => ['title' => $this->title_en, 'description' => $this->description_en, 'keywords' => $this->keywords_en],
+                    'ru' => ['title' => $this->title_ru, 'description' => $this->description_ru, 'keywords' => $this->keywords_ru],
                 ];
 
                 foreach ($translations as $locale => $data) {
-                    if (empty($data['title'])) {
-                        continue;
-                    }
+                    if (empty($data['title'])) continue;
 
                     $existing = ProductTranslation::where('product_id', $product->id)
-                        ->where('locale', $locale)
-                        ->first();
+                        ->where('locale', $locale)->first();
 
-                    $slug = $existing?->slug
-                        ?? Str::slug($data['title']) . '-' . $product->id;
+                    $slug = $existing?->slug ?? Str::slug($data['title']) . '-' . $product->id;
 
                     ProductTranslation::updateOrCreate(
                         ['product_id' => $product->id, 'locale' => $locale],
-                        [
-                            'title'       => $data['title'],
-                            'slug'        => $slug,
-                            'description' => $data['description'] ?: null,
-                            'keywords'    => $data['keywords'] ?: null,
-                        ]
+                        ['title' => $data['title'], 'slug' => $slug, 'description' => $data['description'] ?: null, 'keywords' => $data['keywords'] ?: null]
                     );
                 }
 
-                // ✅ მთავარი სურათი — მხოლოდ ახალი ატვირთვის შემთხვევაში
                 if ($this->main_image) {
                     if ($this->current_main_image) {
                         Storage::disk('public')->delete($this->current_main_image);
                     }
-
-                    $path = $this->main_image->store(
-                        'uploads/products/' . $product->id,
-                        'public'
-                    );
-
+                    $path = $this->main_image->store('uploads/products/' . $product->id, 'public');
                     $product->update(['main_image' => $path]);
                     $this->current_main_image = $path;
                 }
 
-                // ✅ დამატებითი სურათები
                 if (!empty($this->additional_images)) {
                     foreach ($this->additional_images as $image) {
-                        $path = $image->store(
-                            'uploads/products/' . $product->id,
-                            'public'
-                        );
-
-                        $newImage = ProductImage::create([
-                            'product_id' => $product->id,
-                            'path'       => $path,
-                        ]);
-
-                        $this->existing_images[] = [
-                            'id'   => $newImage->id,
-                            'path' => $path,
-                        ];
+                        $path = $image->store('uploads/products/' . $product->id, 'public');
+                        $newImage = ProductImage::create(['product_id' => $product->id, 'path' => $path]);
+                        $this->existing_images[] = ['id' => $newImage->id, 'path' => $path];
                     }
-
                     $this->reset('additional_images');
                 }
-
-                Log::info('✅ Product updated', ['product_id' => $product->id]);
             });
 
             $this->dispatch('ui:success', message: 'პროდუქტი წარმატებით განახლდა!');
             $this->redirect(route('dashboard.product.index'));
 
         } catch (Exception $e) {
-            Log::error('❌ Product update error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('❌ Product update error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა მოხდა, სცადეთ ისევ');
         }
     }
@@ -308,9 +406,7 @@ class Update extends Component
                 ->where('id', '!=', 1)
                 ->with(['translations', 'children.translations'])
                 ->get(),
-            'brands'     => ProductBrand::where('active', 1)
-                ->with('translations')
-                ->get(),
+            'brands'     => ProductBrand::where('active', 1)->with('translations')->get(),
         ])->layout('livewire.dashboard.layout');
     }
 }
