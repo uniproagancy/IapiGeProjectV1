@@ -107,7 +107,7 @@ class ZoommerProductJob implements ShouldQueue
             }
         }
 
-        Log::info("⚠️ Zoommer category not mapped: categoryName={$categoryName}, parentCategoryName={$parentCategoryName}");
+        Log::info("⚠️ Zoommer category not mapped: categoryName={$categoryName}");
         return 4;
     }
 
