@@ -275,5 +275,13 @@
             modal.hide();
         }
     });
+
+    Livewire.on('open-update-modal', () => {
+        new bootstrap.Modal(document.getElementById('updateCategoryModal')).show();
+    });
+
+    Livewire.on('close-update-modal', () => {
+        bootstrap.Modal.getInstance(document.getElementById('updateCategoryModal'))?.hide();
+    });
 </script>
 @endsection
