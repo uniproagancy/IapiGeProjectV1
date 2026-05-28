@@ -25,8 +25,8 @@ class Update extends Component
     public $description_en    = '';
     public $description_ru    = '';
 
-    public $alta_category_id    = null;
-    public $zoommer_category_id = null;
+    public $alta_category_name    = null;
+    public $zoommer_category_name = null;
 
     protected $listeners = [
         'open-category-update-modal' => 'openCategoryUpdateModal',
@@ -42,8 +42,8 @@ class Update extends Component
         $this->show        = $category->show;
         $this->sortable    = $category->sortable;
 
-        $this->alta_category_id    = $category->alta_category_id;
-        $this->zoommer_category_id = $category->zoommer_category_id;
+        $this->alta_category_name    = $category->alta_category_name;
+        $this->zoommer_category_name = $category->zoommer_category_name;
 
         foreach ($category->translations as $translation) {
             $locale = $translation->locale;
@@ -67,12 +67,12 @@ class Update extends Component
             $category = ProductCategory::findOrFail($this->category_id);
 
             $category->update([
-                'parent_id'           => $this->parent_id ?? 0,
-                'active'              => (int) $this->active,
-                'show'                => (int) $this->show,
-                'sortable'            => $this->sortable,
-                'alta_category_id'    => $this->alta_category_id ?: null,
-                'zoommer_category_id' => $this->zoommer_category_id ?: null,
+                'parent_id'            => $this->parent_id ?? 0,
+                'active'               => (int) $this->active,
+                'show'                 => (int) $this->show,
+                'sortable'             => $this->sortable,
+                'alta_category_name'   => $this->alta_category_name ?: null,
+                'zoommer_category_name' => $this->zoommer_category_name ?: null,
             ]);
 
             $translations = [

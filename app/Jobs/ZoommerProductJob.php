@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductImage;
@@ -31,9 +32,9 @@ class ZoommerProductJob implements ShouldQueue
     protected array $productData;
     protected array $productAvailability;
 
-    public int $tries = 3;
-    public int $timeout = 300;
-    public int $maxExceptions = 3;
+    public int $tries             = 3;
+    public int $timeout           = 300;
+    public int $maxExceptions     = 3;
     public int $backoffMultiplier = 2;
 
     public function __construct(array $productData, array $productAvailability = [])
@@ -56,7 +57,6 @@ class ZoommerProductJob implements ShouldQueue
         } catch (Exception $e) {
             Log::error("❌ Error processing product {$this->productData['id']}: {$e->getMessage()}", [
                 'attempt' => $this->attempts(),
-                'error'   => $e,
             ]);
 
             if ($this->attempts() < $this->tries) {
@@ -91,6 +91,68 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
+    // ============================================
+    // Category
+    // ============================================
+
+    private function getCategoryId(array $productData): int
+    {
+        $categoryName       = $productData['categoryName'] ?? null;
+
+        // ✅ 1. categoryName-ით ძებნა
+        if ($categoryName) {
+            $category = ProductCategory::where('zoommer_category_name', $categoryName)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        Log::info("⚠️ Zoommer category not mapped: categoryName={$categoryName}, parentCategoryName={$parentCategoryName}");
+        return 4;
+    }
+
+    // ============================================
+    // Brand
+    // ============================================
+
+    private function getBrandId(array $productData): int
+    {
+        try {
+            $brandName = null;
+
+            foreach ($productData['specificationGroup'] ?? [] as $group) {
+                foreach ($group['specifications'] ?? [] as $spec) {
+                    if ($spec['specificationName'] === 'ბრენდი') {
+                        $brandName = $spec['specificationMeaning'] ?? null;
+                        break 2;
+                    }
+                }
+            }
+
+            if (empty($brandName)) {
+                $brandName = $productData['brandName'] ?? null;
+            }
+
+            if (empty($brandName)) {
+                return 6;
+            }
+
+            $brand = ProductBrand::whereHas('translations',
+                fn ($q) => $q->where('title', 'like', $brandName)
+            )->first();
+
+            return $brand->id ?? 6;
+
+        } catch (Exception $e) {
+            Log::warning("Error finding brand: {$e->getMessage()}");
+            return 6;
+        }
+    }
+
+    // ============================================
+    // Main Logic
+    // ============================================
+
     public function saveProductWithVariants(array $productData, array $productAvailability): void
     {
         if (empty($productData['id'])) {
@@ -121,16 +183,20 @@ class ZoommerProductJob implements ShouldQueue
             ->contains(fn($store) => $store['inStock'] === true);
     }
 
+    // ============================================
+    // Update
+    // ============================================
+
     private function updateExistingProduct(array $productData, bool $hasStock): void
     {
         try {
             $product = Product::where('supplier_product_id', $productData['id'])->firstOrFail();
 
-            $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
-            $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
+            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-            $productPrice  = $this->calculatePrice((float) $productPrice);
-            $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
+            $productPrice  = $this->calculatePrice($productPrice);
+            $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
             ProductPrice::updateOrCreate(
                 ['product_id' => $product->id],
@@ -142,20 +208,20 @@ class ZoommerProductJob implements ShouldQueue
                 ]
             );
 
+            $categoryId = $this->getCategoryId($productData);
+
             $product->update([
-                'quantity' => $hasStock ? 5 : 0,
-                'in_stock' => $hasStock ? 1 : 0,
-                'show'     => $hasStock ? 1 : 0,
-                'active'   => $hasStock ? 1 : 0,
+                'category_id' => $categoryId,
+                'quantity'    => $hasStock ? 5 : 0,
+                'in_stock'    => $hasStock ? 1 : 0,
+                'show'        => $hasStock ? 1 : 0,
+                'active'      => $hasStock ? 1 : 0,
             ]);
 
-            // ✅ Short specifications
             ProductShortSpecification::where('product_id', $product->id)->forceDelete();
             $this->createShortSpecifications($product, $productData);
 
-            // ✅ Full specifications
-            $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)
-                ->pluck('id');
+            $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
             ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
             ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
             $this->createFullSpecifications($product, $productData);
@@ -163,12 +229,10 @@ class ZoommerProductJob implements ShouldQueue
             if (!empty($productData['description'])) {
                 ProductTranslation::where('product_id', $product->id)
                     ->where('locale', 'ka')
-                    ->update([
-                        'description' => $productData['description'],
-                    ]);
+                    ->update(['description' => $productData['description']]);
             }
 
-            Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
+            Log::info("🔁 Updated product: {$product->id}, category: {$categoryId}, stock: " . ($hasStock ? 'yes' : 'no'));
 
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
@@ -176,19 +240,24 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
+    // ============================================
+    // Create
+    // ============================================
+
     private function createNewProduct(array $productData, bool $hasStock): void
     {
         DB::transaction(function () use ($productData, $hasStock) {
             try {
-                $brand_id = $this->getBrandId($productData);
+                $brandId    = $this->getBrandId($productData);
+                $categoryId = $this->getCategoryId($productData);
 
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
-                    'brand_id'            => $brand_id,
-                    'category_id'         => 4,
+                    'brand_id'            => $brandId,
+                    'category_id'         => $categoryId,
                     'sku'                 => $productData['barCode'] ?? null,
                     'supplier_id'         => 4,
-                    'main_image'          => 1,
+                    'main_image'          => null,
                     'active'              => 1,
                     'quantity'            => $hasStock ? 5 : 0,
                     'in_stock'            => $hasStock ? 1 : 0,
@@ -202,7 +271,7 @@ class ZoommerProductJob implements ShouldQueue
                 $this->downloadImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
-                Log::info("✨ Created new product: {$product->id}");
+                Log::info("✨ Created new product: {$product->id}, category: {$categoryId}");
 
             } catch (Exception $e) {
                 Log::error("Error creating product {$productData['id']}: {$e->getMessage()}");
@@ -211,40 +280,18 @@ class ZoommerProductJob implements ShouldQueue
         });
     }
 
-    private function getBrandId(array $productData): int
-    {
-        try {
-            $specGroup = collect($productData['specificationGroup'] ?? [])
-                ->firstWhere('groupName', 'ბრენდი');
-
-            if (!empty($specGroup) && !empty($specGroup['specifications'][0]['specificationMeaning'])) {
-                $brandName = $specGroup['specifications'][0]['specificationMeaning'];
-
-                $brand = ProductBrand::whereHas('translations', function ($query) use ($brandName) {
-                    $query->where('title', 'like', $brandName);
-                })->first();
-
-                if ($brand) {
-                    return $brand->id;
-                }
-            }
-
-            return 6;
-
-        } catch (Exception $e) {
-            Log::warning("Error finding brand: {$e->getMessage()}");
-            return 6;
-        }
-    }
+    // ============================================
+    // Price
+    // ============================================
 
     private function createPrice(Product $product, array $productData): void
     {
         try {
-            $productPrice  = $productData['previousPrice'] ?? $productData['price'] ?? 0;
-            $discountPrice = $productData['previousPrice'] ? $productData['price'] : null;
+            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-            $productPrice  = $this->calculatePrice((float) $productPrice);
-            $discountPrice = $discountPrice ? $this->calculatePrice((float) $discountPrice) : null;
+            $productPrice  = $this->calculatePrice($productPrice);
+            $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
             ProductPrice::create([
                 'product_id'       => $product->id,
@@ -260,42 +307,23 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    private function getCategoryId(array $productData): int
-    {
-        $zoommerCategoryId = $productData['categoryId'] ?? null;
-
-        if ($zoommerCategoryId) {
-            $category = \App\Models\Product\ProductCategory::where('zoommer_category_id', $zoommerCategoryId)->first();
-            if ($category) {
-                return $category->id;
-            }
-        }
-
-        $zoommerParentCategoryId = $productData['parentCategoryId'] ?? null;
-
-        if ($zoommerParentCategoryId) {
-            $category = \App\Models\Product\ProductCategory::where('zoommer_category_id', $zoommerParentCategoryId)->first();
-            if ($category) {
-                return $category->id;
-            }
-        }
-
-        return 4; // default — დაუხარისხებელი
-    }
+    // ============================================
+    // Translations
+    // ============================================
 
     private function createTranslations(Product $product, array $productData): void
     {
         try {
             $locales    = ['ka', 'en', 'ru'];
-            $baseSlug   = Str::slug($productData['name'] ?? 'product', '-');
-            $slugWithId = "{$baseSlug}-{$product->id}";
+            $name       = $productData['name'] ?? 'Unnamed Product';
+            $baseSlug   = Str::slug($name, '-') . '-' . $product->id;
 
             foreach ($locales as $locale) {
                 ProductTranslation::create([
                     'product_id'  => $product->id,
                     'locale'      => $locale,
-                    'title'       => $productData['name'] ?? 'Unnamed Product',
-                    'slug'        => $slugWithId,
+                    'title'       => $name,
+                    'slug'        => $baseSlug,
                     'description' => $locale === 'ka' ? ($productData['description'] ?? null) : null,
                     'keywords'    => null,
                 ]);
@@ -306,6 +334,10 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
+
+    // ============================================
+    // Variations
+    // ============================================
 
     private function createVariations(Product $product, array $productData): void
     {
@@ -342,6 +374,10 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
+
+    // ============================================
+    // Full Specifications
+    // ============================================
 
     private function createFullSpecifications(Product $product, array $productData): void
     {
@@ -382,6 +418,10 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
+    // ============================================
+    // Images
+    // ============================================
+
     private function downloadImages(Product $product, array $productData): void
     {
         try {
@@ -391,11 +431,18 @@ class ZoommerProductJob implements ShouldQueue
 
             foreach ($productData['images'] as $index => $imageUrl) {
                 try {
-                    if (empty($imageUrl)) {
-                        continue;
-                    }
+                    if (empty($imageUrl)) continue;
 
-                    $response = Http::timeout(30)->get($imageUrl);
+                    $response = Http::timeout(30)
+                        ->withHeaders([
+                            'Accept'          => 'application/json, text/plain, */*',
+                            'Accept-Language' => 'ka',
+                            'Referer'         => 'https://zoommer.ge/',
+                            'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                            'os'              => 'web',
+                            'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
+                        ])
+                        ->get($imageUrl);
 
                     if (!$response->successful()) {
                         Log::warning("Failed to download image for product {$product->id}: {$imageUrl}");
@@ -431,6 +478,10 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
+    // ============================================
+    // Short Specifications
+    // ============================================
+
     private function createShortSpecifications(Product $product, array $productData): void
     {
         try {
@@ -438,16 +489,22 @@ class ZoommerProductJob implements ShouldQueue
                 return;
             }
 
-            foreach ($productData['mainSpecification'] as $spec) {
-                if (empty($spec['specificationName'])) {
-                    continue;
-                }
+            $specs = [];
 
-                ProductShortSpecification::create([
+            foreach ($productData['mainSpecification'] as $spec) {
+                if (empty($spec['specificationName'])) continue;
+
+                $specs[] = [
                     'product_id' => $product->id,
                     'name'       => $spec['specificationName'],
                     'value'      => $spec['specificationMeaning'] ?? '',
-                ]);
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if (!empty($specs)) {
+                ProductShortSpecification::insert($specs);
             }
 
         } catch (Exception $e) {
@@ -455,6 +512,10 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
+
+    // ============================================
+    // Helpers
+    // ============================================
 
     protected function getImageExtension(string $url): string
     {

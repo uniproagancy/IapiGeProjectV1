@@ -348,27 +348,15 @@ class AltaProductJob implements ShouldQueue
 
     private function getCategoryId(array $productData): int
     {
-        // ✅ პირველ რიგში categoryId-ით ვცდილობთ
-        $altaCategoryId = $productData['categoryId'] ?? null;
+        $altaCategoryName = $productData['categoryName'] ?? null;
 
-        if ($altaCategoryId) {
-            $category = ProductCategory::where('alta_category_id', $altaCategoryId)->first();
-            if ($category) {
-                return $category->id;
-            }
+        if ($altaCategoryName) {
+            $category = ProductCategory::where('alta_category_name', $altaCategoryName)->first();
+            if ($category) return $category->id;
         }
 
-        // ✅ parentCategoryId-ითაც სცადე
-        $altaParentCategoryId = $productData['parentCategoryId'] ?? null;
-
-        if ($altaParentCategoryId) {
-            $category = ProductCategory::where('alta_category_id', $altaParentCategoryId)->first();
-            if ($category) {
-                return $category->id;
-            }
-        }
-
-        return 3; // default — დაუხარისხებელი
+        Log::info("⚠️ Alta category not mapped, Name={$altaCategoryName}");
+        return 3;
     }
 
     // ============================================

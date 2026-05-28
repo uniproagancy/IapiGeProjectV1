@@ -109,23 +109,24 @@
                             <hr>
                             <p class="fw-semibold mb-1">მომწოდებლის კატეგორიების მიბმა</p>
                         </div>
-                        <div class="mb-1 col-md-6">
-                            <label class="form-label">Alta კატეგორიის ID</label>
-                            <input type="number"
-                                   class="form-control"
-                                   wire:model="alta_category_id"
-                                   placeholder="Alta-ს categoryId (მაგ: 16)">
-                            <small class="text-muted">Alta API-ს categoryId — პროდუქტი ავტომატურად ამ კატეგორიაში ჩავარდება</small>
+                        <div class="mb-1 col-md-3">
+                            <label class="form-label">Alta კატეგორიის სახელი</label>
+                            <input type="text" class="form-control"
+                                   wire:model="alta_category_name"
+                                   placeholder="მაგ: მობილური ტელეფონები">
                         </div>
-                        <div class="mb-1 col-md-6">
-                            <label class="form-label">Zoommer კატეგორიის ID</label>
-                            <input type="number"
-                                   class="form-control"
+                        <div class="mb-1 col-md-3">
+                            <label class="form-label">Zoommer ID</label>
+                            <input type="number" class="form-control"
                                    wire:model="zoommer_category_id"
-                                   placeholder="Zoommer-ის categoryId">
-                            <small class="text-muted">Zoommer API-ს categoryId — პროდუქტი ავტომატურად ამ კატეგორიაში ჩავარდება</small>
+                                   placeholder="Zoommer categoryId">
                         </div>
-
+                        <div class="mb-1 col-md-3">
+                            <label class="form-label">Zoommer კატეგორიის სახელი</label>
+                            <input type="text" class="form-control"
+                                   wire:model="zoommer_category_name"
+                                   placeholder="მაგ: Phones">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
