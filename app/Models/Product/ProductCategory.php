@@ -19,6 +19,8 @@ class ProductCategory extends Model
         'show_on_main',
         'google_category_id',
         'facebook_category_id',
+        'alta_category_id',
+        'zoommer_category_id',
     ];
 
     public function translations()

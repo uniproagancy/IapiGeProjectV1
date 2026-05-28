@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductImage;
@@ -310,15 +311,16 @@ class AltaProductJob implements ShouldQueue
     {
         DB::transaction(function () use ($productData, $b2bStock) {
             try {
-                $brandId  = $this->getBrandId($productData);
-                $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
-                $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
-                $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $brandId    = $this->getBrandId($productData);
+                $categoryId = $this->getCategoryId($productData);
+                $show       = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $quantity   = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
+                $in_stock   = $b2bStock['quantity'] >= 1 ? 1 : 0;
 
                 $product = Product::create([
                     'supplier_product_id' => $productData['id'],
                     'brand_id'            => $brandId,
-                    'category_id'         => 3,
+                    'category_id'         => $categoryId,
                     'sku'                 => 'ALTA-' . ($productData['barCode'] ?? null),
                     'supplier_id'         => 2,
                     'main_image'          => null,
@@ -342,6 +344,31 @@ class AltaProductJob implements ShouldQueue
                 throw $e;
             }
         });
+    }
+
+    private function getCategoryId(array $productData): int
+    {
+        // ✅ პირველ რიგში categoryId-ით ვცდილობთ
+        $altaCategoryId = $productData['categoryId'] ?? null;
+
+        if ($altaCategoryId) {
+            $category = ProductCategory::where('alta_category_id', $altaCategoryId)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        // ✅ parentCategoryId-ითაც სცადე
+        $altaParentCategoryId = $productData['parentCategoryId'] ?? null;
+
+        if ($altaParentCategoryId) {
+            $category = ProductCategory::where('alta_category_id', $altaParentCategoryId)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        return 3; // default — დაუხარისხებელი
     }
 
     // ============================================

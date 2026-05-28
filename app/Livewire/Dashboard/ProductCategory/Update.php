@@ -23,6 +23,9 @@ class Update extends Component
     public $parent_categories;
     public $category;
 
+    public $alta_category_id    = null;
+    public $zoommer_category_id = null;
+
     public function openUpdateModal($id)
     {
         $this->category = ProductCategory::with('translations')->findOrFail($id);
@@ -40,6 +43,9 @@ class Update extends Component
         $this->description_ka = $this->category->translate('ka')->description ?? '';
         $this->description_en = $this->category->translate('en')->description ?? '';
         $this->description_ru = $this->category->translate('ru')->description ?? '';
+
+        $this->alta_category_id    = $this->category->alta_category_id;
+        $this->zoommer_category_id = $this->category->zoommer_category_id;
 
         $this->dispatch('open-update-modal');
     }

@@ -260,6 +260,29 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
+    private function getCategoryId(array $productData): int
+    {
+        $zoommerCategoryId = $productData['categoryId'] ?? null;
+
+        if ($zoommerCategoryId) {
+            $category = \App\Models\Product\ProductCategory::where('zoommer_category_id', $zoommerCategoryId)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        $zoommerParentCategoryId = $productData['parentCategoryId'] ?? null;
+
+        if ($zoommerParentCategoryId) {
+            $category = \App\Models\Product\ProductCategory::where('zoommer_category_id', $zoommerParentCategoryId)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        return 4; // default — დაუხარისხებელი
+    }
+
     private function createTranslations(Product $product, array $productData): void
     {
         try {
