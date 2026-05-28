@@ -26,7 +26,7 @@ class Update extends Component
     public $alta_category_id    = null;
     public $zoommer_category_id = null;
 
-    public function openUpdateModal($id)
+    public function openCategoryUpdateModal($id)
     {
         $this->category = ProductCategory::with('translations')->findOrFail($id);
         $this->category_id = $this->category->id;
