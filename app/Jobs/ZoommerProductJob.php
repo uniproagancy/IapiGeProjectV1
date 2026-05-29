@@ -99,7 +99,6 @@ class ZoommerProductJob implements ShouldQueue
     {
         $categoryName       = $productData['categoryName'] ?? null;
 
-        // ✅ 1. categoryName-ით ძებნა
         if ($categoryName) {
             $category = ProductCategory::where('zoommer_category_name', $categoryName)->first();
             if ($category) {

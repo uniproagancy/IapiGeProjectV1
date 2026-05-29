@@ -109,7 +109,6 @@ class AltaProductJob implements ShouldQueue
             throw new Exception('Product ID is required');
         }
 
-        // ✅ თბილისის მაღაზიებში ნაშთის შემოწმება
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         if (!$hasStock) {
@@ -117,7 +116,6 @@ class AltaProductJob implements ShouldQueue
             return;
         }
 
-        // ✅ B2B stock-ი AltaID ცხრილიდან barCode-ით
         $b2bStock = AltaID::where('product_id', (string) ($productData['barCode'] ?? ''))->first();
 
         if (!$b2bStock) {
@@ -136,7 +134,6 @@ class AltaProductJob implements ShouldQueue
         }
     }
 
-    // ✅ თბილისის მაღაზიებში ნაშთის შემოწმება
     private function checkTbilisiStock(array $availability): bool
     {
         if (empty($availability)) {
@@ -146,6 +143,26 @@ class AltaProductJob implements ShouldQueue
         return collect($availability)
             ->where('city', 'თბილისი')
             ->contains(fn($store) => $store['inStock'] === true);
+    }
+
+    // ============================================
+    // Category
+    // ============================================
+
+    private function getCategoryId(array $productData): int
+    {
+        $categoryName       = $productData['categoryName'] ?? null;
+
+        // ✅ 1. categoryName-ით ძებნა
+        if ($categoryName) {
+            $category = ProductCategory::where('alta_category_name', $categoryName)->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+
+        Log::info("⚠️ Alta category not mapped: categoryName={$categoryName}");
+        return 3;
     }
 
     // ============================================
@@ -171,15 +188,17 @@ class AltaProductJob implements ShouldQueue
                     ]
                 );
 
-                $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
-                $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
-                $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $show       = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $quantity   = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
+                $in_stock   = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $categoryId = $this->getCategoryId($productData);
 
                 $product->update([
-                    'quantity' => $quantity,
-                    'in_stock' => $in_stock,
-                    'show'     => $show,
-                    'active'   => $show,
+                    'category_id' => $categoryId,
+                    'quantity'    => $quantity,
+                    'in_stock'    => $in_stock,
+                    'show'        => $show,
+                    'active'      => $show,
                 ]);
 
                 if (!empty($productData['description'])) {
@@ -191,8 +210,7 @@ class AltaProductJob implements ShouldQueue
                 ProductShortSpecification::where('product_id', $product->id)->forceDelete();
                 $this->createShortSpecifications($product, $productData);
 
-                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)
-                    ->pluck('id');
+                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
                 ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
                 ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
                 $this->createFullSpecifications($product, $productData);
@@ -201,7 +219,7 @@ class AltaProductJob implements ShouldQueue
                     $this->updateProductImages($product, $productData);
                 }
 
-                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
+                Log::info("🔁 Updated Alta product: {$product->id}, category: {$categoryId}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
@@ -337,26 +355,13 @@ class AltaProductJob implements ShouldQueue
                 $this->downloadAndSaveImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
-                Log::info("✨ Created new Alta product: {$product->id}");
+                Log::info("✨ Created new Alta product: {$product->id}, category: {$categoryId}");
 
             } catch (Exception $e) {
                 Log::error("❌ Error creating Alta product: {$e->getMessage()}");
                 throw $e;
             }
         });
-    }
-
-    private function getCategoryId(array $productData): int
-    {
-        $altaCategoryName = $productData['categoryName'] ?? null;
-
-        if ($altaCategoryName) {
-            $category = ProductCategory::where('alta_category_name', $altaCategoryName)->first();
-            if ($category) return $category->id;
-        }
-
-        Log::info("⚠️ Alta category not mapped, Name={$altaCategoryName}");
-        return 3;
     }
 
     // ============================================
@@ -366,14 +371,20 @@ class AltaProductJob implements ShouldQueue
     private function getBrandId(array $productData): int
     {
         try {
-            $specGroup = collect($productData['specificationGroup'] ?? [])
-                ->firstWhere('groupName', 'ბრენდი');
+            $brandName = null;
 
-            if (empty($specGroup) || empty($specGroup['specifications'][0])) {
-                return 6;
+            foreach ($productData['specificationGroup'] ?? [] as $group) {
+                foreach ($group['specifications'] ?? [] as $spec) {
+                    if ($spec['specificationName'] === 'ბრენდი') {
+                        $brandName = $spec['specificationMeaning'] ?? null;
+                        break 2;
+                    }
+                }
             }
 
-            $brandName = $specGroup['specifications'][0]['specificationMeaning'] ?? null;
+            if (empty($brandName)) {
+                $brandName = $productData['brandName'] ?? null;
+            }
 
             if (empty($brandName)) {
                 return 6;
