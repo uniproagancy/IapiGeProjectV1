@@ -100,7 +100,7 @@ class Index extends Component
             ->first();
 
         if (!$category) {
-            return;
+            abort(404);
         }
 
         $this->currentCategory = $category;
