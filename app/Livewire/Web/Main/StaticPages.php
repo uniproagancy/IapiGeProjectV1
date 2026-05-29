@@ -10,6 +10,11 @@ class StaticPages extends Component
 
     public string $page;
 
+    public function mount(string $page): void
+    {
+        $this->page = $page;
+    }
+
     public function render()
     {
         $content = StaticPage::where('url', $this->page)->where('locale', 'ka')->firstOrFail();
