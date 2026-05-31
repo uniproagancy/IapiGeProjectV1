@@ -8,6 +8,11 @@ Route::prefix('zoommer')->group(function () {
 });
 
 Route::prefix('alta')->group(function () {
+    Route::get('/sync', [\App\Http\Controllers\ApiControllers\AltaController::class, 'getProducts']);
+    Route::get('/scan', [\App\Http\Controllers\ApiControllers\AltaController::class, 'scan']);
+});
+
+Route::prefix('alta')->group(function () {
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
     Route::get('/test-connection', function () {
         try {
