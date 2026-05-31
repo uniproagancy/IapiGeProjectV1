@@ -382,7 +382,6 @@ class AltaProductJob implements ShouldQueue
                 }
             }
 
-            // ✅ brandName field-იდანაც სცადე
             if (empty($brandName)) {
                 $brandName = $productData['brandName'] ?? null;
             }
@@ -399,16 +398,41 @@ class AltaProductJob implements ShouldQueue
                         fn ($q) => $q->where('title', 'like', $brandName)
                     )->first();
 
-                    return $brand->id ?? 6;
+                    if ($brand) {
+                        return $brand->id;
+                    }
+
+                    // ✅ ბრენდი არ არის — შევქმნათ
+                    $newBrand = ProductBrand::create([
+                        'active' => 1,
+                        'show'   => 1,
+                    ]);
+
+                    \App\Models\Product\ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'ka',
+                        'title'            => $brandName,
+                        'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id,
+                    ]);
+
+                    \App\Models\Product\ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'en',
+                        'title'            => $brandName,
+                        'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id . '-en',
+                    ]);
+
+                    Log::info("✨ Alta: New brand created: '{$brandName}', id={$newBrand->id}");
+
+                    return $newBrand->id;
                 }
             );
 
         } catch (Exception $e) {
-            Log::warning("⚠️  Error finding Alta brand: {$e->getMessage()}");
+            Log::warning("⚠️ Error finding/creating Alta brand: {$e->getMessage()}");
             return 6;
         }
     }
-
     // ============================================
     // Price
     // ============================================
