@@ -118,12 +118,19 @@ class AltaProductJob implements ShouldQueue
 
         $b2bStock = AltaID::where('product_id', (string) ($productData['barCode'] ?? ''))->first();
 
+        $exists = Product::where('sku', 'ALTA-' . $productData['barCode'])->exists();
+
         if (!$b2bStock) {
-            Log::info("⏭️  Skipping Alta product (not in B2B list): {$productData['id']}");
+            // ✅ B2B-ში არ არის — თუ პროდუქტი არსებობს, განვაახლოთ category/brand და show=0
+            if ($exists) {
+                $this->updateExistingProduct($productData, ['quantity' => 0]);
+            } else {
+                Log::info("⏭️  Skipping Alta product (not in B2B list, not in DB): {$productData['id']}");
+            }
             return;
         }
 
-        if (Product::where('sku', 'ALTA-' . $productData['barCode'])->exists()) {
+        if ($exists) {
             $this->updateExistingProduct($productData, $b2bStock->toArray());
         } else {
             if ($b2bStock->quantity >= 2) {
