@@ -5,27 +5,41 @@ namespace App\Http\Controllers\ApiControllers;
 use App\Http\Controllers\Controller;
 use App\Models\AltaID;
 use App\Models\Product\Product;
+use App\Services\Products\AltaService;
 use Illuminate\Support\Facades\Log;
 use SoapClient;
 use Exception;
 
 class AltaController extends Controller
 {
-    private $soapClient;
-    private $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL';
+    private ?SoapClient $soapClient = null;
+    private string $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL';
 
     public function __construct()
     {
-        try {
-            $this->soapClient = new SoapClient($this->wsdlUrl, [
-                'trace'      => 1,
-                'exceptions' => true,
-                'encoding'   => 'UTF-8',
-            ]);
-        } catch (Exception $e) {
-            throw new Exception('SOAP კლიენტის შეცდომა: ' . $e->getMessage());
-        }
+        // lazy init
     }
+
+    private function getSoapClient(): SoapClient
+    {
+        if (!$this->soapClient) {
+            try {
+                $this->soapClient = new SoapClient($this->wsdlUrl, [
+                    'trace'      => 1,
+                    'exceptions' => true,
+                    'encoding'   => 'UTF-8',
+                ]);
+            } catch (Exception $e) {
+                throw new Exception('SOAP კლიენტის შეცდომა: ' . $e->getMessage());
+            }
+        }
+
+        return $this->soapClient;
+    }
+
+    // ============================================
+    // B2B Sync
+    // ============================================
 
     public function getProducts()
     {
@@ -36,17 +50,13 @@ class AltaController extends Controller
                 'item'     => '',
             ];
 
-            $response = $this->soapClient->GetPriceList($params);
+            $response = $this->getSoapClient()->GetPriceList($params);
 
-            // ✅ AltaID გასუფთავება
             AltaID::truncate();
-
-            // ✅ ყველა Alta პროდუქტი გათიშვა
             Product::where('sku', 'LIKE', '%ALTA-%')->update(['show' => 0]);
 
             $items = $response->PriceList->items->item;
 
-            // ✅ single item-ის შემთხვევა array-ად გადაქცევა
             if (!is_array($items)) {
                 $items = [$items];
             }
@@ -58,13 +68,11 @@ class AltaController extends Controller
                 $quantity = $parsed['quantity'];
                 $show     = $quantity > 2 ? 1 : 0;
 
-                // ✅ AltaID-ში შენახვა
                 $altaIds[] = [
                     'product_id' => (string) $item->item,
                     'quantity'   => $quantity,
                 ];
 
-                // ✅ Product განახლება
                 Product::where('sku', 'ALTA-' . $item->item)->update([
                     'show'     => $show,
                     'quantity' => $quantity,
@@ -75,7 +83,6 @@ class AltaController extends Controller
                 Log::info('ALTA-' . $item->item . ' Quantity: ' . $quantity . ' Show: ' . $show);
             }
 
-            // ✅ Bulk insert AltaID
             if (!empty($altaIds)) {
                 AltaID::insert($altaIds);
                 Log::info('✅ AltaID updated: ' . count($altaIds) . ' items');
@@ -86,6 +93,27 @@ class AltaController extends Controller
             throw new Exception('ფასების მიღება ვერ მოხერხდა: ' . $e->getMessage());
         }
     }
+
+    // ============================================
+    // Scan
+    // ============================================
+
+    public function scan()
+    {
+        try {
+            Log::info('AltaController->scan');
+            $service = new AltaService();
+            $stats   = $service->scanAllIds();
+            return response()->json($stats);
+        } catch (Exception $e) {
+            Log::error('Alta scan error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ============================================
+    // Helpers
+    // ============================================
 
     private function parseQtyText(?string $qtyText): array
     {

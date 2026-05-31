@@ -375,13 +375,14 @@ class AltaProductJob implements ShouldQueue
 
             foreach ($productData['specificationGroup'] ?? [] as $group) {
                 foreach ($group['specifications'] ?? [] as $spec) {
-                    if ($spec['specificationName'] === 'ბრენდი') {
+                    if (in_array($spec['specificationName'], ['Brand', 'ბრენდი', 'Бренд'])) {
                         $brandName = $spec['specificationMeaning'] ?? null;
                         break 2;
                     }
                 }
             }
 
+            // ✅ brandName field-იდანაც სცადე
             if (empty($brandName)) {
                 $brandName = $productData['brandName'] ?? null;
             }
