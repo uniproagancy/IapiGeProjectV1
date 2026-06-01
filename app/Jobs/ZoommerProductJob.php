@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
@@ -97,16 +98,17 @@ class ZoommerProductJob implements ShouldQueue
 
     private function getCategoryId(array $productData): int
     {
-        $categoryName       = $productData['categoryName'] ?? null;
+        $categoryName = $productData['categoryName'] ?? null;
 
         if ($categoryName) {
             $category = ProductCategory::where('zoommer_category_name', $categoryName)->first();
             if ($category) {
+                Log::info("✅ Zoommer category mapped: '{$categoryName}' → category_id={$category->id}");
                 return $category->id;
             }
         }
 
-        Log::info("⚠️ Zoommer category not mapped: categoryName={$categoryName}");
+        Log::warning("⚠️ Zoommer category not mapped: categoryName='{$categoryName}'");
         return 4;
     }
 
@@ -133,6 +135,7 @@ class ZoommerProductJob implements ShouldQueue
             }
 
             if (empty($brandName)) {
+                Log::info("⚠️ Zoommer brand not found in data, using default brand_id=6");
                 return 6;
             }
 
@@ -141,6 +144,7 @@ class ZoommerProductJob implements ShouldQueue
             )->first();
 
             if ($brand) {
+                Log::info("✅ Zoommer brand found: '{$brandName}' → brand_id={$brand->id}");
                 return $brand->id;
             }
 
@@ -150,21 +154,21 @@ class ZoommerProductJob implements ShouldQueue
                 'show'   => 1,
             ]);
 
-            \App\Models\Product\ProductBrandTranslation::create([
+            ProductBrandTranslation::create([
                 'product_brand_id' => $newBrand->id,
                 'locale'           => 'ka',
                 'title'            => $brandName,
-                'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id,
+                'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
             ]);
 
-            \App\Models\Product\ProductBrandTranslation::create([
+            ProductBrandTranslation::create([
                 'product_brand_id' => $newBrand->id,
                 'locale'           => 'en',
                 'title'            => $brandName,
-                'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id . '-en',
+                'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
             ]);
 
-            Log::info("✨ Zoommer: New brand created: '{$brandName}', id={$newBrand->id}");
+            Log::info("✨ Zoommer: New brand created: '{$brandName}', brand_id={$newBrand->id}");
 
             return $newBrand->id;
 
@@ -173,6 +177,7 @@ class ZoommerProductJob implements ShouldQueue
             return 6;
         }
     }
+
     // ============================================
     // Main Logic
     // ============================================
@@ -186,6 +191,7 @@ class ZoommerProductJob implements ShouldQueue
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         if (Product::where('supplier_product_id', $productData['id'])->exists()) {
+            // ✅ არსებული პროდუქტი ყოველთვის განახლდება (stock-ის მიუხედავად)
             $this->updateExistingProduct($productData, $hasStock);
         } else {
             if ($hasStock) {
@@ -232,10 +238,13 @@ class ZoommerProductJob implements ShouldQueue
                 ]
             );
 
+            // ✅ category და brand ყოველთვის განახლდება, stock-ის მიუხედავად
             $categoryId = $this->getCategoryId($productData);
+            $brandId    = $this->getBrandId($productData);
 
             $product->update([
                 'category_id' => $categoryId,
+                'brand_id'    => $brandId,
                 'quantity'    => $hasStock ? 5 : 0,
                 'in_stock'    => $hasStock ? 1 : 0,
                 'show'        => $hasStock ? 1 : 0,
@@ -256,7 +265,7 @@ class ZoommerProductJob implements ShouldQueue
                     ->update(['description' => $productData['description']]);
             }
 
-            Log::info("🔁 Updated product: {$product->id}, category: {$categoryId}, stock: " . ($hasStock ? 'yes' : 'no'));
+            Log::info("🔁 Updated product: {$product->id}, category: {$categoryId}, brand: {$brandId}, stock: " . ($hasStock ? 'yes' : 'no'));
 
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
@@ -295,7 +304,7 @@ class ZoommerProductJob implements ShouldQueue
                 $this->downloadImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
-                Log::info("✨ Created new product: {$product->id}, category: {$categoryId}");
+                Log::info("✨ Created new product: {$product->id}, category: {$categoryId}, brand: {$brandId}");
 
             } catch (Exception $e) {
                 Log::error("Error creating product {$productData['id']}: {$e->getMessage()}");
