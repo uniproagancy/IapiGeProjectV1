@@ -229,27 +229,41 @@ class ZoommerProductJob implements ShouldQueue
             $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
             ProductPrice::updateOrCreate(
-                ['product_id' => $product->id],
-                [
-                    'dealer_price'     => $productPrice,
-                    'regular_price'    => $productPrice,
-                    'discount_price'   => $discountPrice,
-                    'discount_percent' => $productData['discountPercent'] ?? 0,
-                ]
+                    ['product_id' => $product->id],
+                    [
+                            'dealer_price'     => $productPrice,
+                            'regular_price'    => $productPrice,
+                            'discount_price'   => $discountPrice,
+                            'discount_percent' => $productData['discountPercent'] ?? 0,
+                    ]
             );
 
-            // ✅ category და brand ყოველთვის განახლდება, stock-ის მიუხედავად
-            $categoryId = $this->getCategoryId($productData);
-            $brandId    = $this->getBrandId($productData);
+            // stock ყოველთვის განახლდება
+            $updateData = [
+                    'quantity' => $hasStock ? 5 : 0,
+                    'in_stock' => $hasStock ? 1 : 0,
+                    'show'     => $hasStock ? 1 : 0,
+                    'active'   => $hasStock ? 1 : 0,
+            ];
 
-            $product->update([
-                'category_id' => $categoryId,
-                'brand_id'    => $brandId,
-                'quantity'    => $hasStock ? 5 : 0,
-                'in_stock'    => $hasStock ? 1 : 0,
-                'show'        => $hasStock ? 1 : 0,
-                'active'      => $hasStock ? 1 : 0,
-            ]);
+            // category/brand განახლდეს მხოლოდ თუ ხელით არ არის დარედაქტირებული
+            // (brand_id == 1 ან category_id IN (3,4,182) → ჯერ default-ია → განვაახლოთ)
+            $isManuallyEdited = $product->brand_id != 1
+                    && !in_array($product->category_id, [3, 4, 182]);
+
+            if (!$isManuallyEdited) {
+                $categoryId = $this->getCategoryId($productData);
+                $brandId    = $this->getBrandId($productData);
+
+                $updateData['category_id'] = $categoryId;
+                $updateData['brand_id']    = $brandId;
+
+                Log::info("🔄 Zoommer product {$product->id}: updating category/brand (auto) → category_id={$categoryId}, brand_id={$brandId}");
+            } else {
+                Log::info("🔒 Zoommer product {$product->id}: skipping category/brand (manually edited, brand_id={$product->brand_id}, category_id={$product->category_id})");
+            }
+
+            $product->update($updateData);
 
             ProductShortSpecification::where('product_id', $product->id)->forceDelete();
             $this->createShortSpecifications($product, $productData);
@@ -261,11 +275,11 @@ class ZoommerProductJob implements ShouldQueue
 
             if (!empty($productData['description'])) {
                 ProductTranslation::where('product_id', $product->id)
-                    ->where('locale', 'ka')
-                    ->update(['description' => $productData['description']]);
+                        ->where('locale', 'ka')
+                        ->update(['description' => $productData['description']]);
             }
 
-            Log::info("🔁 Updated product: {$product->id}, category: {$categoryId}, brand: {$brandId}, stock: " . ($hasStock ? 'yes' : 'no'));
+            Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
 
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");

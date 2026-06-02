@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
@@ -163,7 +164,7 @@ class AltaProductJob implements ShouldQueue
         if ($categoryName) {
             $category = ProductCategory::where('alta_category_name', $categoryName)->first();
             if ($category) {
-                Log::info("✅ Alta category mappeდდდდ: '{$categoryName}' → category_id={$category->id}");
+                Log::info("✅ Alta category mapped: '{$categoryName}' → category_id={$category->id}");
                 return $category->id;
             }
         }
@@ -195,18 +196,36 @@ class AltaProductJob implements ShouldQueue
                     ]
                 );
 
-                $show       = $b2bStock['quantity'] >= 1 ? 1 : 0;
-                $quantity   = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
-                $in_stock   = $b2bStock['quantity'] >= 1 ? 1 : 0;
-                $categoryId = $this->getCategoryId($productData);
+                $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
+                $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
 
-                $product->update([
-                    'category_id' => $categoryId,
-                    'quantity'    => $quantity,
-                    'in_stock'    => $in_stock,
-                    'show'        => $show,
-                    'active'      => $show,
-                ]);
+                // stock ყოველთვის განახლდება
+                $updateData = [
+                    'quantity' => $quantity,
+                    'in_stock' => $in_stock,
+                    'show'     => $show,
+                    'active'   => $show,
+                ];
+
+                // category/brand განახლდეს მხოლოდ თუ ხელით არ არის დარედაქტირებული
+                // (brand_id == 1 ან category_id IN (3,4,182) → ჯერ default-ია → განვაახლოთ)
+                $isManuallyEdited = $product->brand_id != 1
+                    && !in_array($product->category_id, [3, 4, 182]);
+
+                if (!$isManuallyEdited) {
+                    $categoryId = $this->getCategoryId($productData);
+                    $brandId    = $this->getBrandId($productData);
+
+                    $updateData['category_id'] = $categoryId;
+                    $updateData['brand_id']    = $brandId;
+
+                    Log::info("🔄 Alta product {$product->id}: updating category/brand (auto) → category_id={$categoryId}, brand_id={$brandId}");
+                } else {
+                    Log::info("🔒 Alta product {$product->id}: skipping category/brand (manually edited, brand_id={$product->brand_id}, category_id={$product->category_id})");
+                }
+
+                $product->update($updateData);
 
                 if (!empty($productData['description'])) {
                     ProductTranslation::where('product_id', $product->id)
@@ -226,7 +245,7 @@ class AltaProductJob implements ShouldQueue
                     $this->updateProductImages($product, $productData);
                 }
 
-                Log::info("🔁 Updated Alta product: {$product->id}, category: {$categoryId}, stock: {$quantity}");
+                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
@@ -362,7 +381,7 @@ class AltaProductJob implements ShouldQueue
                 $this->downloadAndSaveImages($product, $productData);
                 $this->createShortSpecifications($product, $productData);
 
-                Log::info("✨ Created new Alta product: {$product->id}, category: {$categoryId}");
+                Log::info("✨ Created new Alta product: {$product->id}, category: {$categoryId}, brand: {$brandId}");
 
             } catch (Exception $e) {
                 Log::error("❌ Error creating Alta product: {$e->getMessage()}");
@@ -415,18 +434,18 @@ class AltaProductJob implements ShouldQueue
                         'show'   => 1,
                     ]);
 
-                    \App\Models\Product\ProductBrandTranslation::create([
+                    ProductBrandTranslation::create([
                         'product_brand_id' => $newBrand->id,
                         'locale'           => 'ka',
                         'title'            => $brandName,
-                        'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id,
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
                     ]);
 
-                    \App\Models\Product\ProductBrandTranslation::create([
+                    ProductBrandTranslation::create([
                         'product_brand_id' => $newBrand->id,
                         'locale'           => 'en',
                         'title'            => $brandName,
-                        'slug'             => \Illuminate\Support\Str::slug($brandName) . '-' . $newBrand->id . '-en',
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
                     ]);
 
                     Log::info("✨ Alta: New brand created: '{$brandName}', id={$newBrand->id}");
@@ -440,6 +459,7 @@ class AltaProductJob implements ShouldQueue
             return 6;
         }
     }
+
     // ============================================
     // Price
     // ============================================
