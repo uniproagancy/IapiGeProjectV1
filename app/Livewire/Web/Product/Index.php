@@ -79,10 +79,18 @@ class Index extends Component
 
     private function loadParentCategories(): void
     {
-        $this->parentCategories = cache()->remember('parent_categories', 3600, fn () =>
+        $this->parentCategories = cache()->remember('parent_categories_with_products', 3600, fn () =>
         ProductCategory::query()
             ->where('parent_id', 0)
             ->where('show', 1)
+            ->where(function ($q) {
+                $q->whereHas('products', fn ($p) => $p
+                    ->where('show', 1)->where('active', 1)
+                )
+                    ->orWhereHas('children.products', fn ($p) => $p
+                        ->where('show', 1)->where('active', 1)
+                    );
+            })
             ->get()
         );
     }
@@ -113,12 +121,18 @@ class Index extends Component
             $this->selectedParent = $category->id;
             $this->subCategories  = $category->children()
                 ->where('show', 1)
+                ->whereHas('products', fn ($p) => $p
+                    ->where('show', 1)->where('active', 1)
+                )
                 ->get();
         } else {
             $this->selectedParent = $category->parent_id;
             $this->subCategories  = ProductCategory::query()
                 ->where('parent_id', $category->parent_id)
                 ->where('show', 1)
+                ->whereHas('products', fn ($p) => $p
+                    ->where('show', 1)->where('active', 1)
+                )
                 ->get();
         }
     }
