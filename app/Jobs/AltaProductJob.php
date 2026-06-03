@@ -200,32 +200,18 @@ class AltaProductJob implements ShouldQueue
                 $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
                 $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
 
-                // stock ყოველთვის განახლდება
-                $updateData = [
-                    'quantity' => $quantity,
-                    'in_stock' => $in_stock,
-                    'show'     => $show,
-                    'active'   => $show,
-                ];
+                // ✅ category და brand ყოველთვის განახლდება (mapping-ით)
+                $categoryId = $this->getCategoryId($productData);
+                $brandId    = $this->getBrandId($productData);
 
-                // category/brand განახლდეს მხოლოდ თუ ხელით არ არის დარედაქტირებული
-                // (brand_id == 1 ან category_id IN (3,4,182) → ჯერ default-ია → განვაახლოთ)
-                $isManuallyEdited = $product->brand_id != 1
-                    && !in_array($product->category_id, [3, 4, 182]);
-
-                if (!$isManuallyEdited) {
-                    $categoryId = $this->getCategoryId($productData);
-                    $brandId    = $this->getBrandId($productData);
-
-                    $updateData['category_id'] = $categoryId;
-                    $updateData['brand_id']    = $brandId;
-
-                    Log::info("🔄 Alta product {$product->id}: updating category/brand (auto) → category_id={$categoryId}, brand_id={$brandId}");
-                } else {
-                    Log::info("🔒 Alta product {$product->id}: skipping category/brand (manually edited, brand_id={$product->brand_id}, category_id={$product->category_id})");
-                }
-
-                $product->update($updateData);
+                $product->update([
+                    'category_id' => $categoryId,
+                    'brand_id'    => $brandId,
+                    'quantity'    => $quantity,
+                    'in_stock'    => $in_stock,
+                    'show'        => $show,
+                    'active'      => $show,
+                ]);
 
                 if (!empty($productData['description'])) {
                     ProductTranslation::where('product_id', $product->id)
@@ -245,7 +231,7 @@ class AltaProductJob implements ShouldQueue
                     $this->updateProductImages($product, $productData);
                 }
 
-                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
+                Log::info("🔁 Updated Alta product: {$product->id}, category: {$categoryId}, brand: {$brandId}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
@@ -253,7 +239,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
     // ============================================
     // Update Product Images
     // ============================================

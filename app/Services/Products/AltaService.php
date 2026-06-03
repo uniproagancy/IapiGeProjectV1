@@ -119,7 +119,6 @@ class AltaService
 
                         $barCode = $data['product']['barCode'] ?? null;
 
-                        // ✅ მხოლოდ AltaID სიაში არსებული barCode-ები
                         if (empty($barCode) || !\App\Models\AltaID::where('product_id', (string) $barCode)->exists()) {
                             $stats['null']++;
                             return;
