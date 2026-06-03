@@ -125,7 +125,6 @@ class AltaProductJob implements ShouldQueue
         $exists = Product::where('sku', $sku)->exists();
 
         if (!$b2bStock) {
-            // B2B-ში არ არის — თუ პროდუქტი არსებობს, განვაახლოთ category/brand და show=0
             if ($exists) {
                 $this->updateExistingProduct($productData, ['quantity' => 0], $sku);
             } else {
@@ -192,6 +191,11 @@ class AltaProductJob implements ShouldQueue
             DB::transaction(function () use ($product, $productData, $b2bStock) {
                 $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
                 $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+
+                // 💰 ფასის ლოგი — ვნახოთ API რას აბრუნებს
+                Log::info("💰 Alta price [{$sku}]: api_price=" . ($productData['price'] ?? 'null')
+                    . ", api_prev=" . ($productData['previousPrice'] ?? 'null')
+                    . " → regular={$productPrice}, discount=" . ($discountPrice ?? 'null'));
 
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
@@ -424,7 +428,6 @@ class AltaProductJob implements ShouldQueue
                         return $brand->id;
                     }
 
-                    // ბრენდი არ არის — შევქმნათ
                     $newBrand = ProductBrand::create([
                         'active' => 1,
                         'show'   => 1,
@@ -465,6 +468,11 @@ class AltaProductJob implements ShouldQueue
         try {
             $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
             $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+
+            // 💰 ფასის ლოგი
+            Log::info("💰 Alta createPrice [{$product->sku}]: api_price=" . ($productData['price'] ?? 'null')
+                . ", api_prev=" . ($productData['previousPrice'] ?? 'null')
+                . " → regular={$productPrice}, discount=" . ($discountPrice ?? 'null'));
 
             ProductPrice::create([
                 'product_id'       => $product->id,
