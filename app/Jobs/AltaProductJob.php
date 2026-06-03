@@ -162,7 +162,11 @@ class AltaProductJob implements ShouldQueue
         $categoryName = $productData['categoryName'] ?? null;
 
         if ($categoryName) {
-            $category = ProductCategory::where('alta_category_name', $categoryName)->first();
+            $category = ProductCategory::whereRaw(
+                'LOWER(TRIM(alta_category_name)) = ?',
+                [mb_strtolower(trim($categoryName))]
+            )->first();
+
             if ($category) {
                 Log::info("✅ Alta category mapped: '{$categoryName}' → category_id={$category->id}");
                 return $category->id;
@@ -401,19 +405,22 @@ class AltaProductJob implements ShouldQueue
                 return 6;
             }
 
+            $normalized = mb_strtolower(trim($brandName));
+
             return Cache::remember(
-                'alta_brand_' . md5($brandName),
+                'alta_brand_' . md5($normalized),
                 now()->addMinutes(self::CACHE_DURATION_BRAND),
-                function () use ($brandName) {
+                function () use ($brandName, $normalized) {
                     $brand = ProductBrand::whereHas('translations',
-                        fn ($q) => $q->where('title', 'like', $brandName)
+                        fn ($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
                     )->first();
 
                     if ($brand) {
+                        Log::info("✅ Alta brand found: '{$brandName}' → brand_id={$brand->id}");
                         return $brand->id;
                     }
 
-                    // ✅ ბრენდი არ არის — შევქმნათ
+                    // ბრენდი არ არის — შევქმნათ
                     $newBrand = ProductBrand::create([
                         'active' => 1,
                         'show'   => 1,

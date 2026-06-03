@@ -101,7 +101,11 @@ class ZoommerProductJob implements ShouldQueue
         $categoryName = $productData['categoryName'] ?? null;
 
         if ($categoryName) {
-            $category = ProductCategory::where('zoommer_category_name', $categoryName)->first();
+            $category = ProductCategory::whereRaw(
+                'LOWER(TRIM(zoommer_category_name)) = ?',
+                [mb_strtolower(trim($categoryName))]
+            )->first();
+
             if ($category) {
                 Log::info("✅ Zoommer category mapped: '{$categoryName}' → category_id={$category->id}");
                 return $category->id;
@@ -139,8 +143,10 @@ class ZoommerProductJob implements ShouldQueue
                 return 6;
             }
 
+            $normalized = mb_strtolower(trim($brandName));
+
             $brand = ProductBrand::whereHas('translations',
-                fn ($q) => $q->where('title', 'like', $brandName)
+                fn ($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
             )->first();
 
             if ($brand) {
@@ -148,7 +154,7 @@ class ZoommerProductJob implements ShouldQueue
                 return $brand->id;
             }
 
-            // ✅ ბრენდი არ არის — შევქმნათ
+            // ბრენდი არ არის — შევქმნათ
             $newBrand = ProductBrand::create([
                 'active' => 1,
                 'show'   => 1,
