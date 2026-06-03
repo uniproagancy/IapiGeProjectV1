@@ -195,8 +195,8 @@ class ZoommerProductJob implements ShouldQueue
         }
 
         $hasStock = $this->checkTbilisiStock($productAvailability);
-        $sku      = 'ZOOM-' . ($productData['barCode'] ?? $productData['id']);
-
+        $sku = $productData['barCode'] ?? ('ZOOM-' . $productData['id']);
+        
         // ✅ ძებნა SKU-თი (ZOOM- prefix) — Alta-ს პროდუქტებს არ ეხება
         if (Product::where('sku', $sku)->exists()) {
             $this->updateExistingProduct($productData, $hasStock, $sku);
