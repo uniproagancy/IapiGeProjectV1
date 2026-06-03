@@ -117,14 +117,17 @@ class AltaProductJob implements ShouldQueue
             return;
         }
 
-        $b2bStock = AltaID::where('product_id', (string) ($productData['barCode'] ?? ''))->first();
+        $barCode = $productData['barCode'] ?? $productData['id'];
+        $sku     = 'ALTA-' . $barCode;
 
-        $exists = Product::where('sku', 'ALTA-' . $productData['barCode'])->exists();
+        $b2bStock = AltaID::where('product_id', (string) $barCode)->first();
+
+        $exists = Product::where('sku', $sku)->exists();
 
         if (!$b2bStock) {
-            // ✅ B2B-ში არ არის — თუ პროდუქტი არსებობს, განვაახლოთ category/brand და show=0
+            // B2B-ში არ არის — თუ პროდუქტი არსებობს, განვაახლოთ category/brand და show=0
             if ($exists) {
-                $this->updateExistingProduct($productData, ['quantity' => 0]);
+                $this->updateExistingProduct($productData, ['quantity' => 0], $sku);
             } else {
                 Log::info("⏭️  Skipping Alta product (not in B2B list, not in DB): {$productData['id']}");
             }
@@ -132,10 +135,10 @@ class AltaProductJob implements ShouldQueue
         }
 
         if ($exists) {
-            $this->updateExistingProduct($productData, $b2bStock->toArray());
+            $this->updateExistingProduct($productData, $b2bStock->toArray(), $sku);
         } else {
             if ($b2bStock->quantity >= 2) {
-                $this->createNewProduct($productData, $b2bStock->toArray());
+                $this->createNewProduct($productData, $b2bStock->toArray(), $sku);
             } else {
                 Log::info("⏭️  Skipping new Alta product (insufficient B2B stock): {$productData['id']}");
             }
@@ -181,10 +184,10 @@ class AltaProductJob implements ShouldQueue
     // Update Existing Product
     // ============================================
 
-    private function updateExistingProduct(array $productData, array $b2bStock): void
+    private function updateExistingProduct(array $productData, array $b2bStock, string $sku): void
     {
         try {
-            $product = Product::where('sku', 'ALTA-' . $productData['barCode'])->firstOrFail();
+            $product = Product::where('sku', $sku)->firstOrFail();
 
             DB::transaction(function () use ($product, $productData, $b2bStock) {
                 $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
@@ -243,6 +246,7 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
+
     // ============================================
     // Update Product Images
     // ============================================
@@ -340,9 +344,9 @@ class AltaProductJob implements ShouldQueue
     // Create New Product
     // ============================================
 
-    private function createNewProduct(array $productData, array $b2bStock): void
+    private function createNewProduct(array $productData, array $b2bStock, string $sku): void
     {
-        DB::transaction(function () use ($productData, $b2bStock) {
+        DB::transaction(function () use ($productData, $b2bStock, $sku) {
             try {
                 $brandId    = $this->getBrandId($productData);
                 $categoryId = $this->getCategoryId($productData);
@@ -354,7 +358,7 @@ class AltaProductJob implements ShouldQueue
                     'supplier_product_id' => $productData['id'],
                     'brand_id'            => $brandId,
                     'category_id'         => $categoryId,
-                    'sku'                 => 'ALTA-' . ($productData['barCode'] ?? null),
+                    'sku'                 => $sku,
                     'supplier_id'         => 2,
                     'main_image'          => null,
                     'active'              => 1,
