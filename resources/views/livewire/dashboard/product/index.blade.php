@@ -96,7 +96,7 @@
                                         </td>
                                         <td class="text-start">
                                             <span class="badge badge-light-info">{{ $product->sku }}</span> -
-                                            {{ $product->translations->where('locale', 'ka')->first()->title ?? ' ' }}</td>
+                                            {{ $product->translations->where('locale', 'ka')->first()?->title ?? ' ' }}</td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
                                                 <span class="badge badge-light-success">{{ $product->price->discount_price ?? '' }} ₾</span>
@@ -107,17 +107,17 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if(!empty($product->category->parent->translations))
-                                            {{ $product->category->parent->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            @if(!empty($product->category?->parent?->translations))
+                                                {{ $product->category->parent->translations->where('locale', 'ka')->first()?->title ?? '' }}
                                             @endif
-                                            @if(!empty($product->category->translations))
-                                            /
-                                            {{ $product->category->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            @if(!empty($product->category?->translations))
+                                                /
+                                                {{ $product->category->translations->where('locale', 'ka')->first()?->title ?? '' }}
                                             @endif
                                         </td>
                                         <td>
-                                            @if(!empty($product->brand->translations))
-                                                {{ $product->brand->translations->where('locale', 'ka')->first()->title ?? '' }}
+                                            @if(!empty($product->brand?->translations))
+                                                {{ $product->brand->translations->where('locale', 'ka')->first()?->title ?? '' }}
                                             @endif
                                         </td>
                                         <td>
@@ -253,8 +253,12 @@
                     <div class="mb-1">
                         <label class="form-label">კატეგორია</label>
                         <select class="form-select" wire:model.lazy="category_id">
-                            <option value="desc">ახალ დამატებული</option>
-                            <option value="asc">ძველ დამატებული</option>
+                            <option value="">აირჩიეთ კატეგორია</option>
+                            @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
+                                <option value="{{ $category->id }}">
+                                    {{ $category->translations->where('locale','ka')->first()?->title ?? ('#' . $category->id) }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="mb-1">
@@ -272,7 +276,7 @@
                             <option value="">აირჩიეთ ბრენდი</option>
                             @foreach($brands as $brand)
                                 <option value="{{ $brand->id }}">
-                                    {{ $brand->translations->where('locale','ka')->first()->title }}
+                                    {{ $brand->translations->where('locale','ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}
                                 </option>
                             @endforeach
                         </select>
@@ -283,7 +287,7 @@
                             <option value="">აირჩიეთ მომწოდებელი</option>
                             @foreach($suppliers as $supplier)
                                 <option value="{{ $supplier->id }}">
-                                    {{ $supplier->translations->where('locale','ka')->first()->name }}
+                                    {{ $supplier->translations->where('locale','ka')->first()?->name ?? ('#' . $supplier->id) }}
                                 </option>
                             @endforeach
                         </select>
@@ -347,7 +351,7 @@
                         <select class="form-select" wire:model.live="selectedCategory">
                             <option value="">— აირჩიეთ —</option>
                             @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
-                                <option value="{{ $category->id }}">{{ $category->translations->where('locale', 'ka')->first()->title }}</option>
+                                <option value="{{ $category->id }}">{{ $category->translations->where('locale', 'ka')->first()?->title ?? ('#' . $category->id) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -357,7 +361,7 @@
                             <select class="form-select" wire:model="selectedSubcategory">
                                 <option value="">— აირჩიეთ —</option>
                                 @foreach($subcategories as $subcategory)
-                                    <option value="{{ $subcategory->id }}">{{ $subcategory->translations->where('locale', 'ka')->first()->title }}</option>
+                                    <option value="{{ $subcategory->id }}">{{ $subcategory->translations->where('locale', 'ka')->first()?->title ?? ('#' . $subcategory->id) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -418,7 +422,7 @@
                         <select class="form-select" wire:model.live="selectedBrand">
                             <option value="">— აირჩიეთ —</option>
                             @foreach($brands->where('active', 1) as $brand)
-                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()->title }}</option>
+                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}</option>
                             @endforeach
                         </select>
                     </div>
