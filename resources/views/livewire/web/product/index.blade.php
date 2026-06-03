@@ -1,6 +1,6 @@
 @section('seo')
     <title>
-        {{ ($currentCategory?->translation('ka')->title ? $currentCategory->translation('ka')->title . ' — შეიძინე იაფად | iapi.ge' : 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge') }}
+        {{ ($currentCategory?->translation('ka')?->title ? $currentCategory->translation('ka')->title . ' — შეიძინე იაფად | iapi.ge' : 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge') }}
     </title>
     <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
 @endsection
@@ -82,7 +82,7 @@
             </ol>
         </nav>
         <h1 class="h3 container mb-4 font-neue">
-            {{ $currentCategory?->translation('ka')->title ?? 'პროდუქციის ჩამონათვალი' }}
+            {{ $currentCategory?->translation('ka')?->title ?? 'პროდუქციის ჩამონათვალი' }}
         </h1>
         <section class="container mb-4">
             <div class="row">
@@ -146,7 +146,7 @@
                                 <div class="filter-section-title"
                                      data-bs-toggle="collapse"
                                      data-bs-target="#filter_categories">
-                                    <span>{{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}</span>
+                                    <span>{{ $currentCategory?->translation('ka')?->title ?? 'კატეგორიები' }}</span>
                                     <i class="ci-chevron-down fs-sm"></i>
                                 </div>
                                 <div class="collapse show" id="filter_categories">
@@ -159,7 +159,7 @@
                                                            style="font-size: 13px;"
                                                            href="#"
                                                            wire:click.prevent="selectParent({{ $category->id }})">
-                                                            {{ $category->translation('ka')->title }}
+                                                            {{ $category->translation('ka')?->title ?? '—' }}
                                                         </a>
                                                     </li>
                                                 @endforeach
@@ -172,7 +172,7 @@
                                                            style="font-size: 13px;"
                                                            href="#"
                                                            wire:click.prevent="selectChild({{ $subCategory->id }})">
-                                                            {{ $subCategory->translation('ka')->title }}
+                                                            {{ $subCategory->translation('ka')?->title ?? '—' }}
                                                         </a>
                                                     </li>
                                                 @endforeach
@@ -216,7 +216,7 @@
                                                            id="brand_{{ $brand->id }}">
                                                     <label class="form-check-label"
                                                            for="brand_{{ $brand->id }}">
-                                                        {{ $brand->translation('ka')->title }}
+                                                        {{ $brand->translation('ka')?->title ?? ('ბრენდი #' . $brand->id) }}
                                                     </label>
                                                 </div>
                                             @endforeach
@@ -396,7 +396,7 @@
                 {{-- კატეგორიები --}}
                 <div class="filter-block">
                     <div class="filter-section-title">
-                        <span>{{ $currentCategory?->translation('ka')->title ?? 'კატეგორიები' }}</span>
+                        <span>{{ $currentCategory?->translation('ka')?->title ?? 'კატეგორიები' }}</span>
                     </div>
                     <div class="filter-body">
                         @if(!$selectedParent)
@@ -405,7 +405,7 @@
                                     <li class="py-1">
                                         <a class="text-body text-decoration-none" style="font-size:13px;"
                                            href="#" wire:click.prevent="selectParent({{ $category->id }})">
-                                            {{ $category->translation('ka')->title }}
+                                            {{ $category->translation('ka')?->title ?? '—' }}
                                         </a>
                                     </li>
                                 @endforeach
@@ -416,7 +416,7 @@
                                     <li class="py-1">
                                         <a class="text-decoration-none {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : 'text-body' }}"
                                            style="font-size:13px;" href="#" wire:click.prevent="selectChild({{ $subCategory->id }})">
-                                            {{ $subCategory->translation('ka')->title }}
+                                            {{ $subCategory->translation('ka')?->title ?? '—' }}
                                         </a>
                                     </li>
                                 @endforeach
@@ -439,7 +439,7 @@
                                 <div class="form-check" @if($index >= 5 && !$this->showAllBrands) style="display:none;" @endif>
                                     <input type="checkbox" class="form-check-input"
                                            wire:model.live="selectedBrands" value="{{ $brand->id }}" id="m_brand_{{ $brand->id }}">
-                                    <label class="form-check-label" for="m_brand_{{ $brand->id }}">{{ $brand->translation('ka')->title }}</label>
+                                    <label class="form-check-label" for="m_brand_{{ $brand->id }}">{{ $brand->translation('ka')?->title ?? ('ბრენდი #' . $brand->id) }}</label>
                                 </div>
                             @endforeach
                             @if($brands->count() > 5)
