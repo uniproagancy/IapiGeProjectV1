@@ -188,14 +188,14 @@ class AltaProductJob implements ShouldQueue
         try {
             $product = Product::where('sku', $sku)->firstOrFail();
 
-            DB::transaction(function () use ($product, $productData, $b2bStock) {
+            DB::transaction(function () use ($product, $productData, $b2bStock, $sku) {
                 $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
                 $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-                // 💰 ფასის ლოგი — ვნახოთ API რას აბრუნებს
                 Log::info("💰 Alta price [{$sku}]: api_price=" . ($productData['price'] ?? 'null')
                     . ", api_prev=" . ($productData['previousPrice'] ?? 'null')
                     . " → regular={$productPrice}, discount=" . ($discountPrice ?? 'null'));
+
 
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
