@@ -2,43 +2,67 @@
 
 namespace App\Services\Products;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GlobalService
 {
-    public function searchByName(string $name): ?array
+    protected CitrusProduct $citrus;
+
+    public function __construct()
     {
-        try {
-            // -------- TODO: რეალური Ushop API call --------
-            // $resp = Http::timeout(30)->get('https://ushop.ge/api/search', ['q' => $name]);
-            // if (!$resp->successful()) return null;
-            // $first = $resp->json('products.0');
-            // if (!$first) return null;
-            // $detail = Http::get("https://ushop.ge/api/product/{$first['slug']}")->json('product');
-            // return $this->normalize($detail);
-            // ----------------------------------------------
-
-            Log::info("🔎 Global/Ushop search (placeholder): {$name}");
-            return null;
-
-        } catch (\Throwable $e) {
-            Log::error("GlobalService searchByName error [{$name}]: " . $e->getMessage());
-            return null;
-        }
+        $this->citrus = new CitrusProduct();
     }
 
-    private function normalize(array $data): array
+    /**
+     * დასახელება → search → slug → product → ნორმალიზებული array | null
+     */
+    public function searchByName(string $name): ?array
     {
+        $slug = $this->citrus->searchSlug($name);
+        if (!$slug) {
+            return null;
+        }
+
+        $resp    = $this->citrus->getProduct($slug);
+        $product = $resp['product'] ?? $resp; // product key-ში ან root-ში
+
+        if (empty($product) || empty($product['id'])) {
+            Log::warning("🔎 Citrus: empty product for slug '{$slug}'");
+            return null;
+        }
+
+        return $this->normalize($product);
+    }
+
+    private function normalize(array $p): array
+    {
+        // სურათები — large_images / images
+        $images = [];
+        if (!empty($p['large_images'])) {
+            $images = $p['large_images'];
+        } elseif (!empty($p['images'])) {
+            $images = array_filter(array_map(fn($i) => $i['url'] ?? null, $p['images']));
+        } elseif (!empty($p['image'])) {
+            $images = [$p['image']];
+        }
+
+        // category — breadcrumb-ის ბოლო (ყველაზე კონკრეტული)
+        $category = null;
+        if (!empty($p['breadcrumb']) && is_array($p['breadcrumb'])) {
+            $last     = end($p['breadcrumb']);
+            $category = $last['name'] ?? null;
+        }
+
         return [
-            'sku'         => $data['sku']         ?? null,
-            'name'        => $data['name']        ?? null,
-            'price'       => $data['price']       ?? null,
-            'old_price'   => $data['old_price']   ?? null,
-            'description' => $data['description'] ?? null,
-            'images'      => $data['images']      ?? [],
-            'category'    => $data['category']    ?? null,
-            'brand'       => $data['brand']       ?? null,
+            'sku'         => $p['sku']  ?? null,
+            'name'        => $p['name'] ?? null,
+            'price'       => $p['price'] ?? null,          // → regular_price
+            'old_price'   => $p['old_price'] ?? null,
+            'description' => $p['details']['description'] ?? ($p['seo']['meta_description'] ?? null),
+            'images'      => array_values($images),
+            'category'    => $category,
+            'brand'       => $p['manufacturer']['name'] ?? null,
+            'stock'       => $p['stock'] ?? 0,
         ];
     }
 }
