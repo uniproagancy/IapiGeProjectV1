@@ -37,7 +37,8 @@ class GlobalProductJob implements ShouldQueue
 
     public function __construct(
         public string $name,
-        public int $stock = 0
+        public int $stock = 0,
+        public ?float $price = null
     ) {
     }
 
@@ -106,9 +107,9 @@ class GlobalProductJob implements ShouldQueue
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
                     [
-                        'regular_price'    => (float) ($data['price'] ?? 0),
-                        'dealer_price'     => (float) ($data['price'] ?? 0),
-                        'discount_price'   => !empty($data['old_price']) ? (float) $data['price'] : null,
+                        'regular_price'    => $this->price ?? (float) ($data['price'] ?? 0),
+                        'dealer_price'     => $this->price ?? (float) ($data['price'] ?? 0),
+                        'discount_price'   => null,
                         'discount_percent' => 0,
                     ]
                 );

@@ -142,9 +142,11 @@ class Index extends Component
                 if (mb_strlen($name) < 3) continue;
 
                 $name  = preg_replace('/\s+/u', ' ', $name);
-                $stock = $this->parseStock($row[1] ?? null); // B სვეტი
 
-                $items[$name] = $stock; // დუბლიკატი name → ბოლო stock
+                $stock = $this->parseStock($row[1] ?? null);  // B
+                $price = $this->parsePrice($row[2] ?? null);   // C — ფასი
+
+                $items[$name] = ['stock' => $stock, 'price' => $price];
             }
 
             if (empty($items)) {
@@ -154,9 +156,9 @@ class Index extends Component
 
             Log::info('📂 Global upload: ' . count($items) . ' row, queue-ში იგზავნება');
 
-            foreach ($items as $name => $stock) {
-                \App\Jobs\GlobalProductJob::dispatch($name, $stock)->onQueue('global');
-                Log::info("📤 Global job dispatched: '{$name}' (stock={$stock})");
+            foreach ($items as $name => $info) {
+                \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
+                Log::info("📤 Global job dispatched: '{$name}' (stock={$info['stock']}, price={$info['price']})");
             }
 
             $this->reset('global_file');
@@ -167,6 +169,15 @@ class Index extends Component
             Log::error('Global upload error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
+    }
+
+    private function parsePrice($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
+        return $clean === '' ? null : (float) $clean;
     }
 
     /**
