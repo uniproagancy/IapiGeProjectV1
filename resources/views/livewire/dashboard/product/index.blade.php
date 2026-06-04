@@ -46,6 +46,10 @@
                                     </div>
                                 </div>
                             @endif
+                            <a class="dropdown-item text-danger" href="{{ route('dashboard.global.export') }}" target="_blank">
+                                <i data-feather="download" class="me-1" style="width:14px;"></i>
+                                ვერ ნაპოვნების ჩამოტვირთვა ({{ \App\Models\Product\GlobalNotFound::count() }})
+                            </a>
                             <div class="btn-group">
                                 <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
                                     განახლების ატვირთვა
@@ -60,13 +64,6 @@
                                         id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="refresh-cw"></i>
                                 </button>
-                            </div>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                   data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
-                                <a class="dropdown-item" href="#" wire:click="exportNotFound">
-                                    ვერ ნაპოვნების ექსპორტი ({{ \App\Models\Product\GlobalNotFound::count() }})
-                                </a>
                             </div>
                             <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
                                style="font-size: 13px">

@@ -159,15 +159,10 @@ class Index extends Component
             }
 
             Log::info('📂 Global upload: ' . count($items) . ' row, queue-ში იგზავნება');
-
-            \App\Models\Product\GlobalNotFound::truncate();
-            Log::info('🗑️ global_not_found გასუფთავდა');
-
             foreach ($items as $name => $info) {
                 \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
                 Log::info("📤 Global job dispatched: '{$name}' (stock={$info['stock']}, price={$info['price']})");
             }
-
             $this->reset('global_file');
             $this->dispatch('ui:success',
                 message: count($items) . ' პროდუქტი queue-ში გაიგზავნა. დამუშავება ფონურად მიმდინარეობს.');

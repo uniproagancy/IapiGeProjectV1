@@ -9,6 +9,7 @@ use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductTranslation;
+use App\Models\Product\GlobalNotFound;
 use App\Services\Products\GlobalService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -61,18 +62,17 @@ class GlobalProductJob implements ShouldQueue
             $data = (new GlobalService())->searchByName($this->name);
 
             if (!$data || empty($data['sku'])) {
-                Log::info("📝 not_found ჩაწერა: {$this->name}");
-                try {
-                    \App\Models\Product\GlobalNotFound::create([
-                        'name'   => $this->name,
+                Log::warning("⚠️ Global job: Citrus-ზე ვერ მოიძებნა — {$this->name}");
+
+                GlobalNotFound::updateOrCreate(
+                    ['name' => $this->name],   // unique key — დუბლიკატი არ გაჩნდება
+                    [
                         'stock'  => $this->stock,
                         'price'  => $this->price,
                         'reason' => 'no_result',
-                    ]);
-                    Log::info("✅ not_found ჩაიწერა: {$this->name}");
-                } catch (\Throwable $e) {
-                    Log::error("❌ not_found ჩაწერა ჩავარდა: " . $e->getMessage());
-                }
+                    ]
+                );
+
                 return;
             }
 
@@ -142,6 +142,9 @@ class GlobalProductJob implements ShouldQueue
                 if (!empty($data['images']) && empty($product->main_image)) {
                     $this->downloadImages($product, $data['images']);
                 }
+
+                // ✅ წარმატებით დაემატა/განახლდა — not_found-დან ამოვშალოთ (ორივე შემთხვევაში)
+                GlobalNotFound::where('name', $this->name)->delete();
 
                 Log::info("✅ Global saved: {$sku} (brand={$brandId}, cat={$categoryId})");
             });
