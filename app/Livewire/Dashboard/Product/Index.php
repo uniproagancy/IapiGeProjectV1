@@ -135,54 +135,49 @@ class Index extends Component
         try {
             $path = $this->global_file->getRealPath();
 
-            $spreadsheet = IOFactory::load($path);
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
             $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
 
-            Log::info('📂 Global upload: წავიკითხე ' . count($rows) . ' row');
-
+            // ---- 1. სათაურების სუფთად ამოღება ----
             $names = [];
             foreach ($rows as $i => $row) {
                 $name = trim((string) ($row[0] ?? ''));
 
-                Log::info("   row {$i}: '" . $name . "'");
-
+                // ცარიელი ხაზი
                 if ($name === '') {
                     continue;
                 }
-                if ($i === 0 && in_array(mb_strtolower($name), ['დასახელება', 'name', 'სახელი'])) {
-                    Log::info("   ↑ header — გამოვტოვე");
+
+                // header ხაზი
+                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) {
                     continue;
                 }
+
+                // ნაგავი — ძალიან მოკლე (1-2 სიმბოლო) ან მხოლოდ რიცხვი/სიმბოლოები
+                if (mb_strlen($name) < 3) {
+                    continue;
+                }
+
+                // მრავალჯერადი space → ერთი space
+                $name = preg_replace('/\s+/u', ' ', $name);
+
                 $names[] = $name;
             }
 
-            Log::info('✅ Global: სულ ' . count($names) . ' დასახელება', $names);
+            // დუბლიკატების მოშორება
+            $names = array_values(array_unique($names));
+
+            Log::info('📂 Global: ფაილში ' . count($names) . ' სუფთა დასახელება', $names);
 
             if (empty($names)) {
                 $this->dispatch('ui:error', message: 'ფაილში დასახელებები ვერ მოიძებნა');
                 return;
             }
 
-            $service = new GlobalService();
-            $found   = 0;
-            $missing = 0;
-
-            foreach ($names as $name) {
-                $data = $service->searchByName($name);
-
-                if (!$data) {
-                    $missing++;
-                    Log::warning("⚠️ Global: ვერ მოიძებნა — {$name}");
-                    continue;
-                }
-
-                // TODO: ნაპოვნი $data → db_products (supplier_id=5, GLOBAL- SKU)
-                $found++;
-            }
 
             $this->reset('global_file');
             $this->dispatch('ui:success',
-                message: "დამუშავდა: {$found} ნაპოვნი, {$missing} ვერ მოიძებნა (სულ " . count($names) . ")");
+                message: "123");
 
         } catch (\Throwable $e) {
             Log::error('Global upload error: ' . $e->getMessage());
