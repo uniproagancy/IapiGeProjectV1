@@ -61,6 +61,13 @@
                                     <i data-feather="refresh-cw"></i>
                                 </button>
                             </div>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                   data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
+                                <a class="dropdown-item" href="#" wire:click="exportNotFound">
+                                    ვერ ნაპოვნების ექსპორტი ({{ \App\Models\GlobalNotFound::count() }})
+                                </a>
+                            </div>
                             <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
                                style="font-size: 13px">
                                 <i data-feather="plus-square"></i>

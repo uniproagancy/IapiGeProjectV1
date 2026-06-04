@@ -13,6 +13,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Index extends Component
 {
@@ -155,6 +156,9 @@ class Index extends Component
             }
 
             Log::info('📂 Global upload: ' . count($items) . ' row, queue-ში იგზავნება');
+
+            \App\Models\Product\GlobalNotFound::truncate();
+            Log::info('🗑️ global_not_found გასუფთავდა');
 
             foreach ($items as $name => $info) {
                 \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
@@ -519,6 +523,24 @@ class Index extends Component
         $this->selectAll        = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი განიბლოკა!");
+    }
+
+    public function exportNotFound(): StreamedResponse
+    {
+        $rows = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
+
+        $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            // UTF-8 BOM — ქართული რომ სწორად გაიხსნას Excel-ში
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($out, ['Name', 'Stock', 'Price', 'Reason', 'Date']);
+            foreach ($rows as $r) {
+                fputcsv($out, [$r->name, $r->stock, $r->price, $r->reason, $r->created_at]);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     // ============================================

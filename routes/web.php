@@ -92,6 +92,20 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
     });
 
     Route::middleware('auth')->group(function () {
+        Route::get('/global-export', function () {
+            $rows = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
+            $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
+
+            return response()->streamDownload(function () use ($rows) {
+                $out = fopen('php://output', 'w');
+                fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+                fputcsv($out, ['Name', 'Stock', 'Price', 'Reason', 'Date']);
+                foreach ($rows as $r) {
+                    fputcsv($out, [$r->name, $r->stock, $r->price, $r->reason, $r->created_at]);
+                }
+                fclose($out);
+            }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        })->name('dashboard.global.export')->middleware(['auth']);
         // MAIN
         Route::middleware(['check.role'])->group(function () {
             Route::get('/', App\Livewire\Dashboard\Main\Index::class)->name('main');
