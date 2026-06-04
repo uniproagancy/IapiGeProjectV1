@@ -1,5 +1,5 @@
 <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
-    @if($product->category->parent->id != 2)
+    @if($product->category?->parent?->id != 2)
     <ol class="breadcrumb font-neue">
         <li class="breadcrumb-item">
             <a href="{{ route('web.main.index') }}"> მთავარი გვერდი</a>
