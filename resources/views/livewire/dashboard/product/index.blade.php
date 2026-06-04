@@ -20,6 +20,17 @@
                                         <a class="dropdown-item" data-bs-toggle="modal"
                                            data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
                                         <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item text-warning" href="#"
+                                           onclick="if(confirm('{{ count($selectedProducts) }} პროდუქტი ჩაიკეტება. ავტომატური განახლება გაითიშება.')) { @this.call('bulkLock') }; return false;">
+                                            <i data-feather="lock" class="me-1" style="width:14px;"></i>
+                                            ჩაკეტვა ({{ count($selectedProducts) }})
+                                        </a>
+                                        <a class="dropdown-item text-success" href="#"
+                                           onclick="if(confirm('{{ count($selectedProducts) }} პროდუქტი განიბლოკება.')) { @this.call('bulkUnlock') }; return false;">
+                                            <i data-feather="unlock" class="me-1" style="width:14px;"></i>
+                                            განბლოკვა ({{ count($selectedProducts) }})
+                                        </a>
+                                        <div class="dropdown-divider"></div>
                                         <a class="dropdown-item text-danger" href="#"
                                            onclick="if(confirm('{{ count($selectedProducts) }} პროდუქტი წაიშლება. დარწმუნებული ხართ?')) { @this.call('bulkDelete') }; return false;">
                                             <i data-feather="trash-2" class="me-1" style="width:14px;"></i>
@@ -75,6 +86,7 @@
                                     <th>ბრენდი</th>
                                     <th>სტატუსი</th>
                                     <th>საიტზე ჩვენება</th>
+                                    <th>ჩაკეტვა</th>
                                     <th>მოქმედება</th>
                                 </tr>
                                 </thead>
@@ -152,6 +164,19 @@
                                                         </label>
                                                     </div>
                                                 </div>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(!$product->trashed())
+                                                <a href="#" class="text-body"
+                                                   wire:click="toggleLock({{ $product->id }})"
+                                                   title="{{ $product->update_lock ? 'განბლოკვა (განახლება ჩაირთვება)' : 'ჩაკეტვა (ავტომატური განახლების აკრძალვა)' }}">
+                                                    @if($product->update_lock)
+                                                        <i class="text-warning" data-feather="lock"></i>
+                                                    @else
+                                                        <i class="text-muted" data-feather="unlock"></i>
+                                                    @endif
+                                                </a>
                                             @endif
                                         </td>
                                         <td>
@@ -325,6 +350,11 @@
                         <label class="form-check-label" for="no_brand">ბრენდის გარეშე</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
+                        <input type="checkbox" class="form-check-input" id="only_locked"
+                               wire:model.lazy="only_locked">
+                        <label class="form-check-label" for="only_locked">მხოლოდ ჩაკეტილები</label>
+                    </div>
+                    <div class="mb-1 form-check form-check-primary">
                         <input type="checkbox" class="form-check-input" id="draft"
                                wire:model.lazy="draft">
                         <label class="form-check-label" for="draft">მხოლოდ Draft</label>
@@ -487,6 +517,14 @@
             if (modal) {
                 modal.hide();
             }
+        });
+
+        Livewire.on('bulk_modal_close', () => {
+            ['changeCategoryModal', 'changeBrandModal'].forEach(id => {
+                const modalEl = document.getElementById(id);
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            });
         });
 
         Livewire.on('price_edit_modal_open', () => {
