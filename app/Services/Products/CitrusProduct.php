@@ -20,54 +20,64 @@ class CitrusProduct
         ]);
     }
 
-    /**
-     * დასახელებით ძებნა → პირველი match-ის slug.
-     */
     public function searchSlug(string $name): ?string
     {
-        try {
-            $response = $this->client->request('GET', $this->searchUrl, [
-                'query'   => ['q' => $name],
-                'headers' => [
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                    'Accept'     => 'application/json',
-                ],
-            ]);
+        $attempts = 0;
 
-            $data     = json_decode($response->getBody()->getContents(), true);
-            $products = $data['products'] ?? [];
+        while ($attempts < 2) {
+            try {
+                $response = $this->client->request('GET', $this->searchUrl, [
+                    'query'   => ['q' => $name],
+                    'headers' => [
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                        'Accept'     => 'application/json',
+                    ],
+                ]);
 
-            if (empty($products)) {
-                Log::warning("🔎 Citrus: no result for '{$name}'");
-                return null;
+                $data     = json_decode($response->getBody()->getContents(), true);
+                $products = $data['products'] ?? [];
+
+                if (empty($products)) {
+                    Log::warning("🔎 Citrus: no result for '{$name}'");
+                    return null;
+                }
+
+                return $products[0]['slug'] ?? null;
+
+            } catch (Exception $e) {
+                $attempts++;
+                Log::warning("⏳ Citrus searchSlug retry {$attempts} [{$name}]: " . $e->getMessage());
+                usleep(500000);
             }
-
-            return $products[0]['slug'] ?? null;
-
-        } catch (Exception $e) {
-            Log::error("CitrusProduct searchSlug [{$name}]: " . $e->getMessage());
-            return null;
         }
+
+        Log::error("CitrusProduct searchSlug failed [{$name}]");
+        return null;
     }
 
-    /**
-     * slug-ით სრული პროდუქტის წამოღება.
-     */
     public function getProduct(string $slug): array
     {
-        try {
-            $response = $this->client->request('GET', $this->productUrl . '/' . $slug, [
-                'headers' => [
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                    'Accept'     => 'application/json',
-                ],
-            ]);
+        $attempts = 0;
 
-            return json_decode($response->getBody()->getContents(), true) ?: [];
+        while ($attempts < 2) {
+            try {
+                $response = $this->client->request('GET', $this->productUrl . '/' . $slug, [
+                    'headers' => [
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                        'Accept'     => 'application/json',
+                    ],
+                ]);
 
-        } catch (Exception $e) {
-            Log::error("CitrusProduct getProduct [{$slug}]: " . $e->getMessage());
-            return [];
+                return json_decode($response->getBody()->getContents(), true) ?: [];
+
+            } catch (Exception $e) {
+                $attempts++;
+                Log::warning("⏳ Citrus getProduct retry {$attempts} [{$slug}]: " . $e->getMessage());
+                usleep(500000);
+            }
         }
+
+        Log::error("CitrusProduct getProduct failed [{$slug}]");
+        return [];
     }
 }

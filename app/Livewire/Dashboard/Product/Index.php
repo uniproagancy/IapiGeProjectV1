@@ -185,6 +185,7 @@ class Index extends Component
                 if (!$data) {
                     $missing++;
                     Log::warning("⚠️ Global: ვერ მოიძებნა — {$name}");
+                    usleep(300000);
                     continue;
                 }
 
@@ -196,6 +197,7 @@ class Index extends Component
 
                 // TODO (ნაბიჯი 3): $data → db_products ჩაწერა
                 $found++;
+                usleep(300000);
             }
 
             $this->reset('global_file');
