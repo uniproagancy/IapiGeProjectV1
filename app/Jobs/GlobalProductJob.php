@@ -35,24 +35,38 @@ class GlobalProductJob implements ShouldQueue
     private const DEFAULT_CATEGORY = 6;
     private const DEFAULT_BRAND    = 6;
 
-    public function __construct(public string $name)
-    {
+    public function __construct(
+        public string $name,
+        public int $stock = 0
+    ) {
     }
 
     public function handle(): void
     {
-        try {
-            $data = (new GlobalService())->searchByName($this->name);
+        Log::info("🔄 Global job START: '{$this->name}' (stock={$this->stock})");
 
-            if (!$data || empty($data['sku'])) {
-                Log::warning("⚠️ Global job: ვერ მოიძებნა — {$this->name}");
+        try {
+            // ============================================
+            // STOCK = 0 → ჩვენთან მოვძებნოთ და გავთიშოთ
+            // ============================================
+            if ($this->stock <= 0) {
+                $this->disableByName();
                 return;
             }
 
-            $sku = self::SKU_PREFIX . $data['sku'];
+            // ============================================
+            // STOCK > 0 → Citrus-ში ძებნა + დამატება/განახლება
+            // ============================================
+            $data = (new GlobalService())->searchByName($this->name);
 
-            // 🔒 lock — ჩაკეტილს არ ვეხებით
+            if (!$data || empty($data['sku'])) {
+                Log::warning("⚠️ Global job: Citrus-ზე ვერ მოიძებნა — {$this->name}");
+                return;
+            }
+
+            $sku      = self::SKU_PREFIX . $data['sku'];
             $existing = Product::where('sku', $sku)->first();
+
             if ($existing && $existing->update_lock) {
                 Log::info("🔒 Global job: locked, skip — {$sku}");
                 return;
@@ -61,18 +75,18 @@ class GlobalProductJob implements ShouldQueue
             DB::transaction(function () use ($data, $sku, $existing) {
                 $brandId    = $this->resolveBrand($data['brand'] ?? null);
                 $categoryId = $this->resolveCategory($data['category'] ?? null);
-                $hasStock   = ($data['stock'] ?? 0) > 0;
 
                 if ($existing) {
                     $product = $existing;
                     $product->update([
                         'brand_id'    => $brandId,
                         'category_id' => $categoryId,
-                        'quantity'    => $hasStock ? 5 : 0,
-                        'in_stock'    => $hasStock ? 1 : 0,
-                        'show'        => $hasStock ? 1 : 0,
-                        'active'      => $hasStock ? 1 : 0,
+                        'quantity'    => $this->stock,
+                        'in_stock'    => 1,
+                        'show'        => 1,
+                        'active'      => 1,
                     ]);
+                    Log::info("🔁 Global: updated {$sku} (id={$product->id}, stock={$this->stock})");
                 } else {
                     $product = Product::create([
                         'supplier_product_id' => null,
@@ -81,14 +95,14 @@ class GlobalProductJob implements ShouldQueue
                         'sku'                 => $sku,
                         'supplier_id'         => self::SUPPLIER_ID,
                         'main_image'          => null,
-                        'active'              => $hasStock ? 1 : 0,
-                        'quantity'            => $hasStock ? 5 : 0,
-                        'in_stock'            => $hasStock ? 1 : 0,
-                        'show'                => $hasStock ? 1 : 0,
+                        'active'              => 1,
+                        'quantity'            => $this->stock,
+                        'in_stock'            => 1,
+                        'show'                => 1,
                     ]);
+                    Log::info("✨ Global: created {$sku} (id={$product->id}, stock={$this->stock})");
                 }
 
-                // ფასი — regular = price
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
                     [
@@ -99,7 +113,6 @@ class GlobalProductJob implements ShouldQueue
                     ]
                 );
 
-                // translations
                 $name = $data['name'] ?? $this->name;
                 $slug = Str::slug($name, '-') . '-' . $product->id;
                 foreach (['ka', 'en', 'ru'] as $locale) {
@@ -114,18 +127,46 @@ class GlobalProductJob implements ShouldQueue
                     );
                 }
 
-                // სურათები (მხოლოდ ახალ პროდუქტზე ან თუ main_image ცარიელია)
                 if (!empty($data['images']) && empty($product->main_image)) {
                     $this->downloadImages($product, $data['images']);
                 }
 
-                Log::info("✅ Global saved: {$sku} (id={$product->id}, brand={$brandId}, cat={$categoryId})");
+                Log::info("✅ Global saved: {$sku} (brand={$brandId}, cat={$categoryId})");
             });
 
         } catch (Exception $e) {
             Log::error("❌ Global job error [{$this->name}]: " . $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Stock=0 — ჩვენს ბაზაში დასახელებით ვეძებთ და ვთიშავთ.
+     */
+    private function disableByName(): void
+    {
+        $product = Product::whereHas('translations',
+            fn ($q) => $q->where('locale', 'ka')
+                ->whereRaw('LOWER(TRIM(title)) = ?', [mb_strtolower(trim($this->name))])
+        )->where('supplier_id', self::SUPPLIER_ID)->first();
+
+        if (!$product) {
+            Log::info("⏭️ Global disable: '{$this->name}' ჩვენთან ვერ მოიძებნა — გამოტოვება");
+            return;
+        }
+
+        if ($product->update_lock) {
+            Log::info("🔒 Global disable: locked, skip — {$product->sku}");
+            return;
+        }
+
+        $product->update([
+            'quantity' => 0,
+            'in_stock' => 0,
+            'show'     => 0,
+        ]);
+
+        Log::info("🚫 Global: disabled {$product->sku} (id={$product->id}) — stock=0");
     }
 
     private function resolveBrand(?string $brandName): int
@@ -170,16 +211,16 @@ class GlobalProductJob implements ShouldQueue
 
         $normalized = mb_strtolower(trim($categoryName));
 
-        // ka translation title-ით ძებნა
         $category = ProductCategory::whereHas('translations',
             fn ($q) => $q->where('locale', 'ka')->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
         )->first();
 
         if ($category) {
+            Log::info("✅ Global category mapped: '{$categoryName}' → {$category->id}");
             return $category->id;
         }
 
-        Log::warning("⚠️ Global: category not mapped '{$categoryName}' → default");
+        Log::warning("⚠️ Global category not mapped: '{$categoryName}' → default");
         return self::DEFAULT_CATEGORY;
     }
 
@@ -188,7 +229,7 @@ class GlobalProductJob implements ShouldQueue
         $mainSet = false;
         $bulk    = [];
 
-        foreach ($images as $index => $url) {
+        foreach ($images as $url) {
             if (empty($url)) {
                 continue;
             }
@@ -222,12 +263,13 @@ class GlobalProductJob implements ShouldQueue
                 }
 
             } catch (Exception $e) {
-                Log::warning("⚠️ Global image download: " . $e->getMessage());
+                Log::warning("⚠️ Global image: " . $e->getMessage());
             }
         }
 
         if (!empty($bulk)) {
             ProductImage::insert($bulk);
+            Log::info("📦 Global: " . count($bulk) . " images for product {$product->id}");
         }
     }
 }

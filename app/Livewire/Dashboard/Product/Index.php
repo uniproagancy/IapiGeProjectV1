@@ -119,10 +119,6 @@ class Index extends Component
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა!');
     }
 
-    // ============================================
-    // ✅ Global — დასახელებების ატვირთვა (Ushop ძებნა)
-    // ============================================
-
     public function uploadGlobal(): void
     {
         $this->validate([
@@ -133,81 +129,57 @@ class Index extends Component
         ]);
 
         try {
-            $path = $this->global_file->getRealPath();
-
+            $path        = $this->global_file->getRealPath();
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
             $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
 
-            // ---- 1. სათაურების სუფთად ამოღება ----
-            $names = [];
-            foreach ($rows as $i => $row) {
+            $items = [];
+            foreach ($rows as $row) {
                 $name = trim((string) ($row[0] ?? ''));
 
-                // ცარიელი ხაზი
-                if ($name === '') {
-                    continue;
-                }
+                if ($name === '') continue;
+                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
+                if (mb_strlen($name) < 3) continue;
 
-                // header ხაზი
-                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) {
-                    continue;
-                }
+                $name  = preg_replace('/\s+/u', ' ', $name);
+                $stock = $this->parseStock($row[1] ?? null); // B სვეტი
 
-                // ნაგავი — ძალიან მოკლე (1-2 სიმბოლო) ან მხოლოდ რიცხვი/სიმბოლოები
-                if (mb_strlen($name) < 3) {
-                    continue;
-                }
-
-                // მრავალჯერადი space → ერთი space
-                $name = preg_replace('/\s+/u', ' ', $name);
-
-                $names[] = $name;
+                $items[$name] = $stock; // დუბლიკატი name → ბოლო stock
             }
 
-            // დუბლიკატების მოშორება
-            $names = array_values(array_unique($names));
-
-            Log::info('📂 Global: ფაილში ' . count($names) . ' სუფთა დასახელება', $names);
-
-            if (empty($names)) {
-                $this->dispatch('ui:error', message: 'ფაილში დასახელებები ვერ მოიძებნა');
+            if (empty($items)) {
+                $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა');
                 return;
             }
 
-            // ---- 2. თითო სათაურზე Citrus search ----
-            $service = new GlobalService();
-            $found   = 0;
-            $missing = 0;
+            Log::info('📂 Global upload: ' . count($items) . ' row, queue-ში იგზავნება');
 
-            foreach ($names as $name) {
-                $data = $service->searchByName($name);
-
-                if (!$data) {
-                    $missing++;
-                    Log::warning("⚠️ Global: ვერ მოიძებნა — {$name}");
-                    usleep(300000);
-                    continue;
-                }
-
-                Log::info("✅ Global: ნაპოვნია — {$name}", [
-                    'sku'   => $data['sku']   ?? null,
-                    'price' => $data['price'] ?? null,
-                    'brand' => $data['brand'] ?? null,
-                ]);
-
-                // TODO (ნაბიჯი 3): $data → db_products ჩაწერა
-                $found++;
-                usleep(300000);
+            foreach ($items as $name => $stock) {
+                \App\Jobs\GlobalProductJob::dispatch($name, $stock)->onQueue('global');
+                Log::info("📤 Global job dispatched: '{$name}' (stock={$stock})");
             }
 
             $this->reset('global_file');
             $this->dispatch('ui:success',
-                message: "დასრულდა — ნაპოვნი: {$found}, ვერ მოიძებნა: {$missing} (სულ " . count($names) . ")");
+                message: count($items) . ' პროდუქტი queue-ში გაიგზავნა. დამუშავება ფონურად მიმდინარეობს.');
 
         } catch (\Throwable $e) {
             Log::error('Global upload error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Stock-ის პარსინგი: "5+", "10+", "5", "" → int
+     */
+    private function parseStock($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+        // მხოლოდ ციფრები (+ და სხვა სიმბოლოები მოშორდეს)
+        $digits = preg_replace('/[^0-9]/', '', (string) $value);
+        return $digits === '' ? 0 : (int) $digits;
     }
 
     public function deleteModal($productId): void
