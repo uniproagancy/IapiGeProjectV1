@@ -137,7 +137,10 @@ class Index extends Component
             $items = [];
             foreach ($rows as $row) {
                 $name = trim((string) ($row[0] ?? ''));
-
+                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+                
                 if ($name === '') continue;
                 if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
                 if (mb_strlen($name) < 3) continue;
