@@ -195,10 +195,17 @@ class ZoommerProductJob implements ShouldQueue
         }
 
         $hasStock = $this->checkTbilisiStock($productAvailability);
-        $sku = $productData['barCode'] ?? ('ZOOM-' . $productData['id']);
+        $sku      = $productData['barCode'] ?? ('ZOOM-' . $productData['id']);
 
-        // ✅ ძებნა SKU-თი (ZOOM- prefix) — Alta-ს პროდუქტებს არ ეხება
-        if (Product::where('sku', $sku)->exists()) {
+        $existing = Product::where('sku', $sku)->first();
+
+        // 🔒 lock შემოწმება
+        if ($existing && $existing->update_lock) {
+            Log::info("🔒 Skipping locked Zoommer product: {$sku}");
+            return;
+        }
+
+        if ($existing) {
             $this->updateExistingProduct($productData, $hasStock, $sku);
         } else {
             if ($hasStock) {

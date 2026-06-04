@@ -120,9 +120,15 @@ class AltaProductJob implements ShouldQueue
         $barCode = $productData['barCode'] ?? $productData['id'];
         $sku     = 'ALTA-' . $barCode;
 
-        $b2bStock = AltaID::where('product_id', (string) $barCode)->first();
+        // 🔒 lock შემოწმება — თუ ჩაკეტილია, საერთოდ გამოვტოვოთ
+        $existing = Product::where('sku', $sku)->first();
+        if ($existing && $existing->update_lock) {
+            Log::info("🔒 Skipping locked Alta product: {$sku}");
+            return;
+        }
 
-        $exists = Product::where('sku', $sku)->exists();
+        $b2bStock = AltaID::where('product_id', (string) $barCode)->first();
+        $exists   = (bool) $existing;
 
         if (!$b2bStock) {
             if ($exists) {

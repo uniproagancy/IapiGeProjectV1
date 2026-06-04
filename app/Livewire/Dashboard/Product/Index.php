@@ -60,6 +60,8 @@ class Index extends Component
     public $bulkBrandId       = null;
     public array $bulkSubcategories = [];
 
+    public bool $only_locked = false;
+
     public bool $no_brand = false;
 
     protected $listeners = [
@@ -84,6 +86,7 @@ class Index extends Component
         'no_stock'      => ['except' => false],
         'unsorted'      => ['except' => false],
         'no_brand' => ['except' => false],
+        'only_locked' => ['except' => false],
     ];
 
     public function mount(): void
@@ -422,6 +425,46 @@ class Index extends Component
         $this->dispatch('ui:success', message: "{$count} პროდუქტი აღდგა!");
     }
 
+    public function toggleLock($productId): void
+    {
+        $product = Product::findOrFail($productId);
+        $product->update_lock = !$product->update_lock;
+        $product->save();
+        $this->dispatch('ui:success', message: $product->update_lock
+            ? 'პროდუქტი ჩაიკეტა (განახლება გათიშულია)'
+            : 'პროდუქტი განიბლოკა');
+    }
+
+    public function bulkLock(): void
+    {
+        if (empty($this->selectedProducts)) {
+            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
+            return;
+        }
+
+        $count = count($this->selectedProducts);
+        Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 1]);
+        $this->selectedProducts = [];
+        $this->selectAll        = false;
+        $this->dispatch('bulk_modal_close');
+        $this->dispatch('ui:success', message: "{$count} პროდუქტი ჩაიკეტა!");
+    }
+
+    public function bulkUnlock(): void
+    {
+        if (empty($this->selectedProducts)) {
+            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
+            return;
+        }
+
+        $count = count($this->selectedProducts);
+        Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 0]);
+        $this->selectedProducts = [];
+        $this->selectAll        = false;
+        $this->dispatch('bulk_modal_close');
+        $this->dispatch('ui:success', message: "{$count} პროდუქტი განიბლოკა!");
+    }
+
     // ============================================
     // Render
     // ============================================
@@ -439,6 +482,7 @@ class Index extends Component
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
             ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
             ->when($this->no_brand === true, fn($q) => $q->whereIn('brand_id', [1, 6]))
+            ->when($this->only_locked === true, fn($q) => $q->where('update_lock', 1))
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
                     ? $q->where('quantity', '>', 0)
