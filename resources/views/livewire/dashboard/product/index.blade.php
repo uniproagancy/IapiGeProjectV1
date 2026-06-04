@@ -65,7 +65,7 @@
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                    data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
                                 <a class="dropdown-item" href="#" wire:click="exportNotFound">
-                                    ვერ ნაპოვნების ექსპორტი ({{ \App\Models\GlobalNotFound::count() }})
+                                    ვერ ნაპოვნების ექსპორტი ({{ \App\Models\Product\GlobalNotFound::count() }})
                                 </a>
                             </div>
                             <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
