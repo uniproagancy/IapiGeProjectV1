@@ -105,7 +105,7 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                 }
                 fclose($out);
             }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-        })->name('dashboard.global.export')->middleware(['auth']);
+        })->name('global.export')->middleware(['auth']);
         // MAIN
         Route::middleware(['check.role'])->group(function () {
             Route::get('/', App\Livewire\Dashboard\Main\Index::class)->name('main');
