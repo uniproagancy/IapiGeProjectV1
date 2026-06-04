@@ -135,7 +135,7 @@ class Index extends Component
         try {
             $path = $this->global_file->getRealPath();
 
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory\IOFactory::load($path);
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
             $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
 
             // ---- 1. სათაურების სუფთად ამოღება ----
