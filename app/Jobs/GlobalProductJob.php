@@ -74,7 +74,7 @@ class GlobalProductJob implements ShouldQueue
 
             DB::transaction(function () use ($data, $sku, $existing) {
                 $brandId    = $this->resolveBrand($data['brand'] ?? null);
-                $categoryId = $this->resolveCategory($data['category'] ?? null);
+                $categoryId = self::DEFAULT_CATEGORY;
 
                 if ($existing) {
                     $product = $existing;
