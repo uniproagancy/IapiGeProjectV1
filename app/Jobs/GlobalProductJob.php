@@ -61,16 +61,18 @@ class GlobalProductJob implements ShouldQueue
             $data = (new GlobalService())->searchByName($this->name);
 
             if (!$data || empty($data['sku'])) {
-                Log::warning("⚠️ Global job: Citrus-ზე ვერ მოიძებნა — {$this->name}");
-
-                // ვერ ნაპოვნი ჩავწეროთ ცალკე ცხრილში
-                \App\Models\Product\GlobalNotFound::create([
-                    'name'   => $this->name,
-                    'stock'  => $this->stock,
-                    'price'  => $this->price,
-                    'reason' => 'no_result',
-                ]);
-
+                Log::info("📝 not_found ჩაწერა: {$this->name}");
+                try {
+                    \App\Models\Product\GlobalNotFound::create([
+                        'name'   => $this->name,
+                        'stock'  => $this->stock,
+                        'price'  => $this->price,
+                        'reason' => 'no_result',
+                    ]);
+                    Log::info("✅ not_found ჩაიწერა: {$this->name}");
+                } catch (\Throwable $e) {
+                    Log::error("❌ not_found ჩაწერა ჩავარდა: " . $e->getMessage());
+                }
                 return;
             }
 
