@@ -7,9 +7,12 @@ use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductSupplier;
+use App\Services\Products\GlobalService;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Index extends Component
 {
@@ -29,7 +32,7 @@ class Index extends Component
     public bool $selectAll         = false;
     public array $currentPageIds   = [];
 
-    public $excel_file;
+    public $global_file;
 
     public $selectedCategory    = null;
     public $selectedBrand       = null;
@@ -85,8 +88,8 @@ class Index extends Component
         'status_active' => ['except' => false],
         'no_stock'      => ['except' => false],
         'unsorted'      => ['except' => false],
-        'no_brand' => ['except' => false],
-        'only_locked' => ['except' => false],
+        'no_brand'      => ['except' => false],
+        'only_locked'   => ['except' => false],
     ];
 
     public function mount(): void
@@ -116,24 +119,74 @@ class Index extends Component
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა!');
     }
 
-    public function uploadExcel(): void
+    // ============================================
+    // ✅ Global — დასახელებების ატვირთვა (Ushop ძებნა)
+    // ============================================
+
+    public function uploadGlobal(): void
     {
         $this->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'global_file' => 'required|file|mimes:xlsx,xls,csv',
         ], [
-            'excel_file.required' => 'ფაილი აუცილებელია',
-            'excel_file.mimes'    => 'მხოლოდ Excel ფაილი',
+            'global_file.required' => 'ფაილი აუცილებელია',
+            'global_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
         ]);
 
         try {
-            \App\Jobs\ProductExcelImportJob::dispatchSync(
-                $this->excel_file->store('imports', 'public')
-            );
-            $this->dispatch('ui:success', message: 'ფაილი მიღებულია!');
-            $this->reset('excel_file');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Excel upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა მოხდა');
+            $path = $this->global_file->getRealPath();
+
+            $spreadsheet = IOFactory::load($path);
+            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+
+            Log::info('📂 Global upload: წავიკითხე ' . count($rows) . ' row');
+
+            $names = [];
+            foreach ($rows as $i => $row) {
+                $name = trim((string) ($row[0] ?? ''));
+
+                Log::info("   row {$i}: '" . $name . "'");
+
+                if ($name === '') {
+                    continue;
+                }
+                if ($i === 0 && in_array(mb_strtolower($name), ['დასახელება', 'name', 'სახელი'])) {
+                    Log::info("   ↑ header — გამოვტოვე");
+                    continue;
+                }
+                $names[] = $name;
+            }
+
+            Log::info('✅ Global: სულ ' . count($names) . ' დასახელება', $names);
+
+            if (empty($names)) {
+                $this->dispatch('ui:error', message: 'ფაილში დასახელებები ვერ მოიძებნა');
+                return;
+            }
+
+            $service = new GlobalService();
+            $found   = 0;
+            $missing = 0;
+
+            foreach ($names as $name) {
+                $data = $service->searchByName($name);
+
+                if (!$data) {
+                    $missing++;
+                    Log::warning("⚠️ Global: ვერ მოიძებნა — {$name}");
+                    continue;
+                }
+
+                // TODO: ნაპოვნი $data → db_products (supplier_id=5, GLOBAL- SKU)
+                $found++;
+            }
+
+            $this->reset('global_file');
+            $this->dispatch('ui:success',
+                message: "დამუშავდა: {$found} ნაპოვნი, {$missing} ვერ მოიძებნა (სულ " . count($names) . ")");
+
+        } catch (\Throwable $e) {
+            Log::error('Global upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
 
@@ -183,7 +236,7 @@ class Index extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['search_query', 'no_brand','order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted', 'supplier_id']);
+        $this->reset(['search_query', 'no_brand', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted', 'supplier_id']);
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
@@ -481,8 +534,8 @@ class Index extends Component
             ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
             ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
-            ->when($this->no_brand === true, fn($q) => $q->whereIn('brand_id', [1, 6]))
-            ->when($this->only_locked === true, fn($q) => $q->where('update_lock', 1))
+            ->when($this->no_brand === true,      fn($q) => $q->whereIn('brand_id', [1, 6]))
+            ->when($this->only_locked === true,   fn($q) => $q->where('update_lock', 1))
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
                     ? $q->where('quantity', '>', 0)
