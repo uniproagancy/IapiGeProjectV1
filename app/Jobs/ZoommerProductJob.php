@@ -92,10 +92,6 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Category
-    // ============================================
-
     private function getCategoryId(array $productData): int
     {
         $categoryName = $productData['categoryName'] ?? null;
@@ -115,10 +111,6 @@ class ZoommerProductJob implements ShouldQueue
         Log::warning("⚠️ Zoommer category not mapped: categoryName='{$categoryName}'");
         return 4;
     }
-
-    // ============================================
-    // Brand
-    // ============================================
 
     private function getBrandId(array $productData): int
     {
@@ -154,7 +146,6 @@ class ZoommerProductJob implements ShouldQueue
                 return $brand->id;
             }
 
-            // ბრენდი არ არის — შევქმნათ
             $newBrand = ProductBrand::create([
                 'active' => 1,
                 'show'   => 1,
@@ -184,10 +175,6 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Main Logic
-    // ============================================
-
     public function saveProductWithVariants(array $productData, array $productAvailability): void
     {
         if (empty($productData['id'])) {
@@ -199,7 +186,6 @@ class ZoommerProductJob implements ShouldQueue
 
         $existing = Product::where('sku', $sku)->first();
 
-        // 🔒 lock შემოწმება
         if ($existing && $existing->update_lock) {
             Log::info("🔒 Skipping locked Zoommer product: {$sku}");
             return;
@@ -241,10 +227,6 @@ class ZoommerProductJob implements ShouldQueue
         return $inStock;
     }
 
-    // ============================================
-    // Update
-    // ============================================
-
     private function updateExistingProduct(array $productData, bool $hasStock, string $sku): void
     {
         try {
@@ -266,18 +248,22 @@ class ZoommerProductJob implements ShouldQueue
                 ]
             );
 
-            // ✅ category და brand ყოველთვის განახლდება (mapping-ით)
-            $categoryId = $this->getCategoryId($productData);
-            $brandId    = $this->getBrandId($productData);
+            $updateData = [
+                'quantity' => $hasStock ? 5 : 0,
+                'in_stock' => $hasStock ? 1 : 0,
+                'show'     => $hasStock ? 1 : 0,
+                'active'   => $hasStock ? 1 : 0,
+            ];
 
-            $product->update([
-                'category_id' => $categoryId,
-                'brand_id'    => $brandId,
-                'quantity'    => $hasStock ? 5 : 0,
-                'in_stock'    => $hasStock ? 1 : 0,
-                'show'        => $hasStock ? 1 : 0,
-                'active'      => $hasStock ? 1 : 0,
-            ]);
+            // 🏷️ category/brand მხოლოდ თუ taxonomy არ არის ჩაკეტილი
+            if (!$product->taxonomy_lock) {
+                $updateData['category_id'] = $this->getCategoryId($productData);
+                $updateData['brand_id']    = $this->getBrandId($productData);
+            } else {
+                Log::info("🏷️ Zoommer: taxonomy locked, category/brand უცვლელი — {$sku}");
+            }
+
+            $product->update($updateData);
 
             ProductShortSpecification::where('product_id', $product->id)->forceDelete();
             $this->createShortSpecifications($product, $productData);
@@ -293,17 +279,13 @@ class ZoommerProductJob implements ShouldQueue
                     ->update(['description' => $productData['description']]);
             }
 
-            Log::info("🔁 Updated product: {$product->id}, category: {$categoryId}, brand: {$brandId}, stock: " . ($hasStock ? 'yes' : 'no'));
+            Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
 
         } catch (Exception $e) {
             Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
             throw $e;
         }
     }
-
-    // ============================================
-    // Create
-    // ============================================
 
     private function createNewProduct(array $productData, bool $hasStock, string $sku): void
     {
@@ -341,10 +323,6 @@ class ZoommerProductJob implements ShouldQueue
         });
     }
 
-    // ============================================
-    // Price
-    // ============================================
-
     private function createPrice(Product $product, array $productData): void
     {
         try {
@@ -367,10 +345,6 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Translations
-    // ============================================
 
     private function createTranslations(Product $product, array $productData): void
     {
@@ -395,10 +369,6 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Variations
-    // ============================================
 
     private function createVariations(Product $product, array $productData): void
     {
@@ -435,10 +405,6 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Full Specifications
-    // ============================================
 
     private function createFullSpecifications(Product $product, array $productData): void
     {
@@ -478,10 +444,6 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Images
-    // ============================================
 
     private function downloadImages(Product $product, array $productData): void
     {
@@ -539,10 +501,6 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Short Specifications
-    // ============================================
-
     private function createShortSpecifications(Product $product, array $productData): void
     {
         try {
@@ -573,10 +531,6 @@ class ZoommerProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Helpers
-    // ============================================
 
     protected function getImageExtension(string $url): string
     {

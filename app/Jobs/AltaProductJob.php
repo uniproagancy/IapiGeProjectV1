@@ -49,10 +49,6 @@ class AltaProductJob implements ShouldQueue
         $this->productAvailability = $productAvailability;
     }
 
-    // ============================================
-    // Handle
-    // ============================================
-
     public function handle(): void
     {
         try {
@@ -100,10 +96,6 @@ class AltaProductJob implements ShouldQueue
         ]);
     }
 
-    // ============================================
-    // Main Logic
-    // ============================================
-
     public function saveProductWithVariants(array $productData, array $productAvailability): void
     {
         if (empty($productData['id'])) {
@@ -120,7 +112,6 @@ class AltaProductJob implements ShouldQueue
         $barCode = $productData['barCode'] ?? $productData['id'];
         $sku     = 'ALTA-' . $barCode;
 
-        // 🔒 lock შემოწმება — თუ ჩაკეტილია, საერთოდ გამოვტოვოთ
         $existing = Product::where('sku', $sku)->first();
         if ($existing && $existing->update_lock) {
             Log::info("🔒 Skipping locked Alta product: {$sku}");
@@ -161,10 +152,6 @@ class AltaProductJob implements ShouldQueue
             ->contains(fn($store) => $store['inStock'] === true);
     }
 
-    // ============================================
-    // Category
-    // ============================================
-
     private function getCategoryId(array $productData): int
     {
         $categoryName = $productData['categoryName'] ?? null;
@@ -185,10 +172,6 @@ class AltaProductJob implements ShouldQueue
         return 3;
     }
 
-    // ============================================
-    // Update Existing Product
-    // ============================================
-
     private function updateExistingProduct(array $productData, array $b2bStock, string $sku): void
     {
         try {
@@ -197,11 +180,6 @@ class AltaProductJob implements ShouldQueue
             DB::transaction(function () use ($product, $productData, $b2bStock, $sku) {
                 $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
                 $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
-
-                Log::info("💰 Alta price [{$sku}]: api_price=" . ($productData['price'] ?? 'null')
-                    . ", api_prev=" . ($productData['previousPrice'] ?? 'null')
-                    . " → regular={$productPrice}, discount=" . ($discountPrice ?? 'null'));
-
 
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
@@ -217,18 +195,22 @@ class AltaProductJob implements ShouldQueue
                 $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
                 $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
 
-                // ✅ category და brand ყოველთვის განახლდება (mapping-ით)
-                $categoryId = $this->getCategoryId($productData);
-                $brandId    = $this->getBrandId($productData);
+                $updateData = [
+                    'quantity' => $quantity,
+                    'in_stock' => $in_stock,
+                    'show'     => $show,
+                    'active'   => $show,
+                ];
 
-                $product->update([
-                    'category_id' => $categoryId,
-                    'brand_id'    => $brandId,
-                    'quantity'    => $quantity,
-                    'in_stock'    => $in_stock,
-                    'show'        => $show,
-                    'active'      => $show,
-                ]);
+                // 🏷️ category/brand მხოლოდ თუ taxonomy არ არის ჩაკეტილი
+                if (!$product->taxonomy_lock) {
+                    $updateData['category_id'] = $this->getCategoryId($productData);
+                    $updateData['brand_id']    = $this->getBrandId($productData);
+                } else {
+                    Log::info("🏷️ Alta: taxonomy locked, category/brand უცვლელი — {$sku}");
+                }
+
+                $product->update($updateData);
 
                 if (!empty($productData['description'])) {
                     ProductTranslation::where('product_id', $product->id)
@@ -248,7 +230,7 @@ class AltaProductJob implements ShouldQueue
                     $this->updateProductImages($product, $productData);
                 }
 
-                Log::info("🔁 Updated Alta product: {$product->id}, category: {$categoryId}, brand: {$brandId}, stock: {$quantity}");
+                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
@@ -256,10 +238,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Update Product Images
-    // ============================================
 
     private function updateProductImages(Product $product, array $productData): void
     {
@@ -350,10 +328,6 @@ class AltaProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Create New Product
-    // ============================================
-
     private function createNewProduct(array $productData, array $b2bStock, string $sku): void
     {
         DB::transaction(function () use ($productData, $b2bStock, $sku) {
@@ -392,10 +366,6 @@ class AltaProductJob implements ShouldQueue
             }
         });
     }
-
-    // ============================================
-    // Brand
-    // ============================================
 
     private function getBrandId(array $productData): int
     {
@@ -465,20 +435,11 @@ class AltaProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Price
-    // ============================================
-
     private function createPrice(Product $product, array $productData): void
     {
         try {
             $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
             $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
-
-            // 💰 ფასის ლოგი
-            Log::info("💰 Alta createPrice [{$product->sku}]: api_price=" . ($productData['price'] ?? 'null')
-                . ", api_prev=" . ($productData['previousPrice'] ?? 'null')
-                . " → regular={$productPrice}, discount=" . ($discountPrice ?? 'null'));
 
             ProductPrice::create([
                 'product_id'       => $product->id,
@@ -493,10 +454,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Translations
-    // ============================================
 
     private function createTranslations(Product $product, array $productData): void
     {
@@ -521,10 +478,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Variations
-    // ============================================
 
     private function createVariations(Product $product, array $productData): void
     {
@@ -561,10 +514,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Full Specifications
-    // ============================================
 
     private function createFullSpecifications(Product $product, array $productData): void
     {
@@ -604,10 +553,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Images
-    // ============================================
 
     private function downloadAndSaveImages(Product $product, array $productData): void
     {
@@ -689,10 +634,6 @@ class AltaProductJob implements ShouldQueue
         }
     }
 
-    // ============================================
-    // Short Specifications
-    // ============================================
-
     private function createShortSpecifications(Product $product, array $productData): void
     {
         try {
@@ -732,10 +673,6 @@ class AltaProductJob implements ShouldQueue
             throw $e;
         }
     }
-
-    // ============================================
-    // Helpers
-    // ============================================
 
     private function sanitizeString(?string $value): ?string
     {

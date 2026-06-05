@@ -90,15 +90,24 @@ class GlobalProductJob implements ShouldQueue
 
                 if ($existing) {
                     $product = $existing;
-                    $product->update([
-                        'brand_id'    => $brandId,
-                        'category_id' => $categoryId,
-                        'quantity'    => $this->stock,
-                        'in_stock'    => 1,
-                        'show'        => 1,
-                        'active'      => 1,
-                    ]);
-                    Log::info("🔁 Global: updated {$sku} (id={$product->id}, stock={$this->stock})");
+
+                    $updateData = [
+                        'quantity' => $this->stock,
+                        'in_stock' => 1,
+                        'show'     => 1,
+                        'active'   => 1,
+                    ];
+
+                    // 🏷️ category/brand მხოლოდ თუ taxonomy არ არის ჩაკეტილი
+                    if (!$existing->taxonomy_lock) {
+                        $updateData['brand_id']    = $brandId;
+                        $updateData['category_id'] = $categoryId;
+                    } else {
+                        Log::info("🏷️ Global: taxonomy locked, category/brand უცვლელი — {$sku}");
+                    }
+
+                    $product->update($updateData);
+                    Log::info("🔁 Global: updated {$sku} (stock={$this->stock})");
                 } else {
                     $product = Product::create([
                         'supplier_product_id' => null,
