@@ -59,6 +59,8 @@
                                        data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadMideaModal">Midea</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
+
                                 </div>
                             </div>
                             <div class="btn-group">
@@ -504,6 +506,33 @@
                     <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadGrandel">
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Grandel — სრული იმპორტი</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (Title|Brand|Model|Price|OldPrice|...)</label>
+                        <input type="file"
+                               class="form-control @error('grandel_file') is-invalid @enderror"
+                               wire:model="grandel_file" accept=".xlsx,.xls,.csv">
+                        @error('grandel_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadGrandel,grandel_file">
+                            <span wire:loading.remove wire:target="uploadGrandel">დამუშავება</span>
+                            <span wire:loading wire:target="uploadGrandel"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
