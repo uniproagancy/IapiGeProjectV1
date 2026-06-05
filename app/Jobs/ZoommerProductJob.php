@@ -216,18 +216,29 @@ class ZoommerProductJob implements ShouldQueue
         }
     }
 
-    private function checkTbilisiStock(array $availability): bool
+    private function checkTbilisiStock($availability): bool
     {
-        if (empty($availability)) {
-            return false;
-        }
-
-        return collect($availability)
+        $stores = collect($availability)
             ->filter(fn($store) =>
                 ($store['city'] ?? '') === 'თბილისი'
                 && str_contains($store['branchName'] ?? '', 'წერეთლის ფილიალი')
-            )
-            ->contains(fn($store) => ($store['inStock'] ?? false) === true);
+            );
+
+        if ($stores->isEmpty()) {
+            Log::info("🏬 Zoommer stock: წერეთლის ფილიალი ვერ მოიძებნა availability-ში");
+            return false;
+        }
+
+        $inStock = $stores->contains(fn($store) => ($store['inStock'] ?? false) === true);
+
+        $stores->each(function ($store) {
+            Log::info("🏬 Zoommer stock [{$store['branchName']}]: " .
+                (($store['inStock'] ?? false) ? '✅ მარაგშია' : '❌ არ არის'));
+        });
+
+        Log::info("🏬 Zoommer checkTbilisiStock შედეგი: " . ($inStock ? 'true (მარაგშია)' : 'false'));
+
+        return $inStock;
     }
 
     // ============================================
