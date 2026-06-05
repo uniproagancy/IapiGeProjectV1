@@ -57,6 +57,8 @@
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadMideaModal">Midea</a>
                                 </div>
                             </div>
                             <div class="btn-group">
@@ -262,7 +264,39 @@
             </form>
         </div>
     </div>
-
+    {{-- Midea — ექსელის ატვირთვა --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadMideaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadMidea">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Midea — ექსელის ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx / .csv) — Model | Stock | Price</label>
+                        <input type="file"
+                               class="form-control @error('midea_file') border-danger is-invalid @enderror"
+                               wire:model="midea_file"
+                               accept=".xlsx,.xls,.csv">
+                        @error('midea_file')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadMidea,midea_file">
+                            <span wire:loading.remove wire:target="uploadMidea">დამუშავება</span>
+                            <span wire:loading wire:target="uploadMidea">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="filterProductModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="applyFilters" wire:keydown.enter="applyFilters">

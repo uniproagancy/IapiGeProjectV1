@@ -34,6 +34,7 @@ class Index extends Component
     public array $currentPageIds   = [];
 
     public $global_file;
+    public $midea_file;
 
     public $selectedCategory    = null;
     public $selectedBrand       = null;
@@ -131,7 +132,7 @@ class Index extends Component
 
         try {
             $path        = $this->global_file->getRealPath();
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+            $spreadsheet = IOFactory::load($path);
             $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
 
             $items = [];
@@ -539,6 +540,59 @@ class Index extends Component
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function uploadMidea(): void
+    {
+        $this->validate([
+            'midea_file' => 'required|file|mimes:xlsx,xls,csv',
+        ], [
+            'midea_file.required' => 'ფაილი აუცილებელია',
+            'midea_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
+        ]);
+
+        try {
+            $path        = $this->midea_file->getRealPath();
+            $spreadsheet = IOFactory::load($path);
+            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+
+            $items = [];
+            foreach ($rows as $row) {
+                $name = trim((string) ($row[0] ?? ''));
+                if ($name === '') continue;
+                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
+                if (mb_strlen($name) < 3) continue;
+
+                $name  = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
+                $name  = preg_replace('/\s+/u', ' ', $name);
+                $name  = trim($name);
+
+                $stock = $this->parseStock($row[1] ?? null);
+                $price = $this->parsePrice($row[2] ?? null);
+
+                $items[$name] = ['stock' => $stock, 'price' => $price];
+            }
+
+            if (empty($items)) {
+                $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა');
+                return;
+            }
+
+            Log::info('📂 Midea upload: ' . count($items) . ' row, queue-ში იგზავნება');
+
+            foreach ($items as $name => $info) {
+                \App\Jobs\MideaProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('midea');
+                Log::info("📤 Midea job dispatched: '{$name}' (stock={$info['stock']}, price={$info['price']})");
+            }
+
+            $this->reset('midea_file');
+            $this->dispatch('ui:success',
+                message: count($items) . ' პროდუქტი queue-ში გაიგზავნა.');
+
+        } catch (\Throwable $e) {
+            Log::error('Midea upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
     }
 
     // ============================================
