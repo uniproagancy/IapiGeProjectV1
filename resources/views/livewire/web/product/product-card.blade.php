@@ -23,12 +23,12 @@
         {{-- სურათის სექცია --}}
         <div class="position-relative">
 
-            {{-- Wishlist ღილაკი - desktop --}}
-            <div class="position-absolute top-0 end-0 z-2 hover-effect-target opacity-0 mt-3 me-3">
+            {{-- Wishlist ღილაკი - desktop (მუდამ ხილული) --}}
+            <div class="position-absolute top-0 end-0 z-2 mt-3 me-3">
                 <div class="d-flex flex-column gap-2">
                     <livewire:web.components.wishlist-button
                             :productId="$product->id"
-                            class="btn-secondary animate-pulse"/>
+                            class="wishlist-btn"/>
                 </div>
             </div>
 
@@ -126,12 +126,31 @@
                 transition: color .2s ease;
             }
             .product-title-clamp:hover {
-                color: var(--cz-primary, #d6336c);
+                color: #ff6900;
             }
 
             .product-card .product-price {
                 font-size: 1.15rem;
                 letter-spacing: -0.01em;
+            }
+
+            /* Wishlist — მუდამ ხილული */
+            .wishlist-btn {
+                color: var(--cz-body-color, #1a1a1a);
+                background-color: rgba(255, 255, 255, .9);
+                transition: color .2s ease, background-color .2s ease;
+            }
+            .wishlist-btn:hover {
+                color: #ff6900;
+            }
+            /* ვიშლისტში დამატებული — ნარინჯისფერი */
+            .wishlist-btn.active,
+            .wishlist-btn.is-active,
+            .wishlist-btn[aria-pressed="true"],
+            .wishlist-btn.active i,
+            .wishlist-btn.is-active i,
+            .wishlist-btn[aria-pressed="true"] i {
+                color: #ff6900 !important;
             }
         </style>
     @endpush
