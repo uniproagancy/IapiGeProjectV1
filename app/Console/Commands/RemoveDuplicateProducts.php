@@ -15,54 +15,83 @@ use Illuminate\Support\Facades\Storage;
 class RemoveDuplicateProducts extends Command
 {
     protected $signature = 'products:remove-duplicates {--dry-run : მხოლოდ ჩვენება, არ წაშალო}';
-    protected $description = 'წაშლის დუბლიკატ პროდუქტებს ka title-ის მიხედვით (უახლესი რჩება) — სურათებითა და დაკავშირებული ჩანაწერებით';
+    protected $description = 'წაშლის Grandel (supplier_id=7) დუბლიკატებს ka title-ის მიხედვით, სურათებითურთ';
+
+    private const TARGET_SUPPLIER = 7;
 
     public function handle(): int
     {
         $dryRun = $this->option('dry-run');
 
-        // 1. ka translations დაჯგუფება ნორმალიზებული title-ით
+        // 1. ka translations — title + product_id + supplier_id
         $rows = ProductTranslation::query()
-            ->where('locale', 'ka')
-            ->whereNotNull('title')
-            ->whereRaw("TRIM(title) != ''")
-            ->get(['product_id', 'title']);
+            ->where('db_product_translations.locale', 'ka')
+            ->whereNotNull('db_product_translations.title')
+            ->whereRaw("TRIM(db_product_translations.title) != ''")
+            ->join('db_products', 'db_products.id', '=', 'db_product_translations.product_id')
+            ->get([
+                'db_product_translations.product_id',
+                'db_product_translations.title',
+                'db_products.supplier_id',
+            ]);
 
+        // 2. დაჯგუფება ნორმალიზებული title-ით
         $groups = [];
         foreach ($rows as $r) {
             $key = mb_strtolower(trim($r->title));
-            $groups[$key][] = $r->product_id;
+            $groups[$key][] = [
+                'id'       => (int) $r->product_id,
+                'supplier' => (int) $r->supplier_id,
+            ];
         }
 
-        // 2. მხოლოდ დუბლიკატები
-        $toDelete  = [];
-        $keepCount = 0;
-        foreach ($groups as $ids) {
-            if (count($ids) < 2) {
-                continue;
+        // 3. წასაშლელების გამოთვლა
+        $toDelete = [];
+        foreach ($groups as $items) {
+            if (count($items) < 2) {
+                continue; // დუბლიკატი არ არის
             }
-            sort($ids);
-            array_pop($ids);          // უახლესი (MAX id) — რჩება
-            $keepCount++;
-            foreach ($ids as $oldId) {
-                $toDelete[] = $oldId; // ძველები — წაიშლება
+
+            $grandel = array_filter($items, fn($i) => $i['supplier'] === self::TARGET_SUPPLIER);
+            $others  = array_filter($items, fn($i) => $i['supplier'] !== self::TARGET_SUPPLIER);
+
+            if (empty($grandel)) {
+                continue; // ამ ჯგუფში Grandel არ არის — არ ვეხებით
+            }
+
+            $grandelIds = array_column($grandel, 'id');
+            sort($grandelIds);
+
+            if (!empty($others)) {
+                // სხვა supplier-იც არის → ყველა Grandel წაიშალოს
+                foreach ($grandelIds as $id) {
+                    $toDelete[] = $id;
+                }
+            } else {
+                // მხოლოდ Grandel-ებია → ერთი (უახლესი) დარჩეს
+                array_pop($grandelIds); // MAX id რჩება
+                foreach ($grandelIds as $id) {
+                    $toDelete[] = $id;
+                }
             }
         }
+
+        $toDelete = array_values(array_unique($toDelete));
 
         if (empty($toDelete)) {
-            $this->info('✅ დუბლიკატები ვერ მოიძებნა.');
+            $this->info('✅ Grandel დუბლიკატები ვერ მოიძებნა.');
             return self::SUCCESS;
         }
 
-        $this->warn("ნაპოვნია " . count($toDelete) . " წასაშლელი დუბლიკატი ({$keepCount} ჯგუფში).");
+        $this->warn("ნაპოვნია " . count($toDelete) . " წასაშლელი Grandel დუბლიკატი.");
 
         if ($dryRun) {
             $this->info('🔍 DRY RUN — არაფერი წაიშალა. წასაშლელი ID-ები:');
-            $this->line(implode(', ', array_slice($toDelete, 0, 50)) . (count($toDelete) > 50 ? ' ...' : ''));
+            $this->line(implode(', ', array_slice($toDelete, 0, 80)) . (count($toDelete) > 80 ? ' ...' : ''));
             return self::SUCCESS;
         }
 
-        if (!$this->confirm("დარწმუნებული ხართ? " . count($toDelete) . " პროდუქტი (სურათებით) სამუდამოდ წაიშლება!")) {
+        if (!$this->confirm("დარწმუნებული ხართ? " . count($toDelete) . " Grandel პროდუქტი (სურათებით) სამუდამოდ წაიშლება!")) {
             $this->info('გაუქმდა.');
             return self::SUCCESS;
         }
@@ -73,27 +102,26 @@ class RemoveDuplicateProducts extends Command
         foreach (array_chunk($toDelete, 100) as $chunk) {
             foreach ($chunk as $id) {
                 $product = Product::withTrashed()->find($id);
-                if (!$product) {
+
+                // უსაფრთხოების გადამოწმება — მხოლოდ supplier_id=7
+                if (!$product || (int) $product->supplier_id !== self::TARGET_SUPPLIER) {
                     continue;
                 }
 
-                // --- ფიზიკური სურათების წაშლა ---
-                // main_image
+                // --- ფიზიკური სურათები ---
                 $filesGone += $this->deleteFile($product->main_image);
 
-                // gallery (db_product_images)
                 $imageRows = ProductImage::where('product_id', $id)->withTrashed()->get();
                 foreach ($imageRows as $img) {
                     $filesGone += $this->deleteFile($img->path);
                 }
 
-                // მთელი პროდუქტის ფოლდერი (uploads/products/{id})
                 $dir = "uploads/products/{$id}";
                 if (Storage::disk('public')->exists($dir)) {
                     Storage::disk('public')->deleteDirectory($dir);
                 }
 
-                // --- DB ჩანაწერების წაშლა ---
+                // --- DB ჩანაწერები ---
                 DB::transaction(function () use ($id, $product, &$deleted) {
                     ProductImage::where('product_id', $id)->forceDelete();
                     ProductPrice::where('product_id', $id)->forceDelete();
@@ -105,15 +133,12 @@ class RemoveDuplicateProducts extends Command
             $this->info("წაიშალა {$deleted} პროდუქტი, {$filesGone} ფაილი...");
         }
 
-        Log::warning("🗑️ products:remove-duplicates — წაიშალა {$deleted} დუბლიკატი, {$filesGone} სურათი");
-        $this->info("✅ დასრულდა — {$deleted} პროდუქტი, {$filesGone} სურათი წაიშალა.");
+        Log::warning("🗑️ remove-duplicates (Grandel) — წაიშალა {$deleted} პროდუქტი, {$filesGone} სურათი");
+        $this->info("✅ დასრულდა — {$deleted} Grandel პროდუქტი, {$filesGone} სურათი წაიშალა.");
 
         return self::SUCCESS;
     }
 
-    /**
-     * ფიზიკური ფაილის წაშლა public disk-დან. აბრუნებს 1 თუ წაიშალა.
-     */
     private function deleteFile(?string $path): int
     {
         if (empty($path) || $path === '1') {
