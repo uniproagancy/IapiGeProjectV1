@@ -18,7 +18,7 @@
 @endphp
 
 @if(!empty($slug))
-    <div class="product-card animate-underline hover-effect-opacity bg-body rounded">
+    <div class="product-card animate-underline hover-effect-opacity bg-body rounded h-100 d-flex flex-column">
 
         {{-- სურათის სექცია --}}
         <div class="position-relative">
@@ -70,7 +70,7 @@
         </div>
 
         {{-- ინფო სექცია --}}
-        <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
+        <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3 d-flex flex-column flex-grow-1">
             <h3 class="pb-1 mb-2">
                 <a class="d-block fs-sm fw-medium product-title-clamp"
                    href="{{ route('web.products.view', $slug) }}"
@@ -79,7 +79,8 @@
                 </a>
             </h3>
 
-            <div class="d-flex align-items-end justify-content-between">
+            {{-- ფასი + ღილაკი — ყოველთვის ბოლოში --}}
+            <div class="d-flex align-items-end justify-content-between mt-auto">
                 @if(!empty($product->price->discount_price))
                     <div class="lh-1 mb-0">
                         <span class="product-price text-discount fw-bold">{{ number_format($product->price->discount_price, 2) }} ₾</span>
@@ -121,7 +122,7 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: 1.35;
-                min-height: 2.7em;
+                height: 2.7em;
                 color: var(--cz-body-color, #1a1a1a);
                 transition: color .2s ease;
             }
@@ -134,7 +135,6 @@
                 letter-spacing: -0.01em;
             }
 
-            /* Wishlist — მუდამ ხილული */
             .wishlist-btn {
                 color: var(--cz-body-color, #1a1a1a);
                 background-color: rgba(255, 255, 255, .9);
@@ -143,7 +143,6 @@
             .wishlist-btn:hover {
                 color: #ff6900;
             }
-            /* ვიშლისტში დამატებული — ნარინჯისფერი */
             .wishlist-btn.active,
             .wishlist-btn.is-active,
             .wishlist-btn[aria-pressed="true"],

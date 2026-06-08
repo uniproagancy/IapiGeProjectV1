@@ -34,7 +34,7 @@ class GrandelImportJob implements ShouldQueue
     private const DEFAULT_BRAND    = 6;
 
     public function __construct(
-        public array $row   // ['title','brand','model','price','old_price','color','description','image']
+        public array $row   // ['title','brand','model','category','price','old_price','color','description','image']
     ) {
     }
 
@@ -135,6 +135,13 @@ class GrandelImportJob implements ShouldQueue
                 // სურათი
                 if (!empty($this->row['image']) && empty($product->main_image)) {
                     $this->downloadImage($product, $this->row['image']);
+                }
+
+                // ✅ სურათის შემოწმება — თუ main_image ცარიელია, show=0
+                $product->refresh();
+                if (empty($product->main_image)) {
+                    $product->update(['show' => 0]);
+                    Log::warning("🚫 Grandel: სურათის გარეშე — show=0 ({$sku})");
                 }
 
                 Log::info("✅ Grandel saved: {$sku} (brand={$brandId})");
