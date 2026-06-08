@@ -129,4 +129,4 @@ class RemoveDuplicateProducts extends Command
         }
         return 0;
     }
-}<?php
+}
