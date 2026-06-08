@@ -68,3 +68,29 @@ body, .dropdown-menu, .dropdown-menu a, .font-helvetica {
 .wishlist-btn[aria-pressed="true"] i {
     color: #ff6900 !important;
 }
+
+/* ===== Compact (ჰორიზონტალური) კარდი ===== */
+.product-card-compact {
+    padding: 8px;
+    border-radius: 10px;
+    transition: background-color .2s ease;
+}
+.product-card-compact:hover {
+    background-color: rgba(0, 0, 0, .02);
+}
+
+/* სათაური 2 ხაზზე (truncate-ის ნაცვლად) */
+.product-compact-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    max-height: 2.6em;
+    color: inherit;
+    transition: color .2s ease;
+}
+.product-card-compact:hover .product-compact-title {
+    color: #ff6900;
+}
