@@ -72,10 +72,11 @@
         {{-- ინფო სექცია --}}
         <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3 d-flex flex-column flex-grow-1">
             <h3 class="pb-1 mb-2">
-                <a class="d-block fs-sm fw-medium product-title-clamp"
+                <a class="d-block fs-sm fw-medium"
                    href="{{ route('web.products.view', $slug) }}"
-                   title="{{ $title }}">
-                    <span class="animate-target">{{ $title }}</span>
+                   title="{{ $title }}"
+                   style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-height:1.35;height:2.7em;color:inherit;">
+                    {{ $title }}
                 </a>
             </h3>
 
@@ -83,14 +84,14 @@
             <div class="d-flex align-items-end justify-content-between mt-auto">
                 @if(!empty($product->price->discount_price))
                     <div class="lh-1 mb-0">
-                        <span class="product-price text-discount fw-bold">{{ number_format($product->price->discount_price, 2) }} ₾</span>
+                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">{{ number_format($product->price->discount_price, 2) }} ₾</span>
                         <del class="text-body-tertiary fs-sm fw-normal d-block mt-1">
                             {{ number_format($product->price->regular_price, 2) }} ₾
                         </del>
                     </div>
                 @else
                     <div class="lh-1 mb-0">
-                        <span class="product-price text-discount fw-bold">{{ number_format($product->price->regular_price, 2) }} ₾</span>
+                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">{{ number_format($product->price->regular_price, 2) }} ₾</span>
                     </div>
                 @endif
 
@@ -102,55 +103,3 @@
         </div>
     </div>
 @endif
-
-@once
-    @push('styles')
-        <style>
-            .product-card {
-                transition: transform .25s ease, box-shadow .25s ease;
-                border: 1px solid var(--cz-border-color, #f0f0f0);
-            }
-            .product-card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
-            }
-
-            .product-title-clamp {
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: 1.35;
-                height: 2.7em;
-                color: var(--cz-body-color, #1a1a1a);
-                transition: color .2s ease;
-            }
-            .product-title-clamp:hover {
-                color: #ff6900;
-            }
-
-            .product-card .product-price {
-                font-size: 1.15rem;
-                letter-spacing: -0.01em;
-            }
-
-            .wishlist-btn {
-                color: var(--cz-body-color, #1a1a1a);
-                background-color: rgba(255, 255, 255, .9);
-                transition: color .2s ease, background-color .2s ease;
-            }
-            .wishlist-btn:hover {
-                color: #ff6900;
-            }
-            .wishlist-btn.active,
-            .wishlist-btn.is-active,
-            .wishlist-btn[aria-pressed="true"],
-            .wishlist-btn.active i,
-            .wishlist-btn.is-active i,
-            .wishlist-btn[aria-pressed="true"] i {
-                color: #ff6900 !important;
-            }
-        </style>
-    @endpush
-@endonce
