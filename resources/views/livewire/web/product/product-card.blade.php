@@ -72,23 +72,24 @@
         {{-- ინფო სექცია --}}
         <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
             <h3 class="pb-1 mb-2">
-                <a class="d-block fs-sm fw-medium text-truncate"
-                   href="{{ route('web.products.view', $slug) }}">
+                <a class="d-block fs-sm fw-medium product-title-clamp"
+                   href="{{ route('web.products.view', $slug) }}"
+                   title="{{ $title }}">
                     <span class="animate-target">{{ $title }}</span>
                 </a>
             </h3>
 
-            <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-end justify-content-between">
                 @if(!empty($product->price->discount_price))
-                    <div class="h5 lh-1 mb-0">
-                        <span class="text-discount">{{ number_format($product->price->discount_price, 2) }} ₾</span>
-                        <del class="text-body-tertiary fs-sm fw-normal">
+                    <div class="lh-1 mb-0">
+                        <span class="product-price text-discount fw-bold">{{ number_format($product->price->discount_price, 2) }} ₾</span>
+                        <del class="text-body-tertiary fs-sm fw-normal d-block mt-1">
                             {{ number_format($product->price->regular_price, 2) }} ₾
                         </del>
                     </div>
                 @else
-                    <div class="h5 lh-1 mb-0 text-discount">
-                        {{ number_format($product->price->regular_price, 2) }} ₾
+                    <div class="lh-1 mb-0">
+                        <span class="product-price text-discount fw-bold">{{ number_format($product->price->regular_price, 2) }} ₾</span>
                     </div>
                 @endif
 
@@ -100,3 +101,38 @@
         </div>
     </div>
 @endif
+
+@once
+    @push('styles')
+        <style>
+            .product-card {
+                transition: transform .25s ease, box-shadow .25s ease;
+                border: 1px solid var(--cz-border-color, #f0f0f0);
+            }
+            .product-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
+            }
+
+            .product-title-clamp {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.35;
+                min-height: 2.7em;
+                color: var(--cz-body-color, #1a1a1a);
+                transition: color .2s ease;
+            }
+            .product-title-clamp:hover {
+                color: var(--cz-primary, #d6336c);
+            }
+
+            .product-card .product-price {
+                font-size: 1.15rem;
+                letter-spacing: -0.01em;
+            }
+        </style>
+    @endpush
+@endonce
