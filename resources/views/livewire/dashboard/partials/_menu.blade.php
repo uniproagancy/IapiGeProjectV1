@@ -61,8 +61,8 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item  @if(request()->segment(2) === "sections") active @endif">
-                    <a class="d-flex align-items-center" href="{{ route('dashboard.sections.index') }}">
+                <li class="dropdown nav-item   @if(request()->segment(2) === "sections") active @endif">
+                    <a class="nav-link d-flex align-items-center" href="{{ route('dashboard.sections.index') }}">
                         <i data-feather="grid"></i>
                         <span class="menu-title text-truncate">სექციები</span>
                     </a>
