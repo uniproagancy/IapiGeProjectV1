@@ -130,6 +130,9 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                 Route::get('/categories', App\Livewire\Dashboard\ProductCategory\Index::class)->name('product.category.index');
                 Route::get('/brands', App\Livewire\Dashboard\ProductBrand\Index::class)->name('product.brand.index');
 
+                Route::get('/sections', App\Livewire\Dashboard\ProductSection\Index::class)->name('sections.index');
+                Route::get('/sections/{id}/manage', App\Livewire\Dashboard\ProductSection\Manage::class)->name('sections.manage');
+
                 // JSON იმპორტი — დააგდე ფაილი: storage/app/import/products_import.json
                 // გახსენი: /dashboard/products/run-import?category=ID&supplier=ID
                 Route::get('/run-import', function () {

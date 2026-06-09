@@ -25,6 +25,16 @@ class Product extends Model
         'draft',
     ];
 
+    public function sections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            ProductSection::class,
+            'db_product_section_items',
+            'product_id',
+            'section_id'
+        );
+    }
+
     public function translations()
     {
         return $this->hasMany(ProductTranslation::class);
