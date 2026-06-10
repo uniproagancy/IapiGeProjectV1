@@ -7,6 +7,7 @@
 <div style="">
     @include('livewire.web.partials.content.hero-slider')
     @include('livewire.web.partials.features')
+    @include('web.partials.sections-carousel', ['sections' => $homeSections])
     @foreach($this->productCategories->where('parent_id', 0) as $index => $category)
         @foreach($this->promotions->where('position', $index + 1) as $promo)
             @if($promo->type === 1)

@@ -19,6 +19,30 @@ class ProductSection extends Model
         'active'       => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function ($section) {
+            if (empty($section->slug)) {
+                $base = \Illuminate\Support\Str::slug($section->title);
+                // ქართული title-ისთვის Str::slug ცარიელს აბრუნებs — fallback
+                if ($base === '') {
+                    $base = 'section';
+                }
+                $slug = $base;
+                $i = 1;
+                while (static::where('slug', $slug)->where('id', '!=', $section->id)->exists()) {
+                    $slug = $base . '-' . (++$i);
+                }
+                $section->slug = $slug;
+            }
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(

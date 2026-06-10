@@ -87,10 +87,12 @@ class Index extends Component
 
     public function render()
     {
-        Log::info('🎨 Index::render() called', [
-            'event_id' => $this->eventId,
-        ]);
 
-        return view('livewire.web.main.index')->layout('livewire.web.layout');
+        $homeSections = \App\Models\Product\ProductSection::where('active', 1)
+            ->where('show_on_home', 1)
+            ->orderBy('sort_order')
+            ->get();
+
+        return view('livewire.web.main.index', compact('homeSections'))->layout('livewire.web.layout');
     }
 }
