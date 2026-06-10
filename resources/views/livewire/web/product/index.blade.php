@@ -86,7 +86,7 @@
         </h1>
         <section class="container mb-4">
             <div class="row">
-                <div class="col-lg-9">
+                <div class="col-lg-12">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="h6 fs-sm fw-normal text-nowrap mb-0 font-neue">
                             ნაპოვნია <span class="fw-semibold">{{ $this->products->total() }}</span> პროდუქტი
