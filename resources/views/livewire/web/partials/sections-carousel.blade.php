@@ -8,7 +8,7 @@
                     @foreach($sections as $section)
                         <div class="swiper-slide" wire:key="section-{{ $section->id }}">
                             <a href="{{ route('web.section.view', $section->slug) }}"
-                               class="section-card d-block text-center bg-body rounded text-decoration-none">
+                               class="section-card d-block text-center text-decoration-none">
                                 <div class="section-card-img">
                                     <img src="{{ $section->image ? asset('storage/' . $section->image) : asset('web-assets/img/no-product.png') }}"
                                          alt="{{ $section->title }}" loading="lazy">
