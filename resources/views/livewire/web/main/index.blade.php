@@ -7,7 +7,7 @@
 <div style="">
     @include('livewire.web.partials.content.hero-slider')
     @include('livewire.web.partials.features')
-    @include('livewire.web.partials.sections-carousel', ['sections' => $homeSections])
+    @include('livewire.web.partials.sections-carousel', ['sections' => $homeSections, 'heading'  => 'საზაფხულო შემოთავაზება'])
     @foreach($this->productCategories->where('parent_id', 0) as $index => $category)
         @foreach($this->promotions->where('position', $index + 1) as $promo)
             @if($promo->type === 1)

@@ -1,7 +1,10 @@
-@props(['sections'])
+@props(['sections', 'heading' => null])
 
 @if($sections && $sections->count() > 0)
     <section class="container py-4 mt-sm-3">
+        @if($heading)
+            <h2 class="h4 mb-3 fw-bold">{{ $heading }}</h2>
+        @endif
         <div class="position-relative">
             <div class="product-swiper overflow-hidden" data-section="sections-carousel">
                 <div class="swiper-wrapper">
