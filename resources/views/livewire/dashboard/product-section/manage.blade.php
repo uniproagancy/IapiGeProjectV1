@@ -12,19 +12,59 @@
                     </div>
 
                     <div class="card-body">
-                        {{-- ძებნა --}}
-                        <div class="mb-2">
-                            <label class="form-label">პროდუქტის ძებნა (დასახელება ან SKU)</label>
-                            <input type="text" class="form-control" wire:model.live.debounce.400ms="search"
-                                   placeholder="ჩაწერეთ მინ. 2 სიმბოლო...">
+
+                        {{-- ფილტრები: კატეგორია → ქვეკატეგორია --}}
+                        <div class="row mb-2">
+                            <div class="col-md-4 mb-1">
+                                <label class="form-label">კატეგორია</label>
+                                <select class="form-select" wire:model.live="mainCategoryId">
+                                    <option value="">— აირჩიე —</option>
+                                    @foreach($mainCategories as $cat)
+                                        <option value="{{ $cat->id }}">
+                                            {{ $cat->translations->where('locale','ka')->first()?->title ?? ('#' . $cat->id) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-1">
+                                <label class="form-label">ქვეკატეგორია</label>
+                                <select class="form-select" wire:model.live="subCategoryId" @disabled(!$mainCategoryId)>
+                                    <option value="">— ყველა —</option>
+                                    @foreach($subCategories as $sub)
+                                        <option value="{{ $sub->id }}">
+                                            {{ $sub->translations->where('locale','ka')->first()?->title ?? ('#' . $sub->id) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-1">
+                                <label class="form-label">ან ძებნა (დასახელება/SKU)</label>
+                                <input type="text" class="form-control" wire:model.live.debounce.400ms="search"
+                                       placeholder="მინ. 2 სიმბოლო...">
+                            </div>
                         </div>
 
-                        {{-- ძებნის შედეგი --}}
+                        {{-- შედეგი + bulk --}}
                         @if(count($results) > 0)
+                            <div class="d-flex align-items-center justify-content-between mb-1 p-1 bg-light rounded">
+                                <div class="form-check mb-0">
+                                    <input type="checkbox" class="form-check-input" id="selectAll" wire:model.live="selectAll">
+                                    <label class="form-check-label" for="selectAll">ყველას მონიშვნა ({{ count($results) }})</label>
+                                </div>
+                                <button class="btn btn-sm btn-success" wire:click="addSelected"
+                                        @disabled(count($selected) === 0)>
+                                    <i data-feather="plus-square"></i> მონიშნულის დამატება ({{ count($selected) }})
+                                </button>
+                            </div>
+
                             <div class="list-group mb-3">
                                 @foreach($results as $p)
-                                    <div class="list-group-item d-flex align-items-center justify-content-between">
+                                    <label class="list-group-item d-flex align-items-center justify-content-between" style="cursor:pointer">
                                         <div class="d-flex align-items-center">
+                                            <input type="checkbox" class="form-check-input me-2"
+                                                   value="{{ $p->id }}" wire:model.live="selected">
                                             <img src="{{ $p->main_image ? asset('storage/' . $p->main_image) : asset('web-assets/img/no-product.png') }}"
                                                  height="36" width="36" style="object-fit:contain" class="me-2" alt="">
                                             <div>
@@ -32,13 +72,13 @@
                                                 {{ $p->translations->where('locale','ka')->first()?->title ?? '—' }}
                                             </div>
                                         </div>
-                                        <button class="btn btn-sm btn-success" wire:click="addProduct({{ $p->id }})">
-                                            <i data-feather="plus"></i> დამატება
+                                        <button class="btn btn-sm btn-success" wire:click.prevent="addProduct({{ $p->id }})">
+                                            <i data-feather="plus"></i>
                                         </button>
-                                    </div>
+                                    </label>
                                 @endforeach
                             </div>
-                        @elseif(mb_strlen(trim($search)) >= 2)
+                        @elseif(mb_strlen(trim($search)) >= 2 || $mainCategoryId)
                             <div class="alert alert-warning"><div class="alert-body">ვერ მოიძებნა.</div></div>
                         @endif
 
