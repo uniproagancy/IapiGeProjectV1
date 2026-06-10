@@ -453,6 +453,10 @@ class Index extends Component
             ])
             ->where('db_products.show', 1)
             ->where('db_products.active', 1)
+            // ✅ ფასი > 0 — უფასო/ფასის გარეშე პროდუქტი არ გამოჩნდეს
+            ->whereHas('price', fn ($q) => $q
+                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) > 0')
+            )
             ->tap(fn ($q) => $this->applyAllFilters($q));
     }
 
