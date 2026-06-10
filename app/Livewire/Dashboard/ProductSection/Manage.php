@@ -6,16 +6,19 @@ use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductSection;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Manage extends Component
 {
+    use WithPagination;
+
     public ProductSection $section;
     public string $search = '';
 
-    public $mainCategoryId = null;   // მთავარი კატეგორია
-    public $subCategoryId  = null;   // ქვეკატეგორია
+    public $mainCategoryId = null;
+    public $subCategoryId  = null;
 
-    public array $selected = [];     // bulk მონიშნული product_id-ები
+    public array $selected = [];
     public bool $selectAll = false;
 
     public function mount(int $id): void
@@ -23,7 +26,6 @@ class Manage extends Component
         $this->section = ProductSection::with('products')->findOrFail($id);
     }
 
-    // მთავარი კატეგორიის შეცვლისას ქვეკატეგორია იწმინდება
     public function updatedMainCategoryId(): void
     {
         $this->subCategoryId = null;
@@ -36,18 +38,20 @@ class Manage extends Component
     {
         $this->selected = [];
         $this->selectAll = false;
+        $this->resetPage();
     }
 
     public function updatedSearch(): void
     {
         $this->selected = [];
         $this->selectAll = false;
+        $this->resetPage();
     }
 
-    // "ყველას მონიშვნა"
     public function updatedSelectAll($value): void
     {
         if ($value) {
+            // მიმდინარე გვერდის ხილული პროდუქტები
             $this->selected = $this->getResults()->pluck('id')->map(fn($i) => (string) $i)->toArray();
         } else {
             $this->selected = [];
@@ -68,7 +72,6 @@ class Manage extends Component
         $this->dispatch('ui:success', message: 'დაემატა!');
     }
 
-    // bulk დამატება — მონიშნულები ერთად
     public function addSelected(): void
     {
         if (empty($this->selected)) {
@@ -79,7 +82,7 @@ class Manage extends Component
         $existingIds = $this->section->products->pluck('id')->toArray();
         $maxOrder    = $this->section->products()->max('db_product_section_items.sort_order') ?? 0;
 
-        $added = 0;
+        $added  = 0;
         $attach = [];
         foreach ($this->selected as $pid) {
             $pid = (int) $pid;
@@ -107,32 +110,27 @@ class Manage extends Component
         $this->dispatch('ui:success', message: 'მოშორდა!');
     }
 
-    // ძებნის/ფილტრის შედეგი
-    private function getResults()
+    // query builder (paginate-ისთვის და selectAll-ისთვის)
+    private function buildQuery()
     {
         $addedIds = $this->section->products->pluck('id')->toArray();
 
-        $hasSearch   = mb_strlen(trim($this->search)) >= 2;
-        $hasCategory = $this->subCategoryId || $this->mainCategoryId;
-
-        if (!$hasSearch && !$hasCategory) {
-            return collect();
-        }
-
-        $query = Product::query()->whereNotIn('id', $addedIds)->with('translations');
+        $query = Product::query()
+            ->whereNotIn('id', $addedIds)
+            ->with('translations')
+            ->orderBy('id', 'desc');
 
         // კატეგორიის ფილტრი
         if ($this->subCategoryId) {
             $query->where('category_id', $this->subCategoryId);
         } elseif ($this->mainCategoryId) {
-            // მთავარი კატეგორია + მისი ქვეკატეგორიები
             $subIds = ProductCategory::where('parent_id', $this->mainCategoryId)->pluck('id')->toArray();
             $catIds = array_merge([$this->mainCategoryId], $subIds);
             $query->whereIn('category_id', $catIds);
         }
 
-        // ძებნა
-        if ($hasSearch) {
+        // ძებნა (ნებისმიერი სიგრძის)
+        if (trim($this->search) !== '') {
             $query->where(function ($q) {
                 $q->where('sku', 'like', "%{$this->search}%")
                     ->orWhereHas('translations', fn($t) =>
@@ -141,12 +139,22 @@ class Manage extends Component
             });
         }
 
-        return $query->limit(50)->get();
+        return $query;
+    }
+
+    // ხილული შედეგი (selectAll-ისთვის — მიმდინარე გვერდი)
+    private function getResults()
+    {
+        return $this->buildQuery()->limit(20)->get();
     }
 
     public function render()
     {
-        $results = $this->getResults();
+        $hasFilter = $this->subCategoryId || $this->mainCategoryId || trim($this->search) !== '';
+
+        $results = $hasFilter
+            ? $this->buildQuery()->paginate(20)
+            : null;
 
         $mainCategories = ProductCategory::where('parent_id', 0)
             ->where('active', 1)

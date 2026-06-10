@@ -13,7 +13,7 @@
 
                     <div class="card-body">
 
-                        {{-- ფილტრები: კატეგორია → ქვეკატეგორია --}}
+                        {{-- ფილტრები --}}
                         <div class="row mb-2">
                             <div class="col-md-4 mb-1">
                                 <label class="form-label">კატეგორია</label>
@@ -40,18 +40,18 @@
                             </div>
 
                             <div class="col-md-4 mb-1">
-                                <label class="form-label">ან ძებნა (დასახელება/SKU)</label>
+                                <label class="form-label">ძებნა (დასახელება/SKU)</label>
                                 <input type="text" class="form-control" wire:model.live.debounce.400ms="search"
-                                       placeholder="მინ. 2 სიმბოლო...">
+                                       placeholder="ძებნა...">
                             </div>
                         </div>
 
                         {{-- შედეგი + bulk --}}
-                        @if(count($results) > 0)
+                        @if($results && $results->total() > 0)
                             <div class="d-flex align-items-center justify-content-between mb-1 p-1 bg-light rounded">
                                 <div class="form-check mb-0">
                                     <input type="checkbox" class="form-check-input" id="selectAll" wire:model.live="selectAll">
-                                    <label class="form-check-label" for="selectAll">ყველას მონიშვნა ({{ count($results) }})</label>
+                                    <label class="form-check-label" for="selectAll">ამ გვერდის მონიშვნა</label>
                                 </div>
                                 <button class="btn btn-sm btn-success" wire:click="addSelected"
                                         @disabled(count($selected) === 0)>
@@ -59,7 +59,7 @@
                                 </button>
                             </div>
 
-                            <div class="list-group mb-3">
+                            <div class="list-group mb-2">
                                 @foreach($results as $p)
                                     <label class="list-group-item d-flex align-items-center justify-content-between" style="cursor:pointer">
                                         <div class="d-flex align-items-center">
@@ -78,8 +78,14 @@
                                     </label>
                                 @endforeach
                             </div>
-                        @elseif(mb_strlen(trim($search)) >= 2 || $mainCategoryId)
+
+                            {{-- პაგინაცია --}}
+                            {{ $results->links() }}
+
+                        @elseif($results)
                             <div class="alert alert-warning"><div class="alert-body">ვერ მოიძებნა.</div></div>
+                        @else
+                            <div class="alert alert-secondary"><div class="alert-body">აირჩიე კატეგორია ან მოძებნე პროდუქტი.</div></div>
                         @endif
 
                         <hr>
