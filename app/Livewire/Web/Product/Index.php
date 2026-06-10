@@ -45,6 +45,9 @@ class Index extends Component
     #[Url]
     public bool $onlyDiscounted = false;
 
+    #[Url(as: 'sort', keep: true)]
+    public string $sort = 'newest';
+
     public function mount($category_slug = null): void
     {
         $this->category_slug = $category_slug;
@@ -193,6 +196,7 @@ class Index extends Component
             'search'         => !empty($this->search) ? $this->search : null,
             'specs'          => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
             'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
+            'sort'           => $this->sort !== 'newest' ? $this->sort : null,
         ]);
     }
 
@@ -233,6 +237,7 @@ class Index extends Component
         $this->search          = '';
         $this->selectedSpecs   = [];
         $this->onlyDiscounted  = false;
+        $this->sort            = 'newest';
         $this->currentCategory = null;
         $this->selectedParent  = null;
         $this->resetPage();
@@ -277,6 +282,12 @@ class Index extends Component
         $this->isLoading = true;
     }
 
+    public function updatedSort(): void
+    {
+        $this->resetPage();
+        $this->isLoading = true;
+    }
+
     public function loadMore(): void
     {
         $this->perPage += 12;
@@ -285,9 +296,30 @@ class Index extends Component
     #[Computed]
     public function products()
     {
-        $result = $this->buildProductQuery()
-            ->orderBy('db_products.id', 'DESC')
-            ->paginate($this->perPage);
+        $query = $this->buildProductQuery();
+
+        switch ($this->sort) {
+            case 'price_asc':
+                $query->leftJoin('db_product_prices', 'db_product_prices.product_id', '=', 'db_products.id')
+                    ->orderByRaw('COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price) ASC');
+                break;
+
+            case 'price_desc':
+                $query->leftJoin('db_product_prices', 'db_product_prices.product_id', '=', 'db_products.id')
+                    ->orderByRaw('COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price) DESC');
+                break;
+
+            case 'oldest':
+                $query->orderBy('db_products.id', 'ASC');
+                break;
+
+            case 'newest':
+            default:
+                $query->orderBy('db_products.id', 'DESC');
+                break;
+        }
+
+        $result = $query->paginate($this->perPage);
         $this->isLoading = false;
         return $result;
     }
@@ -369,7 +401,6 @@ class Index extends Component
         $cacheKey   = 'spec_sections_v2_' . $categoryId;
 
         return cache()->remember($cacheKey, 3600, function () use ($parentId) {
-            // ✅ კატეგორიის პროდუქტების ID-ები
             $productIds = Product::query()
                 ->where('show', 1)
                 ->where('active', 1)
@@ -385,7 +416,6 @@ class Index extends Component
                 return collect();
             }
 
-            // ✅ filter=1 მქონე items პირდაპირ, section-ის გავლით
             $items = \App\Models\Product\ProductFullSpecificationItem::query()
                 ->select('id', 'section_id', 'name', 'value')
                 ->where('filter', 1)
@@ -400,7 +430,6 @@ class Index extends Component
                 return collect();
             }
 
-            // ✅ name-ით დაჯგუფება → unique value-ები
             return $items
                 ->groupBy('name')
                 ->map(fn ($group) => $group->unique('value')->map(fn ($item) => (object) ['value' => $item->value])->values())
@@ -456,6 +485,7 @@ class Index extends Component
             $query->where('db_products.category_id', $this->currentCategory->id);
         }
     }
+
     private function applyBrandFilter($query): void
     {
         $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
@@ -499,7 +529,7 @@ class Index extends Component
         $searchTerm = "%{$this->search}%";
 
         $query->where(function ($q) use ($searchTerm) {
-            $q->where('id', 'like', $searchTerm)
+            $q->where('db_products.id', 'like', $searchTerm)
                 ->orWhereHas('translations', fn ($sub) => $sub
                     ->where('title', 'like', $searchTerm)
                     ->orWhere('description', 'like', $searchTerm)

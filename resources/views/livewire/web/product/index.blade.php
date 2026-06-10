@@ -87,9 +87,21 @@
         <section class="container mb-4">
             <div class="row">
                 <div class="col-lg-9">
-                    <div class="d-md-flex align-items-start">
-                        <div class="h6 fs-sm fw-normal text-nowrap translate-middle-y mt-3 mb-0 me-4 font-neue">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="h6 fs-sm fw-normal text-nowrap mb-0 font-neue">
                             ნაპოვნია <span class="fw-semibold">{{ $this->products->total() }}</span> პროდუქტი
+                        </div>
+
+                        {{-- სორტირება --}}
+                        <div class="d-flex align-items-center">
+                            <label class="fs-sm text-muted me-2 mb-0 text-nowrap d-none d-sm-inline">დალაგება:</label>
+                            <select class="form-select form-select-sm" style="min-width: 190px;"
+                                    wire:model.live="sort">
+                                <option value="newest">უახლესი</option>
+                                <option value="price_asc">ფასი: დაბლიდან მაღლა</option>
+                                <option value="price_desc">ფასი: მაღლიდან დაბლა</option>
+                                <option value="oldest">ძველი</option>
+                            </select>
                         </div>
                     </div>
                 </div>
