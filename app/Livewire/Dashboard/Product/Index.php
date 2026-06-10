@@ -36,6 +36,7 @@ class Index extends Component
     public $global_file;
     public $midea_file;
     public $grandel_file;
+    public $kontakt_file;
 
     public $selectedCategory    = null;
     public $selectedBrand       = null;
@@ -175,6 +176,84 @@ class Index extends Component
         }
     }
 
+    /**
+     * KontaktHome — ექსელის ატვირთვა + ჩაშენებული ლინკების ამოღება
+     * სვეტები: A = დასახელება (გალინკული), B = Stock, C = Price
+     */
+    public function uploadKontakt(): void
+    {
+        $this->validate([
+            'kontakt_file' => 'required|file|mimes:xlsx,xls',
+        ], [
+            'kontakt_file.required' => 'ფაილი აუცილებელია',
+            'kontakt_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
+        ]);
+
+        try {
+            $path        = $this->kontakt_file->getRealPath();
+            $spreadsheet = IOFactory::load($path);
+            $sheet       = $spreadsheet->getActiveSheet();
+            $highestRow  = $sheet->getHighestRow();
+
+            $rows      = [];
+            $withLink  = 0;
+            $noLink    = 0;
+
+            for ($r = 2; $r <= $highestRow; $r++) {  // 2-დან (header გამოვტოვოთ)
+                $cell = $sheet->getCell('A' . $r);
+                $name = trim((string) $cell->getValue());
+
+                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+
+                if ($name === '') continue;
+                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
+                if (mb_strlen($name) < 3) continue;
+
+                // 🔗 ჩაშენებული ლინკის ამოღება
+                $url = '';
+                if ($cell->hasHyperlink()) {
+                    $url = trim($cell->getHyperlink()->getUrl());
+                }
+
+                if ($url !== '') {
+                    $withLink++;
+                } else {
+                    $noLink++;
+                }
+
+                $stock = $this->parseStock($sheet->getCell('B' . $r)->getValue());
+                $price = $this->parsePrice($sheet->getCell('C' . $r)->getValue());
+
+                $rows[] = [
+                    'name'  => $name,
+                    'url'   => $url,
+                    'stock' => $stock,
+                    'price' => $price,
+                ];
+
+                Log::info("🔗 Kontakt row {$r}: '{$name}' | url=" . ($url ?: 'არ აქვს') . " | stock={$stock} | price=" . ($price ?? 'null'));
+            }
+
+            if (empty($rows)) {
+                $this->dispatch('ui:error', message: 'მონაცემი ვერ მოიძებნა');
+                return;
+            }
+
+            Log::info("📂 Kontakt upload: " . count($rows) . " row წაკითხული — ლინკით: {$withLink}, ლინკის გარეშე: {$noLink}");
+
+            // ჯერ მხოლოდ წაკითხვა/ლოგი — scraping შემდეგ ნაბიჯზე დაემატება
+            $this->reset('kontakt_file');
+            $this->dispatch('ui:success',
+                message: count($rows) . " row წაიკითხა (ლინკით: {$withLink}). ლოგი შეამოწმე.");
+
+        } catch (\Throwable $e) {
+            Log::error('Kontakt upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
+    }
+
     private function parsePrice($value): ?float
     {
         if ($value === null || $value === '') {
@@ -192,7 +271,6 @@ class Index extends Component
         if ($value === null || $value === '') {
             return 0;
         }
-        // მხოლოდ ციფრები (+ და სხვა სიმბოლოები მოშორდეს)
         $digits = preg_replace('/[^0-9]/', '', (string) $value);
         return $digits === '' ? 0 : (int) $digits;
     }
@@ -385,7 +463,6 @@ class Index extends Component
                 return;
             }
 
-            // header row (Title|Brand|Model|Price|OldPrice|Color|Description|Image|SourceUrl)
             $header = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[0]);
             $idx = [
                 'title'       => array_search('title', $header),
@@ -396,7 +473,7 @@ class Index extends Component
                 'color'       => array_search('color', $header),
                 'description' => array_search('description', $header),
                 'image'       => array_search('image', $header),
-                'category'    => array_search('category', $header),   // ✅ ახალი
+                'category'    => array_search('category', $header),
             ];
 
             if ($idx['title'] === false || $idx['model'] === false) {
@@ -422,7 +499,7 @@ class Index extends Component
                     'color'       => $idx['color'] !== false ? trim((string) ($row[$idx['color']] ?? '')) : '',
                     'description' => $idx['description'] !== false ? trim((string) ($row[$idx['description']] ?? '')) : '',
                     'image'       => $idx['image'] !== false ? trim((string) ($row[$idx['image']] ?? '')) : '',
-                    'category'    => $idx['category'] !== false ? trim((string) ($row[$idx['category']] ?? '')) : '',  // ✅
+                    'category'    => $idx['category'] !== false ? trim((string) ($row[$idx['category']] ?? '')) : '',
                 ];
 
                 \App\Jobs\GrandelImportJob::dispatch($data)->onQueue('grandel');
@@ -608,7 +685,6 @@ class Index extends Component
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            // UTF-8 BOM — ქართული რომ სწორად გაიხსნას Excel-ში
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
             fputcsv($out, ['Name', 'Stock', 'Price', 'Reason', 'Date']);
             foreach ($rows as $r) {

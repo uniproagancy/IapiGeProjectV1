@@ -60,7 +60,7 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadMideaModal">Midea</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
-
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">KontaktHome</a>
                                 </div>
                             </div>
                             <div class="btn-group">
@@ -506,6 +506,33 @@
                     <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadKontaktModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadKontakt">
+                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">KontaktHome — ექსელის ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — დასახელება(ლინკით) | Stock | Price</label>
+                        <input type="file"
+                               class="form-control @error('kontakt_file') is-invalid @enderror"
+                               wire:model="kontakt_file" accept=".xlsx,.xls">
+                        @error('kontakt_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadKontakt,kontakt_file">
+                            <span wire:loading.remove wire:target="uploadKontakt">წაკითხვა</span>
+                            <span wire:loading wire:target="uploadKontakt"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
