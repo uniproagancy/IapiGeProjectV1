@@ -195,11 +195,10 @@ class Index extends Component
             $sheet       = $spreadsheet->getActiveSheet();
             $highestRow  = $sheet->getHighestRow();
 
-            $rows      = [];
-            $withLink  = 0;
-            $noLink    = 0;
+            $dispatched = 0;
+            $skipped    = 0;
 
-            for ($r = 2; $r <= $highestRow; $r++) {  // 2-დან (header გამოვტოვოთ)
+            for ($r = 2; $r <= $highestRow; $r++) {
                 $cell = $sheet->getCell('A' . $r);
                 $name = trim((string) $cell->getValue());
 
@@ -209,44 +208,38 @@ class Index extends Component
 
                 if ($name === '') continue;
                 if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 3) continue;
+                if (mb_strlen($name) < 2) continue;
 
-                // 🔗 ჩაშენებული ლინკის ამოღება
+                // 🔗 ჩაშენებული ლინკი
                 $url = '';
                 if ($cell->hasHyperlink()) {
                     $url = trim($cell->getHyperlink()->getUrl());
                 }
 
-                if ($url !== '') {
-                    $withLink++;
-                } else {
-                    $noLink++;
+                // ლინკის გარეშე ან გატეხილი — გამოტოვება
+                if ($url === '' || !str_starts_with($url, 'http')) {
+                    Log::warning("⏭️ Kontakt skip (ლინკი არ აქვს/გატეხილია): '{$name}' — '{$url}'");
+                    $skipped++;
+                    continue;
                 }
 
                 $stock = $this->parseStock($sheet->getCell('B' . $r)->getValue());
                 $price = $this->parsePrice($sheet->getCell('C' . $r)->getValue());
 
-                $rows[] = [
-                    'name'  => $name,
-                    'url'   => $url,
-                    'stock' => $stock,
-                    'price' => $price,
-                ];
-
-                Log::info("🔗 Kontakt row {$r}: '{$name}' | url=" . ($url ?: 'არ აქვს') . " | stock={$stock} | price=" . ($price ?? 'null'));
+                \App\Jobs\KontaktImportJob::dispatch($name, $url, $stock, $price)->onQueue('kontakt');
+                $dispatched++;
             }
 
-            if (empty($rows)) {
-                $this->dispatch('ui:error', message: 'მონაცემი ვერ მოიძებნა');
+            if ($dispatched === 0) {
+                $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა');
                 return;
             }
 
-            Log::info("📂 Kontakt upload: " . count($rows) . " row წაკითხული — ლინკით: {$withLink}, ლინკის გარეშე: {$noLink}");
+            Log::info("📂 Kontakt upload: {$dispatched} job queue-ში, გამოტოვებული: {$skipped}");
 
-            // ჯერ მხოლოდ წაკითხვა/ლოგი — scraping შემდეგ ნაბიჯზე დაემატება
             $this->reset('kontakt_file');
             $this->dispatch('ui:success',
-                message: count($rows) . " row წაიკითხა (ლინკით: {$withLink}). ლოგი შეამოწმე.");
+                message: "{$dispatched} პროდუქტი queue-ში გაიგზავნა (გამოტოვებული: {$skipped}).");
 
         } catch (\Throwable $e) {
             Log::error('Kontakt upload error: ' . $e->getMessage());
