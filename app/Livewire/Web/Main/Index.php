@@ -87,12 +87,13 @@ class Index extends Component
 
     public function render()
     {
-
         $homeSections = \App\Models\Product\ProductSection::where('active', 1)
             ->where('show_on_home', 1)
+            ->whereHas('products', function ($q) {
+                $q->where('show', 1)->where('active', 1);
+            })
             ->orderBy('sort_order')
             ->get();
-
         return view('livewire.web.main.index', compact('homeSections'))->layout('livewire.web.layout');
     }
 }
