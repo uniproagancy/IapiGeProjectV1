@@ -18,7 +18,7 @@
             <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-md-4">
                 @foreach($products as $product)
                     <div class="col">
-                        @include('livewire.web.partials.product-card', ['product' => $product])
+                        @include('livewire.web.product.product-card', ['product' => $product])
                     </div>
                 @endforeach
             </div>
