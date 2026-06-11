@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\DomCrawler\Crawler;
 use Exception;
 
 class KontaktImportJob implements ShouldQueue
@@ -47,6 +46,8 @@ class KontaktImportJob implements ShouldQueue
 
     public function handle(): void
     {
+        @ini_set('memory_limit', '256M');
+
         $url = $this->normalizeUrl($this->url);
 
         if (empty($url) || !str_starts_with($url, 'http')) {
@@ -92,6 +93,9 @@ class KontaktImportJob implements ShouldQueue
             // === 2. სპეციფიკაციები (.har) ===
             $specs = $this->extractSpecs($html);
 
+            // HTML მეხსიერებიდან გავათავისუფლოთ
+            unset($html);
+
             // === 3. ჩაწერა ===
             $sku      = self::SKU_PREFIX . $this->model;
             $existing = Product::where('sku', $sku)->first();
@@ -116,13 +120,6 @@ class KontaktImportJob implements ShouldQueue
                         'show'     => $showVal,
                         'active'   => 1,
                     ];
-
-                    if (!$existing->taxonomy_lock) {
-                        $updateData['brand_id'] = $brandId;
-                    } else {
-                        Log::info("🏷️ Kontakt: taxonomy locked, brand უცვლელი — {$sku}");
-                    }
-
                     $product->update($updateData);
                     Log::info("🔁 Kontakt: updated {$sku} (stock={$stockQty})");
                 } else {
@@ -273,36 +270,29 @@ class KontaktImportJob implements ShouldQueue
     }
 
     /**
-     * .har__row → name/value
+     * .har__row → name/value — regex-ით (DomCrawler-ის გარეშე, მეხსიერების ეკონომიით)
      */
     private function extractSpecs(string $html): array
     {
         $specs = [];
 
-        try {
-            $crawler = new Crawler($html);
+        $pattern = '/<div class="har__title">(.*?)<\/div>\s*<div class="har__znach">(.*?)<\/div>/s';
 
-            $crawler->filter('.har__row')->each(function (Crawler $row) use (&$specs) {
-                $nameNode  = $row->filter('.har__title');
-                $valueNode = $row->filter('.har__znach');
+        if (preg_match_all($pattern, $html, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $m) {
+                $name  = trim(strip_tags($m[1]));
+                $value = trim(strip_tags($m[2]));
 
-                if (!$nameNode->count() || !$valueNode->count()) {
-                    return;
-                }
-
-                $name  = trim($nameNode->text());
-                $value = trim($valueNode->text());
+                $name  = preg_replace('/\s+/u', ' ', $name);
+                $value = preg_replace('/\s+/u', ' ', $value);
 
                 if ($name === '' || $value === '' || $value === '-'
                     || mb_strpos($value, 'მიუწვდომელია') !== false) {
-                    return;
+                    continue;
                 }
 
                 $specs[] = ['name' => $name, 'value' => $value];
-            });
-
-        } catch (Exception $e) {
-            Log::warning("⚠️ Kontakt specs parse: " . $e->getMessage());
+            }
         }
 
         return $specs;
