@@ -2,376 +2,701 @@
 
 namespace App\Jobs;
 
+use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductBrandTranslation;
+use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
+use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
+use App\Models\Product\ProductVariation;
+use App\Models\Product\ProductVariationItem;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\DomCrawler\Crawler;
 use Exception;
 
-class KontaktImportJob implements ShouldQueue
+class AltaProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
-    public int $timeout = 120;
-    public int $backoff = 30;
+    protected array $productData         = [];
+    protected array $productAvailability = [];
 
-    private const SUPPLIER_ID      = 8;
-    private const SKU_PREFIX       = 'KONTAKT-';
-    private const DEFAULT_CATEGORY = 6;
-    private const DEFAULT_BRAND    = 6;
-    private const SHORT_SPEC_LIMIT = 5;
+    public int $tries             = 3;
+    public int $timeout           = 300;
+    public int $maxExceptions     = 3;
+    public int $backoffMultiplier = 2;
 
-    public function __construct(
-        public string $model,      // Excel დასახელება (SKU-სთვის)
-        public string $url,        // kontakt.ge ლინკი
-        public int $stock = 0,     // Excel stock (fallback)
-        public ?float $price = null
-    ) {
+    private const CACHE_DURATION_BRAND = 24 * 60;
+    private const MAX_IMAGE_SIZE       = 5 * 1024 * 1024;
+
+    public function __construct(array $productData = [], array $productAvailability = [])
+    {
+        $this->productData         = $productData;
+        $this->productAvailability = $productAvailability;
     }
 
     public function handle(): void
     {
-        $url = $this->normalizeUrl($this->url);
+        try {
+            if (empty($this->productData) || empty($this->productData['id'])) {
+                Log::warning('⚠️  AltaProductJob: productData is empty or missing id');
+                return;
+            }
 
-        if (empty($url) || !str_starts_with($url, 'http')) {
-            Log::warning("⚠️ Kontakt: არასწორი URL — {$this->model} ({$this->url})");
+            Log::info("🔄 Processing Alta product: {$this->productData['id']}", [
+                'attempt' => $this->attempts(),
+            ]);
+
+            $this->saveProductWithVariants($this->productData, $this->productAvailability);
+
+            Log::info("✅ Alta product saved: {$this->productData['id']}");
+
+        } catch (Exception $e) {
+            $productId = $this->productData['id'] ?? 'unknown';
+            Log::error("❌ Error processing Alta product {$productId}: {$e->getMessage()}", [
+                'attempt' => $this->attempts(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            if ($this->attempts() < $this->tries) {
+                $this->release($this->getRetryDelay());
+            } else {
+                Log::critical("🚫 Alta job permanently failed: {$productId}", [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function getRetryDelay(): int
+    {
+        return pow($this->backoffMultiplier, $this->attempts()) * 60;
+    }
+
+    public function failed(Exception $exception): void
+    {
+        $productId = $this->productData['id'] ?? 'unknown';
+        Log::error("🚨 Alta job permanently failed for product {$productId}", [
+            'error'    => $exception->getMessage(),
+            'attempts' => $this->attempts(),
+        ]);
+    }
+
+    public function saveProductWithVariants(array $productData, array $productAvailability): void
+    {
+        if (empty($productData['id'])) {
+            throw new Exception('Product ID is required');
+        }
+
+        $hasStock = $this->checkTbilisiStock($productAvailability);
+
+        if (!$hasStock) {
+            Log::info("⏭️  Skipping Alta product (no Tbilisi stock): {$productData['id']}");
             return;
         }
 
-        Log::info("🔄 Kontakt job START: '{$this->model}' → {$url}");
+        $barCode = $productData['barCode'] ?? $productData['id'];
+        $sku     = 'ALTA-' . $barCode;
 
+        $existing = Product::where('sku', $sku)->first();
+        if ($existing && $existing->update_lock) {
+            Log::info("🔒 Skipping locked Alta product: {$sku}");
+            return;
+        }
+
+        $b2bStock = AltaID::where('product_id', (string) $barCode)->first();
+        $exists   = (bool) $existing;
+
+        if (!$b2bStock) {
+            if ($exists) {
+                $this->updateExistingProduct($productData, ['quantity' => 0], $sku);
+            } else {
+                Log::info("⏭️  Skipping Alta product (not in B2B list, not in DB): {$productData['id']}");
+            }
+            return;
+        }
+
+        if ($exists) {
+            $this->updateExistingProduct($productData, $b2bStock->toArray(), $sku);
+        } else {
+            if ($b2bStock->quantity >= 2) {
+                $this->createNewProduct($productData, $b2bStock->toArray(), $sku);
+            } else {
+                Log::info("⏭️  Skipping new Alta product (insufficient B2B stock): {$productData['id']}");
+            }
+        }
+    }
+
+    private function checkTbilisiStock(array $availability): bool
+    {
+        if (empty($availability)) {
+            return false;
+        }
+
+        return collect($availability)
+            ->where('city', 'თბილისი')
+            ->contains(fn($store) => $store['inStock'] === true);
+    }
+
+    private function getCategoryId(array $productData): int
+    {
+        $categoryName = $productData['categoryName'] ?? null;
+
+        if ($categoryName) {
+            $category = ProductCategory::whereRaw(
+                'LOWER(TRIM(alta_category_name)) = ?',
+                [mb_strtolower(trim($categoryName))]
+            )->first();
+
+            if ($category) {
+                Log::info("✅ Alta category mapped: '{$categoryName}' → category_id={$category->id}");
+                return $category->id;
+            }
+        }
+
+        Log::warning("⚠️ Alta category not mapped: categoryName='{$categoryName}'");
+        return 3;
+    }
+
+    private function updateExistingProduct(array $productData, array $b2bStock, string $sku): void
+    {
         try {
-            $response = Http::timeout(30)->withHeaders([
-                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-                'Accept-Language' => 'ka',
-            ])->get($url);
+            $product = Product::where('sku', $sku)->firstOrFail();
 
-            if (!$response->successful()) {
-                Log::warning("⚠️ Kontakt: გვერდი ვერ გაიხსნა ({$response->status()}) — {$url}");
-                return;
-            }
+            DB::transaction(function () use ($product, $productData, $b2bStock, $sku) {
+                $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+                $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-            $html = $response->body();
-
-            // === 1. ld+json (Product) ===
-            $jsonData = $this->extractProductJson($html);
-            if (!$jsonData) {
-                Log::warning("⚠️ Kontakt: ld+json Product ვერ მოიძებნა — {$url}");
-                return;
-            }
-
-            $title        = $this->cleanTitle($jsonData['name'] ?? $this->model);
-            $price        = $this->price ?? (float) ($jsonData['offers']['price'] ?? 0);
-            $availability = $jsonData['offers']['availability'] ?? '';
-            $inStock      = str_contains($availability, 'InStock');
-            $image        = $jsonData['image'] ?? null;
-            $brandName    = $jsonData['brand']['name'] ?? null;
-            $desc         = $jsonData['description'] ?? null;
-
-            if ($price <= 0) {
-                Log::warning("⚠️ Kontakt: ფასი 0 — გამოტოვება — {$this->model}");
-                return;
-            }
-
-            // === 2. სპეციფიკაციები (.har) ===
-            $specs = $this->extractSpecs($html);
-
-            // === 3. ჩაწერა ===
-            $sku      = self::SKU_PREFIX . $this->model;
-            $existing = Product::where('sku', $sku)->first();
-
-            if ($existing && $existing->update_lock) {
-                Log::info("🔒 Kontakt: locked, skip — {$sku}");
-                return;
-            }
-
-            DB::transaction(function () use ($sku, $existing, $title, $price, $inStock, $image, $brandName, $desc, $specs) {
-                $brandId = $this->resolveBrand($brandName);
-
-                $stockQty = $inStock ? max($this->stock, 1) : 0;
-                $showVal  = $inStock ? 1 : 0;
-
-                if ($existing) {
-                    $product = $existing;
-
-                    $updateData = [
-                        'quantity' => $stockQty,
-                        'in_stock' => $inStock ? 1 : 0,
-                        'show'     => $showVal,
-                        'active'   => 1,
-                    ];
-
-                    if (!$existing->taxonomy_lock) {
-                        $updateData['brand_id'] = $brandId;
-                    } else {
-                        Log::info("🏷️ Kontakt: taxonomy locked, brand უცვლელი — {$sku}");
-                    }
-
-                    $product->update($updateData);
-                    Log::info("🔁 Kontakt: updated {$sku} (stock={$stockQty})");
-                } else {
-                    $product = Product::create([
-                        'supplier_product_id' => null,
-                        'brand_id'            => $brandId,
-                        'category_id'         => self::DEFAULT_CATEGORY,
-                        'sku'                 => $sku,
-                        'supplier_id'         => self::SUPPLIER_ID,
-                        'main_image'          => null,
-                        'active'              => 1,
-                        'quantity'            => $stockQty,
-                        'in_stock'            => $inStock ? 1 : 0,
-                        'show'                => $showVal,
-                    ]);
-                    Log::info("✨ Kontakt: created {$sku} (id={$product->id}, stock={$stockQty})");
-                }
-
-                // ფასი
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
                     [
-                        'regular_price'    => $price,
-                        'dealer_price'     => $price,
-                        'discount_price'   => null,
-                        'discount_percent' => 0,
+                        'dealer_price'     => $productPrice,
+                        'regular_price'    => $productPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $productData['discountPercent'] ?? 0,
                     ]
                 );
 
-                // translations
-                $slug = Str::slug($title, '-') . '-' . $product->id;
-                foreach (['ka', 'en', 'ru'] as $locale) {
-                    ProductTranslation::updateOrCreate(
-                        ['product_id' => $product->id, 'locale' => $locale],
-                        [
-                            'title'       => $title,
-                            'slug'        => $slug,
-                            'description' => $locale === 'ka' ? $desc : null,
-                            'keywords'    => null,
-                        ]
-                    );
+                $show     = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $quantity = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
+                $in_stock = $b2bStock['quantity'] >= 1 ? 1 : 0;
+
+                $updateData = [
+                    'quantity' => $quantity,
+                    'in_stock' => $in_stock,
+                    'show'     => $show,
+                    'active'   => $show,
+                ];
+
+                // 🏷️ category/brand მხოლოდ თუ taxonomy არ არის ჩაკეტილი
+                if (!$product->taxonomy_lock) {
+                    $updateData['category_id'] = $this->getCategoryId($productData);
+                    $updateData['brand_id']    = $this->getBrandId($productData);
+                } else {
+                    Log::info("🏷️ Alta: taxonomy locked, category/brand უცვლელი — {$sku}");
                 }
 
-                // სურათი (მხოლოდ თუ არ აქვს)
-                if (!empty($image) && empty($product->main_image)) {
-                    $this->downloadImage($product, $image);
+                $product->update($updateData);
+
+                if (!empty($productData['description'])) {
+                    ProductTranslation::where('product_id', $product->id)
+                        ->where('locale', 'ka')
+                        ->update(['description' => $this->sanitizeString($productData['description'])]);
                 }
 
-                // === სპეციფიკაციები ===
-                $this->saveSpecifications($product, $specs);
+                ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                $this->createShortSpecifications($product, $productData);
 
-                Log::info("✅ Kontakt saved: {$sku} (brand={$brandId}, specs=" . count($specs) . ")");
+                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
+                ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                $this->createFullSpecifications($product, $productData);
+
+                if (!empty($productData['images'])) {
+                    $this->updateProductImages($product, $productData);
+                }
+
+                Log::info("🔁 Updated Alta product: {$product->id}, stock: {$quantity}");
             });
 
         } catch (Exception $e) {
-            Log::error("❌ Kontakt job error [{$this->model}]: " . $e->getMessage());
+            Log::error("❌ Error updating Alta product {$productData['id']}: {$e->getMessage()}");
             throw $e;
         }
     }
 
-    /**
-     * სპეციფიკაციების ჩაწერა — Full (ყველა) + Short (პირველი 5)
-     * Alta/Zoommer-ის ანალოგიური
-     */
-    private function saveSpecifications(Product $product, array $specs): void
-    {
-        // ძველის წაშლა (განახლებისთვის)
-        $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
-        ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-        ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
-        ProductShortSpecification::where('product_id', $product->id)->forceDelete();
-
-        if (empty($specs)) {
-            return;
-        }
-
-        // === FULL — ყველა ===
-        $section = ProductFullSpecificationSection::create([
-            'product_id' => $product->id,
-            'name'       => 'მახასიათებლები',
-        ]);
-
-        foreach ($specs as $spec) {
-            ProductFullSpecificationItem::create([
-                'section_id' => $section->id,
-                'name'       => $spec['name'],
-                'value'      => $spec['value'],
-                'filter'     => 0,
-            ]);
-        }
-
-        // === SHORT — პირველი 5 ===
-        $shortSpecs = array_slice($specs, 0, self::SHORT_SPEC_LIMIT);
-        $shortRows  = [];
-        foreach ($shortSpecs as $spec) {
-            $shortRows[] = [
-                'product_id' => $product->id,
-                'name'       => $spec['name'],
-                'value'      => $spec['value'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        if (!empty($shortRows)) {
-            ProductShortSpecification::insert($shortRows);
-        }
-    }
-
-    /**
-     * URL-დან /en/ /ka/ /ru/ მოშორება (ქართული default)
-     */
-    private function normalizeUrl(string $url): string
-    {
-        $url = trim($url);
-        return preg_replace('#^(https?://[^/]+)/(en|ka|ru)(/|$)#i', '$1/', $url);
-    }
-
-    /**
-     * ld+json ბლოკებიდან Product-ის ამოღება
-     */
-    private function extractProductJson(string $html): ?array
-    {
-        if (!preg_match_all('/<script[^>]*type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/si', $html, $matches)) {
-            return null;
-        }
-
-        foreach ($matches[1] as $block) {
-            $data = json_decode(trim($block), true);
-            if (!is_array($data)) {
-                continue;
-            }
-
-            if (($data['@type'] ?? '') === 'Product') {
-                return $data;
-            }
-
-            if (isset($data['@graph']) && is_array($data['@graph'])) {
-                foreach ($data['@graph'] as $item) {
-                    if (($item['@type'] ?? '') === 'Product') {
-                        return $item;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * .har__row → name/value
-     */
-    private function extractSpecs(string $html): array
-    {
-        $specs = [];
-
-        try {
-            $crawler = new Crawler($html);
-
-            $crawler->filter('.har__row')->each(function (Crawler $row) use (&$specs) {
-                $nameNode  = $row->filter('.har__title');
-                $valueNode = $row->filter('.har__znach');
-
-                if (!$nameNode->count() || !$valueNode->count()) {
-                    return;
-                }
-
-                $name  = trim($nameNode->text());
-                $value = trim($valueNode->text());
-
-                if ($name === '' || $value === '' || $value === '-'
-                    || mb_strpos($value, 'მიუწვდომელია') !== false) {
-                    return;
-                }
-
-                $specs[] = ['name' => $name, 'value' => $value];
-            });
-
-        } catch (Exception $e) {
-            Log::warning("⚠️ Kontakt specs parse: " . $e->getMessage());
-        }
-
-        return $specs;
-    }
-
-    private function cleanTitle(string $title): string
-    {
-        $title = preg_replace('/\s*\|\s*Kontakt\.ge\s*$/i', '', $title);
-        return trim($title);
-    }
-
-    private function resolveBrand(?string $brandName): int
-    {
-        if (empty($brandName)) {
-            return self::DEFAULT_BRAND;
-        }
-
-        $normalized = mb_strtolower(trim($brandName));
-
-        $brand = ProductBrand::whereHas('translations',
-            fn ($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
-        )->first();
-
-        if ($brand) {
-            return $brand->id;
-        }
-
-        $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
-        ProductBrandTranslation::create([
-            'product_brand_id' => $newBrand->id,
-            'locale'           => 'ka',
-            'title'            => $brandName,
-            'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
-        ]);
-        ProductBrandTranslation::create([
-            'product_brand_id' => $newBrand->id,
-            'locale'           => 'en',
-            'title'            => $brandName,
-            'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
-        ]);
-
-        Log::info("✨ Kontakt: new brand '{$brandName}' id={$newBrand->id}");
-        return $newBrand->id;
-    }
-
-    private function downloadImage(Product $product, string $url): void
+    private function updateProductImages(Product $product, array $productData): void
     {
         try {
-            $resp = Http::timeout(30)->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                'Referer'    => 'https://kontakt.ge/',
-            ])->get($url);
-
-            if (!$resp->successful()) {
-                Log::warning("⚠️ Kontakt image download failed: {$url}");
+            if (empty($productData['images'])) {
                 return;
             }
 
-            $ext      = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
-            $filename = Str::random(40) . '.' . strtolower($ext);
-            $path     = "uploads/products/{$product->id}/{$filename}";
+            $images        = [];
+            $processedUrls = [];
+            $mainImageSet  = false;
 
-            Storage::disk('public')->put($path, $resp->body());
-            $product->update(['main_image' => $path]);
+            foreach ($productData['images'] as $index => $imageUrl) {
+                if (in_array($imageUrl, $processedUrls)) {
+                    continue;
+                }
 
-            Log::info("📦 Kontakt image saved for product {$product->id}");
+                $processedUrls[] = $imageUrl;
+
+                try {
+                    $response = Http::timeout(30)
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                            'Referer'    => 'https://alta.ge/',
+                            'Cookie'     => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
+                        ])
+                        ->get($imageUrl);
+
+                    if (!$response->successful()) {
+                        Log::warning("⚠️  Failed to download image: {$imageUrl}");
+                        continue;
+                    }
+
+                    $imageSize = strlen($response->body());
+                    if ($imageSize > self::MAX_IMAGE_SIZE) {
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrl}");
+                        continue;
+                    }
+
+                    $ext      = $this->getImageExtension($imageUrl);
+                    $filename = Str::random(40) . '.' . $ext;
+                    $path     = "uploads/products/{$product->id}/{$filename}";
+
+                    Storage::disk('public')->put($path, $response->body());
+
+                    if ($index === 0 && !$mainImageSet) {
+                        $product->update(['main_image' => $path]);
+                        $mainImageSet = true;
+                    } else {
+                        $images[] = [
+                            'product_id' => $product->id,
+                            'path'       => $path,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                } catch (Exception $e) {
+                    Log::warning("⚠️  Error downloading image: {$e->getMessage()}");
+                    continue;
+                }
+            }
+
+            $oldImages = ProductImage::where('product_id', $product->id)->withTrashed()->get();
+            foreach ($oldImages as $oldImage) {
+                try {
+                    if (!empty($oldImage->path) && Storage::disk('public')->exists($oldImage->path)) {
+                        Storage::disk('public')->delete($oldImage->path);
+                    }
+                } catch (Exception $e) {
+                    Log::warning("⚠️  Error deleting old image: {$e->getMessage()}");
+                }
+            }
+            ProductImage::where('product_id', $product->id)->forceDelete();
+
+            if (!empty($images)) {
+                ProductImage::insert($images);
+                Log::info("📦 Inserted " . count($images) . " images for product {$product->id}");
+            }
+
+            if (!$mainImageSet) {
+                $product->update(['main_image' => null]);
+            }
 
         } catch (Exception $e) {
-            Log::warning("⚠️ Kontakt image: " . $e->getMessage());
+            Log::error("❌ Error updating images: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function createNewProduct(array $productData, array $b2bStock, string $sku): void
+    {
+        DB::transaction(function () use ($productData, $b2bStock, $sku) {
+            try {
+                $brandId    = $this->getBrandId($productData);
+                $categoryId = $this->getCategoryId($productData);
+                $show       = $b2bStock['quantity'] >= 1 ? 1 : 0;
+                $quantity   = $b2bStock['quantity'] >= 1 ? $b2bStock['quantity'] : 0;
+                $in_stock   = $b2bStock['quantity'] >= 1 ? 1 : 0;
+
+                $product = Product::create([
+                    'supplier_product_id' => $productData['id'],
+                    'brand_id'            => $brandId,
+                    'category_id'         => $categoryId,
+                    'sku'                 => $sku,
+                    'supplier_id'         => 2,
+                    'main_image'          => null,
+                    'active'              => 1,
+                    'quantity'            => $quantity,
+                    'in_stock'            => $in_stock,
+                    'show'                => $show,
+                ]);
+
+                $this->createPrice($product, $productData);
+                $this->createTranslations($product, $productData);
+                $this->createFullSpecifications($product, $productData);
+                $this->createVariations($product, $productData);
+                $this->downloadAndSaveImages($product, $productData);
+                $this->createShortSpecifications($product, $productData);
+
+                Log::info("✨ Created new Alta product: {$product->id}, category: {$categoryId}, brand: {$brandId}");
+
+            } catch (Exception $e) {
+                Log::error("❌ Error creating Alta product: {$e->getMessage()}");
+                throw $e;
+            }
+        });
+    }
+
+    private function getBrandId(array $productData): int
+    {
+        try {
+            $brandName = null;
+
+            foreach ($productData['specificationGroup'] ?? [] as $group) {
+                foreach ($group['specifications'] ?? [] as $spec) {
+                    if (in_array($spec['specificationName'], ['Brand', 'ბრენდი', 'Бренд'])) {
+                        $brandName = $spec['specificationMeaning'] ?? null;
+                        break 2;
+                    }
+                }
+            }
+
+            if (empty($brandName)) {
+                $brandName = $productData['brandName'] ?? null;
+            }
+
+            if (empty($brandName)) {
+                return 6;
+            }
+
+            $normalized = mb_strtolower(trim($brandName));
+
+            return Cache::remember(
+                'alta_brand_' . md5($normalized),
+                now()->addMinutes(self::CACHE_DURATION_BRAND),
+                function () use ($brandName, $normalized) {
+                    $brand = ProductBrand::whereHas('translations',
+                        fn ($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
+                    )->first();
+
+                    if ($brand) {
+                        Log::info("✅ Alta brand found: '{$brandName}' → brand_id={$brand->id}");
+                        return $brand->id;
+                    }
+
+                    $newBrand = ProductBrand::create([
+                        'active' => 1,
+                        'show'   => 1,
+                    ]);
+
+                    ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'ka',
+                        'title'            => $brandName,
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
+                    ]);
+
+                    ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'en',
+                        'title'            => $brandName,
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
+                    ]);
+
+                    Log::info("✨ Alta: New brand created: '{$brandName}', id={$newBrand->id}");
+
+                    return $newBrand->id;
+                }
+            );
+
+        } catch (Exception $e) {
+            Log::warning("⚠️ Error finding/creating Alta brand: {$e->getMessage()}");
+            return 6;
+        }
+    }
+
+    private function createPrice(Product $product, array $productData): void
+    {
+        try {
+            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+
+            ProductPrice::create([
+                'product_id'       => $product->id,
+                'dealer_price'     => $productPrice,
+                'regular_price'    => $productPrice,
+                'discount_price'   => $discountPrice,
+                'discount_percent' => $productData['discountPercent'] ?? 0,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating price for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function createTranslations(Product $product, array $productData): void
+    {
+        try {
+            $locales     = ['ka', 'en', 'ru'];
+            $productName = $this->sanitizeString($productData['name']) ?: 'Unnamed Product';
+            $baseSlug    = Str::slug($productName) . "-{$product->id}";
+
+            foreach ($locales as $locale) {
+                ProductTranslation::create([
+                    'product_id'  => $product->id,
+                    'locale'      => $locale,
+                    'title'       => $productName,
+                    'slug'        => $baseSlug,
+                    'description' => $locale === 'ka' ? $this->sanitizeString($productData['description'] ?? null) : null,
+                    'keywords'    => null,
+                ]);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating translations for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function createVariations(Product $product, array $productData): void
+    {
+        try {
+            if (empty($productData['keySpecification'])) {
+                return;
+            }
+
+            foreach ($productData['keySpecification'] as $specification) {
+                if (empty($specification['specificationName'])) {
+                    continue;
+                }
+
+                $variation = ProductVariation::create([
+                    'product_id' => $product->id,
+                    'name'       => $specification['specificationName'],
+                    'value'      => $specification['specificationMeaning'] ?? null,
+                ]);
+
+                if (!empty($specification['specificationMeaningsList'])) {
+                    foreach ($specification['specificationMeaningsList'] as $item) {
+                        ProductVariationItem::create([
+                            'variation_id'        => $variation->id,
+                            'is_color'            => isset($item['isColor']) && $item['isColor'] ? 1 : 0,
+                            'supplier_product_id' => $item['productId'] ?? null,
+                            'value'               => $item['value'] ?? null,
+                        ]);
+                    }
+                }
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating variations for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function createFullSpecifications(Product $product, array $productData): void
+    {
+        try {
+            if (empty($productData['specificationGroup'])) {
+                return;
+            }
+
+            foreach ($productData['specificationGroup'] as $specificationGroup) {
+                if (empty($specificationGroup['groupName'])) {
+                    continue;
+                }
+
+                $section = ProductFullSpecificationSection::create([
+                    'product_id' => $product->id,
+                    'name'       => $specificationGroup['groupName'],
+                ]);
+
+                if (!empty($specificationGroup['specifications'])) {
+                    foreach ($specificationGroup['specifications'] as $spec) {
+                        if (empty($spec['specificationName'])) {
+                            continue;
+                        }
+
+                        ProductFullSpecificationItem::create([
+                            'section_id' => $section->id,
+                            'name'       => $spec['specificationName'],
+                            'value'      => $this->sanitizeString($spec['specificationMeaning'] ?? null),
+                            'filter'     => !empty($spec['specificationLinkedUrl']) ? 1 : 0,
+                        ]);
+                    }
+                }
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating specifications for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function downloadAndSaveImages(Product $product, array $productData): void
+    {
+        try {
+            if (empty($productData['images'])) {
+                return;
+            }
+
+            $images        = [];
+            $processedUrls = [];
+            $mainImageSet  = false;
+
+            foreach ($productData['images'] as $index => $imageUrl) {
+                if (in_array($imageUrl, $processedUrls)) {
+                    continue;
+                }
+
+                $processedUrls[] = $imageUrl;
+
+                try {
+                    $response = Http::timeout(30)
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                            'Referer'    => 'https://alta.ge/',
+                            'Cookie'     => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
+                        ])
+                        ->get($imageUrl);
+
+                    if (!$response->successful()) {
+                        Log::warning("⚠️  Failed to download image: {$imageUrl}");
+                        continue;
+                    }
+
+                    $imageSize = strlen($response->body());
+                    if ($imageSize > self::MAX_IMAGE_SIZE) {
+                        Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrl}");
+                        continue;
+                    }
+
+                    $ext      = $this->getImageExtension($imageUrl);
+                    $filename = Str::random(40) . '.' . $ext;
+                    $path     = "uploads/products/{$product->id}/{$filename}";
+
+                    Storage::disk('public')->put($path, $response->body());
+
+                    if ($index === 0 && !$mainImageSet) {
+                        $product->update(['main_image' => $path]);
+                        $mainImageSet = true;
+                    } else {
+                        $images[] = [
+                            'product_id' => $product->id,
+                            'path'       => $path,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    Log::info("✅ Downloaded image: {$filename}");
+
+                } catch (Exception $e) {
+                    Log::warning("⚠️  Error downloading image: {$e->getMessage()}");
+                    continue;
+                }
+            }
+
+            if (!empty($images)) {
+                ProductImage::insert($images);
+                Log::info("📦 Bulk inserted " . count($images) . " images for product {$product->id}");
+            }
+
+            if (!$mainImageSet) {
+                Log::warning("⚠️  Main image not set for product {$product->id}");
+                $product->update(['main_image' => null]);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error downloading images for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function createShortSpecifications(Product $product, array $productData): void
+    {
+        try {
+            if (empty($productData['mainSpecification'])) {
+                return;
+            }
+
+            $specs = [];
+
+            foreach ($productData['mainSpecification'] as $spec) {
+                if (empty($spec['specificationName'])) {
+                    continue;
+                }
+
+                $name  = $this->sanitizeString($spec['specificationName']);
+                $value = $this->sanitizeString($spec['specificationMeaning'] ?? null);
+
+                if (empty($name)) {
+                    continue;
+                }
+
+                $specs[] = [
+                    'product_id' => $product->id,
+                    'name'       => $name,
+                    'value'      => $value ?? '',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if (!empty($specs)) {
+                ProductShortSpecification::insert($specs);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating short specifications for Alta product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    private function sanitizeString(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        return !empty($trimmed) ? $trimmed : null;
+    }
+
+    protected function getImageExtension(string $url): string
+    {
+        try {
+            $parsed = parse_url($url);
+            $path   = $parsed['path'] ?? '';
+            $ext    = pathinfo($path, PATHINFO_EXTENSION);
+
+            $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
+
+        } catch (Exception $e) {
+            Log::warning("⚠️  Error getting image extension: {$e->getMessage()}");
+            return 'jpg';
         }
     }
 }
