@@ -77,13 +77,13 @@ class KontaktImportJob implements ShouldQueue
                 return;
             }
 
-            $title        = $this->cleanTitle($jsonData['name'] ?? $this->model);
+            $title        = $this->cleanBrandText($this->cleanTitle($jsonData['name'] ?? $this->model));
             $price        = $this->price ?? (float) ($jsonData['offers']['price'] ?? 0);
             $availability = $jsonData['offers']['availability'] ?? '';
             $inStock      = str_contains($availability, 'InStock');
             $image        = $jsonData['image'] ?? null;
             $brandName    = $jsonData['brand']['name'] ?? null;
-            $desc         = $jsonData['description'] ?? null;
+            $desc         = $this->cleanBrandText($jsonData['description'] ?? null);
 
             if ($price <= 0) {
                 Log::warning("⚠️ Kontakt: ფასი 0 — გამოტოვება — {$this->model}");
@@ -93,7 +93,6 @@ class KontaktImportJob implements ShouldQueue
             // === 2. სპეციფიკაციები (.har) ===
             $specs = $this->extractSpecs($html);
 
-            // HTML მეხსიერებიდან გავათავისუფლოთ
             unset($html);
 
             // === 3. ჩაწერა ===
@@ -114,14 +113,15 @@ class KontaktImportJob implements ShouldQueue
                 if ($existing) {
                     $product = $existing;
 
-                    $updateData = [
+                    // განახლებისას category/brand არ ვცვლით — მხოლოდ stock/show
+                    $product->update([
                         'quantity' => $stockQty,
                         'in_stock' => $inStock ? 1 : 0,
                         'show'     => $showVal,
                         'active'   => 1,
-                    ];
-                    $product->update($updateData);
-                    Log::info("🔁 Kontakt: updated {$sku} (stock={$stockQty})");
+                    ]);
+
+                    Log::info("🔁 Kontakt: updated {$sku} (stock={$stockQty}) — category/brand უცვლელი");
                 } else {
                     $product = Product::create([
                         'supplier_product_id' => null,
@@ -182,11 +182,9 @@ class KontaktImportJob implements ShouldQueue
 
     /**
      * სპეციფიკაციების ჩაწერა — Full (ყველა) + Short (პირველი 5)
-     * Alta/Zoommer-ის ანალოგიური
      */
     private function saveSpecifications(Product $product, array $specs): void
     {
-        // ძველის წაშლა (განახლებისთვის)
         $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
         ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
         ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
@@ -270,7 +268,7 @@ class KontaktImportJob implements ShouldQueue
     }
 
     /**
-     * .har__row → name/value — regex-ით (DomCrawler-ის გარეშე, მეხსიერების ეკონომიით)
+     * .har__row → name/value — regex-ით (DomCrawler-ის გარეშე)
      */
     private function extractSpecs(string $html): array
     {
@@ -298,10 +296,37 @@ class KontaktImportJob implements ShouldQueue
         return $specs;
     }
 
+    /**
+     * " | Kontakt.ge" suffix-ის მოშორება title-დან
+     */
     private function cleanTitle(string $title): string
     {
         $title = preg_replace('/\s*\|\s*Kontakt\.ge\s*$/i', '', $title);
         return trim($title);
+    }
+
+    /**
+     * Kontakt-ის ხსენების ჩანაცვლება iapi.ge-ით (title/description)
+     */
+    private function cleanBrandText(?string $text): ?string
+    {
+        if (empty($text)) {
+            return $text;
+        }
+
+        // kontakt.ge / Kontakt.ge / www.kontakt.ge → iapi.ge
+        $text = preg_replace('/\b(?:www\.)?kontakt\.ge\b/i', 'iapi.ge', $text);
+
+        // ცალკე სიტყვა "Kontakt" / "KONTAKT" (დომენის გარეშე) → iapi
+        $text = preg_replace('/\bkontakt\b/i', 'iapi', $text);
+
+        // ქართული "კონტაქტი" / "კონტაქტ" → იაპი
+        $text = preg_replace('/კონტაქტ(ი|ის|ში|იდან)?/u', 'იაპი', $text);
+
+        // ზედმეტი space-ები
+        $text = preg_replace('/\s+/u', ' ', $text);
+
+        return trim($text);
     }
 
     private function resolveBrand(?string $brandName): int
