@@ -8,6 +8,7 @@ use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductPrice;
+use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,6 +35,7 @@ class KontaktImportJob implements ShouldQueue
     private const SKU_PREFIX       = 'KONTAKT-';
     private const DEFAULT_CATEGORY = 6;
     private const DEFAULT_BRAND    = 6;
+    private const SHORT_SPEC_LIMIT = 5;
 
     public function __construct(
         public string $model,      // Excel დასახელება (SKU-სთვის)
@@ -74,13 +76,13 @@ class KontaktImportJob implements ShouldQueue
                 return;
             }
 
-            $title    = $this->cleanTitle($jsonData['name'] ?? $this->model);
-            $price     = $this->price ?? (float) ($jsonData['offers']['price'] ?? 0);
+            $title        = $this->cleanTitle($jsonData['name'] ?? $this->model);
+            $price        = $this->price ?? (float) ($jsonData['offers']['price'] ?? 0);
             $availability = $jsonData['offers']['availability'] ?? '';
-            $inStock   = str_contains($availability, 'InStock');
-            $image     = $jsonData['image'] ?? null;
-            $brandName = $jsonData['brand']['name'] ?? null;
-            $desc      = $jsonData['description'] ?? null;
+            $inStock      = str_contains($availability, 'InStock');
+            $image        = $jsonData['image'] ?? null;
+            $brandName    = $jsonData['brand']['name'] ?? null;
+            $desc         = $jsonData['description'] ?? null;
 
             if ($price <= 0) {
                 Log::warning("⚠️ Kontakt: ფასი 0 — გამოტოვება — {$this->model}");
@@ -169,26 +171,8 @@ class KontaktImportJob implements ShouldQueue
                     $this->downloadImage($product, $image);
                 }
 
-                // სპეციფიკაციები — ძველი წავშალოთ, ახალი ჩავწეროთ
-                if (!empty($specs)) {
-                    $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
-                    ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-                    ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
-
-                    $section = ProductFullSpecificationSection::create([
-                        'product_id' => $product->id,
-                        'name'       => 'მახასიათებლები',
-                    ]);
-
-                    foreach ($specs as $spec) {
-                        ProductFullSpecificationItem::create([
-                            'section_id' => $section->id,
-                            'name'       => $spec['name'],
-                            'value'      => $spec['value'],
-                            'filter'     => 0,
-                        ]);
-                    }
-                }
+                // === სპეციფიკაციები ===
+                $this->saveSpecifications($product, $specs);
 
                 Log::info("✅ Kontakt saved: {$sku} (brand={$brandId}, specs=" . count($specs) . ")");
             });
@@ -196,6 +180,55 @@ class KontaktImportJob implements ShouldQueue
         } catch (Exception $e) {
             Log::error("❌ Kontakt job error [{$this->model}]: " . $e->getMessage());
             throw $e;
+        }
+    }
+
+    /**
+     * სპეციფიკაციების ჩაწერა — Full (ყველა) + Short (პირველი 5)
+     * Alta/Zoommer-ის ანალოგიური
+     */
+    private function saveSpecifications(Product $product, array $specs): void
+    {
+        // ძველის წაშლა (განახლებისთვის)
+        $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
+        ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+        ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+        ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+
+        if (empty($specs)) {
+            return;
+        }
+
+        // === FULL — ყველა ===
+        $section = ProductFullSpecificationSection::create([
+            'product_id' => $product->id,
+            'name'       => 'მახასიათებლები',
+        ]);
+
+        foreach ($specs as $spec) {
+            ProductFullSpecificationItem::create([
+                'section_id' => $section->id,
+                'name'       => $spec['name'],
+                'value'      => $spec['value'],
+                'filter'     => 0,
+            ]);
+        }
+
+        // === SHORT — პირველი 5 ===
+        $shortSpecs = array_slice($specs, 0, self::SHORT_SPEC_LIMIT);
+        $shortRows  = [];
+        foreach ($shortSpecs as $spec) {
+            $shortRows[] = [
+                'product_id' => $product->id,
+                'name'       => $spec['name'],
+                'value'      => $spec['value'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (!empty($shortRows)) {
+            ProductShortSpecification::insert($shortRows);
         }
     }
 
@@ -223,12 +256,10 @@ class KontaktImportJob implements ShouldQueue
                 continue;
             }
 
-            // ერთი ობიექტი
             if (($data['@type'] ?? '') === 'Product') {
                 return $data;
             }
 
-            // @graph array
             if (isset($data['@graph']) && is_array($data['@graph'])) {
                 foreach ($data['@graph'] as $item) {
                     if (($item['@type'] ?? '') === 'Product') {
@@ -262,7 +293,6 @@ class KontaktImportJob implements ShouldQueue
                 $name  = trim($nameNode->text());
                 $value = trim($valueNode->text());
 
-                // უსარგებლო value-ების გაფილტვრა
                 if ($name === '' || $value === '' || $value === '-'
                     || mb_strpos($value, 'მიუწვდომელია') !== false) {
                     return;
@@ -280,7 +310,6 @@ class KontaktImportJob implements ShouldQueue
 
     private function cleanTitle(string $title): string
     {
-        // " | Kontakt.ge" მოშორება
         $title = preg_replace('/\s*\|\s*Kontakt\.ge\s*$/i', '', $title);
         return trim($title);
     }
