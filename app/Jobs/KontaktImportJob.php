@@ -317,14 +317,19 @@ class KontaktImportJob implements ShouldQueue
         // kontakt.ge / Kontakt.ge / www.kontakt.ge → iapi.ge
         $text = preg_replace('/\b(?:www\.)?kontakt\.ge\b/i', 'iapi.ge', $text);
 
-        // ცალკე სიტყვა "Kontakt" / "KONTAKT" (დომენის გარეშე) → iapi
+        // ცალკე სიტყვა "Kontakt" / "KONTAKT" → iapi
         $text = preg_replace('/\bkontakt\b/i', 'iapi', $text);
 
-        // ქართული "კონტაქტი" / "კონტაქტ" → იაპი
+        // ქართული "კონტაქტი" → იაპი
         $text = preg_replace('/კონტაქტ(ი|ის|ში|იდან)?/u', 'იაპი', $text);
 
-        // ზედმეტი space-ები
+        // 🚫 არასასურველი ფრაზების წაშლა
+        $text = preg_replace('/შიდა\s*განვადება/u', '', $text);
+
+        // ზედმეტი space-ები და სასვენი ნიშნები რომ არ დარჩეს
         $text = preg_replace('/\s+/u', ' ', $text);
+        $text = preg_replace('/\s*([.,;])\s*\1+/u', '$1', $text); // გაორმაგებული სასვენი
+        $text = trim($text, " \t\n\r\0\x0B.,;-");
 
         return trim($text);
     }
