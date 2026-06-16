@@ -81,9 +81,19 @@
                 <li class="breadcrumb-item active" aria-current="page">კატალოგი</li>
             </ol>
         </nav>
+
         <h1 class="h3 container mb-4 font-neue">
             {{ $currentCategory?->translation('ka')?->title ?? 'პროდუქციის ჩამონათვალი' }}
         </h1>
+
+        {{-- ✅ სექციების carousel (კატეგორიაზე მიბმული) --}}
+        @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
+            @include('livewire.web.partials.sections-carousel', [
+                'sections' => $categorySections,
+                'heading'  => $currentCategory->translation('ka')?->title . ' — კოლექციები'
+            ])
+        @endif
+
         <section class="container mb-4">
             <div class="row">
                 <div class="col-lg-12">
@@ -91,8 +101,6 @@
                         <div class="h6 fs-sm fw-normal text-nowrap mb-0 font-neue">
                             ნაპოვნია <span class="fw-semibold">{{ $this->products->total() }}</span> პროდუქტი
                         </div>
-
-                        {{-- სორტირება --}}
                         <div class="d-flex align-items-center">
                             <label class="fs-sm text-muted me-2 mb-0 text-nowrap d-none d-sm-inline">დალაგება:</label>
                             <select class="form-select form-select-sm" style="min-width: 190px;"
@@ -108,6 +116,7 @@
             </div>
             <hr class="d-lg-none my-3">
         </section>
+
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
                 <aside class="col-lg-3 d-none d-lg-block">
@@ -290,7 +299,6 @@
                                                         </label>
                                                     </div>
                                                 @endforeach
-
                                                 @if($valuesCount > 5)
                                                     <button class="filter-show-more mt-2"
                                                             type="button"
@@ -349,8 +357,7 @@
                             <h3 class="h5 mb-2">პროდუქტები არ მოიძებნა</h3>
                             <p class="text-muted">სცადეთ სხვა ფილტრების გამოყენება</p>
                             @if($selectedBrands || $priceMin || $priceMax || $selectedSpecs)
-                                <button wire:click="resetAllFilters"
-                                        class="btn btn-primary mt-3">
+                                <button wire:click="resetAllFilters" class="btn btn-primary mt-3">
                                     ყველა ფილტრის გასუფთავება
                                 </button>
                             @endif
@@ -427,7 +434,8 @@
                                 @foreach($subCategories as $subCategory)
                                     <li class="py-1">
                                         <a class="text-decoration-none {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : 'text-body' }}"
-                                           style="font-size:13px;" href="#" wire:click.prevent="selectChild({{ $subCategory->id }})">
+                                           style="font-size:13px;" href="#"
+                                           wire:click.prevent="selectChild({{ $subCategory->id }})">
                                             {{ $subCategory->translation('ka')?->title ?? '—' }}
                                         </a>
                                     </li>
@@ -450,8 +458,12 @@
                             @foreach($brands as $index => $brand)
                                 <div class="form-check" @if($index >= 5 && !$this->showAllBrands) style="display:none;" @endif>
                                     <input type="checkbox" class="form-check-input"
-                                           wire:model.live="selectedBrands" value="{{ $brand->id }}" id="m_brand_{{ $brand->id }}">
-                                    <label class="form-check-label" for="m_brand_{{ $brand->id }}">{{ $brand->translation('ka')?->title ?? ('ბრენდი #' . $brand->id) }}</label>
+                                           wire:model.live="selectedBrands"
+                                           value="{{ $brand->id }}"
+                                           id="m_brand_{{ $brand->id }}">
+                                    <label class="form-check-label" for="m_brand_{{ $brand->id }}">
+                                        {{ $brand->translation('ka')?->title ?? ('ბრენდი #' . $brand->id) }}
+                                    </label>
                                 </div>
                             @endforeach
                             @if($brands->count() > 5)
@@ -468,8 +480,8 @@
                     @foreach($specificationSections as $specName => $values)
                         @php
                             $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
-                            $hasSelected = $selectedInSection->count() > 0;
-                            $valuesCount = count($values);
+                            $hasSelected       = $selectedInSection->count() > 0;
+                            $valuesCount       = count($values);
                         @endphp
                         <div class="filter-block">
                             <div class="filter-section-title {{ $hasSelected ? 'has-selected' : '' }}">
@@ -478,12 +490,15 @@
                             <div class="filter-body" x-data="{ open: {{ $hasSelected ? 'true' : 'false' }} }">
                                 @foreach($values as $i => $item)
                                     @php $isSelected = $selectedInSection->contains($specName . '::' . $item->value); @endphp
-                                    <div class="form-check" @if($i >= 5) x-show="open || {{ $isSelected ? 'true' : 'false' }}" x-cloak @endif>
+                                    <div class="form-check"
+                                         @if($i >= 5) x-show="open || {{ $isSelected ? 'true' : 'false' }}" x-cloak @endif>
                                         <input type="checkbox" class="form-check-input"
                                                wire:model.live="selectedSpecs"
                                                value="{{ $specName }}::{{ $item->value }}"
                                                id="m_spec_{{ md5($specName . $item->value) }}">
-                                        <label class="form-check-label" for="m_spec_{{ md5($specName . $item->value) }}">{{ $item->value }}</label>
+                                        <label class="form-check-label" for="m_spec_{{ md5($specName . $item->value) }}">
+                                            {{ $item->value }}
+                                        </label>
                                     </div>
                                 @endforeach
                                 @if($valuesCount > 5)
@@ -500,8 +515,11 @@
                 {{-- მხოლოდ ფასდაკლებული --}}
                 <div class="filter-block pt-2">
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input" wire:model.live="onlyDiscounted" id="m_discountFilter">
-                        <label class="form-check-label fw-medium" style="font-size:13px;" for="m_discountFilter">მხოლოდ ფასდაკლებული</label>
+                        <input type="checkbox" class="form-check-input"
+                               wire:model.live="onlyDiscounted"
+                               id="m_discountFilter">
+                        <label class="form-check-label fw-medium" style="font-size:13px;"
+                               for="m_discountFilter">მხოლოდ ფასდაკლებული</label>
                     </div>
                 </div>
             </div>

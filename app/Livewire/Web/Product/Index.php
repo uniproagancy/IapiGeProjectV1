@@ -580,12 +580,33 @@ class Index extends Component
 
     public function render()
     {
+        // კატეგორიის sections
+        $categorySections = collect();
+        if ($this->currentCategory) {
+            $categoryId = $this->currentCategory->parent_id === 0
+                ? null
+                : $this->currentCategory->id;
+
+            $categorySections = \App\Models\Product\ProductSection::query()
+                ->where('active', 1)
+                ->where(function ($q) use ($categoryId) {
+                    $q->where('category_id', $this->currentCategory->id)
+                        ->orWhere('category_id', $this->currentCategory->parent_id);
+                })
+                ->where('show_on_home', 0)  // კატეგორიაზე ნაჩვენები (არა მთავარზე)
+                ->whereHas('products', fn($q) => $q->where('show', 1)->where('active', 1))
+                ->orderBy('sort_order')
+                ->with(['translations', 'products'])
+                ->get();
+        }
+
         return view('livewire.web.product.index', [
             'products'              => $this->products,
             'brands'                => $this->brands,
             'specificationSections' => $this->specificationSections,
             'isLoading'             => $this->isLoading,
             'event_id'              => $this->eventId,
+            'categorySections'      => $categorySections,   // ✅ ახალი
         ])->layout('livewire.web.layout');
     }
 }
