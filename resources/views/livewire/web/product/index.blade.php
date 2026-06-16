@@ -323,13 +323,12 @@
                     </div>
                 </aside>
                 <div class="col-lg-9">
-                    <div class="mb-1">
                     @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
                         @include('livewire.web.partials.sections-carousel', [
                             'sections' => $categorySections,
                         ])
+                        <span class="mb-1"></span>
                     @endif
-                    </div>
                     @if($this->products->count() > 0)
                         <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
                             @foreach($this->products as $product)
