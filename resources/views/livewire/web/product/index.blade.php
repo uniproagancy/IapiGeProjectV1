@@ -324,7 +324,7 @@
                 </aside>
                 <div class="col-lg-9">
                     @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
-                        @include('livewire.web.partials.sections-carousel', [
+                        @include('livewire.web.partials.sections-carousel2', [
                             'sections' => $categorySections,
                         ])
                         <span class="mb-1"></span>
