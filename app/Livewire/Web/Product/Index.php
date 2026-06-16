@@ -600,6 +600,12 @@ class Index extends Component
                 ->get();
         }
 
+        \Illuminate\Support\Facades\Log::info('categorySections debug', [
+            'currentCategory' => $this->currentCategory?->id,
+            'count'           => $categorySections->count(),
+            'ids'             => $categorySections->pluck('id')->toArray(),
+        ]);
+
         return view('livewire.web.product.index', [
             'products'              => $this->products,
             'brands'                => $this->brands,
