@@ -90,7 +90,6 @@
         @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
             @include('livewire.web.partials.sections-carousel', [
                 'sections' => $categorySections,
-                'heading'  => $currentCategory->translation('ka')?->title . ' — კოლექციები'
             ])
         @endif
 
