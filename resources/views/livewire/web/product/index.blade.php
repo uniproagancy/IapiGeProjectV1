@@ -111,6 +111,7 @@
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
                 <aside class="col-lg-3 d-none d-lg-block">
+
                     {{-- ფასის ფილტრი --}}
                     <div class="filter-block">
                         <div class="filter-section-title {{ ($priceMin || $priceMax) ? 'has-selected' : '' }}"
@@ -246,6 +247,8 @@
                                     </div>
                                 </div>
                             @endif
+
+                            {{-- სპეციფიკაციების ფილტრი --}}
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
                                     @php
@@ -320,11 +323,13 @@
                     </div>
                 </aside>
                 <div class="col-lg-9">
+                    <div class="mb-1">
                     @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
                         @include('livewire.web.partials.sections-carousel', [
                             'sections' => $categorySections,
                         ])
                     @endif
+                    </div>
                     @if($this->products->count() > 0)
                         <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
                             @foreach($this->products as $product)
