@@ -12,8 +12,8 @@ use Exception;
 class ZoommerProduct
 {
     protected string $api_url = 'https://zoommer.ge/api/proxy/';
-    protected int $concurrent_requests = 20; // შემცირდა 50-დან 20-მდე
-    protected int $chunk_size = 100; // შემცირდა 500-დან 100-მდე
+    protected int $concurrent_requests = 10; // 20-დან 10-მდე (thread/DNS გადატვირთვა)
+    protected int $chunk_size = 100;
     protected int $timeout = 30;
     protected int $start_id = 1;
     protected int $end_id = 100000;
@@ -21,15 +21,14 @@ class ZoommerProduct
     public function scanAllIds(): array
     {
         try {
-            // Memory limit-ის გაზრდა
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', '0');
 
             $startTime = microtime(true);
             $stats = [
-                'total' => 0,
+                'total'  => 0,
                 'queued' => 0,
-                'null' => 0,
+                'null'   => 0,
                 'errors' => 0,
             ];
 
@@ -42,10 +41,9 @@ class ZoommerProduct
 
                 $chunkStats = $this->scanChunk($chunk);
                 $stats['queued'] += $chunkStats['queued'];
-                $stats['null'] += $chunkStats['null'];
+                $stats['null']   += $chunkStats['null'];
                 $stats['errors'] += $chunkStats['errors'];
 
-                // Memory cleanup
                 unset($chunk);
                 gc_collect_cycles();
             }
@@ -63,6 +61,20 @@ class ZoommerProduct
     {
         $stats = ['queued' => 0, 'null' => 0, 'errors' => 0];
 
+        // User-Agent — cf_clearance-ს უნდა ემთხვეოდეს (Cloudflare ამოწმებს)
+        $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36';
+
+        $accessToken = env('ZOOMMER_ACCESS_TOKEN', '');
+        $cfClearance = env('ZOOMMER_CF_CLEARANCE', '');
+
+        $cookie = 'zoommer-cookie_agreed=true';
+        if ($accessToken !== '') {
+            $cookie .= '; zoommer-access_token=' . $accessToken;
+        }
+        if ($cfClearance !== '') {
+            $cookie .= '; cf_clearance=' . $cfClearance;
+        }
+
         try {
             $client = new Client([
                 'timeout'         => $this->timeout,
@@ -70,12 +82,19 @@ class ZoommerProduct
                 'http_errors'     => false,
                 'verify'          => false,
                 'headers'         => [
-                    'Accept'          => 'application/json, text/plain, */*',
-                    'Accept-Language' => 'ka',
-                    'Referer'         => 'https://zoommer.ge/',
-                    'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-                    'os'              => 'web',
-                    'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
+                    'Accept'             => 'application/json, text/plain, */*',
+                    'Accept-Language'    => 'ka',
+                    'Accept-Encoding'    => 'gzip, deflate, br',
+                    'Referer'            => 'https://zoommer.ge/',
+                    'User-Agent'         => $userAgent,
+                    'os'                 => 'web',
+                    'sec-ch-ua'          => '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+                    'sec-ch-ua-mobile'   => '?0',
+                    'sec-ch-ua-platform' => '"Windows"',
+                    'sec-fetch-dest'     => 'empty',
+                    'sec-fetch-mode'     => 'cors',
+                    'sec-fetch-site'     => 'same-origin',
+                    'Cookie'             => $cookie,
                 ],
                 'curl' => [
                     CURLOPT_DNS_CACHE_TIMEOUT => 300,
@@ -85,9 +104,10 @@ class ZoommerProduct
 
             $requests = function ($ids) {
                 foreach ($ids as $id) {
+                    // ერთი slash — api_url ბოლოს უკვე აქვს "/"
                     yield $id => new Request(
                         'GET',
-                        $this->api_url . "/v1/Products/details?productId={$id}"
+                        $this->api_url . "v1/Products/details?productId={$id}"
                     );
                 }
             };
@@ -96,7 +116,15 @@ class ZoommerProduct
                 'concurrency' => $this->concurrent_requests,
                 'fulfilled' => function ($response, $id) use (&$stats) {
                     try {
-                        if ($response->getStatusCode() !== 200) {
+                        $statusCode = $response->getStatusCode();
+
+                        if ($statusCode === 403) {
+                            $stats['errors']++;
+                            Log::warning("⛔ Zoommer 403 (Cloudflare/token) ID {$id} — token განახლება საჭიროა");
+                            return;
+                        }
+
+                        if ($statusCode !== 200) {
                             $stats['errors']++;
                             return;
                         }
@@ -104,8 +132,7 @@ class ZoommerProduct
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
 
-                        if (!isset($data['product']) ||
-                            $data['product'] === null) {
+                        if (!isset($data['product']) || $data['product'] === null) {
                             $stats['null']++;
                             return;
                         }
