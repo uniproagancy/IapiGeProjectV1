@@ -5,8 +5,10 @@ namespace App\Livewire\Web\Product;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductSection;
 use App\Models\Product\ProductFullSpecificationSection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -319,7 +321,7 @@ class Index extends Component
                 break;
         }
 
-        $result = $query->paginate($this->perPage);
+        $result          = $query->paginate($this->perPage);
         $this->isLoading = false;
         return $result;
     }
@@ -453,7 +455,6 @@ class Index extends Component
             ])
             ->where('db_products.show', 1)
             ->where('db_products.active', 1)
-            // ✅ ფასი > 0 — უფასო/ფასის გარეშე პროდუქტი არ გამოჩნდეს
             ->whereHas('price', fn ($q) => $q
                 ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) > 0')
             )
@@ -580,31 +581,15 @@ class Index extends Component
 
     public function render()
     {
-        // კატეგორიის sections
+        // ✅ კატეგორიის sections — whereHas გარეშე (orderBy კონფლიქტი), show_on_home გარეშე
         $categorySections = collect();
         if ($this->currentCategory) {
-            $categoryId = $this->currentCategory->parent_id === 0
-                ? null
-                : $this->currentCategory->id;
-
-            $categorySections = \App\Models\Product\ProductSection::query()
+            $categorySections = ProductSection::query()
                 ->where('active', 1)
-                ->where(function ($q) use ($categoryId) {
-                    $q->where('category_id', $this->currentCategory->id)
-                        ->orWhere('category_id', $this->currentCategory->parent_id);
-                })
-                ->where('show_on_home', 0)  // კატეგორიაზე ნაჩვენები (არა მთავარზე)
-                ->whereHas('products', fn($q) => $q->where('show', 1)->where('active', 1))
+                ->where('category_id', $this->currentCategory->id)
                 ->orderBy('sort_order')
-                ->with(['translations', 'products'])
                 ->get();
         }
-
-        \Illuminate\Support\Facades\Log::info('categorySections debug', [
-            'currentCategory' => $this->currentCategory?->id,
-            'count'           => $categorySections->count(),
-            'ids'             => $categorySections->pluck('id')->toArray(),
-        ]);
 
         return view('livewire.web.product.index', [
             'products'              => $this->products,
@@ -612,7 +597,7 @@ class Index extends Component
             'specificationSections' => $this->specificationSections,
             'isLoading'             => $this->isLoading,
             'event_id'              => $this->eventId,
-            'categorySections'      => $categorySections,   // ✅ ახალი
+            'categorySections'      => $categorySections,
         ])->layout('livewire.web.layout');
     }
 }
