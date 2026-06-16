@@ -550,4 +550,5 @@
 
 @section('page_scripts')
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
+    @include('livewire.web.product.swiper-init')
 @endsection
