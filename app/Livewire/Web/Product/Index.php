@@ -24,8 +24,7 @@ class Index extends Component
     public $selectedParent   = null;
     public $showAllBrands    = false;
     public $category_slug    = null;
-    public $perPage          = 12;
-    public $isLoading        = false;
+    public bool $isLoading   = false;
     public string $eventId   = '';
     public array $categoryProductIds = [];
 
@@ -50,6 +49,10 @@ class Index extends Component
     #[Url(as: 'sort', keep: true)]
     public string $sort = 'newest';
 
+    // ✅ URL-ში ინახება — უკან დაბრუნებისას იგივე რაოდენობა გამოჩნდება
+    #[Url(as: 'show', keep: true)]
+    public $perPage = 12;
+
     public function mount($category_slug = null): void
     {
         $this->category_slug = $category_slug;
@@ -57,6 +60,7 @@ class Index extends Component
         $this->loadCategoryFromSlug();
         $this->normalizeBrands();
         $this->normalizeSpecs();
+        $this->normalizePerPage();
         $this->eventId = 'pv_' . time() . '_' . Str::random(6);
     }
 
@@ -80,6 +84,12 @@ class Index extends Component
         }
 
         $this->selectedSpecs = array_filter($this->selectedSpecs);
+    }
+
+    private function normalizePerPage(): void
+    {
+        // URL-დან წამოღებული perPage int-ი იყოს და მინიმუმ 12
+        $this->perPage = max(12, (int) $this->perPage);
     }
 
     private function loadParentCategories(): void
@@ -199,6 +209,7 @@ class Index extends Component
             'specs'          => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
             'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
             'sort'           => $this->sort !== 'newest' ? $this->sort : null,
+            'show'           => $this->perPage !== 12 ? $this->perPage : null,
         ]);
     }
 
@@ -240,6 +251,7 @@ class Index extends Component
         $this->selectedSpecs   = [];
         $this->onlyDiscounted  = false;
         $this->sort            = 'newest';
+        $this->perPage         = 12;
         $this->currentCategory = null;
         $this->selectedParent  = null;
         $this->resetPage();
@@ -581,7 +593,7 @@ class Index extends Component
 
     public function render()
     {
-        // ✅ კატეგორიის sections — whereHas გარეშე (orderBy კონფლიქტი), show_on_home გარეშე
+        // კატეგორიის sections
         $categorySections = collect();
         if ($this->currentCategory) {
             $categorySections = ProductSection::query()
