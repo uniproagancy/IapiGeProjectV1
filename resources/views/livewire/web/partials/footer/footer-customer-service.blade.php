@@ -18,6 +18,8 @@
             @php
                 $serviceLinks = [
                     ['title' => 'წესები და პირობები', 'url' => '/static/rules'],
+                    ['title' => 'მიწოდების პირობები', 'url' => '/static/shipping-policy'],
+                    ['title' => 'დაბრუნების პოლიტიკა', 'url' => '/static/return-policy'],
                 ];
             @endphp
             @foreach($serviceLinks as $link)
