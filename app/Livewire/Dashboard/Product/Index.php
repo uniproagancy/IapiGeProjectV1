@@ -68,6 +68,7 @@ class Index extends Component
     public array $bulkSubcategories = [];
 
     public bool $only_locked = false;
+    public $comfoFile = null;
 
     public bool $no_brand = false;
 
@@ -685,6 +686,54 @@ class Index extends Component
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function uploadComfo(): void
+    {
+        $this->validate([
+            'comfoFile' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            $spreadsheet = IOFactory::load($this->comfoFile->getRealPath());
+            $sheet       = $spreadsheet->getActiveSheet();
+            $rows        = $sheet->getHighestRow();
+
+            $dispatched = 0;
+            $skipped    = 0;
+
+            // row 2-დან (1-ე header-ია)
+            for ($r = 2; $r <= $rows; $r++) {
+                $id    = trim((string)$sheet->getCell("A{$r}")->getValue());
+                $stock = $sheet->getCell("B{$r}")->getValue();
+                $url   = trim((string)$sheet->getCell("C{$r}")->getValue());
+
+                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) {
+                    $skipped++;
+                    continue;
+                }
+
+                // stock parse — "50+" → 50, "10" → 10
+                $stockInt = 0;
+                if (is_numeric($stock)) {
+                    $stockInt = (int) $stock;
+                } elseif (is_string($stock)) {
+                    $stockInt = (int) preg_replace('/\D+/', '', $stock);
+                }
+
+                \App\Jobs\ComfoImportJob::dispatch($id, $stockInt, $url)
+                    ->onQueue('comfo');
+
+                $dispatched++;
+            }
+
+            $this->dispatch('uploadComfoModal_close');
+            $this->dispatch('ui:success', message: "Comfo: დაიგზავნა {$dispatched}, გამოტოვებული {$skipped}");
+            $this->reset('comfoFile');
+
+        } catch (\Throwable $e) {
+            $this->dispatch('ui:error', message: 'Comfo Excel შეცდომა: ' . $e->getMessage());
+        }
     }
 
     public function uploadMidea(): void

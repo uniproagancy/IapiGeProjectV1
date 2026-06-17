@@ -61,6 +61,10 @@
                                        data-bs-target="#uploadMideaModal">Midea</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">KontaktHome</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
+                                        <i data-feather="upload"></i> Comfo Excel
+                                    </a>
+
                                 </div>
                             </div>
                             <div class="btn-group">
@@ -562,6 +566,30 @@
             </form>
         </div>
     </div>
+    <div class="modal fade" wire:ignore.self id="uploadComfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" wire:submit.prevent="uploadComfo">
+                <div class="modal-header">
+                    <h5 class="modal-title">Comfo Excel-ის ატვირთვა</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Stock Excel ფაილი</label>
+                    <input type="file" class="form-control @error('comfoFile') is-invalid @enderror"
+                           wire:model="comfoFile" accept=".xlsx,.xls">
+                    @error('comfoFile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div wire:loading wire:target="comfoFile" class="text-muted small mt-1">იტვირთება...</div>
+                    <p class="text-muted small mt-2">
+                        სვეტები: A=ID, B=რაოდენობა, C=Product Link
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">დაგზავნა</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @section('page_scripts')
     <script>
@@ -599,6 +627,10 @@
             if (modal) {
                 modal.hide();
             }
+        });
+
+        Livewire.on('uploadComfoModal_close', () => {
+            bootstrap.Modal.getInstance(document.getElementById('uploadComfoModal'))?.hide();
         });
 
         Livewire.on('category_modal_close', () => {
