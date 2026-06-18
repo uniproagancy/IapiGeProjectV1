@@ -57,7 +57,7 @@
                 </div>
             </div>
             @endif
-            @if(in_array($product->supplier_id, [2, 4, 8, 10]))
+            @if(in_array($product->supplier_id, [2, 4, 8, 11]))
             @if($product->fullSpecifications)
                 <div class="col-12">
                     <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
