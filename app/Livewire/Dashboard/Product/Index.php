@@ -69,6 +69,7 @@ class Index extends Component
 
     public bool $only_locked = false;
     public $comfoFile = null;
+    public $elite_file = null;
 
     public bool $no_brand = false;
 
@@ -443,29 +444,23 @@ class Index extends Component
     }
 
     // ============================================
-    // ✅ Elite — Excel ატვირთვა (request()->file() პირდაპირ)
+    // ✅ Elite — Excel ატვირთვა (WithFileUploads)
     // სკანი კონტროლერიდანაა: route('elite.scan')
     // ============================================
 
     public function uploadElite(): void
     {
-        $file = request()->file('elite_file');
-
-        if (!$file || !$file->isValid()) {
-            $this->dispatch('ui:error', message: 'ფაილი არ არის არჩეული.');
-            return;
-        }
-
-        if (!in_array(strtolower($file->getClientOriginalExtension()), ['xlsx', 'xls'])) {
-            $this->dispatch('ui:error', message: 'მხოლოდ .xlsx ან .xls დასაშვებია.');
-            return;
-        }
+        $this->validate([
+            'elite_file' => 'required|file|mimes:xlsx,xls|max:20480',
+        ]);
 
         try {
             @ini_set('memory_limit', '256M');
 
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $sheet       = $spreadsheet->getActiveSheet();
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(
+                $this->elite_file->getRealPath()
+            );
+            $sheet = $spreadsheet->getActiveSheet();
 
             $inserted  = 0;
             $duplicate = 0;
@@ -479,12 +474,12 @@ class Index extends Component
                     continue;
                 }
 
-                if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
+                if (\App\Models\Elite\EliteProduct::where('bar_code', $barCode)->exists()) {
                     $duplicate++;
                     continue;
                 }
 
-                \App\Models\EliteProduct::create([
+                \App\Models\Elite\EliteProduct::create([
                     'bar_code' => $barCode,
                     'synced'   => false,
                 ]);
@@ -492,11 +487,12 @@ class Index extends Component
                 $inserted++;
             }
 
-            $this->dispatch('ui:success', message: "Elite: {$inserted} ჩაიწერა, {$duplicate} დუბლიკატი, {$skipped} გამოტოვებული.");
+            $this->reset('elite_file');
             $this->dispatch('uploadEliteModal_close');
+            $this->dispatch('ui:success', message: "Elite: {$inserted} ჩაიწერა, {$duplicate} დუბლიკატი, {$skipped} გამოტოვებული.");
 
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Elite Upload error', ['error' => $e->getMessage()]);
+            Log::error('Elite Upload error', ['error' => $e->getMessage()]);
             $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
