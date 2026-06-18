@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Elite\EliteProduct;
+use App\Models\EliteProduct;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
@@ -19,13 +19,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Exception;
 
-class CreateEliteProductJob implements ShouldQueue
+class EliteProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries   = 3;
-    public int $timeout = 120;
+    public int $timeout = 300;
 
     private const SUPPLIER_ID          = 11;
     private const DEFAULT_BRAND_ID     = 1;
@@ -33,26 +34,34 @@ class CreateEliteProductJob implements ShouldQueue
     private const SHORT_SPEC_LIMIT     = 5;
 
     public function __construct(
-        public array $productData,
-        public array $availabilityInStores,
-        public int   $eliteProductId
+        protected array $productData,
+        protected array $availabilityInStores = []
     ) {}
 
     public function handle(): void
     {
         try {
-            $product = $this->productData;
-            $barCode = (string) ($product['barCode'] ?? '');
-            $name    = trim((string) ($product['name'] ?? ''));
+            $barCode = (string) ($this->productData['barCode'] ?? '');
+            $name    = trim((string) ($this->productData['name'] ?? ''));
 
             if (!$barCode || !$name) {
                 Log::warning("⛔ Elite: name/barCode ცარიელია");
                 return;
             }
 
+            // ✅ მთავარი შემოწმება: BarCode არის Excel-დან ატვირთულ სიაში?
+            $eliteProduct = EliteProduct::where('bar_code', $barCode)
+                ->where('synced', false)
+                ->first();
+
+            if (!$eliteProduct) {
+                // BarCode ჩვენს სიაში არ არის — გამოტოვება
+                return;
+            }
+
             // ფასი
-            $regularPrice  = (float) ($product['price'] ?? 0);
-            $previousPrice = (float) ($product['previousPrice'] ?? 0);
+            $regularPrice  = (float) ($this->productData['price'] ?? 0);
+            $previousPrice = (float) ($this->productData['previousPrice'] ?? 0);
             $discountPrice = 0.0;
 
             if ($previousPrice > 0 && $previousPrice > $regularPrice) {
@@ -66,27 +75,28 @@ class CreateEliteProductJob implements ShouldQueue
             }
 
             // კატეგორია — Alta-ს მსგავსად სახელით
-            $categoryId = $this->getCategoryId($product);
+            $categoryId = $this->getCategoryId($this->productData);
 
             // ბრენდი — Alta-ს მსგავსად translations-ით
-            $brandId = $this->getBrandId($product);
+            $brandId = $this->getBrandId($this->productData);
 
-            // Stock — Alta-ს მსგავსად availabilityInStores-ით
-            $quantity = (int) ($product['storageQuantity'] ?? 0);
-            $inStock  = $this->checkTbilisiStock($this->availabilityInStores) ? 1 : 0;
+            // Stock — Tbilisi შემოწმება
+            $hasStock = $this->checkTbilisiStock($this->availabilityInStores);
+            $quantity = (int) ($this->productData['storageQuantity'] ?? 0);
+            $inStock  = $hasStock ? 1 : 0;
 
             // სურათები
             $images = [];
-            if (!empty($product['imageUrl'])) {
-                $images[] = $product['imageUrl'];
+            if (!empty($this->productData['imageUrl'])) {
+                $images[] = $this->productData['imageUrl'];
             }
-            if (!empty($product['images']) && is_array($product['images'])) {
-                $images = array_merge($images, $product['images']);
+            if (!empty($this->productData['images']) && is_array($this->productData['images'])) {
+                $images = array_merge($images, $this->productData['images']);
             }
             $images = array_values(array_unique(array_filter($images)));
 
             // Short specs
-            $shortSpecs = $this->extractShortSpecs($product);
+            $shortSpecs = $this->extractShortSpecs($this->productData);
 
             // ============ Product upsert ============
             $existing = Product::where('sku', $barCode)->first();
@@ -124,7 +134,7 @@ class CreateEliteProductJob implements ShouldQueue
                 [
                     'title'       => $name,
                     'slug'        => Str::slug($name) . '-' . $existing->id,
-                    'description' => trim((string) ($product['description'] ?? '')),
+                    'description' => trim((string) ($this->productData['description'] ?? '')),
                 ]
             );
 
@@ -160,17 +170,16 @@ class CreateEliteProductJob implements ShouldQueue
                 $localPath = $this->downloadImage($images[0], $existing->id);
                 if ($localPath) {
                     $existing->update(['main_image' => $localPath]);
-                    Log::info("📸 Elite: სურათი შენახულია", ['sku' => $barCode]);
                 }
             }
 
-            // EliteProduct — synced
-            EliteProduct::where('id', $this->eliteProductId)->update([
+            // EliteProduct → synced
+            $eliteProduct->update([
                 'synced'     => true,
                 'product_id' => $existing->id,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             Log::error("❌ Elite Import შეცდომა", [
                 'barCode' => $this->productData['barCode'] ?? null,
                 'error'   => $e->getMessage(),
@@ -181,7 +190,7 @@ class CreateEliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Category — Alta-ს მსგავსად სახელით ძებნა
+    // Category — Alta-ს მსგავსად სახელით
     // ============================================
 
     private function getCategoryId(array $product): int
@@ -208,16 +217,14 @@ class CreateEliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Brand — Alta-ს მსგავსად translations-ით ძებნა
+    // Brand — Alta-ს მსგავსად translations-ით
     // ============================================
 
     private function getBrandId(array $product): int
     {
         try {
-            // 1. brandName field-იდან
             $brandName = $product['brandName'] ?? null;
 
-            // 2. specificationGroup-დან fallback
             if (empty($brandName)) {
                 foreach ($product['specificationGroup'] ?? [] as $group) {
                     foreach ($group['specifications'] ?? [] as $spec) {
@@ -246,14 +253,14 @@ class CreateEliteProductJob implements ShouldQueue
                 }
             );
 
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             Log::warning("⚠️ Elite: ბრენდი ვერ მოიძებნა", ['error' => $e->getMessage()]);
             return self::DEFAULT_BRAND_ID;
         }
     }
 
     // ============================================
-    // Stock — Alta-ს მსგავსად Tbilisi შემოწმება
+    // Stock — Zoommer-ის მსგავსად Tbilisi შემოწმება
     // ============================================
 
     private function checkTbilisiStock(array $availability): bool
@@ -331,9 +338,20 @@ class CreateEliteProductJob implements ShouldQueue
 
             return $path;
 
-        } catch (\Throwable $e) {
-            Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა", ['url' => $url, 'error' => $e->getMessage()]);
+        } catch (Exception $e) {
+            Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა", [
+                'url'   => $url,
+                'error' => $e->getMessage(),
+            ]);
             return null;
         }
+    }
+
+    public function failed(Exception $exception): void
+    {
+        Log::error("🚨 EliteProductJob permanently failed", [
+            'barCode' => $this->productData['barCode'] ?? null,
+            'error'   => $exception->getMessage(),
+        ]);
     }
 }
