@@ -138,9 +138,12 @@ class EliteScanService
                     return;
                 }
 
-                CreateEliteProductJob::dispatch($data['product'], $barCodeMap[$barCode])
-                    ->onQueue('elite');
-
+                CreateEliteProductJob::dispatch(
+                    $data['product']
+                    , $barCodeMap[$barCode],
+                    $data['availabilityInStores'] ?? []
+                )->onQueue('elite');
+                
                 $stats['queued']++;
             },
             'rejected' => function ($reason, $id) use (&$stats) {
