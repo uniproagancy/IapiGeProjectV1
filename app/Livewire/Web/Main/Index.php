@@ -20,9 +20,6 @@ class Index extends Component
     public function mount()
     {
         $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
-        Log::info('🔍 Index::mount() called', [
-            'event_id' => $this->eventId,
-        ]);
     }
 
     #[Computed]
@@ -32,6 +29,7 @@ class Index extends Component
         ProductCategory::with(['children', 'translations'])
             ->where('show', 1)
             ->where('active', 1)
+            ->orderBy('sortable')
             ->get()
         );
     }
