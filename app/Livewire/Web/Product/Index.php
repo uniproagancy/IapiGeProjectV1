@@ -106,6 +106,7 @@ class Index extends Component
                         ->where('show', 1)->where('active', 1)
                     );
             })
+            ->orderBy('sortable')
             ->get()
         );
     }
@@ -593,13 +594,12 @@ class Index extends Component
 
     public function render()
     {
-        // კატეგორიის sections
         $categorySections = collect();
         if ($this->currentCategory) {
             $categorySections = ProductSection::query()
                 ->where('active', 1)
                 ->where('category_id', $this->currentCategory->id)
-                ->orderBy('sort_order')
+                ->orderBy('sortable')
                 ->get();
         }
 
