@@ -9,7 +9,6 @@
     @include('livewire.web.partials.features')
     @include('livewire.web.partials.sections-carousel', ['sections' => $homeSections, 'heading'  => 'საზაფხულო შემოთავაზება'])
     @foreach($this->promotions->where('position', 1) as $promo)
-        1111
         @if($promo->type === 1)
             @include('livewire.web.product.promo-grid', ['promo' => $promo])
         @endif
