@@ -1,151 +1,358 @@
-<div class="position-relative"
+<div class="position-relative live-search-wrap"
      x-data="{
          open: @entangle('isOpen'),
          handleKeydown(e) {
              if (!this.open) return;
-             if (e.key === 'ArrowDown') {
-                 e.preventDefault();
-                 $wire.navigateDown();
-             } else if (e.key === 'ArrowUp') {
-                 e.preventDefault();
-                 $wire.navigateUp();
-             } else if (e.key === 'Enter') {
-                 e.preventDefault();
-                 $wire.selectCurrent();
-             } else if (e.key === 'Escape') {
-                 $wire.closeSearch();
-             }
+             if (e.key === 'ArrowDown')      { e.preventDefault(); $wire.navigateDown(); }
+             else if (e.key === 'ArrowUp')   { e.preventDefault(); $wire.navigateUp(); }
+             else if (e.key === 'Enter')     { e.preventDefault(); $wire.selectCurrent(); }
+             else if (e.key === 'Escape')    { $wire.closeSearch(); }
          }
      }"
      @click.outside="$wire.closeSearch()"
      @keydown.window="handleKeydown($event)">
-    <div class="position-relative">
-        <i class="ci-search position-absolute top-50 start-0 translate-middle-y d-flex fs-lg text-white ms-3"
+
+    {{-- Search Input --}}
+    <div class="position-relative live-search-input-wrap">
+        <i class="ci-search position-absolute top-50 start-0 translate-middle-y d-flex fs-base text-muted ms-3"
            style="z-index: 5; pointer-events: none;"></i>
         <input type="search"
-               class="form-control form-control-lg form-icon-start border-white rounded-pill pe-5"
+               class="form-control form-control-lg live-search-input"
                placeholder="{{ trans('trans.search_your_product') }}"
                wire:model.live.debounce.300ms="query"
                @focus="$wire.set('isOpen', true)"
-               autocomplete="off"
-               style="font-size: 14px; padding-left: 2.8rem; background: white; border-radius: 10px !important; color: #252525">
+               autocomplete="off">
+
+        {{-- Loading spinner --}}
+        <div wire:loading wire:target="query"
+             class="position-absolute top-50 end-0 translate-middle-y me-5">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+        </div>
+
         @if($query)
             <button type="button"
-                    class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-white-50 p-0 me-3"
+                    class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted p-0 me-3 live-search-clear"
                     wire:click="$set('query', '')"
-                    style="z-index: 5;">
+                    wire:loading.remove wire:target="query">
                 <i class="ci-close fs-base"></i>
             </button>
         @endif
     </div>
 
-    <!-- Search Results Dropdown -->
-    @if($isOpen && strlen($query) >= 2)
-        <div class="position-absolute top-100 start-0 w-100 bg-white shadow-lg rounded-3 mt-2 overflow-hidden px-3 p-2"
-             style="max-height: 470px; z-index: 1050;"
+    {{-- Results Dropdown --}}
+    @if($isOpen && mb_strlen($query) >= 2)
+        <div class="live-search-dropdown"
              x-show="open"
-             x-transition>
+             x-transition.opacity.duration.150ms>
+
             @if($this->results->count() > 0)
-                <a class="overflow-auto search-item-container" style="max-height: 400px;">
+                {{-- შედეგების სათაური --}}
+                <div class="live-search-header">
+                    <span class="text-muted small">ნაპოვნია <strong class="text-dark">{{ $this->results->count() }}</strong> შედეგი</span>
+                </div>
+
+                {{-- ITEMS --}}
+                <div class="live-search-list">
                     @foreach($this->results as $index => $product)
                         @php
                             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
+                            $categoryTitle = $product->category?->translation(app()->getLocale())?->title
+                                          ?? $product->category?->translation('ka')?->title;
+                            $hasDiscount = !empty($product->price->discount_price) && $product->price->discount_price > 0;
+                            $finalPrice  = $hasDiscount ? $product->price->discount_price : $product->price->regular_price;
                         @endphp
                         <a href="{{ route('web.products.view', $translation->slug) }}"
-                           class="search-item d-flex align-items-center px-3 py-2 text-decoration-none text-dark {{ $selectedIndex === $index ? 'bg-light' : '' }}"
-                           style="cursor: pointer; transition: background-color 0.15s ease; border-bottom: solid 1px #d1d1d1"
+                           wire:navigate
+                           class="live-search-item {{ $selectedIndex === $index ? 'is-active' : '' }}"
                            wire:key="search-result-{{ $product->id }}"
-                           @mouseenter="$wire.selectedIndex = {{ $index }}">
-                            <div class="flex-shrink-0 rounded overflow-hidden" style="border: solid 1px #d1d1d1;">
-                                <img src="{{ asset('storage/' . $product->main_image) }}"
-                                     alt="{{ $translation->title }}"
-                                     width="50"
-                                     height="50"
-                                     style="object-fit: cover;"
-                                     loading="lazy">
-                            </div>
-                            <div class="flex-grow-1 ms-3 min-w-0">
-                                <div class="fw-semibold text-truncate font-neue"
-                                     style="font-size: 15px; padding: 0 0 0 3px">
-                                    {{ $translation->title }}
-                                </div>
-                                @if($product->id)
-                                    <div class="text-muted small" style="padding: 0 0 0 3px; font-size: 11px">
-                                        SKU: {{ $product->id }}
+                           @mouseenter="$wire.selectedIndex = {{ $index }}"
+                           wire:click="closeSearch">
+
+                            {{-- Image --}}
+                            <div class="live-search-item__img">
+                                @if($product->main_image)
+                                    <img src="{{ asset('storage/' . $product->main_image) }}"
+                                         alt="{{ $translation->title }}"
+                                         loading="lazy">
+                                @else
+                                    <div class="live-search-item__img-placeholder">
+                                        <i class="ci-image"></i>
                                     </div>
                                 @endif
-                                <div class="d-flex align-items-center gap-2" style="padding: 0 0 0 3px">
-                                    @if(!empty($product->price->discount_price))
-                                        <span class="fw-bold text-primary" style="font-size: 14px">
-                                            {{ number_format($product->price->discount_price, 2) }} ₾
-                                        </span>
-                                        <span class="text-decoration-line-through text-muted" style="font-size: 12px">
-                                            {{ number_format($product->price->regular_price, 2) }} ₾
-                                        </span>
-                                        @if($product->price->discount_percent)
-                                            <span class="badge bg-danger-subtle text-danger">
-                                                -{{ $product->price->discount_percent }}%
-                                            </span>
-                                        @endif
-                                    @else
-                                        <span class="fw-bold text-dark">
-                                            {{ number_format($product->price->regular_price, 2) }} ₾
-                                        </span>
-                                    @endif
+                            </div>
+
+                            {{-- Body --}}
+                            <div class="live-search-item__body">
+                                @if($categoryTitle)
+                                    <div class="live-search-item__category">{{ $categoryTitle }}</div>
+                                @endif
+
+                                <div class="live-search-item__title">{{ $translation->title }}</div>
+
+                                <div class="live-search-item__meta">
+                                    <span class="live-search-item__sku">SKU: {{ $product->sku ?: $product->id }}</span>
                                 </div>
                             </div>
-                            <div class="flex-shrink-0 ms-2">
-                                <i class="ci-chevron-right text-muted"></i>
+
+                            {{-- Price --}}
+                            <div class="live-search-item__price">
+                                @if($hasDiscount)
+                                    <div class="live-search-item__price-now">{{ number_format($finalPrice, 2) }} ₾</div>
+                                    <div class="live-search-item__price-old">{{ number_format($product->price->regular_price, 2) }} ₾</div>
+                                    @if($product->price->discount_percent)
+                                        <span class="live-search-item__badge">-{{ $product->price->discount_percent }}%</span>
+                                    @endif
+                                @else
+                                    <div class="live-search-item__price-now">{{ number_format($finalPrice, 2) }} ₾</div>
+                                @endif
                             </div>
                         </a>
                     @endforeach
                 </div>
-                @if($this->results->count() >= 10)
-                    <div>
-                        <a href="{{ route('web.products.index', ['search' => $query]) }}"
-                           class="d-block text-center py-3 text-decoration-none fw-semibold font-neue"
-                           wire:click="closeSearch">
-                            ყველა შედეგის ნახვა
-                            <i class="ci-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                @endif
+
+                {{-- "ყველა შედეგი" — ქვემოთ --}}
+                <a href="{{ route('web.products.index', ['search' => $query]) }}"
+                   class="live-search-footer"
+                   wire:navigate
+                   wire:click="closeSearch">
+                    ყველა შედეგის ნახვა "<strong>{{ $query }}</strong>"-ზე
+                    <i class="ci-arrow-right ms-1"></i>
+                </a>
             @else
-                <!-- No Results -->
-                <div class="p-4 text-center">
-                    <i class="ci-search fs-1 text-muted mb-3 d-block"></i>
-                    <p class="text-muted mb-2">
-                        ვერაფერი მოიძებნა "<strong>{{ $query }}</strong>"-ზე
-                    </p>
+                {{-- No Results --}}
+                <div class="live-search-empty">
+                    <div class="live-search-empty__icon">
+                        <i class="ci-search"></i>
+                    </div>
+                    <div class="live-search-empty__title">ვერაფერი მოიძებნა</div>
+                    <div class="live-search-empty__sub">სცადეთ სხვა საძიებო სიტყვა "<strong>{{ $query }}</strong>"-ის ნაცვლად</div>
                     <a href="{{ route('web.products.index') }}"
-                       class="btn btn-sm btn-outline-primary"
+                       class="btn btn-sm btn-outline-primary mt-3"
                        wire:click="closeSearch">
-                        ყველა პროდუქტის ნახვა
+                        ყველა პროდუქტი
                     </a>
                 </div>
             @endif
         </div>
     @endif
+
     <style>
-        .search-item:hover {
-            background-color: var(--bs-light) !important;
+        /* === Search Input === */
+        .live-search-input {
+            font-size: 14px;
+            padding-left: 2.8rem;
+            padding-right: 3rem;
+            background: #fff;
+            border: 1px solid transparent;
+            border-radius: 12px !important;
+            color: #252525;
+            transition: all .2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .live-search-input:focus {
+            box-shadow: 0 4px 12px rgba(255,105,0,0.15);
+            border-color: #ff6900;
+            background: #fff;
+        }
+        .live-search-clear {
+            z-index: 5;
+            transition: color .15s ease;
+        }
+        .live-search-clear:hover { color: #ff6900 !important; }
+
+        /* === Dropdown === */
+        .live-search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+            overflow: hidden;
+            z-index: 1050;
+            animation: searchSlideDown .2s ease;
+        }
+        @keyframes searchSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .search-item-container::-webkit-scrollbar {
-            width: 6px;
+        /* === Header === */
+        .live-search-header {
+            padding: 10px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafafa;
         }
 
-        .search-item-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        /* === List === */
+        .live-search-list {
+            max-height: 440px;
+            overflow-y: auto;
+        }
+        .live-search-list::-webkit-scrollbar { width: 6px; }
+        .live-search-list::-webkit-scrollbar-track { background: transparent; }
+        .live-search-list::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 10px; }
+        .live-search-list::-webkit-scrollbar-thumb:hover { background: #ff6900; }
+
+        /* === Item === */
+        .live-search-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #2a2a2a;
+            border-bottom: 1px solid #f4f4f4;
+            transition: background-color .15s ease;
+            cursor: pointer;
+        }
+        .live-search-item:last-child { border-bottom: none; }
+        .live-search-item:hover,
+        .live-search-item.is-active {
+            background: #fff7f0;
+            color: #2a2a2a;
         }
 
-        .search-item-container::-webkit-scrollbar-thumb {
-            background-color: #b5b5b5;
+        .live-search-item__img {
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+            border: 1px solid #ececec;
             border-radius: 10px;
+            overflow: hidden;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .live-search-item__img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+        }
+        .live-search-item__img-placeholder {
+            color: #ccc;
+            font-size: 24px;
         }
 
-        .search-item-container::-webkit-scrollbar-thumb:hover {
-            background-color: #8c8c8c;
+        .live-search-item__body {
+            flex: 1;
+            min-width: 0;
+        }
+        .live-search-item__category {
+            font-size: 11px;
+            color: #ff6900;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            margin-bottom: 2px;
+        }
+        .live-search-item__title {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #1a1a1a;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+        .live-search-item__meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .live-search-item__sku {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .live-search-item__price {
+            flex-shrink: 0;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .live-search-item__price-now {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ff6900;
+            white-space: nowrap;
+        }
+        .live-search-item__price-old {
+            font-size: 11px;
+            color: #999;
+            text-decoration: line-through;
+            white-space: nowrap;
+        }
+        .live-search-item__badge {
+            display: inline-block;
+            background: #ff3b3b;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-top: 2px;
+        }
+
+        /* === Footer === */
+        .live-search-footer {
+            display: block;
+            text-align: center;
+            padding: 14px 16px;
+            background: #fafafa;
+            border-top: 1px solid #f0f0f0;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all .15s ease;
+        }
+        .live-search-footer:hover {
+            background: #ff6900;
+            color: #fff;
+        }
+
+        /* === Empty === */
+        .live-search-empty {
+            padding: 32px 20px;
+            text-align: center;
+        }
+        .live-search-empty__icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #fff7f0;
+            color: #ff6900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .live-search-empty__title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+        .live-search-empty__sub {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* === Mobile === */
+        @media (max-width: 576px) {
+            .live-search-item__img { width: 48px; height: 48px; }
+            .live-search-item__title { font-size: 13px; }
+            .live-search-item__price-now { font-size: 14px; }
+            .live-search-item { padding: 10px 12px; }
         }
     </style>
 </div>
