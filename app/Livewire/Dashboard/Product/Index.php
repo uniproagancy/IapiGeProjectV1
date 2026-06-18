@@ -474,12 +474,12 @@ class Index extends Component
                     continue;
                 }
 
-                if (\App\Models\Elite\EliteProduct::where('bar_code', $barCode)->exists()) {
+                if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
                     $duplicate++;
                     continue;
                 }
 
-                \App\Models\Elite\EliteProduct::create([
+                \App\Models\EliteProduct::create([
                     'bar_code' => $barCode,
                     'synced'   => false,
                 ]);
