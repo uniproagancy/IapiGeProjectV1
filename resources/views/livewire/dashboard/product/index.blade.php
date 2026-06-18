@@ -64,7 +64,12 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
                                         <i data-feather="upload"></i> Comfo Excel
                                     </a>
-
+                                    <button type="button" wire:click="uploadAlneo"
+                                            wire:confirm="დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს"
+                                            class="btn btn-danger">
+                                        <i class="fa-solid fa-tower-broadcast"></i>
+                                        Alneo სკანი
+                                    </button>
                                 </div>
                             </div>
                             <div class="btn-group">
