@@ -30,7 +30,7 @@ class EliteProductJob implements ShouldQueue
 
     private const SUPPLIER_ID          = 11;
     private const DEFAULT_BRAND_ID     = 1;
-    private const FALLBACK_CATEGORY_ID = 203;
+    private const FALLBACK_CATEGORY_ID = 204;
     private const SHORT_SPEC_LIMIT     = 5;
 
     public function __construct(
@@ -99,12 +99,13 @@ class EliteProductJob implements ShouldQueue
             $shortSpecs = $this->extractShortSpecs($this->productData);
 
             // ============ Product upsert ============
-            $existing = Product::where('sku', $barCode)->first();
+            $sku      = 'ELITE-' . $barCode;
+            $existing = Product::where('sku', $sku)->first();
             $isNew    = !$existing;
 
             if ($isNew) {
                 $existing = Product::create([
-                    'sku'           => $barCode,
+                    'sku'           => $sku,
                     'supplier_id'   => self::SUPPLIER_ID,
                     'brand_id'      => $brandId,
                     'category_id'   => $categoryId,
@@ -117,7 +118,7 @@ class EliteProductJob implements ShouldQueue
                     'taxonomy_lock' => 0,
                 ]);
 
-                Log::info("➕ Elite: ახალი პროდუქტი", ['sku' => $barCode, 'id' => $existing->id]);
+                Log::info("➕ Elite: ახალი პროდუქტი", ['sku' => $sku, 'id' => $existing->id]);
             } else {
                 $existing->update([
                     'quantity' => $inStock ? max($quantity, 1) : 0,
@@ -125,7 +126,7 @@ class EliteProductJob implements ShouldQueue
                     'show'     => $inStock,
                 ]);
 
-                Log::info("🔄 Elite: განახლდა", ['sku' => $barCode, 'id' => $existing->id]);
+                Log::info("🔄 Elite: განახლდა", ['sku' => $sku, 'id' => $existing->id]);
             }
 
             // Translation
@@ -270,7 +271,7 @@ class EliteProductJob implements ShouldQueue
         }
 
         return collect($availability)
-            ->where('city', 'Tbilisi')
+            ->where('city', 'თბილისი')
             ->contains(fn ($store) => $store['inStock'] === true);
     }
 
