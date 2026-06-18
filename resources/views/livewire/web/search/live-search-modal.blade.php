@@ -90,7 +90,7 @@
                                 <div class="live-search-item__title">{{ $translation->title }}</div>
 
                                 <div class="live-search-item__meta">
-                                    <span class="live-search-item__sku">SKU: {{ $product->sku ?: $product->id }}</span>
+                                    <span class="live-search-item__sku">SKU: {{ $product->id }}</span>
                                 </div>
                             </div>
 
