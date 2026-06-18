@@ -3,155 +3,147 @@
 namespace App\Services\Products;
 
 use App\Jobs\CreateEliteProductJob;
-use App\Models\EliteProduct;
+use App\Jobs\ZoommerProductJob;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class EliteScanService
 {
-    private string $apiUrl;
-    private string $token;
-    private int $startId     = 1;
-    private int $endId       = 35000;
-    private int $chunkSize   = 500;
-    private int $concurrency = 10;  // ← იყო 30, ჩავიყვანოთ 10-ზე
-    private int $timeout     = 30;
-
-
-    public function __construct()
-    {
-        $this->apiUrl = rtrim(config('services.elite.api_url'), '/') . '/v1/Products/details';
-        $this->token  = (string) config('services.elite.token', '');
-
-        if (!$this->token) {
-            Log::warning('⚠️ Elite: API token არ არის .env-ში (ELITE_API_TOKEN)');
-        }
-    }
-
-    public function setRange(int $start, int $end): self
-    {
-        $this->startId = $start;
-        $this->endId   = $end;
-        return $this;
-    }
-
-    public function setConcurrency(int $n): self
-    {
-        $this->concurrency = $n;
-        return $this;
-    }
+    protected string $api_url = 'https://ee-api.ee.ge';
+    protected int $concurrent_requests = 10;
+    protected int $chunk_size = 100;
+    protected int $timeout = 30;
+    protected int $start_id = 1;
+    protected int $end_id = 100000;
 
     public function scanAllIds(): array
     {
-        @ini_set('memory_limit', '1024M');
-        @set_time_limit(0);              // ← დაამატე
-        @ini_set('max_execution_time', 0); // ← დაამატე
+        try {
+            ini_set('memory_limit', '512M');
+            ini_set('max_execution_time', '0');
 
-        // ბაზიდან Excel-დან ატვირთული barCode-ები (synced=false)
-        $barCodeMap = EliteProduct::where('synced', false)
-            ->pluck('id', 'bar_code')
-            ->toArray();
+            $startTime = microtime(true);
+            $stats = [
+                'total'  => 0,
+                'queued' => 0,
+                'null'   => 0,
+                'errors' => 0,
+            ];
 
-        if (empty($barCodeMap)) {
-            Log::warning("⚠️ Elite Scan: ბაზაში არ არის BarCode-ები. ჯერ Excel ატვირთე.");
-            return ['total' => 0, 'queued' => 0, 'skipped' => 0, 'errors' => 0];
+            $allIds = range($this->start_id, $this->end_id);
+            $stats['total'] = count($allIds);
+            $chunks = array_chunk($allIds, $this->chunk_size);
+
+            foreach ($chunks as $chunkIndex => $chunk) {
+                Log::info("Processing chunk {$chunkIndex}/" . count($chunks));
+
+                $chunkStats = $this->scanChunk($chunk);
+                $stats['queued'] += $chunkStats['queued'];
+                $stats['null']   += $chunkStats['null'];
+                $stats['errors'] += $chunkStats['errors'];
+
+                unset($chunk);
+                gc_collect_cycles();
+            }
+
+            $stats['duration'] = round(microtime(true) - $startTime, 2);
+            return $stats;
+
+        } catch (Exception $e) {
+            Log::error('ElitProduct scanAllIds error: ' . $e->getMessage());
+            throw $e;
         }
-
-        Log::info("🔎 Elite Scan: დაიწყო", [
-            'range'    => "{$this->startId} - {$this->endId}",
-            'barcodes' => count($barCodeMap),
-        ]);
-
-        $stats = ['total' => 0, 'queued' => 0, 'skipped' => 0, 'errors' => 0];
-
-        $allIds = range($this->startId, $this->endId);
-        $chunks = array_chunk($allIds, $this->chunkSize);
-
-        foreach ($chunks as $i => $chunk) {
-            $chunkStats = $this->scanChunk($chunk, $barCodeMap);
-
-            $stats['total']   += count($chunk);
-            $stats['queued']  += $chunkStats['queued'];
-            $stats['skipped'] += $chunkStats['skipped'];
-            $stats['errors']  += $chunkStats['errors'];
-
-            Log::info("⏳ Elite Scan: chunk " . ($i + 1) . "/" . count($chunks), $chunkStats);
-        }
-
-        Log::info("✅ Elite Scan დასრულდა", $stats);
-        return $stats;
     }
 
-    private function scanChunk(array $ids, array $barCodeMap): array
+    protected function scanChunk(array $ids): array
     {
-        $stats = ['queued' => 0, 'skipped' => 0, 'errors' => 0];
+        $stats = ['queued' => 0, 'null' => 0, 'errors' => 0];
+        $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36';
 
-        $client = new Client([
-            'timeout'     => $this->timeout,
-            'http_errors' => false,
-            'headers'     => [
-                'Authorization'   => 'Bearer ' . $this->token,
-                'Accept'          => 'application/json, text/plain, */*',
-                'Accept-Language' => 'ka',
-                'Origin'          => 'https://ee.ge',
-                'Referer'         => 'https://ee.ge/',
-                'os'              => 'web',
-                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-            ],
-        ]);
+        try {
+            $client = new Client([
+                'timeout'         => $this->timeout,
+                'connect_timeout' => 10,
+                'http_errors'     => false,
+                'verify'          => false,
+                'headers'         => [
+                    'Accept'             => 'application/json, text/plain, */*',
+                    'Accept-Language'    => 'ka',
+                    'Accept-Encoding'    => 'gzip, deflate, br',
+                    'Referer'            => 'https://zoommer.ge/',
+                    'User-Agent'         => $userAgent,
+                    'os'                 => 'web',
+                    'sec-ch-ua'          => '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+                    'Authorization'   => 'Bearer ' . env('ELITE_API_TOKEN', ''),
+                ],
+                'curl' => [
+                    CURLOPT_DNS_CACHE_TIMEOUT => 300,
+                    CURLOPT_IPRESOLVE         => CURL_IPRESOLVE_V4,
+                ],
+            ]);
 
-        $requests = function ($ids) {
-            foreach ($ids as $id) {
-                yield $id => new Request('GET', "{$this->apiUrl}?productId={$id}");
-            }
-        };
+            $requests = function ($ids) {
+                foreach ($ids as $id) {
+                    // ერთი slash — api_url ბოლოს უკვე აქვს "/"
+                    yield $id => new Request(
+                        'GET',
+                        $this->api_url . "v1/Products/details?productId={$id}"
+                    );
+                }
+            };
 
-        $pool = new Pool($client, $requests($ids), [
-            'concurrency' => $this->concurrency,
-            'fulfilled'   => function ($response, $id) use (&$stats, $barCodeMap) {
-                $status = $response->getStatusCode();
+            $pool = new Pool($client, $requests($ids), [
+                'concurrency' => $this->concurrent_requests,
+                'fulfilled' => function ($response, $id) use (&$stats) {
+                    try {
+                        $statusCode = $response->getStatusCode();
 
-                if ($status === 401) {
-                    Log::error("🔒 Elite: 401 — Bearer token არასწორია ან ვადაგასულია");
+                        if ($statusCode === 403) {
+                            $stats['errors']++;
+                            Log::warning("⛔ ELIT 403 (Cloudflare/token) ID {$id} — token განახლება საჭიროა");
+                            return;
+                        }
+
+                        if ($statusCode !== 200) {
+                            $stats['errors']++;
+                            return;
+                        }
+
+                        $body = $response->getBody()->getContents();
+                        $data = json_decode($body, true);
+
+                        if (!isset($data['product']) || $data['product'] === null) {
+                            $stats['null']++;
+                            return;
+                        }
+
+                        CreateEliteProductJob::dispatch(
+                            $data['product'],
+                            $data['availabilityInStores'] ?? []
+                        )->onQueue('elit');
+
+                        $stats['queued']++;
+
+                    } catch (Exception $e) {
+                        Log::error("Error processing product {$id}: " . $e->getMessage());
+                        $stats['errors']++;
+                    }
+                },
+                'rejected' => function ($reason, $id) use (&$stats) {
                     $stats['errors']++;
-                    return;
-                }
+                    Log::warning("Request failed for ID {$id}: " . $reason);
+                },
+            ]);
 
-                if ($status !== 200) {
-                    $stats['errors']++;
-                    return;
-                }
+            $pool->promise()->wait();
 
-                $data = json_decode($response->getBody(), true);
-
-                if (empty($data['product']) || empty($data['product']['barCode'])) {
-                    $stats['skipped']++;
-                    return;
-                }
-
-                $barCode = (string) $data['product']['barCode'];
-
-                if (!isset($barCodeMap[$barCode])) {
-                    $stats['skipped']++;
-                    return;
-                }
-
-                CreateEliteProductJob::dispatch(
-                    $data['product']
-                    , $barCodeMap[$barCode],
-                    $data['availabilityInStores'] ?? []
-                )->onQueue('elite');
-
-                $stats['queued']++;
-            },
-            'rejected' => function ($reason, $id) use (&$stats) {
-                $stats['errors']++;
-            },
-        ]);
-
-        $pool->promise()->wait();
+        } catch (Exception $e) {
+            Log::error('ElitProduct scanChunk error: ' . $e->getMessage());
+            $stats['errors'] += count($ids);
+        }
 
         return $stats;
     }
