@@ -599,7 +599,6 @@ class Index extends Component
             $categorySections = ProductSection::query()
                 ->where('active', 1)
                 ->where('category_id', $this->currentCategory->id)
-                ->orderBy('sortable')
                 ->get();
         }
 
