@@ -154,7 +154,7 @@ class AlneoImportJob implements ShouldQueue
                     ProductShortSpecification::create([
                         'product_id' => $product->id,
                         'locale'     => 'ka',
-                        'title'      => $key,
+                        'name'       => $key,        // ⬅ იყო 'title'
                         'value'      => $value,
                         'sort_order' => $sortOrder++,
                     ]);

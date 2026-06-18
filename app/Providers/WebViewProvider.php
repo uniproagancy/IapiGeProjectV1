@@ -19,7 +19,7 @@ class WebViewProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             $menu_list = cache()->remember('web_menu_list', 3600, fn () =>
-            WebMenu::where('active', 1)->get()
+                WebMenu::where('active', 1)->get()
             );
 
             $product_categories = cache()->remember('web_product_categories_nav', 3600, fn () =>
