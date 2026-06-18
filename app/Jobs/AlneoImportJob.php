@@ -25,6 +25,7 @@ class AlneoImportJob implements ShouldQueue
 
     private const SUPPLIER_ID      = 10;
     private const BRAND_ID         = 1;
+    private const CATEGORY_ID      = 203;
     private const SHORT_SPEC_LIMIT = 5;
 
     public function __construct(public string $url) {}
@@ -55,7 +56,7 @@ class AlneoImportJob implements ShouldQueue
             }
 
             // ============ მონაცემების ამოღება ============
-            $name   = $this->cleanText($data['name'] ?? '');
+            $name   = $this->cleanTitle($data['name'] ?? '');
             $rawSku = trim((string)($data['sku'] ?? ''));
 
             if (!$name || !$rawSku) {
@@ -79,6 +80,12 @@ class AlneoImportJob implements ShouldQueue
             // სურათები — ld+json image + gallery
             $images = $this->extractImages($html, $data);
 
+            if (empty($images)) {
+                Log::warning("⚠️ Alneo: სურათები ვერ მოიძებნა", ['url' => $this->url, 'sku' => $sku]);
+            } else {
+                Log::info("🖼️ Alneo: ნაპოვნია " . count($images) . " სურათი", ['sku' => $sku]);
+            }
+
             // short specs
             $shortSpecs = $this->extractShortSpecs($html);
 
@@ -95,7 +102,7 @@ class AlneoImportJob implements ShouldQueue
                     'sku'           => $sku,
                     'supplier_id'   => self::SUPPLIER_ID,
                     'brand_id'      => self::BRAND_ID,
-                    'category_id'   => null,
+                    'category_id'   => self::CATEGORY_ID,
                     'quantity'      => $inStock ? 10 : 0,
                     'in_stock'      => $inStock,
                     'show'          => $inStock,
@@ -107,7 +114,7 @@ class AlneoImportJob implements ShouldQueue
 
                 Log::info("➕ Alneo: ახალი პროდუქტი", ['sku' => $sku, 'id' => $product->id]);
             } else {
-                // UPDATE: მხოლოდ მარაგი/ხილვადობა — taxonomy/brand შენარჩუნდეს
+                // UPDATE: მხოლოდ მარაგი/ხილვადობა
                 $product->update([
                     'quantity' => $inStock ? max($product->quantity, 10) : 0,
                     'in_stock' => $inStock,
@@ -159,6 +166,7 @@ class AlneoImportJob implements ShouldQueue
                 $localPath = $this->downloadImage($images[0], $product->id);
                 if ($localPath) {
                     $product->update(['main_image' => $localPath]);
+                    Log::info("📸 Alneo: main_image შენახულია", ['sku' => $sku, 'path' => $localPath]);
                 }
             }
 
@@ -204,9 +212,6 @@ class AlneoImportJob implements ShouldQueue
 
     /**
      * ფასები — A ვარიანტი (markup-ის გარეშე)
-     *
-     * priceSpecification ორი ცალი = discount + ListPrice
-     * ერთი ცალი = regular only (discount = 0)
      */
     private function extractPrices(array $data): array
     {
@@ -268,37 +273,68 @@ class AlneoImportJob implements ShouldQueue
     }
 
     /**
-     * სურათები — gallery + ld+json image
+     * სურათები — ld+json image + gallery (გაუმჯობესებული regex)
      */
     private function extractImages(string $html, array $data): array
     {
         $images = [];
 
-        // ld+json image
+        // 1. ld+json image (string ან array)
         if (!empty($data['image'])) {
             if (is_string($data['image'])) {
                 $images[] = $data['image'];
             } elseif (is_array($data['image'])) {
                 foreach ($data['image'] as $img) {
-                    if (is_string($img)) $images[] = $img;
+                    if (is_string($img)) {
+                        $images[] = $img;
+                    } elseif (is_array($img) && !empty($img['url'])) {
+                        $images[] = $img['url'];
+                    }
                 }
             }
         }
 
-        // gallery: <div class="woocommerce-product-gallery__image"><a href="...">
-        if (preg_match_all(
+        // 2. gallery wrapper-დან — woocommerce-product-gallery__image
+        // ვცდით სხვადასხვა ფორმატს (div/figure, class-ის თანმიმდევრობა, single quotes/double quotes)
+        $patterns = [
+            // <div class="...woocommerce-product-gallery__image..."> ... <a href="..."
             '/<(?:div|figure)[^>]*class="[^"]*woocommerce-product-gallery__image[^"]*"[^>]*>\s*<a[^>]+href="([^"]+)"/is',
-            $html,
-            $matches
-        )) {
-            foreach ($matches[1] as $href) {
-                if (preg_match('/\.(jpe?g|png|webp)(\?|$)/i', $href)) {
-                    $images[] = $href;
+            // <div class="...woocommerce-product-gallery__image..."> ... <a href='...'
+            "/<(?:div|figure)[^>]*class='[^']*woocommerce-product-gallery__image[^']*'[^>]*>\s*<a[^>]+href='([^']+)'/is",
+            // data-large_image="..." attribute (img tag-ში)
+            '/data-large_image=["\']([^"\']+)["\']/i',
+            // data-large-image="..." (electro gallery)
+            '/data-large-image=["\']([^"\']+)["\']/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match_all($pattern, $html, $matches)) {
+                foreach ($matches[1] as $href) {
+                    if (preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $href)) {
+                        $images[] = $href;
+                    }
                 }
             }
         }
 
-        return array_values(array_unique($images));
+        // 3. fallback: wp-post-image (მთავარი სურათი)
+        if (preg_match('/<img[^>]+class="[^"]*wp-post-image[^"]*"[^>]+src="([^"]+)"/i', $html, $m)) {
+            if (preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $m[1])) {
+                // 600x600 thumb-ი თუ არის, ვცადოთ ფული ვერსიის აშენება
+                $fullUrl = preg_replace('/-\d+x\d+(\.(jpe?g|png|webp))$/i', '$1', $m[1]);
+                $images[] = $fullUrl;
+                $images[] = $m[1]; // thumb-იც დავამატოთ fallback-ად
+            }
+        }
+
+        // უნიკალური, თანმიმდევრობა შენარჩუნებული
+        $unique = array_values(array_unique($images));
+
+        // ფილტრი: მხოლოდ ვალიდური URL-ები
+        return array_values(array_filter($unique, function ($url) {
+            return filter_var($url, FILTER_VALIDATE_URL) !== false
+                && preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $url);
+        }));
     }
 
     /**
@@ -357,9 +393,18 @@ class AlneoImportJob implements ShouldQueue
     private function downloadImage(string $url, int $productId): ?string
     {
         try {
-            $response = Http::timeout(30)->get($url);
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer'    => 'https://alneo.ge/',
+                ])
+                ->get($url);
 
             if (!$response->successful()) {
+                Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა (HTTP)", [
+                    'url'    => $url,
+                    'status' => $response->status(),
+                ]);
                 return null;
             }
 
@@ -377,7 +422,7 @@ class AlneoImportJob implements ShouldQueue
             return $path;
 
         } catch (\Throwable $e) {
-            Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა", [
+            Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა (exception)", [
                 'url'   => $url,
                 'error' => $e->getMessage(),
             ]);
@@ -386,12 +431,23 @@ class AlneoImportJob implements ShouldQueue
     }
 
     /**
-     * ტექსტში alneo → iapi.ge ცვლა
+     * სათაურიდან "alneo" სიტყვის სრულად ამოღება (არ ცვლის iapi.ge-ით)
+     */
+    private function cleanTitle(string $title): string
+    {
+        $title = preg_replace('/\balneo(\.com)?(\.ge)?\b/i', '', $title);
+        $title = preg_replace('/\s+/', ' ', $title);
+        $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return trim($title);
+    }
+
+    /**
+     * description-ში alneo.ge → iapi.ge ჩანაცვლება
      */
     private function cleanText(string $text): string
     {
-        $text = preg_replace('/alneo\.ge/i', 'iapi.ge', $text);
         $text = preg_replace('/alneo\.com\.ge/i', 'iapi.ge', $text);
+        $text = preg_replace('/alneo\.ge/i', 'iapi.ge', $text);
         $text = preg_replace('/\balneo\b/i', 'iapi.ge', $text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         return trim($text);
