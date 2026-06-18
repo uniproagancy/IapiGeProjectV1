@@ -437,6 +437,18 @@ class Index extends Component
         $this->dispatch('quick_edit_modal_open');
     }
 
+    public function uploadAlneo(): void
+    {
+        try {
+            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
+
+            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
+        } catch (\Throwable $e) {
+            \Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
+            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
+        }
+    }
+
     public function uploadGrandel(): void
     {
         $this->validate([
