@@ -143,7 +143,7 @@ class EliteScanService
                     , $barCodeMap[$barCode],
                     $data['availabilityInStores'] ?? []
                 )->onQueue('elite');
-                
+
                 $stats['queued']++;
             },
             'rejected' => function ($reason, $id) use (&$stats) {

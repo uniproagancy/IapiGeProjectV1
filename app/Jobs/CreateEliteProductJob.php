@@ -241,7 +241,7 @@ class CreateEliteProductJob implements ShouldQueue
         }
 
         return collect($availability)
-            ->where('city', 'Tbilisi')           // Elite-ში ინგლისურად
+            ->where('city', 'თბილისი')           // Elite-ში ინგლისურად
             ->contains(fn($store) => $store['inStock'] === true);
     }
 
