@@ -18,6 +18,11 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'elite' => [
+        'api_url' => 'https://ee-api.ee.ge',
+        'token'   => env('ELITE_API_TOKEN', ''),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
