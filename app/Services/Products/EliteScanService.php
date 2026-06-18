@@ -90,7 +90,7 @@ class EliteScanService
                     // ერთი slash — api_url ბოლოს უკვე აქვს "/"
                     yield $id => new Request(
                         'GET',
-                        $this->api_url . "v1/Products/details?productId={$id}"
+                        $this->api_url . "/v1/Products/details?productId={$id}"
                     );
                 }
             };
