@@ -7,8 +7,8 @@ Route::prefix('zoommer')->group(function () {
     Route::get('/scan', '\App\Http\Controllers\ApiControllers\ZoommerController@scan');
 });
 
-Route::prefix('elit')->group(function () {
-    Route::get('/scan', '\App\Http\Controllers\ApiControllers\ElitController@scan');
+Route::prefix('elite')->group(function () {
+    Route::get('/scan', '\App\Http\Controllers\ApiControllers\EliteController@scan');
 });
 
 Route::prefix('alta')->group(function () {
