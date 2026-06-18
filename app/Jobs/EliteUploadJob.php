@@ -24,6 +24,7 @@ class EliteUploadJob implements ShouldQueue
     public function handle(): void
     {
         @ini_set('memory_limit', '512M');
+        @set_time_limit(0);  // ← დაამატე
 
         try {
             $fullPath = Storage::path($this->filePath);

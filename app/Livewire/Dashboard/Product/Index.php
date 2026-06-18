@@ -646,16 +646,18 @@ class Index extends Component
 
     public function runEliteScan(): void
     {
+        @set_time_limit(0); // ← დაამატე
+
         $unsynced = \App\Models\EliteProduct::where('synced', false)->count();
 
         if ($unsynced === 0) {
-            $this->dispatch('ui:error', message: 'არ არის BarCode-ები სკანისთვის. ჯერ Excel ატვირთე.');
+            $this->dispatch('ui:error', message: 'არ არის BarCode-ები სკანისთვის.');
             return;
         }
 
         dispatch(function () {
             (new \App\Services\Products\EliteScanService())
-                ->setRange(1, 35000)
+                ->setRange(2501, 35000)
                 ->scanAllIds();
         })->onQueue('elite');
 

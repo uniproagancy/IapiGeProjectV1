@@ -16,8 +16,9 @@ class EliteScanService
     private int $startId     = 1;
     private int $endId       = 35000;
     private int $chunkSize   = 500;
-    private int $concurrency = 30;
-    private int $timeout     = 20;
+    private int $concurrency = 10;  // ← იყო 30, ჩავიყვანოთ 10-ზე
+    private int $timeout     = 30;
+
 
     public function __construct()
     {
@@ -45,6 +46,8 @@ class EliteScanService
     public function scanAllIds(): array
     {
         @ini_set('memory_limit', '1024M');
+        @set_time_limit(0);              // ← დაამატე
+        @ini_set('max_execution_time', 0); // ← დაამატე
 
         // ბაზიდან Excel-დან ატვირთული barCode-ები (synced=false)
         $barCodeMap = EliteProduct::where('synced', false)
