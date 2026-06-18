@@ -55,16 +55,25 @@
                                     განახლების ატვირთვა
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMideaModal">Midea</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadMideaModal">Midea</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">KontaktHome</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
                                         <i data-feather="upload"></i> Comfo Excel
                                     </a>
+                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
                                         <i data-feather="upload"></i> Elite Excel
                                     </a>
+                                    <a class="dropdown-item"
+                                       href="{{ route('elite.scan') }}"
+                                       onclick="return confirm('დარწმუნებული ხარ? Elite სკანი დაიწყება (1-35000)')">
+                                        <i data-feather="search"></i> Elite სკანი
+                                    </a>
+                                    <div class="dropdown-divider"></div>
                                     <button type="button" wire:click="uploadAlneo"
                                             wire:confirm="დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს"
                                             class="btn btn-danger">
@@ -75,7 +84,7 @@
                             </div>
                             <div class="btn-group">
                                 <button class="btn btn-icon btn-primary dropdown-toggle px-1" type="button"
-                                        id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i data-feather="refresh-cw"></i>
                                 </button>
                             </div>
@@ -94,9 +103,7 @@
                             <table class="table">
                                 <thead>
                                 <tr class="text-center">
-                                    <th>
-                                        <input type="checkbox" wire:model.live="selectAll" id="select-all">
-                                    </th>
+                                    <th><input type="checkbox" wire:model.live="selectAll" id="select-all"></th>
                                     <th>სურათი</th>
                                     <th class="text-start">დასახელება</th>
                                     <th>ფასი</th>
@@ -112,8 +119,7 @@
                                 @foreach($products as $product)
                                     <tr class="text-center">
                                         <td>
-                                            <input type="checkbox" wire:model.live="selectedProducts"
-                                                   value="{{ $product->id }}">
+                                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}">
                                         </td>
                                         <td>
                                             <div class="avatar-group">
@@ -126,7 +132,8 @@
                                         </td>
                                         <td class="text-start">
                                             <span class="badge badge-light-info">{{ $product->sku }}</span> -
-                                            {{ $product->translations->where('locale', 'ka')->first()?->title ?? ' ' }}</td>
+                                            {{ $product->translations->where('locale', 'ka')->first()?->title ?? ' ' }}
+                                        </td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
                                                 <span class="badge badge-light-success">{{ $product->price->discount_price ?? '' }} ₾</span>
@@ -141,8 +148,7 @@
                                                 {{ $product->category->parent->translations->where('locale', 'ka')->first()?->title ?? '' }}
                                             @endif
                                             @if(!empty($product->category?->translations))
-                                                /
-                                                {{ $product->category->translations->where('locale', 'ka')->first()?->title ?? '' }}
+                                                / {{ $product->category->translations->where('locale', 'ka')->first()?->title ?? '' }}
                                             @endif
                                         </td>
                                         <td>
@@ -157,11 +163,9 @@
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_active_{{ $product->id }}"
                                                                wire:click="toggleActive({{ $product->id }})" @checked($product->active) />
-                                                        <label class="form-check-label"
-                                                               for="product_active_{{ $product->id }}">
+                                                        <label class="form-check-label" for="product_active_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i
-                                                                        data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -174,11 +178,9 @@
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_show_{{ $product->id }}"
                                                                wire:click="toggleShow({{ $product->id }})" @checked($product->show) />
-                                                        <label class="form-check-label"
-                                                               for="product_show_{{ $product->id }}">
+                                                        <label class="form-check-label" for="product_show_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i
-                                                                        data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -188,7 +190,7 @@
                                             @if(!$product->trashed())
                                                 <a href="#" class="text-body"
                                                    wire:click="toggleLock({{ $product->id }})"
-                                                   title="{{ $product->update_lock ? 'განბლოკვა (განახლება ჩაირთვება)' : 'ჩაკეტვა (ავტომატური განახლების აკრძალვა)' }}">
+                                                   title="{{ $product->update_lock ? 'განბლოკვა' : 'ჩაკეტვა' }}">
                                                     @if($product->update_lock)
                                                         <i class="text-warning" data-feather="lock"></i>
                                                     @else
@@ -200,21 +202,17 @@
                                         <td>
                                             @if($product->id !== 1)
                                                 @if($product->trashed())
-                                                    <a href="#" class="text-body"
-                                                       wire:click="restoreModal({{ $product->id }})">
+                                                    <a href="#" class="text-body" wire:click="restoreModal({{ $product->id }})">
                                                         <i class="text-success" data-feather="rotate-ccw"></i>
                                                     </a>
                                                 @else
-                                                    <a href="{{ route('dashboard.product.update', $product->id) }}"
-                                                       class="text-body">
+                                                    <a href="{{ route('dashboard.product.update', $product->id) }}" class="text-body">
                                                         <i data-feather="edit"></i>
                                                     </a>
-                                                    <a href="#" class="text-body"
-                                                       wire:click="priceEditModal({{ $product->id }})">
+                                                    <a href="#" class="text-body" wire:click="priceEditModal({{ $product->id }})">
                                                         <i class="text-success" data-feather="dollar-sign"></i>
                                                     </a>
-                                                    <a href="#" class="text-body"
-                                                       wire:click="deleteModal({{ $product->id }})">
+                                                    <a href="#" class="text-body" wire:click="deleteModal({{ $product->id }})">
                                                         <i class="text-danger" data-feather="trash"></i>
                                                     </a>
                                                 @endif
@@ -230,7 +228,7 @@
                             <div class="alert alert-warning" role="alert">
                                 <div class="alert-body d-flex align-items-center">
                                     <i data-feather="alert-circle" class="me-50"></i>
-                                    <span> ჩამონათვალი ცარიელია!</span>
+                                    <span>ჩამონათვალი ცარიელია!</span>
                                 </div>
                             </div>
                         </div>
@@ -241,7 +239,7 @@
         {{ $products->links() }}
     </div>
 
-    {{-- Global — დასახელებების ატვირთვა --}}
+    {{-- Global --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadGlobal">
@@ -254,21 +252,14 @@
                         <label class="form-label">აირჩიეთ ფაილი (.xlsx / .csv) — 1 სვეტი: დასახელება</label>
                         <input type="file"
                                class="form-control @error('global_file') border-danger is-invalid @enderror"
-                               wire:model="global_file"
-                               accept=".xlsx,.xls,.csv">
-                        @error('global_file')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                               wire:model="global_file" accept=".xlsx,.xls,.csv">
+                        @error('global_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
-                        <button type="submit"
-                                class="btn btn-primary me-1"
-                                wire:loading.attr="disabled"
-                                wire:target="uploadGlobal,global_file">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadGlobal,global_file">
                             <span wire:loading.remove wire:target="uploadGlobal">დამუშავება</span>
-                            <span wire:loading wire:target="uploadGlobal">
-                                <span class="spinner-border spinner-border-sm"></span>
-                            </span>
+                            <span wire:loading wire:target="uploadGlobal"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -276,7 +267,8 @@
             </form>
         </div>
     </div>
-    {{-- Midea — ექსელის ატვირთვა --}}
+
+    {{-- Midea --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadMideaModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadMidea">
@@ -289,19 +281,14 @@
                         <label class="form-label">ფაილი (.xlsx / .csv) — Model | Stock | Price</label>
                         <input type="file"
                                class="form-control @error('midea_file') border-danger is-invalid @enderror"
-                               wire:model="midea_file"
-                               accept=".xlsx,.xls,.csv">
-                        @error('midea_file')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                               wire:model="midea_file" accept=".xlsx,.xls,.csv">
+                        @error('midea_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadMidea,midea_file">
                             <span wire:loading.remove wire:target="uploadMidea">დამუშავება</span>
-                            <span wire:loading wire:target="uploadMidea">
-                            <span class="spinner-border spinner-border-sm"></span>
-                        </span>
+                            <span wire:loading wire:target="uploadMidea"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -309,6 +296,8 @@
             </form>
         </div>
     </div>
+
+    {{-- Filter --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="filterProductModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="applyFilters" wire:keydown.enter="applyFilters">
@@ -380,8 +369,7 @@
                         </select>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="status_active"
-                               wire:model.lazy="status_active">
+                        <input type="checkbox" class="form-check-input" id="status_active" wire:model.lazy="status_active">
                         <label class="form-check-label" for="status_active">მხოლოდ აქტიურები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
@@ -389,39 +377,35 @@
                         <label class="form-check-label" for="show_web">მხოლოდ საიტზე ნაჩვენები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="with_trashed"
-                               wire:model.lazy="with_trashed">
+                        <input type="checkbox" class="form-check-input" id="with_trashed" wire:model.lazy="with_trashed">
                         <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერების ჩვენება</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="unsorted"
-                               wire:model.lazy="unsorted">
+                        <input type="checkbox" class="form-check-input" id="unsorted" wire:model.lazy="unsorted">
                         <label class="form-check-label" for="unsorted">დაუხარისხებელი</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="no_brand"
-                               wire:model.lazy="no_brand">
+                        <input type="checkbox" class="form-check-input" id="no_brand" wire:model.lazy="no_brand">
                         <label class="form-check-label" for="no_brand">ბრენდის გარეშე</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="only_locked"
-                               wire:model.lazy="only_locked">
+                        <input type="checkbox" class="form-check-input" id="only_locked" wire:model.lazy="only_locked">
                         <label class="form-check-label" for="only_locked">მხოლოდ ჩაკეტილები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="draft"
-                               wire:model.lazy="draft">
+                        <input type="checkbox" class="form-check-input" id="draft" wire:model.lazy="draft">
                         <label class="form-check-label" for="draft">მხოლოდ Draft</label>
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
-                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+
+    {{-- Change Category --}}
     <div class="modal fade" wire:ignore.self id="changeCategoryModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -458,6 +442,8 @@
             </div>
         </div>
     </div>
+
+    {{-- Price Edit --}}
     <div class="modal fade" wire:ignore.self id="priceEditModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -468,22 +454,15 @@
                 <div class="modal-body">
                     <div class="mb-2">
                         <label class="form-label">ფასი <span class="text-danger">*</span></label>
-                        <input type="number"
-                               step="0.01"
+                        <input type="number" step="0.01"
                                class="form-control @error('priceEditRegularPrice') border-danger is-invalid @enderror"
-                               wire:model="priceEditRegularPrice"
-                               placeholder="0.00">
-                        @error('priceEditRegularPrice')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                               wire:model="priceEditRegularPrice" placeholder="0.00">
+                        @error('priceEditRegularPrice')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-2">
                         <label class="form-label">ფასდაკლების ფასი</label>
-                        <input type="number"
-                               step="0.01"
-                               class="form-control"
-                               wire:model="priceEditDiscountPrice"
-                               placeholder="0.00">
+                        <input type="number" step="0.01" class="form-control"
+                               wire:model="priceEditDiscountPrice" placeholder="0.00">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -493,16 +472,17 @@
             </div>
         </div>
     </div>
+
+    {{-- Change Brand --}}
     <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
+                    <h5 class="modal-title">ბრენდის ცვლილება</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-2">
-                        <label class="form-label"></label>
                         <select class="form-select" wire:model.live="selectedBrand">
                             <option value="">— აირჩიეთ —</option>
                             @foreach($brands->where('active', 1) as $brand)
@@ -518,30 +498,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" wire:ignore.self id="uploadEliteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content" wire:submit.prevent="uploadElite">
-                <div class="modal-header">
-                    <h5 class="modal-title">Elite Electronics — BarCode-ების ატვირთვა</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label class="form-label">Excel ფაილი (.xlsx)</label>
-                    <input type="file"
-                           name="elite_file"
-                           class="form-control"
-                           accept=".xlsx,.xls">
-                    <p class="text-muted small mt-2">
-                        ფორმატი: A სვეტი = BarCode, header-ის გარეშე. მაგ. <code>I102628</code>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">დაგზავნა</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
+    {{-- KontaktHome --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadKontaktModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadKontakt">
@@ -569,6 +527,8 @@
             </form>
         </div>
     </div>
+
+    {{-- Grandel --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadGrandel">
@@ -596,6 +556,8 @@
             </form>
         </div>
     </div>
+
+    {{-- Comfo --}}
     <div class="modal fade" wire:ignore.self id="uploadComfoModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content" wire:submit.prevent="uploadComfo">
@@ -609,9 +571,7 @@
                            wire:model="comfoFile" accept=".xlsx,.xls">
                     @error('comfoFile')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     <div wire:loading wire:target="comfoFile" class="text-muted small mt-1">იტვირთება...</div>
-                    <p class="text-muted small mt-2">
-                        სვეტები: A=ID, B=რაოდენობა, C=Product Link
-                    </p>
+                    <p class="text-muted small mt-2">სვეტები: A=ID, B=რაოდენობა, C=Product Link</p>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">დაგზავნა</button>
@@ -620,6 +580,41 @@
             </form>
         </div>
     </div>
+
+    {{-- Elite — BarCode-ების ატვირთვა (Midea-ს მსგავსი სტრუქტურა) --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadEliteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadElite">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Elite Electronics — BarCode-ების ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A სვეტი = BarCode (header-ის გარეშე)</label>
+                        <input type="file"
+                               class="form-control @error('elite_file') border-danger is-invalid @enderror"
+                               wire:model="elite_file"
+                               accept=".xlsx,.xls">
+                        @error('elite_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit"
+                                class="btn btn-primary me-1"
+                                wire:loading.attr="disabled"
+                                wire:target="uploadElite,elite_file">
+                            <span wire:loading.remove wire:target="uploadElite">დამუშავება</span>
+                            <span wire:loading wire:target="uploadElite">
+                                <span class="spinner-border spinner-border-sm"></span>
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 @section('page_scripts')
     <script>
@@ -654,29 +649,27 @@
         Livewire.on('filter_modal_close', () => {
             const modalEl = document.getElementById('filterProductModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
-            }
+            if (modal) modal.hide();
         });
 
         Livewire.on('uploadComfoModal_close', () => {
             bootstrap.Modal.getInstance(document.getElementById('uploadComfoModal'))?.hide();
         });
 
+        Livewire.on('uploadEliteModal_close', () => {
+            bootstrap.Modal.getInstance(document.getElementById('uploadEliteModal'))?.hide();
+        });
+
         Livewire.on('category_modal_close', () => {
             const modalEl = document.getElementById('changeCategoryModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
-            }
+            if (modal) modal.hide();
         });
 
         Livewire.on('brand_modal_close', () => {
             const modalEl = document.getElementById('changeBrandModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
-            }
+            if (modal) modal.hide();
         });
 
         Livewire.on('bulk_modal_close', () => {

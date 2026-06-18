@@ -69,7 +69,7 @@ class Index extends Component
 
     public bool $only_locked = false;
     public $comfoFile = null;
-    public $elite_file = null;
+    public $elite_file;
 
     public bool $no_brand = false;
 
