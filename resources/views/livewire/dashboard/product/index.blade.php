@@ -68,11 +68,6 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
                                         <i data-feather="upload"></i> Elite Excel
                                     </a>
-                                    <a class="dropdown-item"
-                                       href="{{ route('elite.scan') }}"
-                                       onclick="return confirm('დარწმუნებული ხარ? Elite სკანი დაიწყება (1-35000)')">
-                                        <i data-feather="search"></i> Elite სკანი
-                                    </a>
                                     <div class="dropdown-divider"></div>
                                     <button type="button" wire:click="uploadAlneo"
                                             wire:confirm="დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს"
