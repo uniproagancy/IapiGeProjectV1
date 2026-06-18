@@ -42,12 +42,6 @@ class EliteScanService
         return $this;
     }
 
-    public function setChunkSize(int $n): self
-    {
-        $this->chunkSize = $n;
-        return $this;
-    }
-
     public function scanAllIds(): array
     {
         @ini_set('memory_limit', '1024M');
@@ -136,7 +130,6 @@ class EliteScanService
 
                 $barCode = (string) $data['product']['barCode'];
 
-                // ✅ ფილტრი: მხოლოდ თუ barCode არის Excel-დან ატვირთულ ბაზაში
                 if (!isset($barCodeMap[$barCode])) {
                     $stats['skipped']++;
                     return;

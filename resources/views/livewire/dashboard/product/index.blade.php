@@ -55,15 +55,24 @@
                                     განახლების ატვირთვა
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                       data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                       data-bs-target="#uploadMideaModal">Midea</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMideaModal">Midea</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">KontaktHome</a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
                                         <i data-feather="upload"></i> Comfo Excel
                                     </a>
+
+                                    {{-- Elite --}}
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
+                                        <i data-feather="upload"></i> Elite Excel
+                                    </a>
+                                    <button type="button" wire:click="runEliteScan"
+                                            wire:confirm="დარწმუნებული ხარ? Elite-ის სკანი დაიწყება (1-35000)"
+                                            class="dropdown-item">
+                                        <i data-feather="search"></i> Elite სკანი
+                                    </button>
+
                                     <button type="button" wire:click="uploadAlneo"
                                             wire:confirm="დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს"
                                             class="btn btn-danger">
@@ -515,6 +524,39 @@
                     <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
+        </div>
+    </div>
+    {{-- Elite — ექსელის ატვირთვა --}}
+    <div class="modal fade" wire:ignore.self id="uploadEliteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" wire:submit.prevent="uploadElite">
+                <div class="modal-header">
+                    <h5 class="modal-title">Elite Electronics — BarCode-ების ატვირთვა</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Excel ფაილი (.xlsx)</label>
+                    <input type="file"
+                           class="form-control @error('elite_file') is-invalid @enderror"
+                           wire:model="elite_file"
+                           accept=".xlsx,.xls">
+                    @error('elite_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div wire:loading wire:target="elite_file" class="text-muted small mt-1">იტვირთება...</div>
+                    <p class="text-muted small mt-2">
+                        ფორმატი: A სვეტი = BarCode (header-ის გარეშე). მაგ. <code>I102628</code>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"
+                            wire:loading.attr="disabled" wire:target="uploadElite,elite_file">
+                        <span wire:loading.remove wire:target="uploadElite">დაგზავნა</span>
+                        <span wire:loading wire:target="uploadElite">
+                        <span class="spinner-border spinner-border-sm"></span>
+                    </span>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </form>
         </div>
     </div>
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadKontaktModal" tabindex="-1">

@@ -70,6 +70,8 @@ class Index extends Component
     public bool $only_locked = false;
     public $comfoFile = null;
 
+    public $elite_file;
+
     public bool $no_brand = false;
 
     protected $listeners = [
@@ -625,6 +627,39 @@ class Index extends Component
         $this->selectAll        = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი წაიშალა!");
+    }
+
+    public function uploadElite(): void
+    {
+        $this->validate([
+            'elite_file' => 'required|file|mimes:xlsx,xls|max:20480',
+        ]);
+
+        $path = $this->elite_file->store('elite-uploads', 'local');
+
+        \App\Jobs\EliteUploadJob::dispatch($path)->onQueue('elite');
+
+        $this->dispatch('ui:success', message: 'Elite Excel ატვირთვა დაიწყო. შედეგი ლოგებში.');
+        $this->reset('elite_file');
+        $this->dispatch('uploadEliteModal_close');
+    }
+
+    public function runEliteScan(): void
+    {
+        $unsynced = \App\Models\EliteProduct::where('synced', false)->count();
+
+        if ($unsynced === 0) {
+            $this->dispatch('ui:error', message: 'არ არის BarCode-ები სკანისთვის. ჯერ Excel ატვირთე.');
+            return;
+        }
+
+        dispatch(function () {
+            (new \App\Services\Products\EliteScanService())
+                ->setRange(1, 35000)
+                ->scanAllIds();
+        })->onQueue('elite');
+
+        $this->dispatch('ui:success', message: "Elite სკანი დაიწყო ($unsynced BarCode)");
     }
 
     public function bulkRestore(): void

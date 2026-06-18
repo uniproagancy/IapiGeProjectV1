@@ -35,57 +35,39 @@ class EliteUploadJob implements ShouldQueue
 
             $spreadsheet = IOFactory::load($fullPath);
             $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray(null, true, true, true);
 
             $inserted = 0;
-            $updated  = 0;
             $skipped  = 0;
+            $duplicate = 0;
 
-            // Excel ფორმატი:
-            // A = BarCode (required)
-            // B = Item Name (optional)
-            // C = Price (optional)
-            // D = Quantity (optional)
-            // პირველი row = header
+            // Excel ფორმატი: A სვეტი = BarCode (header-ის გარეშე)
+            foreach ($sheet->getRowIterator() as $row) {
+                $cell = $sheet->getCell('A' . $row->getRowIndex());
+                $barCode = trim((string) $cell->getValue());
 
-            foreach ($rows as $rowIndex => $row) {
-                if ($rowIndex === 1) continue; // header
-
-                $barCode = trim((string)($row['A'] ?? ''));
                 if (!$barCode) {
                     $skipped++;
                     continue;
                 }
 
-                $itemName = trim((string)($row['B'] ?? '')) ?: null;
-                $price    = isset($row['C']) && is_numeric($row['C']) ? (float)$row['C'] : null;
-                $quantity = isset($row['D']) && is_numeric($row['D']) ? (int)$row['D'] : 0;
-
                 $existing = EliteProduct::where('bar_code', $barCode)->first();
 
                 if ($existing) {
-                    $existing->update([
-                        'item_name' => $itemName ?? $existing->item_name,
-                        'price'     => $price ?? $existing->price,
-                        'quantity'  => $quantity,
-                    ]);
-                    $updated++;
-                } else {
-                    EliteProduct::create([
-                        'bar_code'  => $barCode,
-                        'item_name' => $itemName,
-                        'price'     => $price,
-                        'quantity'  => $quantity,
-                        'synced'    => false,
-                    ]);
-                    $inserted++;
+                    $duplicate++;
+                    continue;
                 }
+
+                EliteProduct::create([
+                    'bar_code' => $barCode,
+                    'synced'   => false,
+                ]);
+                $inserted++;
             }
 
             Log::info("✅ Elite Upload დასრულდა", [
-                'inserted' => $inserted,
-                'updated'  => $updated,
-                'skipped'  => $skipped,
+                'inserted'  => $inserted,
+                'duplicate' => $duplicate,
+                'skipped'   => $skipped,
             ]);
 
             Storage::delete($this->filePath);

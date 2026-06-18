@@ -47,7 +47,7 @@ class CreateEliteProductJob implements ShouldQueue
                 return;
             }
 
-            // SKU = BarCode (User-ის გადაწყვეტილებით)
+            // SKU = BarCode
             $sku = $barCode;
 
             // ფასი — JSON-დან როგორც არის
@@ -65,7 +65,7 @@ class CreateEliteProductJob implements ShouldQueue
                 return;
             }
 
-            // კატეგორია mapping-დან (db_product_categories.elite_category_id)
+            // კატეგორია mapping-დან
             $categoryId = $this->resolveCategoryId(
                 (int) ($product['categoryId'] ?? 0),
                 (string) ($product['categoryName'] ?? '')
@@ -112,7 +112,6 @@ class CreateEliteProductJob implements ShouldQueue
 
                 Log::info("➕ Elite: ახალი პროდუქტი", ['sku' => $sku, 'id' => $existingProduct->id]);
             } else {
-                // Update მხოლოდ მარაგი/ხილვადობა
                 $existingProduct->update([
                     'quantity' => $inStock ? max($quantity, 1) : 0,
                     'in_stock' => $inStock,
@@ -168,7 +167,7 @@ class CreateEliteProductJob implements ShouldQueue
                 }
             }
 
-            // EliteProduct-ი მონიშნე synced-ად
+            // EliteProduct synced
             EliteProduct::where('id', $this->eliteProductId)->update([
                 'synced'     => true,
                 'product_id' => $existingProduct->id,
@@ -184,10 +183,6 @@ class CreateEliteProductJob implements ShouldQueue
         }
     }
 
-    /**
-     * ee.ge categoryId → iapi category_id mapping
-     * (db_product_categories.elite_category_id)
-     */
     private function resolveCategoryId(int $eliteCategoryId, string $eliteCategoryName): int
     {
         if (!$eliteCategoryId) {
@@ -197,14 +192,12 @@ class CreateEliteProductJob implements ShouldQueue
         $category = ProductCategory::where('elite_category_id', $eliteCategoryId)->first();
 
         if ($category) {
-            // categoryName განვაახლოთ თუ ცარიელია ან განსხვავდება — admin გვერდისთვის
             if ($eliteCategoryName && $category->elite_category_name !== $eliteCategoryName) {
                 $category->update(['elite_category_name' => $eliteCategoryName]);
             }
             return $category->id;
         }
 
-        // არ არსებობს mapping — log რომ ნახე და ხელით mapping გაკეთდეს
         Log::info("📋 Elite: ახალი დაუმაპავი კატეგორია", [
             'elite_category_id'   => $eliteCategoryId,
             'elite_category_name' => $eliteCategoryName,
@@ -213,14 +206,10 @@ class CreateEliteProductJob implements ShouldQueue
         return self::FALLBACK_CATEGORY_ID;
     }
 
-    /**
-     * mainSpecification + specificationGroup → short specs (max 5)
-     */
     private function extractShortSpecs(array $product): array
     {
         $specs = [];
 
-        // 1. mainSpecification
         if (!empty($product['mainSpecification']) && is_array($product['mainSpecification'])) {
             foreach ($product['mainSpecification'] as $spec) {
                 $key   = trim((string) ($spec['specificationName'] ?? ''));
@@ -232,7 +221,6 @@ class CreateEliteProductJob implements ShouldQueue
             }
         }
 
-        // 2. specificationGroup-ის ყველა group-დან
         if (!empty($product['specificationGroup']) && is_array($product['specificationGroup'])) {
             foreach ($product['specificationGroup'] as $group) {
                 if (empty($group['specifications'])) continue;
@@ -250,9 +238,6 @@ class CreateEliteProductJob implements ShouldQueue
         return $specs;
     }
 
-    /**
-     * სურათის ჩამოტვირთვა local storage-ში
-     */
     private function downloadImage(string $url, int $productId): ?string
     {
         try {
@@ -264,10 +249,6 @@ class CreateEliteProductJob implements ShouldQueue
                 ->get($url);
 
             if (!$response->successful()) {
-                Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა (HTTP)", [
-                    'url'    => $url,
-                    'status' => $response->status(),
-                ]);
                 return null;
             }
 
@@ -285,10 +266,7 @@ class CreateEliteProductJob implements ShouldQueue
             return $path;
 
         } catch (\Throwable $e) {
-            Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა (exception)", [
-                'url'   => $url,
-                'error' => $e->getMessage(),
-            ]);
+            Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა", ['url' => $url, 'error' => $e->getMessage()]);
             return null;
         }
     }
