@@ -8,14 +8,13 @@
     @include('livewire.web.partials.content.hero-slider')
     @include('livewire.web.partials.features')
     @include('livewire.web.partials.sections-carousel', ['sections' => $homeSections, 'heading'  => 'საზაფხულო შემოთავაზება'])
+    @foreach($this->promotions->where('position', 1) as $promo)
+        1111
+        @if($promo->type === 1)
+            @include('livewire.web.product.promo-grid', ['promo' => $promo])
+        @endif
+    @endforeach
     @foreach($this->productCategories->where('parent_id', 0) as $index => $category)
-        @foreach($this->promotions->where('position', $index + 1) as $promo)
-            @if($promo->type === 1)
-                @include('livewire.web.product.promo-grid', ['promo' => $promo])
-            @else
-                @include('livewire.web.product.promo-banner', ['promo' => $promo])
-            @endif
-        @endforeach
         @if(count($this->productCategories->where('parent_id', 0)) / 2 === $index)
             <div style="background: #ff6900;padding: 0 0 25px;">
                 <section class="container py-4 mt-sm-3 mt-lg-5">
