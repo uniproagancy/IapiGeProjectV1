@@ -6,6 +6,7 @@ use App\Models\EliteProduct;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
@@ -49,13 +50,12 @@ class EliteProductJob implements ShouldQueue
                 return;
             }
 
-            // ✅ მთავარი შემოწმება: BarCode არის Excel-დან ატვირთულ სიაში?
+            // ✅ BarCode არის Excel-დან ატვირთულ სიაში?
             $eliteProduct = EliteProduct::where('bar_code', $barCode)
                 ->where('synced', false)
                 ->first();
 
             if (!$eliteProduct) {
-                // BarCode ჩვენს სიაში არ არის — გამოტოვება
                 return;
             }
 
@@ -74,18 +74,12 @@ class EliteProductJob implements ShouldQueue
                 return;
             }
 
-            // კატეგორია — Alta-ს მსგავსად სახელით
             $categoryId = $this->getCategoryId($this->productData);
+            $brandId    = $this->getBrandId($this->productData);
 
-            // ბრენდი — Alta-ს მსგავსად translations-ით
-            $brandId = $this->getBrandId($this->productData);
-
-            // Stock — Tbilisi შემოწმება
-            $hasStock = $this->checkTbilisiStock($this->availabilityInStores);
             $quantity = (int) ($this->productData['storageQuantity'] ?? 0);
-            $inStock  = $hasStock ? 1 : 0;
+            $inStock  = !empty($this->productData['isInStock']) ? 1 : 0;
 
-            // სურათები
             $images = [];
             if (!empty($this->productData['imageUrl'])) {
                 $images[] = $this->productData['imageUrl'];
@@ -95,7 +89,6 @@ class EliteProductJob implements ShouldQueue
             }
             $images = array_values(array_unique(array_filter($images)));
 
-            // Short specs
             $shortSpecs = $this->extractShortSpecs($this->productData);
 
             // ============ Product upsert ============
@@ -120,39 +113,48 @@ class EliteProductJob implements ShouldQueue
 
                 Log::info("➕ Elite: ახალი პროდუქტი", ['sku' => $sku, 'id' => $existing->id]);
             } else {
-                $existing->update([
-                    'quantity' => $inStock ? max($quantity, 1) : 0,
-                    'in_stock' => $inStock,
-                    'show'     => $inStock,
-                ]);
+                // განახლება მხოლოდ თუ update_lock=0
+                if (!$existing->update_lock) {
+                    $existing->update([
+                        'quantity' => $inStock ? max($quantity, 1) : 0,
+                        'in_stock' => $inStock,
+                        'show'     => $inStock,
+                    ]);
 
-                Log::info("🔄 Elite: განახლდა", ['sku' => $sku, 'id' => $existing->id]);
+                    Log::info("🔄 Elite: განახლდა", ['sku' => $sku, 'id' => $existing->id]);
+                } else {
+                    Log::info("🔒 Elite: ჩაკეტილია, გამოტოვება", ['sku' => $sku]);
+                }
             }
 
             // Translation
-            ProductTranslation::updateOrCreate(
-                ['product_id' => $existing->id, 'locale' => 'ka'],
-                [
-                    'title'       => $name,
-                    'slug'        => Str::slug($name) . '-' . $existing->id,
-                    'description' => trim((string) ($this->productData['description'] ?? '')),
-                ]
-            );
+            if ($isNew || !$existing->update_lock) {
+                ProductTranslation::updateOrCreate(
+                    ['product_id' => $existing->id, 'locale' => 'ka'],
+                    [
+                        'title'       => $name,
+                        'slug'        => Str::slug($name) . '-' . $existing->id,
+                        'description' => trim((string) ($this->productData['description'] ?? '')),
+                    ]
+                );
+            }
 
             // Price
-            ProductPrice::updateOrCreate(
-                ['product_id' => $existing->id],
-                [
-                    'dealer_price'     => $regularPrice,
-                    'regular_price'    => $regularPrice,
-                    'discount_price'   => $discountPrice,
-                    'discount_percent' => $discountPrice > 0
-                        ? (int) round((($regularPrice - $discountPrice) / $regularPrice) * 100)
-                        : 0,
-                ]
-            );
+            if ($isNew || !$existing->update_lock) {
+                ProductPrice::updateOrCreate(
+                    ['product_id' => $existing->id],
+                    [
+                        'dealer_price'     => $regularPrice,
+                        'regular_price'    => $regularPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $discountPrice > 0
+                            ? (int) round((($regularPrice - $discountPrice) / $regularPrice) * 100)
+                            : 0,
+                    ]
+                );
+            }
 
-            // Short specs (მხოლოდ ახალ პროდუქტზე)
+            // Short specs — მხოლოდ ახალ პროდუქტზე
             if ($isNew && !empty($shortSpecs)) {
                 $sortOrder = 0;
                 foreach ($shortSpecs as $key => $value) {
@@ -166,7 +168,12 @@ class EliteProductJob implements ShouldQueue
                 }
             }
 
-            // Main image (მხოლოდ ახალ პროდუქტზე)
+            // Full specs — ახალზეც და update-ზეც (update_lock=0 მაშინ)
+            if ($isNew || !$existing->update_lock) {
+                $this->saveFullSpecs($existing->id, $this->productData);
+            }
+
+            // Main image — მხოლოდ ახალ პროდუქტზე
             if ($isNew && !empty($images)) {
                 $localPath = $this->downloadImage($images[0], $existing->id);
                 if ($localPath) {
@@ -191,34 +198,78 @@ class EliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Category — Alta-ს მსგავსად სახელით
+    // Full Specifications — specificationGroup-დან
     // ============================================
 
-    private function getCategoryId(array $product): int
+    private function saveFullSpecs(int $productId, array $product): void
     {
-        $categoryName       = $product['categoryName'] ?? null;
-        $parentCategoryName = $product['parentCategoryName'] ?? null;
+        if (empty($product['specificationGroup']) || !is_array($product['specificationGroup'])) {
+            return;
+        }
+
+        // წინა specs წაშლა და ახლის შენახვა
+        $existingSections = ProductFullSpecificationSection::where('product_id', $productId)->get();
+        foreach ($existingSections as $section) {
+            $section->list()->delete();
+            $section->delete();
+        }
+
+        foreach ($product['specificationGroup'] as $group) {
+            $groupName = trim((string) ($group['groupName'] ?? ''));
+            $specs     = $group['specifications'] ?? [];
+
+            if (!$groupName || empty($specs)) {
+                continue;
+            }
+
+            $section = ProductFullSpecificationSection::create([
+                'product_id' => $productId,
+                'name'       => $groupName,
+            ]);
+
+            foreach ($specs as $spec) {
+                $specName  = trim((string) ($spec['specificationName'] ?? ''));
+                $specValue = trim((string) ($spec['specificationMeaning'] ?? ''));
+
+                if (!$specName || !$specValue) {
+                    continue;
+                }
+
+                $section->list()->create([
+                    'name'   => $specName,
+                    'value'  => $specValue,
+                    'filter' => 0,
+                ]);
+            }
+        }
+    }
+
+    // ============================================
+    // Category
+    // ============================================
+
+    private function getCategoryId(array $productData): int
+    {
+        $categoryName = $productData['categoryName'] ?? null;
 
         if ($categoryName) {
-            $category = ProductCategory::where('elite_category_name', $categoryName)->first();
-            if ($category) return $category->id;
+            $category = ProductCategory::whereRaw(
+                'LOWER(TRIM(elite_category_name)) = ?',
+                [mb_strtolower(trim($categoryName))]
+            )->first();
+
+            if ($category) {
+                Log::info("✅ Elite category mapped: '{$categoryName}' → category_id={$category->id}");
+                return $category->id;
+            }
         }
 
-        if ($parentCategoryName) {
-            $category = ProductCategory::where('elite_category_name', $parentCategoryName)->first();
-            if ($category) return $category->id;
-        }
-
-        Log::info("⚠️ Elite: კატეგორია არ არის მაპავი", [
-            'categoryName'       => $categoryName,
-            'parentCategoryName' => $parentCategoryName,
-        ]);
-
+        Log::warning("⚠️ Elite category not mapped: categoryName='{$categoryName}'");
         return self::FALLBACK_CATEGORY_ID;
     }
 
     // ============================================
-    // Brand — Alta-ს მსგავსად translations-ით
+    // Brand
     // ============================================
 
     private function getBrandId(array $product): int
@@ -258,21 +309,6 @@ class EliteProductJob implements ShouldQueue
             Log::warning("⚠️ Elite: ბრენდი ვერ მოიძებნა", ['error' => $e->getMessage()]);
             return self::DEFAULT_BRAND_ID;
         }
-    }
-
-    // ============================================
-    // Stock — Zoommer-ის მსგავსად Tbilisi შემოწმება
-    // ============================================
-
-    private function checkTbilisiStock(array $availability): bool
-    {
-        if (empty($availability)) {
-            return false;
-        }
-
-        return collect($availability)
-            ->where('city', 'თბილისი')
-            ->contains(fn ($store) => $store['inStock'] === true);
     }
 
     // ============================================
