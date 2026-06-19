@@ -5,8 +5,11 @@ namespace App\Jobs;
 use App\Models\EliteProduct;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductCategory;
+use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
+use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
@@ -16,6 +19,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -26,222 +30,232 @@ class EliteProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
-    public int $timeout = 300;
+    protected array $productData         = [];
+    protected array $productAvailability = [];
+
+    public int $tries             = 3;
+    public int $timeout           = 300;
+    public int $maxExceptions     = 3;
+    public int $backoffMultiplier = 2;
 
     private const SUPPLIER_ID          = 11;
     private const DEFAULT_BRAND_ID     = 1;
     private const FALLBACK_CATEGORY_ID = 204;
+    private const CACHE_DURATION_BRAND = 24 * 60;
+    private const MAX_IMAGE_SIZE       = 5 * 1024 * 1024;
     private const SHORT_SPEC_LIMIT     = 5;
 
-    public function __construct(
-        protected array $productData,
-        protected array $availabilityInStores = []
-    ) {}
+    public function __construct(array $productData = [], array $productAvailability = [])
+    {
+        $this->productData         = $productData;
+        $this->productAvailability = $productAvailability;
+    }
 
     public function handle(): void
     {
         try {
-            $barCode = (string) ($this->productData['barCode'] ?? '');
-            $name    = trim((string) ($this->productData['name'] ?? ''));
-
-            if (!$barCode || !$name) {
-                Log::warning("⛔ Elite: name/barCode ცარიელია");
+            if (empty($this->productData) || empty($this->productData['barCode'])) {
+                Log::warning('⚠️ EliteProductJob: productData is empty or missing barCode');
                 return;
             }
 
-            // ✅ BarCode არის Excel-დან ატვირთულ სიაში?
-            $eliteProduct = EliteProduct::where('bar_code', $barCode)
-                ->where('synced', false)
-                ->first();
-
-            if (!$eliteProduct) {
-                return;
-            }
-
-            // ფასი
-            $regularPrice  = (float) ($this->productData['price'] ?? 0);
-            $previousPrice = (float) ($this->productData['previousPrice'] ?? 0);
-            $discountPrice = 0.0;
-
-            if ($previousPrice > 0 && $previousPrice > $regularPrice) {
-                $discountPrice = $regularPrice;
-                $regularPrice  = $previousPrice;
-            }
-
-            if ($regularPrice <= 0) {
-                Log::warning("⛔ Elite: ფასი 0", ['barCode' => $barCode]);
-                return;
-            }
-
-            $categoryId = $this->getCategoryId($this->productData);
-            $brandId    = $this->getBrandId($this->productData);
-
-            $quantity = (int) ($this->productData['storageQuantity'] ?? 0);
-            $inStock  = !empty($this->productData['isInStock']) ? 1 : 0;
-
-            $images = [];
-            if (!empty($this->productData['imageUrl'])) {
-                $images[] = $this->productData['imageUrl'];
-            }
-            if (!empty($this->productData['images']) && is_array($this->productData['images'])) {
-                $images = array_merge($images, $this->productData['images']);
-            }
-            $images = array_values(array_unique(array_filter($images)));
-
-            $shortSpecs = $this->extractShortSpecs($this->productData);
-
-            // ============ Product upsert ============
-            $sku      = 'ELITE-' . $barCode;
-            $existing = Product::where('sku', $sku)->first();
-            $isNew    = !$existing;
-
-            if ($isNew) {
-                $existing = Product::create([
-                    'sku'           => $sku,
-                    'supplier_id'   => self::SUPPLIER_ID,
-                    'brand_id'      => $brandId,
-                    'category_id'   => $categoryId,
-                    'quantity'      => $inStock ? max($quantity, 1) : 0,
-                    'in_stock'      => $inStock,
-                    'show'          => $inStock,
-                    'active'        => 1,
-                    'main_image'    => null,
-                    'update_lock'   => 0,
-                    'taxonomy_lock' => 0,
-                ]);
-
-                Log::info("➕ Elite: ახალი პროდუქტი", ['sku' => $sku, 'id' => $existing->id]);
-            } else {
-                // განახლება მხოლოდ თუ update_lock=0
-                if (!$existing->update_lock) {
-                    $existing->update([
-                        'quantity' => $inStock ? max($quantity, 1) : 0,
-                        'in_stock' => $inStock,
-                        'show'     => $inStock,
-                    ]);
-
-                    Log::info("🔄 Elite: განახლდა", ['sku' => $sku, 'id' => $existing->id]);
-                } else {
-                    Log::info("🔒 Elite: ჩაკეტილია, გამოტოვება", ['sku' => $sku]);
-                }
-            }
-
-            // Translation
-            if ($isNew || !$existing->update_lock) {
-                ProductTranslation::updateOrCreate(
-                    ['product_id' => $existing->id, 'locale' => 'ka'],
-                    [
-                        'title'       => $name,
-                        'slug'        => Str::slug($name) . '-' . $existing->id,
-                        'description' => trim((string) ($this->productData['description'] ?? '')),
-                    ]
-                );
-            }
-
-            // Price
-            if ($isNew || !$existing->update_lock) {
-                ProductPrice::updateOrCreate(
-                    ['product_id' => $existing->id],
-                    [
-                        'dealer_price'     => $regularPrice,
-                        'regular_price'    => $regularPrice,
-                        'discount_price'   => $discountPrice,
-                        'discount_percent' => $discountPrice > 0
-                            ? (int) round((($regularPrice - $discountPrice) / $regularPrice) * 100)
-                            : 0,
-                    ]
-                );
-            }
-
-            // Short specs — მხოლოდ ახალ პროდუქტზე
-            if ($isNew && !empty($shortSpecs)) {
-                $sortOrder = 0;
-                foreach ($shortSpecs as $key => $value) {
-                    ProductShortSpecification::create([
-                        'product_id' => $existing->id,
-                        'locale'     => 'ka',
-                        'name'       => $key,
-                        'value'      => $value,
-                        'sort_order' => $sortOrder++,
-                    ]);
-                }
-            }
-
-            // Full specs — ახალზეც და update-ზეც (update_lock=0 მაშინ)
-            if ($isNew || !$existing->update_lock) {
-                $this->saveFullSpecs($existing->id, $this->productData);
-            }
-
-            // Main image — მხოლოდ ახალ პროდუქტზე
-            if ($isNew && !empty($images)) {
-                $localPath = $this->downloadImage($images[0], $existing->id);
-                if ($localPath) {
-                    $existing->update(['main_image' => $localPath]);
-                }
-            }
-
-            // EliteProduct → synced
-            $eliteProduct->update([
-                'synced'     => true,
-                'product_id' => $existing->id,
+            Log::info("🔄 Processing Elite product: {$this->productData['barCode']}", [
+                'attempt' => $this->attempts(),
             ]);
+
+            $this->saveProduct($this->productData, $this->productAvailability);
+
+            Log::info("✅ Elite product saved: {$this->productData['barCode']}");
 
         } catch (Exception $e) {
-            Log::error("❌ Elite Import შეცდომა", [
-                'barCode' => $this->productData['barCode'] ?? null,
-                'error'   => $e->getMessage(),
-                'line'    => $e->getLine(),
+            $barCode = $this->productData['barCode'] ?? 'unknown';
+            Log::error("❌ Error processing Elite product {$barCode}: {$e->getMessage()}", [
+                'attempt' => $this->attempts(),
+                'trace'   => $e->getTraceAsString(),
             ]);
+
+            if ($this->attempts() < $this->tries) {
+                $this->release($this->getRetryDelay());
+            } else {
+                Log::critical("🚫 Elite job permanently failed: {$barCode}", [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    private function getRetryDelay(): int
+    {
+        return pow($this->backoffMultiplier, $this->attempts()) * 60;
+    }
+
+    public function failed(Exception $exception): void
+    {
+        $barCode = $this->productData['barCode'] ?? 'unknown';
+        Log::error("🚨 Elite job permanently failed for product {$barCode}", [
+            'error'    => $exception->getMessage(),
+            'attempts' => $this->attempts(),
+        ]);
+    }
+
+    public function saveProduct(array $productData, array $productAvailability): void
+    {
+        $barCode = (string) ($productData['barCode'] ?? '');
+
+        if (!$barCode) {
+            Log::warning('⚠️ Elite: barCode ცარიელია');
+            return;
+        }
+
+        // ✅ BarCode ჩვენს სიაშია?
+        $eliteProduct = EliteProduct::where('bar_code', $barCode)->first();
+
+        if (!$eliteProduct) {
+            return;
+        }
+
+        $sku      = 'ELITE-' . $barCode;
+        $existing = Product::where('sku', $sku)->first();
+        $exists   = (bool) $existing;
+
+        if ($exists) {
+            $this->updateExistingProduct($productData, $sku, $eliteProduct);
+        } else {
+            $this->createNewProduct($productData, $sku, $eliteProduct);
+        }
+    }
+
+    // ============================================
+    // Stock
+    // ============================================
+
+    private function checkTbilisiStock(array $availability): bool
+    {
+        if (empty($availability)) {
+            return false;
+        }
+
+        return collect($availability)
+            ->where('city', 'თბილისი')
+            ->contains(fn ($store) => $store['inStock'] === true);
+    }
+
+    // ============================================
+    // Update
+    // ============================================
+
+    private function updateExistingProduct(array $productData, string $sku, EliteProduct $eliteProduct): void
+    {
+        try {
+            $product = Product::where('sku', $sku)->firstOrFail();
+
+            DB::transaction(function () use ($product, $productData, $sku, $eliteProduct) {
+                $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+                $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+
+                ProductPrice::updateOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'dealer_price'     => $productPrice,
+                        'regular_price'    => $productPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $productData['discountPercent'] ?? 0,
+                    ]
+                );
+
+                $inStock  = !empty($productData['isInStock']) ? 1 : 0;
+                $quantity = (int) ($productData['storageQuantity'] ?? 0);
+
+                $updateData = [
+                    'quantity' => $inStock ? max($quantity, 1) : 0,
+                    'in_stock' => $inStock,
+                    'show'     => $inStock,
+                    'active'   => $inStock,
+                ];
+
+                if (!$product->taxonomy_lock) {
+                    $updateData['category_id'] = $this->getCategoryId($productData);
+                    $updateData['brand_id']    = $this->getBrandId($productData);
+                } else {
+                    Log::info("🏷️ Elite: taxonomy locked, category/brand უცვლელი — {$sku}");
+                }
+
+                $product->update($updateData);
+
+                if (!empty($productData['description'])) {
+                    ProductTranslation::where('product_id', $product->id)
+                        ->where('locale', 'ka')
+                        ->update(['description' => $this->sanitizeString($productData['description'])]);
+                }
+
+                ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                $this->createShortSpecifications($product, $productData);
+
+                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
+                ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                $this->createFullSpecifications($product, $productData);
+
+                $eliteProduct->update([
+                    'synced'     => true,
+                    'product_id' => $product->id,
+                ]);
+
+                Log::info("🔁 Updated Elite product: {$product->id}");
+            });
+
+        } catch (Exception $e) {
+            Log::error("❌ Error updating Elite product {$sku}: {$e->getMessage()}");
             throw $e;
         }
     }
 
     // ============================================
-    // Full Specifications — specificationGroup-დან
+    // Create
     // ============================================
 
-    private function saveFullSpecs(int $productId, array $product): void
+    private function createNewProduct(array $productData, string $sku, EliteProduct $eliteProduct): void
     {
-        if (empty($product['specificationGroup']) || !is_array($product['specificationGroup'])) {
-            return;
-        }
+        DB::transaction(function () use ($productData, $sku, $eliteProduct) {
+            try {
+                $brandId    = $this->getBrandId($productData);
+                $categoryId = $this->getCategoryId($productData);
 
-        // წინა specs წაშლა და ახლის შენახვა
-        $existingSections = ProductFullSpecificationSection::where('product_id', $productId)->get();
-        foreach ($existingSections as $section) {
-            $section->list()->delete();
-            $section->delete();
-        }
+                $inStock  = !empty($productData['isInStock']) ? 1 : 0;
+                $quantity = (int) ($productData['storageQuantity'] ?? 0);
 
-        foreach ($product['specificationGroup'] as $group) {
-            $groupName = trim((string) ($group['groupName'] ?? ''));
-            $specs     = $group['specifications'] ?? [];
-
-            if (!$groupName || empty($specs)) {
-                continue;
-            }
-
-            $section = ProductFullSpecificationSection::create([
-                'product_id' => $productId,
-                'name'       => $groupName,
-            ]);
-
-            foreach ($specs as $spec) {
-                $specName  = trim((string) ($spec['specificationName'] ?? ''));
-                $specValue = trim((string) ($spec['specificationMeaning'] ?? ''));
-
-                if (!$specName || !$specValue) {
-                    continue;
-                }
-
-                $section->list()->create([
-                    'name'   => $specName,
-                    'value'  => $specValue,
-                    'filter' => 0,
+                $product = Product::create([
+                    'brand_id'      => $brandId,
+                    'category_id'   => $categoryId,
+                    'sku'           => $sku,
+                    'supplier_id'   => self::SUPPLIER_ID,
+                    'main_image'    => null,
+                    'active'        => 1,
+                    'quantity'      => $inStock ? max($quantity, 1) : 0,
+                    'in_stock'      => $inStock,
+                    'show'          => $inStock,
+                    'update_lock'   => 0,
+                    'taxonomy_lock' => 0,
                 ]);
+
+                $this->createPrice($product, $productData);
+                $this->createTranslations($product, $productData);
+                $this->createFullSpecifications($product, $productData);
+                $this->createShortSpecifications($product, $productData);
+                $this->downloadAndSaveImages($product, $productData);
+
+                $eliteProduct->update([
+                    'synced'     => true,
+                    'product_id' => $product->id,
+                ]);
+
+                Log::info("✨ Created new Elite product: {$product->id}, category: {$categoryId}, brand: {$brandId}");
+
+            } catch (Exception $e) {
+                Log::error("❌ Error creating Elite product: {$e->getMessage()}");
+                throw $e;
             }
-        }
+        });
     }
 
     // ============================================
@@ -272,13 +286,13 @@ class EliteProductJob implements ShouldQueue
     // Brand
     // ============================================
 
-    private function getBrandId(array $product): int
+    private function getBrandId(array $productData): int
     {
         try {
-            $brandName = $product['brandName'] ?? null;
+            $brandName = $productData['brandName'] ?? null;
 
             if (empty($brandName)) {
-                foreach ($product['specificationGroup'] ?? [] as $group) {
+                foreach ($productData['specificationGroup'] ?? [] as $group) {
                     foreach ($group['specifications'] ?? [] as $spec) {
                         if (in_array($spec['specificationName'], ['ბრენდი', 'Brand', 'Бренд'])) {
                             $brandName = $spec['specificationMeaning'] ?? null;
@@ -292,103 +306,308 @@ class EliteProductJob implements ShouldQueue
                 return self::DEFAULT_BRAND_ID;
             }
 
+            $normalized = mb_strtolower(trim($brandName));
+
             return Cache::remember(
-                'elite_brand_' . md5($brandName),
-                now()->addHours(24),
-                function () use ($brandName) {
-                    $brand = ProductBrand::whereHas(
-                        'translations',
-                        fn ($q) => $q->where('title', 'like', $brandName)
+                'elite_brand_' . md5($normalized),
+                now()->addMinutes(self::CACHE_DURATION_BRAND),
+                function () use ($brandName, $normalized) {
+                    $brand = ProductBrand::whereHas('translations',
+                        fn ($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
                     )->first();
 
-                    return $brand->id ?? self::DEFAULT_BRAND_ID;
+                    if ($brand) {
+                        Log::info("✅ Elite brand found: '{$brandName}' → brand_id={$brand->id}");
+                        return $brand->id;
+                    }
+
+                    // Alta-ს მსგავსად: ბრენდი ვერ მოიძებნა → ახალი შევქმნათ
+                    $newBrand = ProductBrand::create([
+                        'active' => 1,
+                        'show'   => 1,
+                    ]);
+
+                    ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'ka',
+                        'title'            => $brandName,
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
+                    ]);
+
+                    ProductBrandTranslation::create([
+                        'product_brand_id' => $newBrand->id,
+                        'locale'           => 'en',
+                        'title'            => $brandName,
+                        'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
+                    ]);
+
+                    Log::info("✨ Elite: New brand created: '{$brandName}', id={$newBrand->id}");
+
+                    return $newBrand->id;
                 }
             );
 
         } catch (Exception $e) {
-            Log::warning("⚠️ Elite: ბრენდი ვერ მოიძებნა", ['error' => $e->getMessage()]);
+            Log::warning("⚠️ Error finding/creating Elite brand: {$e->getMessage()}");
             return self::DEFAULT_BRAND_ID;
         }
     }
 
     // ============================================
-    // Short Specs
+    // Price
     // ============================================
 
-    private function extractShortSpecs(array $product): array
+    private function createPrice(Product $product, array $productData): void
     {
-        $specs = [];
+        try {
+            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-        if (!empty($product['mainSpecification']) && is_array($product['mainSpecification'])) {
-            foreach ($product['mainSpecification'] as $spec) {
-                $key   = trim((string) ($spec['specificationName'] ?? ''));
-                $value = trim((string) ($spec['specificationMeaning'] ?? ''));
-                if ($key && $value && !isset($specs[$key])) {
-                    $specs[$key] = $value;
-                    if (count($specs) >= self::SHORT_SPEC_LIMIT) return $specs;
-                }
-            }
+            ProductPrice::create([
+                'product_id'       => $product->id,
+                'dealer_price'     => $productPrice,
+                'regular_price'    => $productPrice,
+                'discount_price'   => $discountPrice,
+                'discount_percent' => $productData['discountPercent'] ?? 0,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating price for Elite product {$product->id}: {$e->getMessage()}");
+            throw $e;
         }
+    }
 
-        if (!empty($product['specificationGroup']) && is_array($product['specificationGroup'])) {
-            foreach ($product['specificationGroup'] as $group) {
-                if (empty($group['specifications'])) continue;
-                foreach ($group['specifications'] as $spec) {
-                    $key   = trim((string) ($spec['specificationName'] ?? ''));
-                    $value = trim((string) ($spec['specificationMeaning'] ?? ''));
-                    if ($key && $value && !isset($specs[$key])) {
-                        $specs[$key] = $value;
-                        if (count($specs) >= self::SHORT_SPEC_LIMIT) return $specs;
+    // ============================================
+    // Translations
+    // ============================================
+
+    private function createTranslations(Product $product, array $productData): void
+    {
+        try {
+            $productName = $this->sanitizeString($productData['name']) ?: 'Unnamed Product';
+            $baseSlug    = Str::slug($productName) . "-{$product->id}";
+
+            foreach (['ka', 'en', 'ru'] as $locale) {
+                ProductTranslation::create([
+                    'product_id'  => $product->id,
+                    'locale'      => $locale,
+                    'title'       => $productName,
+                    'slug'        => $baseSlug,
+                    'description' => $locale === 'ka'
+                        ? $this->sanitizeString($productData['description'] ?? null)
+                        : null,
+                    'keywords'    => null,
+                ]);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating translations for Elite product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    // ============================================
+    // Full Specifications — Alta-ს ზუსტი პატერნი
+    // ============================================
+
+    private function createFullSpecifications(Product $product, array $productData): void
+    {
+        try {
+            if (empty($productData['specificationGroup'])) {
+                return;
+            }
+
+            foreach ($productData['specificationGroup'] as $specificationGroup) {
+                if (empty($specificationGroup['groupName'])) {
+                    continue;
+                }
+
+                $section = ProductFullSpecificationSection::create([
+                    'product_id' => $product->id,
+                    'name'       => $specificationGroup['groupName'],
+                ]);
+
+                if (!empty($specificationGroup['specifications'])) {
+                    foreach ($specificationGroup['specifications'] as $spec) {
+                        if (empty($spec['specificationName'])) {
+                            continue;
+                        }
+
+                        ProductFullSpecificationItem::create([
+                            'section_id' => $section->id,
+                            'name'       => $this->sanitizeString($spec['specificationName']),
+                            'value'      => $this->sanitizeString($spec['specificationMeaning'] ?? null),
+                            'filter'     => 0,
+                        ]);
                     }
                 }
             }
-        }
-
-        return $specs;
-    }
-
-    // ============================================
-    // Image Download
-    // ============================================
-
-    private function downloadImage(string $url, int $productId): ?string
-    {
-        try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-                    'Referer'    => 'https://ee.ge/',
-                ])
-                ->get($url);
-
-            if (!$response->successful()) {
-                return null;
-            }
-
-            $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg');
-            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                $ext = 'jpg';
-            }
-
-            $path = "uploads/products/{$productId}/main_" . time() . ".{$ext}";
-            Storage::disk('public')->put($path, $response->body());
-
-            return $path;
 
         } catch (Exception $e) {
-            Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა", [
-                'url'   => $url,
-                'error' => $e->getMessage(),
-            ]);
-            return null;
+            Log::error("❌ Error creating full specs for Elite product {$product->id}: {$e->getMessage()}");
+            throw $e;
         }
     }
 
-    public function failed(Exception $exception): void
+    // ============================================
+    // Short Specifications — Alta-ს მსგავსი bulk insert
+    // ============================================
+
+    private function createShortSpecifications(Product $product, array $productData): void
     {
-        Log::error("🚨 EliteProductJob permanently failed", [
-            'barCode' => $this->productData['barCode'] ?? null,
-            'error'   => $exception->getMessage(),
-        ]);
+        try {
+            if (empty($productData['mainSpecification'])) {
+                return;
+            }
+
+            $specs = [];
+            $count = 0;
+
+            foreach ($productData['mainSpecification'] as $spec) {
+                if ($count >= self::SHORT_SPEC_LIMIT) break;
+
+                $name  = $this->sanitizeString($spec['specificationName'] ?? null);
+                $value = $this->sanitizeString($spec['specificationMeaning'] ?? null);
+
+                if (empty($name)) continue;
+
+                $specs[] = [
+                    'product_id' => $product->id,
+                    'locale'     => 'ka',
+                    'name'       => $name,
+                    'value'      => $value ?? '',
+                    'sort_order' => $count,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                $count++;
+            }
+
+            if (!empty($specs)) {
+                ProductShortSpecification::insert($specs);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error creating short specs for Elite product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    // ============================================
+    // Images — Alta-ს მსგავსი (main + gallery)
+    // ============================================
+
+    private function downloadAndSaveImages(Product $product, array $productData): void
+    {
+        try {
+            $images = [];
+            if (!empty($productData['imageUrl'])) {
+                $images[] = $productData['imageUrl'];
+            }
+            if (!empty($productData['images']) && is_array($productData['images'])) {
+                $images = array_merge($images, $productData['images']);
+            }
+            $images = array_values(array_unique(array_filter($images)));
+
+            if (empty($images)) {
+                return;
+            }
+
+            $processedUrls = [];
+            $mainImageSet  = false;
+            $galleryImages = [];
+
+            foreach ($images as $index => $imageUrl) {
+                if (in_array($imageUrl, $processedUrls)) {
+                    continue;
+                }
+                $processedUrls[] = $imageUrl;
+
+                try {
+                    $response = Http::timeout(30)
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+                            'Referer'    => 'https://ee.ge/',
+                        ])
+                        ->get($imageUrl);
+
+                    if (!$response->successful()) {
+                        Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა: {$imageUrl}");
+                        continue;
+                    }
+
+                    $imageSize = strlen($response->body());
+                    if ($imageSize > self::MAX_IMAGE_SIZE) {
+                        Log::warning("⚠️ Elite: სურათი ძალიან დიდია ({$imageSize} bytes): {$imageUrl}");
+                        continue;
+                    }
+
+                    $ext      = $this->getImageExtension($imageUrl);
+                    $filename = Str::random(40) . '.' . $ext;
+                    $path     = "uploads/products/{$product->id}/{$filename}";
+
+                    Storage::disk('public')->put($path, $response->body());
+
+                    if ($index === 0 && !$mainImageSet) {
+                        $product->update(['main_image' => $path]);
+                        $mainImageSet = true;
+                    } else {
+                        $galleryImages[] = [
+                            'product_id' => $product->id,
+                            'path'       => $path,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                } catch (Exception $e) {
+                    Log::warning("⚠️ Elite: სურათის შეცდომა: {$e->getMessage()}");
+                    continue;
+                }
+            }
+
+            if (!empty($galleryImages)) {
+                ProductImage::insert($galleryImages);
+                Log::info("📦 Elite: Inserted " . count($galleryImages) . " gallery images for product {$product->id}");
+            }
+
+            if (!$mainImageSet) {
+                $product->update(['main_image' => null]);
+            }
+
+        } catch (Exception $e) {
+            Log::error("❌ Error downloading images for Elite product {$product->id}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    // ============================================
+    // Helpers
+    // ============================================
+
+    private function sanitizeString(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+        $trimmed = trim($value);
+        return !empty($trimmed) ? $trimmed : null;
+    }
+
+    protected function getImageExtension(string $url): string
+    {
+        try {
+            $parsed = parse_url($url);
+            $path   = $parsed['path'] ?? '';
+            $ext    = pathinfo($path, PATHINFO_EXTENSION);
+
+            $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
+
+        } catch (Exception $e) {
+            Log::warning("⚠️ Error getting image extension: {$e->getMessage()}");
+            return 'jpg';
+        }
     }
 }
