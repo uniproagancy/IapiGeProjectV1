@@ -473,10 +473,8 @@ class EliteProductJob implements ShouldQueue
 
                 $specs[] = [
                     'product_id' => $product->id,
-                    'locale'     => 'ka',
                     'name'       => $name,
                     'value'      => $value ?? '',
-                    'sort_order' => $count,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
