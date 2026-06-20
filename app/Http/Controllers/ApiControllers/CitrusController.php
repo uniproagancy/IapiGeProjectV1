@@ -34,7 +34,7 @@ class CitrusController extends Controller
     public function import(Request $request): JsonResponse
     {
         $request->validate([
-            'product_url' => 'required|url',
+            'product_url' => 'required',
             'supplier_id' => 'required|integer',
             'category_id' => 'required|integer|exists:db_product_categories,id',
             'brand_id'    => 'required|integer|exists:db_product_brands,id',
