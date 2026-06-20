@@ -551,7 +551,7 @@ class Index extends Component
 
                 if (!$model) { $skipped++; continue; }
 
-                \App\Jobs\MetromartSearchJob::dispatch($model)->onQueue('metromart');
+                \App\Jobs\MetromartProductJob::dispatch($model)->onQueue('metromart');
                 $dispatched++;
             }
 
