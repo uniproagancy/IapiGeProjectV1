@@ -46,7 +46,7 @@ class CitrusController extends Controller
         try {
             $service     = new CitrusProduct();
             $productData = $service->getProduct($request->product_url);
-
+            dd($productData);
             if (empty($productData) || empty($productData['id'])) {
                 return response()->json(['success' => false, 'message' => 'პროდუქტი ვერ მოიძებნა'], 404);
             }
