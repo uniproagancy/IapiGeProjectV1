@@ -4,33 +4,6 @@
           content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
 @endsection
 
-@php
-    /**
-     * ბანერების კონფიგი — დაამატე / შეცვალე რამდენიც გინდა
-     *
-     * after_index  — რომელი კატეგორიის შემდეგ გამოჩნდეს (0-დან იწყება)
-     * image        — სურათის პათი public_path-დან
-     * link         — ბანერის ლინკი
-     * alt          — alt ტექსტი
-     */
-    $banners = [
-        [
-            'after_index' => 2,
-            'image'       => asset('banners/banner1.jpg'),
-            'link'        => '/promotions',
-            'alt'         => 'აქცია',
-        ],
-        [
-            'after_index' => 5,
-            'image'       => asset('banners/banner2.jpg'),
-            'link'        => '/sale',
-            'alt'         => 'ფასდაკლება',
-        ],
-        // დამატება: ['after_index' => 8, 'image' => asset('banners/banner3.jpg'), 'link' => '/...', 'alt' => '...'],
-    ];
-
-@endphp
-
 <div>
     @include('livewire.web.partials.content.hero-slider')
     @include('livewire.web.partials.features')
@@ -42,14 +15,15 @@
         @endif
     @endforeach
 
-    @foreach($this->productCategories->where('parent_id', 0) as $index => $category)
+    @php $catIndex = 0; @endphp
+    @foreach($this->productCategories->where('parent_id', 0) as $category)
 
-        {{-- ბრენდები — კატეგორიების შუაში --}}
-        @if(count($this->productCategories->where('parent_id', 0)) / 2 === $index)
+        {{-- ბრენდები შუაში --}}
+        @if(count($this->productCategories->where('parent_id', 0)) / 2 === $catIndex)
             <div style="background: #ff6900; padding: 0 0 25px;">
                 <section class="container py-4 mt-sm-3 mt-lg-5">
                     <div class="position-relative">
-                        <div class="product-swiper overflow-hidden" data-section="brand-{{ $index }}">
+                        <div class="product-swiper overflow-hidden" data-section="brand-{{ $catIndex }}">
                             <div class="swiper-wrapper">
                                 @foreach($this->brands as $brand)
                                     @if(file_exists(public_path('web-assets/brands/' . $brand->id . '.svg')))
@@ -65,8 +39,8 @@
                                 @endforeach
                             </div>
                         </div>
-                        <div class="swiper-prev" data-section="brand-{{ $index }}"><i class="ci-chevron-left"></i></div>
-                        <div class="swiper-next" data-section="brand-{{ $index }}"><i class="ci-chevron-right"></i></div>
+                        <div class="swiper-prev" data-section="brand-{{ $catIndex }}"><i class="ci-chevron-left"></i></div>
+                        <div class="swiper-next" data-section="brand-{{ $catIndex }}"><i class="ci-chevron-right"></i></div>
                     </div>
                 </section>
             </div>
@@ -79,21 +53,34 @@
             'products' => $products,
         ])
 
-        {{-- ბანერები ამ კატეგორიის შემდეგ --}}
-        @php $bannersHere = collect($banners)->where('after_index', $index); @endphp
-        @if($bannersHere->isNotEmpty())
+        {{-- ბანერი 1 — მე-3 კატეგორიის შემდეგ --}}
+        @if($catIndex === 2)
             <div class="container py-3">
-                @foreach($bannersHere as $banner)
-                    <a href="{{ $banner['link'] }}" class="d-block mb-3">
-                        <img src="{{ $banner['image'] }}"
-                             alt="{{ $banner['alt'] }}"
-                             class="w-100 rounded-4"
-                             style="object-fit: cover; max-height: 200px;">
-                    </a>
-                @endforeach
+                <a href="/promotions" class="d-block">
+                    <img src="{{ asset('banners/banner1.jpg') }}"
+                         alt="ბანერი"
+                         class="w-100 rounded-4"
+                         style="object-fit: cover; max-height: 200px;">
+                </a>
             </div>
         @endif
 
+        {{-- ბანერი 2 — მე-6 კატეგორიის შემდეგ --}}
+        @if($catIndex === 5)
+            <div class="container py-3">
+                <a href="/sale" class="d-block">
+                    <img src="{{ asset('banners/banner2.jpg') }}"
+                         alt="ბანერი"
+                         class="w-100 rounded-4"
+                         style="object-fit: cover; max-height: 200px;">
+                </a>
+            </div>
+        @endif
+
+        {{-- ახალი ბანერის დასამატებლად: --}}
+        {{-- @if($catIndex === 8) ... @endif --}}
+
+        @php $catIndex++ @endphp
     @endforeach
 </div>
 
