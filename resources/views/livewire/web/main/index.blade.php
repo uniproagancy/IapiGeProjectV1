@@ -29,7 +29,6 @@
         // დამატება: ['after_index' => 8, 'image' => asset('banners/banner3.jpg'), 'link' => '/...', 'alt' => '...'],
     ];
 
-    $bannersByIndex = collect($banners)->groupBy('after_index');
 @endphp
 
 <div>
@@ -81,9 +80,10 @@
         ])
 
         {{-- ბანერები ამ კატეგორიის შემდეგ --}}
-        @if($bannersByIndex->has($index))
+        @php $bannersHere = collect($banners)->where('after_index', $index); @endphp
+        @if($bannersHere->isNotEmpty())
             <div class="container py-3">
-                @foreach($bannersByIndex[$index] as $banner)
+                @foreach($bannersHere as $banner)
                     <a href="{{ $banner['link'] }}" class="d-block mb-3">
                         <img src="{{ $banner['image'] }}"
                              alt="{{ $banner['alt'] }}"
