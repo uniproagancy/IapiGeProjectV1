@@ -57,7 +57,7 @@ class CitrusProduct
 
     public function getProduct(string $slug): array
     {
-        dd($this->productUrl . '/' . $slug);
+        Log::warning($this->productUrl . '/' . $slug);
         $attempts = 0;
 
         while ($attempts < 2) {
