@@ -21,7 +21,7 @@ Route::prefix('alta')->group(function () {
 });
 
 Route::prefix('citrus')->group(function () {
-    Route::get('/get', '\App\Http\Controllers\ApiControllers\CitrusController@get');
+    Route::get('/import', '\App\Http\Controllers\ApiControllers\CitrusController@import');
 });
 
 Route::prefix('promotions')->group(function () {
