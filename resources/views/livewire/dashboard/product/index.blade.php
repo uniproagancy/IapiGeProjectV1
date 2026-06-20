@@ -8,6 +8,7 @@
                     <div class="card-header">
                         <h4 class="card-title">პროდუქციის ჩამონათვალი ({{$products->total()}})</h4>
                         <div>
+                            {{-- Bulk Actions --}}
                             @if(!empty($selectedProducts))
                                 <div class="btn-group">
                                     <button class="btn btn-icon btn-warning dropdown-toggle px-1" type="button"
@@ -15,10 +16,8 @@
                                         <i data-feather="list"></i>
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" data-bs-toggle="modal"
-                                           data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
-                                        <a class="dropdown-item" data-bs-toggle="modal"
-                                           data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item text-warning" href="#"
                                            onclick="if(confirm('{{ count($selectedProducts) }} პროდუქტი ჩაიკეტება. ავტომატური განახლება გაითიშება.')) { @this.call('bulkLock') }; return false;">
@@ -46,56 +45,67 @@
                                     </div>
                                 </div>
                             @endif
-                            <a class="dropdown-item text-danger" href="{{ route('dashboard.global.export') }}" target="_blank">
+
+                            {{-- Export --}}
+                            <a class="btn btn-sm btn-outline-danger" href="{{ route('dashboard.global.export') }}" target="_blank">
                                 <i data-feather="download" class="me-1" style="width:14px;"></i>
-                                ვერ ნაპოვნების ჩამოტვირთვა ({{ \App\Models\Product\GlobalNotFound::count() }})
+                                ვერ ნაპოვნები ({{ \App\Models\Product\GlobalNotFound::count() }})
                             </a>
+
+                            {{-- Upload Dropdown --}}
                             <div class="btn-group">
-                                <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-info dropdown-toggle" type="button"
+                                        id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
                                     განახლების ატვირთვა
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                       data-bs-target="#uploadProductExcelGlobalDistributinModal">Global Distribution</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                       data-bs-target="#uploadMideaModal">Midea</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">Grandel</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">KontaktHome</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadProductExcelGlobalDistributinModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Global Distribution
+                                    </a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMideaModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Midea
+                                    </a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Grandel
+                                    </a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> KontaktHome
+                                    </a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
-                                        <i data-feather="upload"></i> Comfo Excel
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Comfo
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
-                                        <i data-feather="upload"></i> Elite Excel
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Elite — Excel
                                     </a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMetromartModal">
-                                        <i data-feather="upload"></i> Metromart Excel
+                                    <a class="dropdown-item" href="{{ route('elite.scan') }}"
+                                       onclick="return confirm('დარწმუნებული ხარ? Elite სკანი დაიწყება (1-35000)')">
+                                        <i data-feather="search" class="me-1" style="width:14px;"></i> Elite — სკანი
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <button type="button" wire:click="uploadAlneo"
-                                            wire:confirm="დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს"
-                                            class="btn btn-danger">
-                                        <i class="fa-solid fa-tower-broadcast"></i>
-                                        Alneo სკანი
-                                    </button>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMetromartModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Metromart — Excel
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="#"
+                                       wire:click="uploadAlneo"
+                                       onclick="if(!confirm('დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს')) return false;">
+                                        <i data-feather="radio" class="me-1" style="width:14px;"></i> Alneo — სკანი
+                                    </a>
                                 </div>
                             </div>
-                            <div class="btn-group">
-                                <button class="btn btn-icon btn-primary dropdown-toggle px-1" type="button"
-                                        id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i data-feather="refresh-cw"></i>
-                                </button>
-                            </div>
-                            <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50"
-                               style="font-size: 13px">
+
+                            {{-- Actions --}}
+                            <a href="{{ route('dashboard.product.create') }}" class="btn btn-icon btn-success mx-50">
                                 <i data-feather="plus-square"></i>
                             </a>
-                            <button type="button" class="btn btn-icon btn-outline-primary" data-bs-toggle="modal"
-                                    data-bs-target="#filterProductModal">
+                            <button type="button" class="btn btn-icon btn-outline-primary"
+                                    data-bs-toggle="modal" data-bs-target="#filterProductModal">
                                 <i data-feather="search"></i>
                             </button>
                         </div>
                     </div>
+
                     @if(count($products) > 0)
                         <div class="table-responsive">
                             <table class="table">
@@ -134,9 +144,9 @@
                                         </td>
                                         <td>
                                             @if(!empty($product->price->discount_price))
-                                                <span class="badge badge-light-success">{{ $product->price->discount_price ?? '' }} ₾</span>
+                                                <span class="badge badge-light-success">{{ $product->price->discount_price }} ₾</span>
                                                 <br><br>
-                                                <span class="badge badge-light-danger">{{ $product->price->regular_price ?? '' }} ₾</span>
+                                                <span class="badge badge-light-danger">{{ $product->price->regular_price }} ₾</span>
                                             @else
                                                 <span class="badge badge-light-success">{{ $product->price->regular_price ?? '' }} ₾</span>
                                             @endif
@@ -237,17 +247,19 @@
         {{ $products->links() }}
     </div>
 
-    {{-- Global --}}
+    {{-- ==================== MODALS ==================== --}}
+
+    {{-- Global Distribution --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
         <div class="modal-dialog">
             <form class="modal-content pt-0" wire:submit.prevent="uploadGlobal">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
                 <div class="modal-header mb-1">
-                    <h5 class="modal-title">Global — დასახელებების ატვირთვა</h5>
+                    <h5 class="modal-title">Global Distribution — ატვირთვა</h5>
                 </div>
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
-                        <label class="form-label">აირჩიეთ ფაილი (.xlsx / .csv) — 1 სვეტი: დასახელება</label>
+                        <label class="form-label">ფაილი (.xlsx / .csv) — A სვეტი: დასახელება</label>
                         <input type="file"
                                class="form-control @error('global_file') border-danger is-invalid @enderror"
                                wire:model="global_file" accept=".xlsx,.xls,.csv">
@@ -272,7 +284,7 @@
             <form class="modal-content pt-0" wire:submit.prevent="uploadMidea">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
                 <div class="modal-header mb-1">
-                    <h5 class="modal-title">Midea — ექსელის ატვირთვა</h5>
+                    <h5 class="modal-title">Midea — ატვირთვა</h5>
                 </div>
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
@@ -295,6 +307,151 @@
         </div>
     </div>
 
+    {{-- Grandel --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadGrandel">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Grandel — ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx / .csv) — Title | Brand | Model | Price | OldPrice</label>
+                        <input type="file"
+                               class="form-control @error('grandel_file') border-danger is-invalid @enderror"
+                               wire:model="grandel_file" accept=".xlsx,.xls,.csv">
+                        @error('grandel_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadGrandel,grandel_file">
+                            <span wire:loading.remove wire:target="uploadGrandel">დამუშავება</span>
+                            <span wire:loading wire:target="uploadGrandel"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- KontaktHome --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadKontaktModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadKontakt">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">KontaktHome — ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — დასახელება (ლინკით) | Stock | Price</label>
+                        <input type="file"
+                               class="form-control @error('kontakt_file') border-danger is-invalid @enderror"
+                               wire:model="kontakt_file" accept=".xlsx,.xls">
+                        @error('kontakt_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadKontakt,kontakt_file">
+                            <span wire:loading.remove wire:target="uploadKontakt">დამუშავება</span>
+                            <span wire:loading wire:target="uploadKontakt"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Comfo --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadComfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadComfo">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Comfo — ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A=ID | B=რაოდენობა | C=Product Link</label>
+                        <input type="file"
+                               class="form-control @error('comfoFile') border-danger is-invalid @enderror"
+                               wire:model="comfoFile" accept=".xlsx,.xls">
+                        @error('comfoFile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadComfo,comfoFile">
+                            <span wire:loading.remove wire:target="uploadComfo">დამუშავება</span>
+                            <span wire:loading wire:target="uploadComfo"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Elite --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadEliteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadElite">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Elite Electronics — BarCode-ების ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A სვეტი = BarCode</label>
+                        <input type="file"
+                               class="form-control @error('elite_file') border-danger is-invalid @enderror"
+                               wire:model="elite_file" accept=".xlsx,.xls">
+                        @error('elite_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadElite,elite_file">
+                            <span wire:loading.remove wire:target="uploadElite">დამუშავება</span>
+                            <span wire:loading wire:target="uploadElite"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Metromart --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadMetromartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadMetromart">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Metromart — მოდელების ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A სვეტი = მოდელი</label>
+                        <input type="file"
+                               class="form-control @error('metromart_file') border-danger is-invalid @enderror"
+                               wire:model="metromart_file" accept=".xlsx,.xls">
+                        @error('metromart_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadMetromart,metromart_file">
+                            <span wire:loading.remove wire:target="uploadMetromart">დამუშავება</span>
+                            <span wire:loading wire:target="uploadMetromart"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Filter --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="filterProductModal" tabindex="-1">
         <div class="modal-dialog">
@@ -306,11 +463,10 @@
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
                         <label class="form-label">საძიებო სიტყვა</label>
-                        <input type="text" class="form-control" placeholder="დასახელება, ID, SKU"
-                               wire:model.lazy="search_query"/>
+                        <input type="text" class="form-control" placeholder="დასახელება, ID, SKU" wire:model.lazy="search_query"/>
                     </div>
                     <div class="mb-1">
-                        <label class="form-label">თარიღის სორტირება</label>
+                        <label class="form-label">სორტირება</label>
                         <select class="form-select" wire:model.lazy="order_dir">
                             <option value="desc">ახალ დამატებული</option>
                             <option value="asc">ძველ დამატებული</option>
@@ -319,42 +475,36 @@
                     <div class="mb-1">
                         <label class="form-label">კატეგორია</label>
                         <select class="form-select" wire:model.lazy="category_id">
-                            <option value="">აირჩიეთ კატეგორია</option>
+                            <option value="">ყველა</option>
                             @foreach($categories->where('parent_id', 0)->where('active', 1) as $category)
-                                <option value="{{ $category->id }}">
-                                    {{ $category->translations->where('locale','ka')->first()?->title ?? ('#' . $category->id) }}
-                                </option>
+                                <option value="{{ $category->id }}">{{ $category->translations->where('locale','ka')->first()?->title ?? ('#' . $category->id) }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-1">
-                        <label class="form-label">ჩვენება</label>
+                        <label class="form-label">ჩვენება გვერდზე</label>
                         <select class="form-select" wire:model.lazy="per_page">
-                            <option value="10">10 ჩანაწერი</option>
-                            <option value="25">25 ჩანაწერი</option>
-                            <option value="50">50 ჩანაწერი</option>
-                            <option value="100">100 ჩანაწერი</option>
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
                         </select>
                     </div>
                     <div class="mb-1">
                         <label class="form-label">ბრენდი</label>
                         <select class="form-select" wire:model.lazy="brand_id">
-                            <option value="">აირჩიეთ ბრენდი</option>
+                            <option value="">ყველა</option>
                             @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}">
-                                    {{ $brand->translations->where('locale','ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}
-                                </option>
+                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale','ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-1">
                         <label class="form-label">მომწოდებელი</label>
                         <select class="form-select" wire:model.lazy="supplier_id">
-                            <option value="">აირჩიეთ მომწოდებელი</option>
+                            <option value="">ყველა</option>
                             @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}">
-                                    {{ $supplier->translations->where('locale','ka')->first()?->name ?? ('#' . $supplier->id) }}
-                                </option>
+                                <option value="{{ $supplier->id }}">{{ $supplier->translations->where('locale','ka')->first()?->name ?? ('#' . $supplier->id) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -376,7 +526,7 @@
                     </div>
                     <div class="mb-1 form-check form-check-primary">
                         <input type="checkbox" class="form-check-input" id="with_trashed" wire:model.lazy="with_trashed">
-                        <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერების ჩვენება</label>
+                        <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
                         <input type="checkbox" class="form-check-input" id="unsorted" wire:model.lazy="unsorted">
@@ -408,7 +558,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">პროდუქტების გადახარისხება</h5>
+                    <h5 class="modal-title">კატეგორიის ცვლილება</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -435,7 +585,33 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" wire:click="updateProductCategory">დადასტურება</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Change Brand --}}
+    <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ბრენდის ცვლილება</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <select class="form-select" wire:model.live="selectedBrand">
+                            <option value="">— აირჩიეთ —</option>
+                            @foreach($brands->where('active', 1) as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" wire:click="updateProductBrand">დადასტურება</button>
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
         </div>
@@ -465,181 +641,14 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" wire:click="updatePrice">შენახვა</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    {{-- Change Brand --}}
-    <div class="modal fade" wire:ignore.self id="changeBrandModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">ბრენდის ცვლილება</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <select class="form-select" wire:model.live="selectedBrand">
-                            <option value="">— აირჩიეთ —</option>
-                            @foreach($brands->where('active', 1) as $brand)
-                                <option value="{{ $brand->id }}">{{ $brand->translations->where('locale', 'ka')->first()?->title ?? ('ბრენდი #' . $brand->id) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" wire:click="updateProductBrand">დადასტურება</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">დახურვა</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- KontaktHome --}}
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadKontaktModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadKontakt">
-                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">KontaktHome — ექსელის ატვირთვა</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx) — დასახელება(ლინკით) | Stock | Price</label>
-                        <input type="file"
-                               class="form-control @error('kontakt_file') is-invalid @enderror"
-                               wire:model="kontakt_file" accept=".xlsx,.xls">
-                        @error('kontakt_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1"
-                                wire:loading.attr="disabled" wire:target="uploadKontakt,kontakt_file">
-                            <span wire:loading.remove wire:target="uploadKontakt">წაკითხვა</span>
-                            <span wire:loading wire:target="uploadKontakt"><span class="spinner-border spinner-border-sm"></span></span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Grandel --}}
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadGrandel">
-                <button type="button" class="btn-close" data-bs-dismiss="modal">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">Grandel — სრული იმპორტი</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (Title|Brand|Model|Price|OldPrice|...)</label>
-                        <input type="file"
-                               class="form-control @error('grandel_file') is-invalid @enderror"
-                               wire:model="grandel_file" accept=".xlsx,.xls,.csv">
-                        @error('grandel_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1"
-                                wire:loading.attr="disabled" wire:target="uploadGrandel,grandel_file">
-                            <span wire:loading.remove wire:target="uploadGrandel">დამუშავება</span>
-                            <span wire:loading wire:target="uploadGrandel"><span class="spinner-border spinner-border-sm"></span></span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Comfo --}}
-    <div class="modal fade" wire:ignore.self id="uploadComfoModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content" wire:submit.prevent="uploadComfo">
-                <div class="modal-header">
-                    <h5 class="modal-title">Comfo Excel-ის ატვირთვა</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label class="form-label">Stock Excel ფაილი</label>
-                    <input type="file" class="form-control @error('comfoFile') is-invalid @enderror"
-                           wire:model="comfoFile" accept=".xlsx,.xls">
-                    @error('comfoFile')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <div wire:loading wire:target="comfoFile" class="text-muted small mt-1">იტვირთება...</div>
-                    <p class="text-muted small mt-2">სვეტები: A=ID, B=რაოდენობა, C=Product Link</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">დაგზავნა</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadMetromartModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadMetromart">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">Metromart — მოდელების ატვირთვა</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx) — A სვეტი = მოდელი</label>
-                        <input type="file"
-                               class="form-control @error('metromart_file') border-danger is-invalid @enderror"
-                               wire:model="metromart_file"
-                               accept=".xlsx,.xls">
-                        @error('metromart_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1"
-                                wire:loading.attr="disabled" wire:target="uploadMetromart,metromart_file">
-                            <span wire:loading.remove wire:target="uploadMetromart">დამუშავება</span>
-                            <span wire:loading wire:target="uploadMetromart"><span class="spinner-border spinner-border-sm"></span></span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadEliteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadElite">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">Elite Electronics — BarCode-ების ატვირთვა</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx) — A სვეტი = BarCode (header-ის გარეშე)</label>
-                        <input type="file"
-                               class="form-control @error('elite_file') border-danger is-invalid @enderror"
-                               wire:model="elite_file"
-                               accept=".xlsx,.xls">
-                        @error('elite_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit"
-                                class="btn btn-primary me-1"
-                                wire:loading.attr="disabled"
-                                wire:target="uploadElite,elite_file">
-                            <span wire:loading.remove wire:target="uploadElite">დამუშავება</span>
-                            <span wire:loading wire:target="uploadElite">
-                                <span class="spinner-border spinner-border-sm"></span>
-                            </span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
         </div>
     </div>
 
 </div>
+
 @section('page_scripts')
     <script>
         Livewire.on('swal:deleteModal', data => {
@@ -650,9 +659,7 @@
                 confirmButtonText: data[0].confirmButtonText,
                 cancelButtonText: data[0].cancelButtonText,
             }).then((result) => {
-                if (result.isConfirmed) {
-                    Livewire.dispatch('delete', {id: data[0].id});
-                }
+                if (result.isConfirmed) Livewire.dispatch('delete', {id: data[0].id});
             });
         });
 
@@ -664,16 +671,12 @@
                 confirmButtonText: data[0].confirmButtonText,
                 cancelButtonText: data[0].cancelButtonText,
             }).then((result) => {
-                if (result.isConfirmed) {
-                    Livewire.dispatch('restore', {id: data[0].id});
-                }
+                if (result.isConfirmed) Livewire.dispatch('restore', {id: data[0].id});
             });
         });
 
         Livewire.on('filter_modal_close', () => {
-            const modalEl = document.getElementById('filterProductModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('filterProductModal'))?.hide();
         });
 
         Livewire.on('uploadComfoModal_close', () => {
@@ -685,35 +688,25 @@
         });
 
         Livewire.on('category_modal_close', () => {
-            const modalEl = document.getElementById('changeCategoryModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('changeCategoryModal'))?.hide();
         });
 
         Livewire.on('brand_modal_close', () => {
-            const modalEl = document.getElementById('changeBrandModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('changeBrandModal'))?.hide();
         });
 
         Livewire.on('bulk_modal_close', () => {
             ['changeCategoryModal', 'changeBrandModal'].forEach(id => {
-                const modalEl = document.getElementById(id);
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
+                bootstrap.Modal.getInstance(document.getElementById(id))?.hide();
             });
         });
 
         Livewire.on('price_edit_modal_open', () => {
-            const modalEl = document.getElementById('priceEditModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+            new bootstrap.Modal(document.getElementById('priceEditModal')).show();
         });
 
         Livewire.on('price_edit_modal_close', () => {
-            const modalEl = document.getElementById('priceEditModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('priceEditModal'))?.hide();
         });
     </script>
 @endsection
