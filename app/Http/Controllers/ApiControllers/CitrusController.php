@@ -33,10 +33,8 @@ class CitrusController extends Controller
      */
     public function import(Request $request): JsonResponse
     {
-
-        Log::info("Importing Citrus");
         $request->validate([
-            'product_url' => 'required',
+            'product_url' => 'required|url',
             'supplier_id' => 'required|integer',
             'category_id' => 'required|integer|exists:db_product_categories,id',
             'brand_id'    => 'required|integer|exists:db_product_brands,id',
@@ -46,6 +44,7 @@ class CitrusController extends Controller
         try {
             $service     = new CitrusProduct();
             $productData = $service->getProduct($request->product_url);
+
             if (empty($productData) || empty($productData['id'])) {
                 return response()->json(['success' => false, 'message' => 'პროდუქტი ვერ მოიძებნა'], 404);
             }
@@ -57,8 +56,13 @@ class CitrusController extends Controller
             $quantity = (int) ($productData['stock'] ?? 0);
             $inStock  = ($productData['stock_status'] ?? 0) > 0 ? 1 : 0;
 
-            $regularPrice  = (float) ($productData['old_price'] ?? $productData['price'] ?? 0);
-            $discountPrice = $productData['old_price'] ? (float) $productData['price'] : null;
+            // ჩემი ფასი GET-იდან
+            // თუ პროდუქტს აქვს old_price (ფასდაკლება) → ჩემი ფასი discount_price-ში
+            // თუ მხოლოდ regular price → ჩემი ფასი regular_price-ში
+            $myPrice       = (float) $request->price;
+            $hasDiscount   = !empty($productData['old_price']);
+            $regularPrice  = $hasDiscount ? (float) $productData['old_price'] : $myPrice;
+            $discountPrice = $hasDiscount ? $myPrice : null;
 
             DB::transaction(function () use (
                 $request, $productData, $sku, &$existing,
