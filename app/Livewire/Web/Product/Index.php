@@ -433,7 +433,6 @@ class Index extends Component
 
             $items = \App\Models\Product\ProductFullSpecificationItem::query()
                 ->select('id', 'section_id', 'name', 'value')
-                ->where('filter', 1)
                 ->whereNotNull('value')
                 ->where('value', '!=', '')
                 ->whereHas('section', function ($q) use ($productIds) {
@@ -585,8 +584,7 @@ class Index extends Component
             $query->whereHas('fullSpecifications', function ($q) use ($name, $value) {
                 $q->whereHas('list', function ($item) use ($name, $value) {
                     $item->where('name', $name)
-                        ->where('value', $value)
-                        ->where('filter', 1);
+                        ->where('value', $value);
                 });
             });
         }
