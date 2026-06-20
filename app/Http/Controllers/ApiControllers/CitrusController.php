@@ -33,6 +33,8 @@ class CitrusController extends Controller
      */
     public function import(Request $request): JsonResponse
     {
+        
+        Log::info("Importing Citrus");
         $request->validate([
             'product_url' => 'required|url',
             'supplier_id' => 'required|integer',
