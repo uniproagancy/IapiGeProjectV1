@@ -27,6 +27,20 @@
                                 :productId="$product->id"
                                 class="btn-secondary animate-pulse"/>
                     </div>
+
+                    {{-- ⚠️ აუზი — კატეგორია 183 --}}
+                    @if($product->category_id === 183)
+                        <div class="col-12 mb-2">
+                            <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2"
+                                 style="background: #fff3cd; border: 1px solid #ffc107;">
+                                <i class="ci-info" style="color: #856404; font-size: 18px; flex-shrink: 0;"></i>
+                                <span style="color: #856404; font-size: 13px; font-weight: 500;">
+                                    ⚠️ ეს პროდუქტი საჭიროებს ნაშთის გადამოწმებას. გთხოვთ დაგვიკავშირდეთ შეძენამდე.
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="col-md-8">
                         <span class="font-neue" style="font-size: 14px">SKU: {{ $product->id }}</span>
                         @include('livewire.web.product.gallery')
@@ -40,53 +54,53 @@
                 @include('livewire.web.product.purchase-section')
             </div>
             @if(!empty($product->translation('ka')->description))
-            <div class="col-12 mt-3">
-                <div class="row row-cols-1 row-cols-md-1">
-                    <div class="col mb-3 mb-md-0">
-                        <div class="pe-lg-2 pe-xl-3">
-                            <div style="
+                <div class="col-12 mt-3">
+                    <div class="row row-cols-1 row-cols-md-1">
+                        <div class="col mb-3 mb-md-0">
+                            <div class="pe-lg-2 pe-xl-3">
+                                <div style="
                                 font-size: 13px;
                                 border: 1px solid rgba(0,0,0,0.1);
                                 border-radius: 10px;
                                 padding: 20px;
-                            line-height: 20px;
+                                line-height: 20px;
                             ">{!! $product->translation('ka')->description !!}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             @endif
             @if(in_array($product->supplier_id, [2, 4, 8, 11, 12]))
-            @if($product->fullSpecifications)
-                <div class="col-12">
-                    <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
-                        <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">
-                            @foreach($product->fullSpecifications as $full_specification_item)
-                                <div class="masonry-item p-1 rounded mb-3">
-                                    <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>
-                                    <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
-                                        @foreach($full_specification_item->list as $list_item)
-                                            <li class="d-flex align-items-center position-relative pe-4">
-                                                <span>{{ $list_item->name }}:</span>
-                                                <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
-                                                <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endforeach
+                @if($product->fullSpecifications)
+                    <div class="col-12">
+                        <div class="rounded collapsed" id="specification-section" style="padding: 15px; margin-top: 25px">
+                            <div id="specs-wrapper" class="specs-collapsed @if(count($product->fullSpecifications) > 1) masonry-grid @endif">
+                                @foreach($product->fullSpecifications as $full_specification_item)
+                                    <div class="masonry-item p-1 rounded mb-3">
+                                        <h3 class="h6 mb-3 font-neue">{{ $full_specification_item->name }}</h3>
+                                        <ul class="list-unstyled d-flex flex-column gap-2 fs-sm m-0">
+                                            @foreach($full_specification_item->list as $list_item)
+                                                <li class="d-flex align-items-center position-relative pe-4">
+                                                    <span>{{ $list_item->name }}:</span>
+                                                    <span class="d-block flex-grow-1 border-bottom border-dashed mx-2"></span>
+                                                    <span class="text-dark-emphasis fw-medium">{{ $list_item->value }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center"
+                                    id="specs-toggle-btn">
+                                სრული მახასიათებლები
+                                <i class="ci-chevron-down ms-1"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-center">
-                        <button type="button" class="btn btn-sm btn-outline-secondary mt-4 justify-content-center"
-                                id="specs-toggle-btn">
-                            სრული მახასიათებლები
-                            <i class="ci-chevron-down ms-1"></i>
-                        </button>
-                    </div>
-                </div>
-            @endif
+                @endif
             @endif
             <div class="col-12">
                 @include('livewire.web.product.similar-products')
@@ -141,63 +155,36 @@
                 BOG.Calculator.open({
                     bnpl: false,
                     amount: installment_data.amount,
-                    onClose: () => {
-                        // Modal close callback
-                    },
+                    onClose: () => {},
                     onRequest: (selected, successCb, closeCb) => {
-                        const {
-                            amount, month, discount_code,
-                        } = selected;
-                        axios.post(installment_data.url, {
-                            amount: amount,
-                            month: month,
-                            discount_code: discount_code
-                        })
-                            .then(function (response) {
-                                successCb(response.data.orderId);
-                            })
-                            .catch(function (error) {
-                                closeCb();
-                            });
+                        const { amount, month, discount_code } = selected;
+                        axios.post(installment_data.url, { amount, month, discount_code })
+                            .then(r => successCb(r.data.orderId))
+                            .catch(() => closeCb());
                         return false;
                     },
-                    onComplete: ({redirectUrl}) => {
-                        return false;
-                    }
+                    onComplete: () => false
                 })
-            })
+            });
             Livewire.on('bog:installment-part', (part_installment_data) => {
                 BOG.Calculator.open({
                     bnpl: true,
                     amount: part_installment_data.amount,
-                    onClose: () => {
-                        // Modal close callback
-                    },
+                    onClose: () => {},
                     onRequest: (selected, successCb, closeCb) => {
-                        const {
-                            amount, month, discount_code,
-                        } = selected;
-                        axios.post(part_installment_data.url, {
-                            amount: amount,
-                            month: month,
-                            discount_code: discount_code
-                        })
-                            .then(function (response) {
-                                successCb(response.data.orderId);
-                            })
-                            .catch(function (error) {
-                                closeCb();
-                            });
+                        const { amount, month, discount_code } = selected;
+                        axios.post(part_installment_data.url, { amount, month, discount_code })
+                            .then(r => successCb(r.data.orderId))
+                            .catch(() => closeCb());
                         return false;
                     },
-                    onComplete: ({redirectUrl}) => {
-                        return false;
-                    }
+                    onComplete: () => false
                 })
             });
-        })
+        });
     </script>
 </main>
+
 @section('fb_pixel')
     @if($event_id)
         @php
@@ -213,15 +200,12 @@
                 value: {{ $actualPrice }},
                 currency: 'GEL',
                 contents: [{ id: '{{ $product->id }}', quantity: 1 }]
-            }, {
-                eventID: '{{ $event_id }}'
-            });
+            }, { eventID: '{{ $event_id }}' });
         </script>
     @endif
     <script>
         fbq('track', 'PageView', {}, { eventID: '{{ $eventId2 }}' });
     </script>
     <noscript><img height="1" width="1" style="display:none"
-                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"
-        /></noscript>
+                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"/></noscript>
 @endsection
