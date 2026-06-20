@@ -7,7 +7,6 @@ use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductSupplier;
-use App\Services\Products\GlobalService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -37,6 +36,9 @@ class Index extends Component
     public $midea_file;
     public $grandel_file;
     public $kontakt_file;
+    public $comfoFile        = null;
+    public $elite_file;
+    public $metromart_file;
 
     public $selectedCategory    = null;
     public $selectedBrand       = null;
@@ -47,12 +49,12 @@ class Index extends Component
     public $brand_id     = null;
     public $supplier_id  = null;
 
-    public $priceEditProductId    = null;
-    public $priceEditDealerPrice  = 0;
-    public $priceEditRegularPrice = 0;
+    public $priceEditProductId     = null;
+    public $priceEditDealerPrice   = 0;
+    public $priceEditRegularPrice  = 0;
     public $priceEditDiscountPrice = null;
 
-    // ✅ Quick Edit
+    // Quick Edit
     public $quickEditProductId     = null;
     public $quickEditCategoryId    = null;
     public $quickEditSubcategoryId = null;
@@ -61,17 +63,14 @@ class Index extends Component
     public $quickEditDiscountPrice = null;
     public array $quickEditSubcategories = [];
 
-    // ✅ Bulk actions
+    // Bulk actions
     public $bulkCategoryId    = null;
     public $bulkSubcategoryId = null;
     public $bulkBrandId       = null;
     public array $bulkSubcategories = [];
 
     public bool $only_locked = false;
-    public $comfoFile = null;
-    public $elite_file;
-
-    public bool $no_brand = false;
+    public bool $no_brand    = false;
 
     protected $listeners = [
         'delete',
@@ -98,15 +97,16 @@ class Index extends Component
         'only_locked'   => ['except' => false],
     ];
 
-    public function mount(): void
-    {
-        //
-    }
+    public function mount(): void {}
 
     public function paginationView(): string
     {
         return 'livewire.dashboard.partials._pagination';
     }
+
+    // ============================================
+    // Toggle
+    // ============================================
 
     public function toggleActive($productId): void
     {
@@ -125,140 +125,19 @@ class Index extends Component
         $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა!');
     }
 
-    public function uploadGlobal(): void
+    public function toggleLock($productId): void
     {
-        $this->validate([
-            'global_file' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'global_file.required' => 'ფაილი აუცილებელია',
-            'global_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
-        ]);
-
-        try {
-            $path        = $this->global_file->getRealPath();
-            $spreadsheet = IOFactory::load($path);
-            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
-
-            $items = [];
-            foreach ($rows as $row) {
-                $name = trim((string) ($row[0] ?? ''));
-                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
-                $name = preg_replace('/\s+/u', ' ', $name);
-                $name = trim($name);
-
-                if ($name === '') continue;
-                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 3) continue;
-
-                $name  = preg_replace('/\s+/u', ' ', $name);
-                $stock = $this->parseStock($row[1] ?? null);
-                $price = $this->parsePrice($row[2] ?? null);
-
-                $items[$name] = ['stock' => $stock, 'price' => $price];
-            }
-
-            if (empty($items)) {
-                $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა');
-                return;
-            }
-
-            Log::info('📂 Global upload: ' . count($items) . ' row, queue-ში იგზავნება');
-            foreach ($items as $name => $info) {
-                \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
-                Log::info("📤 Global job dispatched: '{$name}' (stock={$info['stock']}, price={$info['price']})");
-            }
-            $this->reset('global_file');
-            $this->dispatch('ui:success',
-                message: count($items) . ' პროდუქტი queue-ში გაიგზავნა. დამუშავება ფონურად მიმდინარეობს.');
-
-        } catch (\Throwable $e) {
-            Log::error('Global upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
+        $product = Product::findOrFail($productId);
+        $product->update_lock = !$product->update_lock;
+        $product->save();
+        $this->dispatch('ui:success', message: $product->update_lock
+            ? 'პროდუქტი ჩაიკეტა (განახლება გათიშულია)'
+            : 'პროდუქტი განიბლოკა');
     }
 
-    public function uploadKontakt(): void
-    {
-        $this->validate([
-            'kontakt_file' => 'required|file|mimes:xlsx,xls',
-        ], [
-            'kontakt_file.required' => 'ფაილი აუცილებელია',
-            'kontakt_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
-        ]);
-
-        try {
-            $path        = $this->kontakt_file->getRealPath();
-            $spreadsheet = IOFactory::load($path);
-            $sheet       = $spreadsheet->getActiveSheet();
-            $highestRow  = $sheet->getHighestRow();
-
-            $dispatched = 0;
-            $skipped    = 0;
-
-            for ($r = 2; $r <= $highestRow; $r++) {
-                $cell = $sheet->getCell('A' . $r);
-                $name = trim((string) $cell->getValue());
-
-                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
-                $name = preg_replace('/\s+/u', ' ', $name);
-                $name = trim($name);
-
-                if ($name === '') continue;
-                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 2) continue;
-
-                $url = '';
-                if ($cell->hasHyperlink()) {
-                    $url = trim($cell->getHyperlink()->getUrl());
-                }
-
-                if ($url === '' || !str_starts_with($url, 'http')) {
-                    Log::warning("⏭️ Kontakt skip (ლინკი არ აქვს/გატეხილია): '{$name}' — '{$url}'");
-                    $skipped++;
-                    continue;
-                }
-
-                $stock = $this->parseStock($sheet->getCell('B' . $r)->getValue());
-                $price = $this->parsePrice($sheet->getCell('C' . $r)->getValue());
-
-                \App\Jobs\KontaktImportJob::dispatch($name, $url, $stock, $price)->onQueue('kontakt');
-                $dispatched++;
-            }
-
-            if ($dispatched === 0) {
-                $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა');
-                return;
-            }
-
-            Log::info("📂 Kontakt upload: {$dispatched} job queue-ში, გამოტოვებული: {$skipped}");
-
-            $this->reset('kontakt_file');
-            $this->dispatch('ui:success',
-                message: "{$dispatched} პროდუქტი queue-ში გაიგზავნა (გამოტოვებული: {$skipped}).");
-
-        } catch (\Throwable $e) {
-            Log::error('Kontakt upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
-    }
-
-    private function parsePrice($value): ?float
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
-        return $clean === '' ? null : (float) $clean;
-    }
-
-    private function parseStock($value): int
-    {
-        if ($value === null || $value === '') {
-            return 0;
-        }
-        $digits = preg_replace('/[^0-9]/', '', (string) $value);
-        return $digits === '' ? 0 : (int) $digits;
-    }
+    // ============================================
+    // Delete / Restore
+    // ============================================
 
     public function deleteModal($productId): void
     {
@@ -298,6 +177,10 @@ class Index extends Component
         $this->dispatch('ui:success', message: 'პროდუქტი წაიშალა!');
     }
 
+    // ============================================
+    // Filters
+    // ============================================
+
     public function applyFilters(): void
     {
         $this->resetPage();
@@ -310,6 +193,10 @@ class Index extends Component
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
+
+    // ============================================
+    // Select
+    // ============================================
 
     public function updatedSelectAll($value): void
     {
@@ -334,11 +221,13 @@ class Index extends Component
         $this->selectedSubcategory = null;
     }
 
+    // ============================================
+    // Category / Brand update
+    // ============================================
+
     public function updateProductCategory(): void
     {
-        $this->validate([
-            'selectedCategory' => 'required|exists:db_product_categories,id',
-        ]);
+        $this->validate(['selectedCategory' => 'required|exists:db_product_categories,id']);
 
         $categoryId = $this->selectedSubcategory ?? $this->selectedCategory;
         Product::whereIn('id', $this->selectedProducts)->update(['category_id' => $categoryId]);
@@ -349,15 +238,17 @@ class Index extends Component
 
     public function updateProductBrand(): void
     {
-        $this->validate([
-            'selectedBrand' => 'required|exists:db_product_brands,id',
-        ]);
+        $this->validate(['selectedBrand' => 'required|exists:db_product_brands,id']);
 
         Product::whereIn('id', $this->selectedProducts)->update(['brand_id' => $this->selectedBrand]);
         $this->selectedProducts = [];
         $this->dispatch('brand_modal_close');
         $this->dispatch('ui:success', message: 'ბრენდი განახლდა!');
     }
+
+    // ============================================
+    // Price Edit
+    // ============================================
 
     public function priceEditModal($productId): void
     {
@@ -396,7 +287,7 @@ class Index extends Component
     }
 
     // ============================================
-    // ✅ Quick Edit
+    // Quick Edit
     // ============================================
 
     public function quickEditModal(int $productId): void
@@ -426,151 +317,6 @@ class Index extends Component
         }
 
         $this->dispatch('quick_edit_modal_open');
-    }
-
-    // ============================================
-    // ✅ Alneo
-    // ============================================
-
-    public function uploadAlneo(): void
-    {
-        try {
-            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
-            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
-        } catch (\Throwable $e) {
-            Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
-            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
-        }
-    }
-
-    // ============================================
-    // ✅ Elite — Excel ატვირთვა (WithFileUploads)
-    // სკანი კონტროლერიდანაა: route('elite.scan')
-    // ============================================
-
-    public function uploadElite(): void
-    {
-        $this->validate([
-            'elite_file' => 'required|file|mimes:xlsx,xls|max:20480',
-        ]);
-
-        try {
-            @ini_set('memory_limit', '256M');
-
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(
-                $this->elite_file->getRealPath()
-            );
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $inserted  = 0;
-            $duplicate = 0;
-            $skipped   = 0;
-
-            foreach ($sheet->getRowIterator() as $row) {
-                $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
-
-                if (!$barCode) {
-                    $skipped++;
-                    continue;
-                }
-
-                if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
-                    $duplicate++;
-                    continue;
-                }
-
-                \App\Models\EliteProduct::create([
-                    'bar_code' => $barCode,
-                    'synced'   => false,
-                ]);
-
-                $inserted++;
-            }
-
-            $this->reset('elite_file');
-            $this->dispatch('uploadEliteModal_close');
-            $this->dispatch('ui:success', message: "Elite: {$inserted} ჩაიწერა, {$duplicate} დუბლიკატი, {$skipped} გამოტოვებული.");
-
-        } catch (\Throwable $e) {
-            Log::error('Elite Upload error', ['error' => $e->getMessage()]);
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
-    }
-
-    // ============================================
-    // ✅ Grandel
-    // ============================================
-
-    public function uploadGrandel(): void
-    {
-        $this->validate([
-            'grandel_file' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'grandel_file.required' => 'ფაილი აუცილებელია',
-            'grandel_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
-        ]);
-
-        try {
-            $path        = $this->grandel_file->getRealPath();
-            $spreadsheet = IOFactory::load($path);
-            $sheet       = $spreadsheet->getActiveSheet();
-            $rows        = $sheet->toArray(null, true, true, false);
-
-            if (empty($rows)) {
-                $this->dispatch('ui:error', message: 'ფაილი ცარიელია');
-                return;
-            }
-
-            $header = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[0]);
-            $idx = [
-                'title'       => array_search('title', $header),
-                'brand'       => array_search('brand', $header),
-                'model'       => array_search('model', $header),
-                'price'       => array_search('price', $header),
-                'old_price'   => array_search('oldprice', $header),
-                'color'       => array_search('color', $header),
-                'description' => array_search('description', $header),
-                'image'       => array_search('image', $header),
-                'category'    => array_search('category', $header),
-            ];
-
-            if ($idx['title'] === false || $idx['model'] === false) {
-                $this->dispatch('ui:error', message: 'სვეტები Title/Model ვერ მოიძებნა');
-                return;
-            }
-
-            $count = 0;
-            foreach (array_slice($rows, 1) as $row) {
-                $title = trim((string) ($row[$idx['title']] ?? ''));
-                $model = trim((string) ($row[$idx['model']] ?? ''));
-
-                if ($title === '' || $model === '') continue;
-
-                $data = [
-                    'title'       => $title,
-                    'brand'       => $idx['brand'] !== false ? trim((string) ($row[$idx['brand']] ?? '')) : '',
-                    'model'       => $model,
-                    'price'       => $idx['price'] !== false ? ($row[$idx['price']] ?? '') : '',
-                    'old_price'   => $idx['old_price'] !== false ? ($row[$idx['old_price']] ?? '') : '',
-                    'color'       => $idx['color'] !== false ? trim((string) ($row[$idx['color']] ?? '')) : '',
-                    'description' => $idx['description'] !== false ? trim((string) ($row[$idx['description']] ?? '')) : '',
-                    'image'       => $idx['image'] !== false ? trim((string) ($row[$idx['image']] ?? '')) : '',
-                    'category'    => $idx['category'] !== false ? trim((string) ($row[$idx['category']] ?? '')) : '',
-                ];
-
-                \App\Jobs\GrandelImportJob::dispatch($data)->onQueue('grandel');
-                $count++;
-            }
-
-            Log::info("📂 Grandel upload: {$count} job queue-ში");
-
-            $this->reset('grandel_file');
-            $this->dispatch('ui:success', message: "{$count} პროდუქტი queue-ში გაიგზავნა.");
-
-        } catch (\Throwable $e) {
-            Log::error('Grandel upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
     }
 
     public function updatedQuickEditCategoryId($value): void
@@ -611,7 +357,7 @@ class Index extends Component
     }
 
     // ============================================
-    // ✅ Bulk actions
+    // Bulk actions
     // ============================================
 
     public function updatedBulkCategoryId($value): void
@@ -622,121 +368,73 @@ class Index extends Component
 
     public function bulkUpdateCategory(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
         $finalCategoryId = $this->bulkSubcategoryId ?? $this->bulkCategoryId;
-
-        if (empty($finalCategoryId)) {
-            $this->dispatch('ui:error', message: 'კატეგორია აუცილებელია!');
-            return;
-        }
-
+        if (empty($finalCategoryId)) { $this->dispatch('ui:error', message: 'კატეგორია აუცილებელია!'); return; }
         Product::whereIn('id', $this->selectedProducts)->update(['category_id' => $finalCategoryId]);
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: 'კატეგორია განახლდა!');
     }
 
     public function bulkUpdateBrand(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
-        if (empty($this->bulkBrandId)) {
-            $this->dispatch('ui:error', message: 'ბრენდი აუცილებელია!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
+        if (empty($this->bulkBrandId)) { $this->dispatch('ui:error', message: 'ბრენდი აუცილებელია!'); return; }
         Product::whereIn('id', $this->selectedProducts)->update(['brand_id' => $this->bulkBrandId]);
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: 'ბრენდი განახლდა!');
     }
 
     public function bulkDelete(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
         $count = count($this->selectedProducts);
         Product::whereIn('id', $this->selectedProducts)->update(['active' => 0]);
         Product::whereIn('id', $this->selectedProducts)->delete();
-
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი წაიშალა!");
     }
 
     public function bulkRestore(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
         $count = count($this->selectedProducts);
         Product::withTrashed()->whereIn('id', $this->selectedProducts)->restore();
-
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი აღდგა!");
     }
 
     public function bulkLock(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
         $count = count($this->selectedProducts);
         Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 1]);
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი ჩაიკეტა!");
     }
 
     public function bulkUnlock(): void
     {
-        if (empty($this->selectedProducts)) {
-            $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!');
-            return;
-        }
-
+        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
         $count = count($this->selectedProducts);
         Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 0]);
-        $this->selectedProducts = [];
-        $this->selectAll        = false;
+        $this->selectedProducts = []; $this->selectAll = false;
         $this->dispatch('bulk_modal_close');
         $this->dispatch('ui:success', message: "{$count} პროდუქტი განიბლოკა!");
     }
 
-    public function toggleLock($productId): void
-    {
-        $product = Product::findOrFail($productId);
-        $product->update_lock = !$product->update_lock;
-        $product->save();
-        $this->dispatch('ui:success', message: $product->update_lock
-            ? 'პროდუქტი ჩაიკეტა (განახლება გათიშულია)'
-            : 'პროდუქტი განიბლოკა');
-    }
+    // ============================================
+    // Export
+    // ============================================
 
     public function exportNotFound(): StreamedResponse
     {
-        $rows = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
-
+        $rows     = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
         $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
 
         return response()->streamDownload(function () use ($rows) {
@@ -750,49 +448,176 @@ class Index extends Component
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    public function uploadComfo(): void
+    // ============================================
+    // Helpers
+    // ============================================
+
+    private function parsePrice($value): ?float
+    {
+        if ($value === null || $value === '') return null;
+        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
+        return $clean === '' ? null : (float) $clean;
+    }
+
+    private function parseStock($value): int
+    {
+        if ($value === null || $value === '') return 0;
+        $digits = preg_replace('/[^0-9]/', '', (string) $value);
+        return $digits === '' ? 0 : (int) $digits;
+    }
+
+    // ============================================
+    // Alneo
+    // ============================================
+
+    public function uploadAlneo(): void
+    {
+        try {
+            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
+            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
+        } catch (\Throwable $e) {
+            Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
+            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
+        }
+    }
+
+    // ============================================
+    // Elite
+    // ============================================
+
+    public function uploadElite(): void
     {
         $this->validate([
-            'comfoFile' => 'required|file|mimes:xlsx,xls|max:10240',
+            'elite_file' => 'required|file|mimes:xlsx,xls|max:20480',
         ]);
 
         try {
-            $spreadsheet = IOFactory::load($this->comfoFile->getRealPath());
+            @ini_set('memory_limit', '256M');
+
+            $spreadsheet = IOFactory::load($this->elite_file->getRealPath());
             $sheet       = $spreadsheet->getActiveSheet();
-            $rows        = $sheet->getHighestRow();
+
+            $inserted  = 0;
+            $duplicate = 0;
+            $skipped   = 0;
+
+            foreach ($sheet->getRowIterator() as $row) {
+                $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
+
+                if (!$barCode) { $skipped++; continue; }
+
+                if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
+                    $duplicate++; continue;
+                }
+
+                \App\Models\EliteProduct::create(['bar_code' => $barCode, 'synced' => false]);
+                $inserted++;
+            }
+
+            $this->reset('elite_file');
+            $this->dispatch('uploadEliteModal_close');
+            $this->dispatch('ui:success', message: "Elite: {$inserted} ჩაიწერა, {$duplicate} დუბლიკატი, {$skipped} გამოტოვებული.");
+
+        } catch (\Throwable $e) {
+            Log::error('Elite Upload error', ['error' => $e->getMessage()]);
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
+    // Metromart
+    // ============================================
+
+    public function uploadMetromart(): void
+    {
+        $this->validate([
+            'metromart_file' => 'required|file|mimes:xlsx,xls|max:20480',
+        ], [
+            'metromart_file.required' => 'ფაილი აუცილებელია',
+            'metromart_file.mimes'    => 'მხოლოდ Excel ფაილი',
+        ]);
+
+        try {
+            @ini_set('memory_limit', '256M');
+
+            $spreadsheet = IOFactory::load($this->metromart_file->getRealPath());
+            $sheet       = $spreadsheet->getActiveSheet();
 
             $dispatched = 0;
             $skipped    = 0;
 
-            for ($r = 2; $r <= $rows; $r++) {
-                $id    = trim((string) $sheet->getCell("A{$r}")->getValue());
-                $stock = $sheet->getCell("B{$r}")->getValue();
-                $url   = trim((string) $sheet->getCell("C{$r}")->getValue());
+            foreach ($sheet->getRowIterator() as $row) {
+                $model = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
 
-                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) {
-                    $skipped++;
-                    continue;
-                }
+                if (!$model) { $skipped++; continue; }
 
-                $stockInt = 0;
-                if (is_numeric($stock)) {
-                    $stockInt = (int) $stock;
-                } elseif (is_string($stock)) {
-                    $stockInt = (int) preg_replace('/\D+/', '', $stock);
-                }
-
-                \App\Jobs\ComfoImportJob::dispatch($id, $stockInt, $url)->onQueue('comfo');
+                \App\Jobs\MetromartSearchJob::dispatch($model)->onQueue('metromart');
                 $dispatched++;
             }
 
-            $this->dispatch('uploadComfoModal_close');
-            $this->dispatch('ui:success', message: "Comfo: დაიგზავნა {$dispatched}, გამოტოვებული {$skipped}");
-            $this->reset('comfoFile');
+            Log::info("📂 Metromart upload: {$dispatched} job queue-ში, გამოტოვებული: {$skipped}");
+
+            $this->reset('metromart_file');
+            $this->dispatch('ui:success', message: "{$dispatched} მოდელი queue-ში გაიგზავნა.");
 
         } catch (\Throwable $e) {
-            $this->dispatch('ui:error', message: 'Comfo Excel შეცდომა: ' . $e->getMessage());
+            Log::error('Metromart upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
+
+    // ============================================
+    // Global
+    // ============================================
+
+    public function uploadGlobal(): void
+    {
+        $this->validate([
+            'global_file' => 'required|file|mimes:xlsx,xls,csv',
+        ], [
+            'global_file.required' => 'ფაილი აუცილებელია',
+            'global_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
+        ]);
+
+        try {
+            $spreadsheet = IOFactory::load($this->global_file->getRealPath());
+            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
+            $items       = [];
+
+            foreach ($rows as $row) {
+                $name = trim((string) ($row[0] ?? ''));
+                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+
+                if ($name === '') continue;
+                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
+                if (mb_strlen($name) < 3) continue;
+
+                $items[$name] = [
+                    'stock' => $this->parseStock($row[1] ?? null),
+                    'price' => $this->parsePrice($row[2] ?? null),
+                ];
+            }
+
+            if (empty($items)) { $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა'); return; }
+
+            foreach ($items as $name => $info) {
+                \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
+            }
+
+            $this->reset('global_file');
+            $this->dispatch('ui:success', message: count($items) . ' პროდუქტი queue-ში გაიგზავნა.');
+
+        } catch (\Throwable $e) {
+            Log::error('Global upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
+    // Midea
+    // ============================================
 
     public function uploadMidea(): void
     {
@@ -804,11 +629,9 @@ class Index extends Component
         ]);
 
         try {
-            $path        = $this->midea_file->getRealPath();
-            $spreadsheet = IOFactory::load($path);
-            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
-
+            $rows  = IOFactory::load($this->midea_file->getRealPath())->getActiveSheet()->toArray(null, true, true, false);
             $items = [];
+
             foreach ($rows as $row) {
                 $name = trim((string) ($row[0] ?? ''));
                 if ($name === '') continue;
@@ -819,18 +642,13 @@ class Index extends Component
                 $name = preg_replace('/\s+/u', ' ', $name);
                 $name = trim($name);
 
-                $stock = $this->parseStock($row[1] ?? null);
-                $price = $this->parsePrice($row[2] ?? null);
-
-                $items[$name] = ['stock' => $stock, 'price' => $price];
+                $items[$name] = [
+                    'stock' => $this->parseStock($row[1] ?? null),
+                    'price' => $this->parsePrice($row[2] ?? null),
+                ];
             }
 
-            if (empty($items)) {
-                $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა');
-                return;
-            }
-
-            Log::info('📂 Midea upload: ' . count($items) . ' row, queue-ში იგზავნება');
+            if (empty($items)) { $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა'); return; }
 
             foreach ($items as $name => $info) {
                 \App\Jobs\MideaProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('midea');
@@ -846,6 +664,165 @@ class Index extends Component
     }
 
     // ============================================
+    // Grandel
+    // ============================================
+
+    public function uploadGrandel(): void
+    {
+        $this->validate([
+            'grandel_file' => 'required|file|mimes:xlsx,xls,csv',
+        ], [
+            'grandel_file.required' => 'ფაილი აუცილებელია',
+            'grandel_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
+        ]);
+
+        try {
+            $sheet  = IOFactory::load($this->grandel_file->getRealPath())->getActiveSheet();
+            $rows   = $sheet->toArray(null, true, true, false);
+
+            if (empty($rows)) { $this->dispatch('ui:error', message: 'ფაილი ცარიელია'); return; }
+
+            $header = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[0]);
+            $idx    = [
+                'title'       => array_search('title', $header),
+                'brand'       => array_search('brand', $header),
+                'model'       => array_search('model', $header),
+                'price'       => array_search('price', $header),
+                'old_price'   => array_search('oldprice', $header),
+                'color'       => array_search('color', $header),
+                'description' => array_search('description', $header),
+                'image'       => array_search('image', $header),
+                'category'    => array_search('category', $header),
+            ];
+
+            if ($idx['title'] === false || $idx['model'] === false) {
+                $this->dispatch('ui:error', message: 'სვეტები Title/Model ვერ მოიძებნა');
+                return;
+            }
+
+            $count = 0;
+            foreach (array_slice($rows, 1) as $row) {
+                $title = trim((string) ($row[$idx['title']] ?? ''));
+                $model = trim((string) ($row[$idx['model']] ?? ''));
+                if ($title === '' || $model === '') continue;
+
+                \App\Jobs\GrandelImportJob::dispatch([
+                    'title'       => $title,
+                    'brand'       => $idx['brand'] !== false ? trim((string) ($row[$idx['brand']] ?? '')) : '',
+                    'model'       => $model,
+                    'price'       => $idx['price'] !== false ? ($row[$idx['price']] ?? '') : '',
+                    'old_price'   => $idx['old_price'] !== false ? ($row[$idx['old_price']] ?? '') : '',
+                    'color'       => $idx['color'] !== false ? trim((string) ($row[$idx['color']] ?? '')) : '',
+                    'description' => $idx['description'] !== false ? trim((string) ($row[$idx['description']] ?? '')) : '',
+                    'image'       => $idx['image'] !== false ? trim((string) ($row[$idx['image']] ?? '')) : '',
+                    'category'    => $idx['category'] !== false ? trim((string) ($row[$idx['category']] ?? '')) : '',
+                ])->onQueue('grandel');
+                $count++;
+            }
+
+            $this->reset('grandel_file');
+            $this->dispatch('ui:success', message: "{$count} პროდუქტი queue-ში გაიგზავნა.");
+
+        } catch (\Throwable $e) {
+            Log::error('Grandel upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
+    // Kontakt
+    // ============================================
+
+    public function uploadKontakt(): void
+    {
+        $this->validate([
+            'kontakt_file' => 'required|file|mimes:xlsx,xls',
+        ], [
+            'kontakt_file.required' => 'ფაილი აუცილებელია',
+            'kontakt_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
+        ]);
+
+        try {
+            $sheet      = IOFactory::load($this->kontakt_file->getRealPath())->getActiveSheet();
+            $highestRow = $sheet->getHighestRow();
+            $dispatched = 0;
+            $skipped    = 0;
+
+            for ($r = 2; $r <= $highestRow; $r++) {
+                $cell = $sheet->getCell('A' . $r);
+                $name = trim((string) $cell->getValue());
+                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+
+                if ($name === '') continue;
+                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
+                if (mb_strlen($name) < 2) continue;
+
+                $url = '';
+                if ($cell->hasHyperlink()) {
+                    $url = trim($cell->getHyperlink()->getUrl());
+                }
+
+                if ($url === '' || !str_starts_with($url, 'http')) { $skipped++; continue; }
+
+                \App\Jobs\KontaktImportJob::dispatch(
+                    $name,
+                    $url,
+                    $this->parseStock($sheet->getCell('B' . $r)->getValue()),
+                    $this->parsePrice($sheet->getCell('C' . $r)->getValue())
+                )->onQueue('kontakt');
+                $dispatched++;
+            }
+
+            if ($dispatched === 0) { $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა'); return; }
+
+            $this->reset('kontakt_file');
+            $this->dispatch('ui:success', message: "{$dispatched} პროდუქტი queue-ში გაიგზავნა (გამოტოვებული: {$skipped}).");
+
+        } catch (\Throwable $e) {
+            Log::error('Kontakt upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
+    // Comfo
+    // ============================================
+
+    public function uploadComfo(): void
+    {
+        $this->validate(['comfoFile' => 'required|file|mimes:xlsx,xls|max:10240']);
+
+        try {
+            $sheet      = IOFactory::load($this->comfoFile->getRealPath())->getActiveSheet();
+            $rows       = $sheet->getHighestRow();
+            $dispatched = 0;
+            $skipped    = 0;
+
+            for ($r = 2; $r <= $rows; $r++) {
+                $id    = trim((string) $sheet->getCell("A{$r}")->getValue());
+                $stock = $sheet->getCell("B{$r}")->getValue();
+                $url   = trim((string) $sheet->getCell("C{$r}")->getValue());
+
+                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) { $skipped++; continue; }
+
+                $stockInt = is_numeric($stock) ? (int) $stock : (int) preg_replace('/\D+/', '', (string) $stock);
+
+                \App\Jobs\ComfoImportJob::dispatch($id, $stockInt, $url)->onQueue('comfo');
+                $dispatched++;
+            }
+
+            $this->dispatch('uploadComfoModal_close');
+            $this->dispatch('ui:success', message: "Comfo: დაიგზავნა {$dispatched}, გამოტოვებული {$skipped}");
+            $this->reset('comfoFile');
+
+        } catch (\Throwable $e) {
+            $this->dispatch('ui:error', message: 'Comfo Excel შეცდომა: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================
     // Render
     // ============================================
 
@@ -853,7 +830,7 @@ class Index extends Component
     {
         $query = Product::with(['translations'])
             ->when($this->search_query, fn($q) => $q->whereHas('translations',
-                fn($subQuery) => $subQuery->where('title', 'like', "%{$this->search_query}%")
+                fn($sub) => $sub->where('title', 'like', "%{$this->search_query}%")
             ))
             ->when($this->show_web === true,      fn($q) => $q->where('show', $this->show_web))
             ->when($this->category_id,            fn($q) => $q->where('category_id', $this->category_id))
