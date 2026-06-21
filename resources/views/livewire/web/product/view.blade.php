@@ -29,7 +29,7 @@
                     </div>
 
                     {{-- ⚠️ აუზი — კატეგორია 183 --}}
-                    @if($product->category_id === 183)
+                    @if($product->category_id === 183 OR $product->category_id === 206)
                         <div class="col-12 mb-2">
                             <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2"
                                  style="background: #fff3cd; border: 1px solid #ffc107;">
