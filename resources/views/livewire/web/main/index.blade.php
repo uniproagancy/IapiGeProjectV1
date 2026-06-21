@@ -56,20 +56,8 @@
         {{-- ბანერი 1 — მე-3 კატეგორიის შემდეგ --}}
         @if($catIndex === 2)
             <div class="container py-3">
-                <a href="/promotions" class="d-block">
-                    <img src="{{ asset('banners/banner1.jpg') }}"
-                         alt="ბანერი"
-                         class="w-100 rounded-4"
-                         style="object-fit: cover; max-height: 200px;">
-                </a>
-            </div>
-        @endif
-
-        {{-- ბანერი 2 — მე-6 კატეგორიის შემდეგ --}}
-        @if($catIndex === 5)
-            <div class="container py-3">
-                <a href="/sale" class="d-block">
-                    <img src="{{ asset('banners/banner2.jpg') }}"
+                <a href="/products/auzebi-183" class="d-block">
+                    <img src="{{ asset('web-assets/banners/banner_1.png') }}"
                          alt="ბანერი"
                          class="w-100 rounded-4"
                          style="object-fit: cover; max-height: 200px;">
