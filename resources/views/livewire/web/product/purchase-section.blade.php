@@ -12,7 +12,7 @@
                 {{ number_format($product->price->regular_price, 2) }} ₾
             </div>
         @endif
-        @if($product->in_stock === 1 && $product->show === 1)
+        @if($product->show === 1)
             <div class="d-flex align-items-center text-success fs-sm ms-auto font-neue">
                 <i class="ci-check-circle fs-base me-2"></i>
                 მარაგშია
