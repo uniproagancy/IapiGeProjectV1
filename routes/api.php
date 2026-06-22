@@ -12,11 +12,7 @@ Route::prefix('elite')->group(function () {
 });
 
 Route::prefix('alta')->group(function () {
-    Route::get('/sync', [\App\Http\Controllers\ApiControllers\AltaController::class, 'getProducts']);
     Route::get('/check', [\App\Http\Controllers\ApiControllers\AltaController::class, 'check']);
-});
-
-Route::prefix('alta')->group(function () {
     Route::get('/scan', [\App\Http\Controllers\ApiControllers\AltaController::class, 'scan']);
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
 });
@@ -29,13 +25,8 @@ Route::prefix('promotions')->group(function () {
     Route::get('/get', '\App\Http\Controllers\ApiControllers\PromotionProductsController@index');
 });
 
-
 Route::prefix('comfo')->group(function () {
     Route::get('/get', '\App\Http\Controllers\ApiControllers\DataController@importData');
-});
-
-Route::prefix('json')->group(function () {
-    Route::get('/loadJson', '\App\Http\Controllers\ApiControllers\JsonParseController@loadJson');
 });
 
 Route::prefix('bog')->group(function () {

@@ -32,9 +32,7 @@ class Index extends Component
     public bool $selectAll         = false;
     public array $currentPageIds   = [];
 
-    public $global_file;
     public $midea_file;
-    public $grandel_file;
     public $kontakt_file;
     public $comfoFile        = null;
     public $elite_file;
@@ -567,54 +565,6 @@ class Index extends Component
     }
 
     // ============================================
-    // Global
-    // ============================================
-
-    public function uploadGlobal(): void
-    {
-        $this->validate([
-            'global_file' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'global_file.required' => 'ფაილი აუცილებელია',
-            'global_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
-        ]);
-
-        try {
-            $spreadsheet = IOFactory::load($this->global_file->getRealPath());
-            $rows        = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
-            $items       = [];
-
-            foreach ($rows as $row) {
-                $name = trim((string) ($row[0] ?? ''));
-                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
-                $name = preg_replace('/\s+/u', ' ', $name);
-                $name = trim($name);
-
-                if ($name === '') continue;
-                if (in_array(mb_strtolower($name), ['item', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 3) continue;
-
-                $items[$name] = [
-                    'stock' => $this->parseStock($row[1] ?? null),
-                ];
-            }
-
-            if (empty($items)) { $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა'); return; }
-
-            foreach ($items as $name => $info) {
-                \App\Jobs\GlobalProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('global');
-            }
-
-            $this->reset('global_file');
-            $this->dispatch('ui:success', message: count($items) . ' პროდუქტი queue-ში გაიგზავნა.');
-
-        } catch (\Throwable $e) {
-            Log::error('Global upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
-    }
-
-    // ============================================
     // Midea
     // ============================================
 
@@ -657,72 +607,6 @@ class Index extends Component
 
         } catch (\Throwable $e) {
             Log::error('Midea upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
-    }
-
-    // ============================================
-    // Grandel
-    // ============================================
-
-    public function uploadGrandel(): void
-    {
-        $this->validate([
-            'grandel_file' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'grandel_file.required' => 'ფაილი აუცილებელია',
-            'grandel_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
-        ]);
-
-        try {
-            $sheet  = IOFactory::load($this->grandel_file->getRealPath())->getActiveSheet();
-            $rows   = $sheet->toArray(null, true, true, false);
-
-            if (empty($rows)) { $this->dispatch('ui:error', message: 'ფაილი ცარიელია'); return; }
-
-            $header = array_map(fn($h) => mb_strtolower(trim((string) $h)), $rows[0]);
-            $idx    = [
-                'title'       => array_search('title', $header),
-                'brand'       => array_search('brand', $header),
-                'model'       => array_search('model', $header),
-                'price'       => array_search('price', $header),
-                'old_price'   => array_search('oldprice', $header),
-                'color'       => array_search('color', $header),
-                'description' => array_search('description', $header),
-                'image'       => array_search('image', $header),
-                'category'    => array_search('category', $header),
-            ];
-
-            if ($idx['title'] === false || $idx['model'] === false) {
-                $this->dispatch('ui:error', message: 'სვეტები Title/Model ვერ მოიძებნა');
-                return;
-            }
-
-            $count = 0;
-            foreach (array_slice($rows, 1) as $row) {
-                $title = trim((string) ($row[$idx['title']] ?? ''));
-                $model = trim((string) ($row[$idx['model']] ?? ''));
-                if ($title === '' || $model === '') continue;
-
-                \App\Jobs\GrandelImportJob::dispatch([
-                    'title'       => $title,
-                    'brand'       => $idx['brand'] !== false ? trim((string) ($row[$idx['brand']] ?? '')) : '',
-                    'model'       => $model,
-                    'price'       => $idx['price'] !== false ? ($row[$idx['price']] ?? '') : '',
-                    'old_price'   => $idx['old_price'] !== false ? ($row[$idx['old_price']] ?? '') : '',
-                    'color'       => $idx['color'] !== false ? trim((string) ($row[$idx['color']] ?? '')) : '',
-                    'description' => $idx['description'] !== false ? trim((string) ($row[$idx['description']] ?? '')) : '',
-                    'image'       => $idx['image'] !== false ? trim((string) ($row[$idx['image']] ?? '')) : '',
-                    'category'    => $idx['category'] !== false ? trim((string) ($row[$idx['category']] ?? '')) : '',
-                ])->onQueue('grandel');
-                $count++;
-            }
-
-            $this->reset('grandel_file');
-            $this->dispatch('ui:success', message: "{$count} პროდუქტი queue-ში გაიგზავნა.");
-
-        } catch (\Throwable $e) {
-            Log::error('Grandel upload error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }

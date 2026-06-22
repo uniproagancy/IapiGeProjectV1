@@ -59,14 +59,8 @@
                                     განახლების ატვირთვა
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadProductExcelGlobalDistributinModal">
-                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Global Distribution
-                                    </a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMideaModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Midea
-                                    </a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadGrandelModal">
-                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Grandel
                                     </a>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> KontaktHome
@@ -77,6 +71,10 @@
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Elite — Excel
+                                    </a>
+                                    <a class="dropdown-item" href="{{ route('elite.scan') }}"
+                                       onclick="return confirm('დარწმუნებული ხარ? Elite სკანი დაიწყება (1-35000)')">
+                                        <i data-feather="search" class="me-1" style="width:14px;"></i> Elite — სკანი
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMetromartModal">
@@ -245,35 +243,6 @@
 
     {{-- ==================== MODALS ==================== --}}
 
-    {{-- Global Distribution --}}
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadProductExcelGlobalDistributinModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadGlobal">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">Global Distribution — ატვირთვა</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx / .csv) — A სვეტი: დასახელება</label>
-                        <input type="file"
-                               class="form-control @error('global_file') border-danger is-invalid @enderror"
-                               wire:model="global_file" accept=".xlsx,.xls,.csv">
-                        @error('global_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1"
-                                wire:loading.attr="disabled" wire:target="uploadGlobal,global_file">
-                            <span wire:loading.remove wire:target="uploadGlobal">დამუშავება</span>
-                            <span wire:loading wire:target="uploadGlobal"><span class="spinner-border spinner-border-sm"></span></span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     {{-- Midea --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadMideaModal" tabindex="-1">
         <div class="modal-dialog">
@@ -284,7 +253,7 @@
                 </div>
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx / .csv) — Model | Stock | Price</label>
+                        <label class="form-label">ფაილი (.xlsx / .csv) — A=მოდელი | B=Stock</label>
                         <input type="file"
                                class="form-control @error('midea_file') border-danger is-invalid @enderror"
                                wire:model="midea_file" accept=".xlsx,.xls,.csv">
@@ -295,35 +264,6 @@
                                 wire:loading.attr="disabled" wire:target="uploadMidea,midea_file">
                             <span wire:loading.remove wire:target="uploadMidea">დამუშავება</span>
                             <span wire:loading wire:target="uploadMidea"><span class="spinner-border spinner-border-sm"></span></span>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Grandel --}}
-    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadGrandelModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content pt-0" wire:submit.prevent="uploadGrandel">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
-                <div class="modal-header mb-1">
-                    <h5 class="modal-title">Grandel — ატვირთვა</h5>
-                </div>
-                <div class="modal-body flex-grow-1">
-                    <div class="mb-1">
-                        <label class="form-label">ფაილი (.xlsx / .csv) — Title | Brand | Model | Price | OldPrice</label>
-                        <input type="file"
-                               class="form-control @error('grandel_file') border-danger is-invalid @enderror"
-                               wire:model="grandel_file" accept=".xlsx,.xls,.csv">
-                        @error('grandel_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button type="submit" class="btn btn-primary me-1"
-                                wire:loading.attr="disabled" wire:target="uploadGrandel,grandel_file">
-                            <span wire:loading.remove wire:target="uploadGrandel">დამუშავება</span>
-                            <span wire:loading wire:target="uploadGrandel"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -459,7 +399,7 @@
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
                         <label class="form-label">საძიებო სიტყვა</label>
-                        <input type="text" class="form-control" placeholder="დასახელება, ID, SKU" wire:model.lazy="search_query"/>
+                        <input type="text" class="form-control" placeholder="დასახელება, SKU" wire:model.lazy="search_query"/>
                     </div>
                     <div class="mb-1">
                         <label class="form-label">სორტირება</label>
