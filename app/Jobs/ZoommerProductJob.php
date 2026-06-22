@@ -179,9 +179,28 @@ class ZoommerProductJob implements ShouldQueue
         }
 
         $hasStock = $this->checkTbilisiStock($productAvailability);
-        $sku      = $productData['barCode'] ?? ('ZOOM-' . $productData['id']);
 
-        $existing = Product::where('sku', $sku)->first();
+        $zoomId = $productData['id'];
+        $sku    = $productData['barCode'] ?? ('ZOOM-' . $zoomId);
+
+        // ძებნა supplier_product_id-ით — ყველაზე სანდო (barCode შეიძლება მეორდებოდეს)
+        $existing = Product::where('supplier_id', 4)
+            ->where('supplier_product_id', $zoomId)
+            ->first();
+
+        // fallback: ძველი ჩანაწერები რომლებსაც supplier_product_id არ აქვთ
+        if (!$existing) {
+            $existing = Product::where('sku', $sku)
+                ->where('supplier_id', 4)
+                ->whereNull('supplier_product_id')
+                ->first();
+
+            // თუ ნაპოვნია — supplier_product_id ჩავამატოთ
+            if ($existing) {
+                $existing->update(['supplier_product_id' => $zoomId]);
+                Log::info("🔧 Zoommer: supplier_product_id დაემატა id={$existing->id}, zoom_id={$zoomId}");
+            }
+        }
 
         if ($existing && $existing->update_lock) {
             Log::info("🔒 Skipping locked Zoommer product: {$sku}");
@@ -194,7 +213,7 @@ class ZoommerProductJob implements ShouldQueue
             if ($hasStock) {
                 $this->createNewProduct($productData, $hasStock, $sku);
             } else {
-                Log::info("⏭️  Skipping new product (no Tbilisi stock): {$productData['id']}");
+                Log::info("⏭️  Skipping new product (no Tbilisi stock): {$zoomId}");
             }
         }
     }

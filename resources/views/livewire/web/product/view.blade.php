@@ -28,7 +28,7 @@
                                 class="btn-secondary animate-pulse"/>
                     </div>
 
-                    {{-- ⚠️ აუზი — კატეგორია 183 --}}
+                    {{-- ⚠️ აუზი — კატეგორია 183 / 206 --}}
                     @if($product->category_id === 183 OR $product->category_id === 206)
                         <div class="col-12 mb-2">
                             <div class="d-flex align-items-center gap-2 rounded-3 px-3 py-2"
@@ -42,7 +42,18 @@
                     @endif
 
                     <div class="col-md-8">
-                        <span class="font-neue" style="font-size: 14px">SKU: {{ $product->id }}</span>
+                        {{-- SKU --}}
+                        <div class="d-flex align-items-center gap-3 mb-1">
+                            <span class="font-neue" style="font-size: 14px; color: #888;">
+                                SKU: {{ $product->id }}
+                            </span>
+                            {{-- მომწოდებლის SKU — მხოლოდ role_id=2 --}}
+                            @if(auth()->check() && auth()->user()->role_id === 2)
+                                <span class="font-neue" style="font-size: 13px; color: #ff6900; background: #fff3ec; border: 1px solid #ffd5b8; border-radius: 6px; padding: 2px 8px;">
+                                    მომწოდებლის SKU: {{ $product->sku }}
+                                </span>
+                            @endif
+                        </div>
                         @include('livewire.web.product.gallery')
                     </div>
                     <div class="col-md-4">
@@ -109,29 +120,11 @@
         </div>
     </section>
     <style>
-        #specification-section {
-            overflow: hidden;
-        }
-
-        #specification-section.expanded {
-            max-height: 2000px !important;
-        }
-
-        #specification-section.collapsed {
-            max-height: 280px;
-        }
-
-        .masonry-grid {
-            column-count: 2;
-            overflow: hidden;
-        }
-
-        .masonry-item {
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 20px;
-            break-inside: avoid;
-        }
+        #specification-section { overflow: hidden; }
+        #specification-section.expanded { max-height: 2000px !important; }
+        #specification-section.collapsed { max-height: 280px; }
+        .masonry-grid { column-count: 2; overflow: hidden; }
+        .masonry-item { display: inline-block; width: 100%; margin-bottom: 20px; break-inside: avoid; }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
