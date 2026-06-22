@@ -45,17 +45,13 @@
                 </section>
             </div>
         @endif
-
-        {{-- კატეგორიის პროდუქტები --}}
         @php $products = $category->getActiveProducts()->take(20) @endphp
         @include('livewire.web.partials.category-section', [
             'category' => $category,
             'products' => $products,
         ])
-
-        {{-- ბანერი 1 — მე-3 კატეგორიის შემდეგ --}}
         @if($catIndex === 2)
-            <div class="container py-3">
+            <div class="container pt-5 mt-2 mt-sm-3 mt-lg-4">
                 <a href="/products/auzebi-183" class="d-block">
                     <img src="{{ asset('web-assets/banners/banner_1.png') }}"
                          alt="ბანერი"
@@ -64,10 +60,6 @@
                 </a>
             </div>
         @endif
-
-        {{-- ახალი ბანერის დასამატებლად: --}}
-        {{-- @if($catIndex === 8) ... @endif --}}
-
         @php $catIndex++ @endphp
     @endforeach
 </div>
