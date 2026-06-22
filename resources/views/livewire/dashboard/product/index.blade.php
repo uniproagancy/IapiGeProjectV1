@@ -47,15 +47,6 @@
                                     </div>
                                 </div>
                             @endif
-
-                            {{-- Export --}}
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('dashboard.global.export') }}"
-                               target="_blank">
-                                <i data-feather="download" class="me-1" style="width:14px;"></i>
-                                ვერ ნაპოვნები ({{ \App\Models\Product\MetroMartNotFound::count() }})
-                            </a>
-
-                            {{-- Upload Dropdown --}}
                             <div class="btn-group">
                                 <button class="btn btn-info dropdown-toggle" type="button"
                                         id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
