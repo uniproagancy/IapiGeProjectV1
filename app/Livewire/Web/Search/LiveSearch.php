@@ -38,19 +38,13 @@ class LiveSearch extends Component
             ->where('db_products.show', 1)
             ->where('db_products.active', 1)
             ->where(function ($query) use ($q) {
-                $query->where('db_products.id', 'like', "%{$q}%")
-                    ->orWhere('db_products.sku', 'like', "%{$q}%")
-                    ->orWhereHas('translations', function ($sub) use ($q) {
-                        $sub->where('title', 'like', "%{$q}%")
-                            ->orWhere('description', 'like', "%{$q}%");
-                    });
+                $query->whereHas('translations', function ($sub) use ($q) {
+                    $sub->where('title', 'like', "%{$q}%");
+                });
             })
-            // ✅ კატეგორიის sortable მიხედვით (პრიორიტეტი)
             ->orderByRaw('db_product_categories.sortable IS NULL ASC')
             ->orderBy('db_product_categories.sortable', 'ASC')
-            // მარაგში მყოფი ჯერ
             ->orderByDesc('db_products.in_stock')
-            // ბოლოს უახლესი
             ->orderByDesc('db_products.id')
             ->take(12)
             ->get();
