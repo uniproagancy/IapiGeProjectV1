@@ -151,8 +151,10 @@
                                             <div class="avatar-group">
                                                 <div data-bs-toggle="tooltip" data-popup="tooltip-custom"
                                                      data-bs-placement="top" class="avatar pull-up my-0">
+                                                    @if(!empty($item->product->main_image))
                                                     <img src="{{ asset('storage/' . $item->product->main_image) }}"
                                                          alt="" height="40" width="40"/>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
