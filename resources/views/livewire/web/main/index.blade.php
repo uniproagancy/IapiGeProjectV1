@@ -60,17 +60,6 @@
                 </a>
             </div>
         @endif
-
-        @if($catIndex === 7)
-            <div class="container pt-5 mt-2 mt-sm-3 mt-lg-4">
-                <a href="/products/konditsioneri-32" class="d-block">
-                    <img src="{{ asset('web-assets/banners/banner_2.png') }}"
-                         alt="ბანერი"
-                         class="w-100 rounded-4"
-                         style="object-fit: cover; max-height: 200px;">
-                </a>
-            </div>
-        @endif
         @php $catIndex++ @endphp
     @endforeach
 </div>
