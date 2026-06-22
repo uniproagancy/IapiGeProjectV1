@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AltaID;
 use App\Models\Product\Product;
 use App\Services\Products\AltaService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use SoapClient;
 use Exception;
@@ -14,11 +15,6 @@ class AltaController extends Controller
 {
     private ?SoapClient $soapClient = null;
     private string $wsdlUrl = 'http://extra.alta.com.ge/b2b/b2bEWS?WSDL';
-
-    public function __construct()
-    {
-        // lazy init
-    }
 
     private function getSoapClient(): SoapClient
     {
@@ -107,6 +103,65 @@ class AltaController extends Controller
             return response()->json($stats);
         } catch (Exception $e) {
             Log::error('Alta scan error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ============================================
+    // B2B Check — GET /alta/check?sku=ABC123
+    // ============================================
+
+    public function check(Request $request)
+    {
+        $sku = trim($request->get('sku', ''));
+
+        if (empty($sku)) {
+            return response()->json(['error' => 'sku პარამეტრი საჭიროა'], 400);
+        }
+
+        try {
+            $params = [
+                'user'     => 'UNIPRO_CHI',
+                'password' => 'CHI1457160',
+                'item'     => $sku,
+            ];
+
+            $response = $this->getSoapClient()->GetPriceList($params);
+
+            $items = $response->PriceList->items->item ?? null;
+
+            if (empty($items)) {
+                return response()->json([
+                    'sku'   => $sku,
+                    'found' => false,
+                ]);
+            }
+
+            if (!is_array($items)) {
+                $items = [$items];
+            }
+
+            $results = [];
+            foreach ($items as $item) {
+                $parsed    = $this->parseQtyText($item->qty_text ?? null);
+                $results[] = [
+                    'item'      => $item->item ?? null,
+                    'name'      => $item->item_name ?? null,
+                    'price'     => $item->price ?? null,
+                    'qty_text'  => $item->qty_text ?? null,
+                    'quantity'  => $parsed['quantity'],
+                    'has_stock' => $parsed['has_stock'],
+                ];
+            }
+
+            return response()->json([
+                'sku'     => $sku,
+                'found'   => true,
+                'results' => $results,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Alta check error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

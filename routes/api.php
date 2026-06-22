@@ -13,6 +13,7 @@ Route::prefix('elite')->group(function () {
 
 Route::prefix('alta')->group(function () {
     Route::get('/sync', [\App\Http\Controllers\ApiControllers\AltaController::class, 'getProducts']);
+    Route::get('/alta/check', [\App\Http\Controllers\AltaController::class, 'check']);
 });
 
 Route::prefix('alta')->group(function () {
