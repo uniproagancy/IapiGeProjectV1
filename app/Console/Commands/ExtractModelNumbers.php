@@ -47,6 +47,15 @@ class ExtractModelNumbers extends Command
 
         // S6500, D4740 — ერთი ასო + 4+ რიცხვი
         '/\b([A-Z][0-9]{4,}[A-Z0-9]*)\b/',
+
+        // RT47CG6442S9WT, WW80AG6S24ANLD, DV90DG52A0AELE — Samsung/Midea გრძელი კოდები
+        '/\b([A-Z]{2,4}[0-9]{2}[A-Z]{1,3}[0-9]{2,}[A-Z0-9]{3,})\b/',
+
+        // MERD86FGG01, MDRD86SLF01 — Midea (ასოები+2ნომ.+ასოები+2ნომ.)
+        '/\b([A-Z]{4,6}[0-9]{2}[A-Z]{2,4}[0-9]{2})\b/',
+
+        // R-20GH-WH2 — SHARP R სერია
+        '/\b(R-[0-9]{2}[A-Z]{2}(?:-[A-Z0-9]+)+)\b/',
     ];
 
     // ამ სიტყვებს გამოვტოვებთ (false positives)
