@@ -11,7 +11,6 @@
      }"
      @click.outside="$wire.closeSearch()"
      @keydown.window="handleKeydown($event)">
-
     {{-- Search Input --}}
     <div class="position-relative live-search-input-wrap">
         <i class="ci-search position-absolute top-50 start-0 translate-middle-y d-flex fs-base text-muted ms-3"
@@ -22,13 +21,11 @@
                wire:model.live.debounce.300ms="query"
                @focus="$wire.set('isOpen', true)"
                autocomplete="off">
-
         {{-- Loading spinner --}}
         <div wire:loading wire:target="query"
              class="position-absolute top-50 end-0 translate-middle-y me-5">
             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
         </div>
-
         @if($query)
             <button type="button"
                     class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted p-0 me-3 live-search-clear"
@@ -38,29 +35,21 @@
             </button>
         @endif
     </div>
-
     {{-- Results Dropdown --}}
     @if($isOpen && mb_strlen($query) >= 2)
         <div class="live-search-dropdown"
              x-show="open"
              x-transition.opacity.duration.150ms>
-
             @if($this->results->count() > 0)
-                {{-- შედეგების სათაური --}}
                 <div class="live-search-header">
                     <span class="text-muted small">ნაპოვნია <strong class="text-dark">{{ $this->results->count() }}</strong> შედეგი</span>
                 </div>
-
-                {{-- ITEMS --}}
                 <div class="live-search-list">
                     @foreach($this->results as $index => $product)
                         @php
                             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-                            $category = $product->category;
-                            $showCategory = $category && $category->parent_id !== 2 && $category->parent_id !== null;
-                            $categoryTitle = $showCategory
-                                ? ($category->translation(app()->getLocale())?->title ?? $category->translation('ka')?->title)
-                                : null;
+                            $categoryTitle = $product->category?->translation(app()->getLocale())?->title
+                                          ?? $product->category?->translation('ka')?->title;
                             $hasDiscount = !empty($product->price->discount_price) && $product->price->discount_price > 0;
                             $finalPrice  = $hasDiscount ? $product->price->discount_price : $product->price->regular_price;
                         @endphp
@@ -70,8 +59,6 @@
                            wire:key="search-result-{{ $product->id }}"
                            @mouseenter="$wire.selectedIndex = {{ $index }}"
                            wire:click="closeSearch">
-
-                            {{-- Image --}}
                             <div class="live-search-item__img">
                                 @if($product->main_image)
                                     <img src="{{ asset('storage/' . $product->main_image) }}"
@@ -83,21 +70,12 @@
                                     </div>
                                 @endif
                             </div>
-
-                            {{-- Body --}}
                             <div class="live-search-item__body">
                                 @if($categoryTitle)
                                     <div class="live-search-item__category">{{ $categoryTitle }}</div>
                                 @endif
-
                                 <div class="live-search-item__title">{{ $translation->title }}</div>
-
-                                <div class="live-search-item__meta">
-                                    <span class="live-search-item__sku">SKU: {{ $product->id }}</span>
-                                </div>
                             </div>
-
-                            {{-- Price --}}
                             <div class="live-search-item__price">
                                 @if($hasDiscount)
                                     <div class="live-search-item__price-now">{{ number_format($finalPrice, 2) }} ₾</div>
@@ -112,8 +90,6 @@
                         </a>
                     @endforeach
                 </div>
-
-                {{-- "ყველა შედეგი" — ქვემოთ --}}
                 <a href="{{ route('web.products.index', ['search' => $query]) }}"
                    class="live-search-footer"
                    wire:navigate
@@ -122,7 +98,6 @@
                     <i class="ci-arrow-right ms-1"></i>
                 </a>
             @else
-                {{-- No Results --}}
                 <div class="live-search-empty">
                     <div class="live-search-empty__icon">
                         <i class="ci-search"></i>
@@ -138,8 +113,14 @@
             @endif
         </div>
     @endif
-
     <style>
+        /* === Selection === */
+        .live-search-input::selection,
+        .live-search-input::-moz-selection {
+            background: #b3d4ff;
+            color: #1a1a1a;
+        }
+
         /* === Search Input === */
         .live-search-input {
             font-size: 14px;
@@ -148,21 +129,26 @@
             background: #fff;
             border: 1px solid transparent;
             border-radius: 12px !important;
-            color: #252525;
+            color: #1a1a1a;
+            font-weight: 500;
             transition: all .2s ease;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .live-search-input::placeholder {
+            color: #aaa;
+            font-weight: 400;
         }
         .live-search-input:focus {
             box-shadow: 0 4px 12px rgba(255,105,0,0.15);
             border-color: #ff6900;
             background: #fff;
+            color: #1a1a1a;
         }
         .live-search-clear {
             z-index: 5;
             transition: color .15s ease;
         }
         .live-search-clear:hover { color: #ff6900 !important; }
-
         /* === Dropdown === */
         .live-search-dropdown {
             position: absolute;
@@ -180,15 +166,11 @@
             from { opacity: 0; transform: translateY(-8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-
-        /* === Header === */
         .live-search-header {
             padding: 10px 16px;
             border-bottom: 1px solid #f0f0f0;
             background: #fafafa;
         }
-
-        /* === List === */
         .live-search-list {
             max-height: 440px;
             overflow-y: auto;
@@ -197,8 +179,6 @@
         .live-search-list::-webkit-scrollbar-track { background: transparent; }
         .live-search-list::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 10px; }
         .live-search-list::-webkit-scrollbar-thumb:hover { background: #ff6900; }
-
-        /* === Item === */
         .live-search-item {
             display: flex;
             align-items: center;
@@ -216,7 +196,6 @@
             background: #fff7f0;
             color: #2a2a2a;
         }
-
         .live-search-item__img {
             width: 56px;
             height: 56px;
@@ -239,7 +218,6 @@
             color: #ccc;
             font-size: 24px;
         }
-
         .live-search-item__body {
             flex: 1;
             min-width: 0;
@@ -261,18 +239,7 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-bottom: 3px;
         }
-        .live-search-item__meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .live-search-item__sku {
-            font-size: 11px;
-            color: #999;
-        }
-
         .live-search-item__price {
             flex-shrink: 0;
             text-align: right;
@@ -303,8 +270,6 @@
             border-radius: 6px;
             margin-top: 2px;
         }
-
-        /* === Footer === */
         .live-search-footer {
             display: block;
             text-align: center;
@@ -321,8 +286,6 @@
             background: #ff6900;
             color: #fff;
         }
-
-        /* === Empty === */
         .live-search-empty {
             padding: 32px 20px;
             text-align: center;
@@ -349,8 +312,6 @@
             font-size: 13px;
             color: #888;
         }
-
-        /* === Mobile === */
         @media (max-width: 576px) {
             .live-search-item__img { width: 48px; height: 48px; }
             .live-search-item__title { font-size: 13px; }
