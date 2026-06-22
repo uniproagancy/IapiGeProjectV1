@@ -65,21 +65,14 @@
                                        data-bs-target="#uploadComfoModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Comfo
                                     </a>
-                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadEliteModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Elite — Excel
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('elite.scan') }}"
-                                       onclick="return confirm('დარწმუნებული ხარ? Elite სკანი დაიწყება (1-35000)')">
-                                        <i data-feather="search" class="me-1" style="width:14px;"></i> Elite — სკანი
-                                    </a>
-                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                        data-bs-target="#uploadMetromartModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Metromart — Excel
                                     </a>
-                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item text-danger" href="#"
                                        wire:click="uploadAlneo"
                                        onclick="if(!confirm('დარწმუნებული ხარ? სკანი დაიწყებს ყველა Alneo პროდუქტის იმპორტს')) return false;">
