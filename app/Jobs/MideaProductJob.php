@@ -37,10 +37,8 @@ class MideaProductJob implements ShouldQueue
 
     public function __construct(
         public string $name,
-        public int $stock = 0,
-        public ?float $price = null
-    ) {
-    }
+        public int    $stock = 0,
+    ) {}
 
     public function handle(): void
     {
@@ -61,7 +59,7 @@ class MideaProductJob implements ShouldQueue
                     ['name' => $this->name],
                     [
                         'stock'  => $this->stock,
-                        'price'  => $this->price,
+                        'price'  => null,
                         'reason' => 'midea_no_result',
                     ]
                 );
@@ -81,8 +79,7 @@ class MideaProductJob implements ShouldQueue
                 $brandId = $this->resolveBrand($data['brand'] ?? 'Midea');
 
                 if ($existing) {
-                    $product = $existing;
-
+                    $product    = $existing;
                     $updateData = [
                         'quantity' => $this->stock,
                         'in_stock' => 1,
@@ -90,7 +87,6 @@ class MideaProductJob implements ShouldQueue
                         'active'   => 1,
                     ];
 
-                    // 🏷️ ბრენდი მხოლოდ თუ taxonomy არ არის ჩაკეტილი (category ისედაც არ ვცვლით)
                     if (!$existing->taxonomy_lock) {
                         $updateData['brand_id'] = $brandId;
                     } else {
@@ -115,13 +111,25 @@ class MideaProductJob implements ShouldQueue
                     Log::info("✨ Midea: created {$sku} (id={$product->id}, stock={$this->stock})");
                 }
 
+                // ===== ფასი JSON-დან =====
+                $regularPrice  = (float) ($data['price'] ?? 0);
+                $salePrice     = !empty($data['sale_price']) ? (float) $data['sale_price'] : null;
+
+                // sale_price მხოლოდ თუ ნამდვილად დაბალია
+                $discountPrice = ($salePrice && $salePrice < $regularPrice) ? $salePrice : null;
+
+                $discountPercent = 0;
+                if ($discountPrice && $regularPrice > 0) {
+                    $discountPercent = (int) round((($regularPrice - $discountPrice) / $regularPrice) * 100);
+                }
+
                 ProductPrice::updateOrCreate(
                     ['product_id' => $product->id],
                     [
-                        'regular_price'    => $this->price ?? (float) ($data['price'] ?? 0),
-                        'dealer_price'     => $this->price ?? (float) ($data['price'] ?? 0),
-                        'discount_price'   => null,
-                        'discount_percent' => 0,
+                        'dealer_price'     => $regularPrice,
+                        'regular_price'    => $regularPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $discountPercent,
                     ]
                 );
 
@@ -145,7 +153,7 @@ class MideaProductJob implements ShouldQueue
 
                 GlobalNotFound::where('name', $this->name)->delete();
 
-                Log::info("✅ Midea saved: {$sku} (brand={$brandId})");
+                Log::info("✅ Midea saved: {$sku} (regular={$regularPrice}, discount={$discountPrice})");
             });
 
         } catch (Exception $e) {
@@ -197,18 +205,14 @@ class MideaProductJob implements ShouldQueue
         }
 
         $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
-        ProductBrandTranslation::create([
-            'product_brand_id' => $newBrand->id,
-            'locale'           => 'ka',
-            'title'            => $brandName,
-            'slug'             => Str::slug($brandName) . '-' . $newBrand->id,
-        ]);
-        ProductBrandTranslation::create([
-            'product_brand_id' => $newBrand->id,
-            'locale'           => 'en',
-            'title'            => $brandName,
-            'slug'             => Str::slug($brandName) . '-' . $newBrand->id . '-en',
-        ]);
+        foreach (['ka', 'en'] as $locale) {
+            ProductBrandTranslation::create([
+                'product_brand_id' => $newBrand->id,
+                'locale'           => $locale,
+                'title'            => $brandName,
+                'slug'             => Str::slug($brandName) . '-' . $newBrand->id . ($locale === 'en' ? '-en' : ''),
+            ]);
+        }
 
         Log::info("✨ Midea: new brand '{$brandName}' id={$newBrand->id}");
         return $newBrand->id;
@@ -220,9 +224,7 @@ class MideaProductJob implements ShouldQueue
         $bulk    = [];
 
         foreach ($images as $url) {
-            if (empty($url)) {
-                continue;
-            }
+            if (empty($url)) continue;
 
             try {
                 $resp = Http::timeout(30)->withHeaders([
@@ -230,9 +232,7 @@ class MideaProductJob implements ShouldQueue
                     'Referer'    => 'https://www.midea.ge/',
                 ])->get($url);
 
-                if (!$resp->successful()) {
-                    continue;
-                }
+                if (!$resp->successful()) continue;
 
                 $ext      = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
                 $filename = Str::random(40) . '.' . strtolower($ext);
@@ -251,7 +251,6 @@ class MideaProductJob implements ShouldQueue
                         'updated_at' => now(),
                     ];
                 }
-
             } catch (Exception $e) {
                 Log::warning("⚠️ Midea image: " . $e->getMessage());
             }
@@ -259,7 +258,14 @@ class MideaProductJob implements ShouldQueue
 
         if (!empty($bulk)) {
             ProductImage::insert($bulk);
-            Log::info("📦 Midea: " . count($bulk) . " images for product {$product->id}");
         }
+    }
+
+    public function failed(Exception $exception): void
+    {
+        Log::error("🚨 MideaProductJob permanently failed", [
+            'name'  => $this->name,
+            'error' => $exception->getMessage(),
+        ]);
     }
 }
