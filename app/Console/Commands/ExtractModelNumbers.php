@@ -2,33 +2,56 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Product\Product;
 use App\Models\Product\ProductTranslation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class ExtractModelNumbers extends Command
 {
-    protected $signature   = 'products:extract-models {--dry-run : მხოლოდ ჩვენება, შენახვის გარეშე}';
+    protected $signature   = 'products:extract-models {--dry-run : მხოლოდ ჩვენება}';
     protected $description = 'პროდუქტების სახელებიდან მოდელის ნომრის ავტომატური ამოღება';
 
-    // მოდელის ნომრის პატერნები (პრიორიტეტის მიხედვით)
     private array $patterns = [
-        // MF200W90WB/T, WF1702WNE/XEG, MG9531/15
+        // IS 3042 WH, IS 7262 GY — ასო(ები) + სფეისი + რიცხვები + სფეისი + სუფიქსი
+        '/\b([A-Z]{2,4})\s([0-9]{3,4})\s([A-Z]{1,3})\b/',
+
+        // ECAM630.75.TSM, ECAM22.117.B — ასოები+რიცხვები+წერტილები
+        '/\b([A-Z]{2,6}[0-9]{2,}(?:\.[0-9A-Z]+){1,})\b/',
+
+        // MF200W90WB/T, WF1702WNE/XEG, MG9531/15 — ასოები+რიცხვები+slash
         '/\b([A-Z]{1,5}[0-9]{2,}[A-Z0-9]*(?:[\/\-][A-Z0-9]+)+)\b/',
-        // HD9318/10, EP5441/50
-        '/\b([A-Z]{2,4}[0-9]{4,}(?:[\/\-][A-Z0-9]+)*)\b/',
-        // MF200W90WB, WF70F5E3W4W
-        '/\b([A-Z]{1,4}[0-9]{3,}[A-Z0-9]{3,})\b/',
+
+        // RB38C634DSA/EF, RT47CG6442B1/WT — გრძელი კოდები slash-ით
+        '/\b([A-Z]{2,4}[0-9]{2}[A-Z0-9]{4,}(?:\/[A-Z0-9]+)+)\b/',
+
+        // E7GK1-8BP, E6HS1-2EG — ერთი ასო + რიცხვი + dash
+        '/\b([A-Z][0-9][A-Z]{2,}[0-9](?:\-[A-Z0-9]+)+)\b/',
+
+        // WK3000WH, SI5006BL, AC5860 — ასოები + 3+ რიცხვი + ასოები
+        '/\b([A-Z]{2,4}[0-9]{3,}[A-Z]{1,4}[0-9]*)\b/',
+
+        // J300, JE680, KHT64BG — 1-3 ასო + 3+ რიცხვი (+ optional suffix)
+        '/\b([A-Z]{1,4}[0-9]{3,}[A-Z0-9]{0,4})\b/',
+
+        // S6500, D4740, S9500 — ერთი ასო + 4 რიცხვი
+        '/\b([A-Z][0-9]{4,}[A-Z0-9]*)\b/',
+    ];
+
+    // ამ სიტყვებს გამოვტოვებთ (false positives)
+    private array $blacklist = [
+        'SHARP', 'MIDEA', 'BRAUN', 'PHILIPS', 'SAMSUNG', 'PANASONIC',
+        'TEFAL', 'KRUPS', 'MOULINEX', 'ROWENTA', 'ELECTROLUX', 'HOFFMANN',
+        'KENWOOD', 'DELONGHI', 'NUTRIBULLET', 'REMINGTON', 'DYSON',
+        'SKYTECH', 'MARAZZI', 'THOMAS', 'ARSHIA', 'CUDY', 'TTEC',
+        'WHITE', 'BLACK', 'SILVER', 'GREY', 'BLUE', 'GREEN', 'RED',
+        'WIFI', 'DUAL', 'BAND', 'SMART', 'PLUS', 'PRO', 'MAX', 'MINI',
+        'USB', 'LCD', 'LED', 'RGB', 'TWS', 'ANC', 'PD',
     ];
 
     public function handle(): void
     {
         $dryRun = $this->option('dry-run');
 
-        $this->info($dryRun ? '🔍 Dry-run რეჟიმი — ცვლილება არ შეინახება' : '🚀 მოდელების ამოღება...');
-
-        // migration თუ სვეტი არ არის
         if (!$dryRun) {
             if (!\Schema::hasColumn('db_products', 'model_number')) {
                 DB::statement('ALTER TABLE db_products ADD COLUMN model_number VARCHAR(100) NULL');
@@ -39,7 +62,6 @@ class ExtractModelNumbers extends Command
 
         $found    = 0;
         $notFound = 0;
-        $updated  = 0;
 
         $translations = ProductTranslation::where('locale', 'ka')
             ->select('product_id', 'title')
@@ -58,8 +80,7 @@ class ExtractModelNumbers extends Command
                         ->where('id', $translation->product_id)
                         ->whereNull('model_number')
                         ->update(['model_number' => $model]);
-                    $updated++;
-                } else {
+                } elseif ($this->option('dry-run')) {
                     $this->line("\n  ✅ [{$translation->product_id}] {$translation->title} → <info>{$model}</info>");
                 }
             } else {
@@ -74,26 +95,43 @@ class ExtractModelNumbers extends Command
 
         $bar->finish();
         $this->newLine(2);
-        $this->info("სულ: {$translations->count()} | მოიძებნა: {$found} | ვერ მოიძებნა: {$notFound}" . (!$dryRun ? " | განახლდა: {$updated}" : ''));
+
+        $total   = $translations->count();
+        $percent = $total > 0 ? round(($found / $total) * 100) : 0;
+        $this->info("სულ: {$total} | ✅ {$found} ({$percent}%) | ❌ {$notFound}");
     }
 
     private function extractModel(string $title): ?string
     {
-        // Georgian text-ის სიტყვები გამოვტოვოთ
+        // Georgian ტექსტი ამოვიღოთ
         $cleaned = preg_replace('/[\x{10D0}-\x{10FF}]+/u', ' ', $title);
-        $cleaned = trim($cleaned);
+        $cleaned = preg_replace('/\s+/', ' ', trim($cleaned));
 
-        foreach ($this->patterns as $pattern) {
+        foreach ($this->patterns as $i => $pattern) {
             if (preg_match($pattern, $cleaned, $matches)) {
-                $candidate = $matches[1];
 
-                // ძალიან მოკლე ან ძალიან გრძელი — გამოვტოვოთ
-                if (mb_strlen($candidate) < 4 || mb_strlen($candidate) > 50) continue;
+                // pattern 0 — სფეისიანი (IS 3042 WH → IS3042WH)
+                if ($i === 0) {
+                    $candidate = $matches[1] . $matches[2] . $matches[3];
+                } else {
+                    $candidate = $matches[1];
+                }
 
-                // მხოლოდ რიცხვები — გამოვტოვოთ
+                $candidate = strtoupper(trim($candidate));
+
+                // blacklist შემოწმება
+                if (in_array($candidate, $this->blacklist)) continue;
+
+                // ძალიან მოკლე
+                if (mb_strlen($candidate) < 3) continue;
+
+                // მხოლოდ ასოები (ბრენდის სახელი)
+                if (ctype_alpha($candidate)) continue;
+
+                // მხოლოდ რიცხვები
                 if (is_numeric($candidate)) continue;
 
-                return strtoupper($candidate);
+                return $candidate;
             }
         }
 
