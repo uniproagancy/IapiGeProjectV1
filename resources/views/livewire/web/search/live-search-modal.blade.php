@@ -56,8 +56,11 @@
                     @foreach($this->results as $index => $product)
                         @php
                             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
-                            $categoryTitle = $product->category?->translation(app()->getLocale())?->title
-                                          ?? $product->category?->translation('ka')?->title;
+                            $category = $product->category;
+                            $showCategory = $category && $category->parent_id !== 2 && $category->parent_id !== null;
+                            $categoryTitle = $showCategory
+                                ? ($category->translation(app()->getLocale())?->title ?? $category->translation('ka')?->title)
+                                : null;
                             $hasDiscount = !empty($product->price->discount_price) && $product->price->discount_price > 0;
                             $finalPrice  = $hasDiscount ? $product->price->discount_price : $product->price->regular_price;
                         @endphp
