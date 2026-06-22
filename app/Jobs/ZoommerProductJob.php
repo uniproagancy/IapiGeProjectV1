@@ -146,10 +146,7 @@ class ZoommerProductJob implements ShouldQueue
                 return $brand->id;
             }
 
-            $newBrand = ProductBrand::create([
-                'active' => 1,
-                'show'   => 1,
-            ]);
+            $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
 
             ProductBrandTranslation::create([
                 'product_brand_id' => $newBrand->id,
@@ -229,62 +226,71 @@ class ZoommerProductJob implements ShouldQueue
 
     private function updateExistingProduct(array $productData, bool $hasStock, string $sku): void
     {
-        try {
-            $product = Product::where('sku', $sku)->firstOrFail();
+        DB::transaction(function () use ($productData, $hasStock, $sku) {
+            try {
+                $product = Product::where('sku', $sku)->firstOrFail();
 
-            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
-            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+                $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+                $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-            $productPrice  = $this->calculatePrice($productPrice);
-            $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
+                $productPrice  = $this->calculatePrice($productPrice);
+                $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
-            ProductPrice::updateOrCreate(
-                ['product_id' => $product->id],
-                [
-                    'dealer_price'     => $productPrice,
-                    'regular_price'    => $productPrice,
-                    'discount_price'   => $discountPrice,
-                    'discount_percent' => $productData['discountPercent'] ?? 0,
-                ]
-            );
+                // ===== ფასი — ყოველთვის ახლდება =====
+                $oldPrice = $product->price?->regular_price;
+                $oldDiscount = $product->price?->discount_price;
 
-            $updateData = [
-                'quantity' => $hasStock ? 5 : 0,
-                'in_stock' => $hasStock ? 1 : 0,
-                'show'     => $hasStock ? 1 : 0,
-                'active'   => $hasStock ? 1 : 0,
-            ];
+                ProductPrice::updateOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'dealer_price'     => $productPrice,
+                        'regular_price'    => $productPrice,
+                        'discount_price'   => $discountPrice,
+                        'discount_percent' => $productData['discountPercent'] ?? 0,
+                    ]
+                );
 
-            // 🏷️ category/brand მხოლოდ თუ taxonomy არ არის ჩაკეტილი
-            if (!$product->taxonomy_lock) {
-                $updateData['category_id'] = $this->getCategoryId($productData);
-                $updateData['brand_id']    = $this->getBrandId($productData);
-            } else {
-                Log::info("🏷️ Zoommer: taxonomy locked, category/brand უცვლელი — {$sku}");
+                Log::info("💰 Zoommer ფასი განახლდა [{$sku}]: regular {$oldPrice} → {$productPrice} | discount {$oldDiscount} → " . ($discountPrice ?? 'null'));
+
+                $updateData = [
+                    'quantity' => $hasStock ? 5 : 0,
+                    'in_stock' => $hasStock ? 1 : 0,
+                    'show'     => $hasStock ? 1 : 0,
+                    'active'   => $hasStock ? 1 : 0,
+                ];
+
+                if (!$product->taxonomy_lock) {
+                    $updateData['category_id'] = $this->getCategoryId($productData);
+                    $updateData['brand_id']    = $this->getBrandId($productData);
+                } else {
+                    Log::info("🏷️ Zoommer: taxonomy locked, category/brand უცვლელი — {$sku}");
+                }
+
+                $product->update($updateData);
+
+                // ===== Short Specs =====
+                ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                $this->createShortSpecifications($product, $productData);
+
+                // ===== Full Specs =====
+                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
+                ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                $this->createFullSpecifications($product, $productData);
+
+                if (!empty($productData['description'])) {
+                    ProductTranslation::where('product_id', $product->id)
+                        ->where('locale', 'ka')
+                        ->update(['description' => $productData['description']]);
+                }
+
+                Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
+
+            } catch (Exception $e) {
+                Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
+                throw $e;
             }
-
-            $product->update($updateData);
-
-            ProductShortSpecification::where('product_id', $product->id)->forceDelete();
-            $this->createShortSpecifications($product, $productData);
-
-            $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
-            ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-            ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
-            $this->createFullSpecifications($product, $productData);
-
-            if (!empty($productData['description'])) {
-                ProductTranslation::where('product_id', $product->id)
-                    ->where('locale', 'ka')
-                    ->update(['description' => $productData['description']]);
-            }
-
-            Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
-
-        } catch (Exception $e) {
-            Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
-            throw $e;
-        }
+        });
     }
 
     private function createNewProduct(array $productData, bool $hasStock, string $sku): void
@@ -325,225 +331,164 @@ class ZoommerProductJob implements ShouldQueue
 
     private function createPrice(Product $product, array $productData): void
     {
-        try {
-            $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
-            $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+        $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+        $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
 
-            $productPrice  = $this->calculatePrice($productPrice);
-            $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
+        $productPrice  = $this->calculatePrice($productPrice);
+        $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
-            ProductPrice::create([
-                'product_id'       => $product->id,
-                'dealer_price'     => $productPrice,
-                'regular_price'    => $productPrice,
-                'discount_price'   => $discountPrice,
-                'discount_percent' => $productData['discountPercent'] ?? 0,
-            ]);
-
-        } catch (Exception $e) {
-            Log::error("Error creating price for product {$product->id}: {$e->getMessage()}");
-            throw $e;
-        }
+        ProductPrice::create([
+            'product_id'       => $product->id,
+            'dealer_price'     => $productPrice,
+            'regular_price'    => $productPrice,
+            'discount_price'   => $discountPrice,
+            'discount_percent' => $productData['discountPercent'] ?? 0,
+        ]);
     }
 
     private function createTranslations(Product $product, array $productData): void
     {
-        try {
-            $locales    = ['ka', 'en', 'ru'];
-            $name       = $productData['name'] ?? 'Unnamed Product';
-            $baseSlug   = Str::slug($name, '-') . '-' . $product->id;
+        $name     = $productData['name'] ?? 'Unnamed Product';
+        $baseSlug = Str::slug($name, '-') . '-' . $product->id;
 
-            foreach ($locales as $locale) {
-                ProductTranslation::create([
-                    'product_id'  => $product->id,
-                    'locale'      => $locale,
-                    'title'       => $name,
-                    'slug'        => $baseSlug,
-                    'description' => $locale === 'ka' ? ($productData['description'] ?? null) : null,
-                    'keywords'    => null,
-                ]);
-            }
-
-        } catch (Exception $e) {
-            Log::error("Error creating translations for product {$product->id}: {$e->getMessage()}");
-            throw $e;
+        foreach (['ka', 'en', 'ru'] as $locale) {
+            ProductTranslation::create([
+                'product_id'  => $product->id,
+                'locale'      => $locale,
+                'title'       => $name,
+                'slug'        => $baseSlug,
+                'description' => $locale === 'ka' ? ($productData['description'] ?? null) : null,
+                'keywords'    => null,
+            ]);
         }
     }
 
     private function createVariations(Product $product, array $productData): void
     {
-        try {
-            if (empty($productData['keySpecification'])) {
-                return;
-            }
+        if (empty($productData['keySpecification'])) return;
 
-            foreach ($productData['keySpecification'] as $specification) {
-                if (empty($specification['specificationName'])) {
-                    continue;
-                }
+        foreach ($productData['keySpecification'] as $specification) {
+            if (empty($specification['specificationName'])) continue;
 
-                $variation = ProductVariation::create([
-                    'product_id' => $product->id,
-                    'name'       => $specification['specificationName'],
-                    'value'      => $specification['specificationMeaning'] ?? null,
-                ]);
+            $variation = ProductVariation::create([
+                'product_id' => $product->id,
+                'name'       => $specification['specificationName'],
+                'value'      => $specification['specificationMeaning'] ?? null,
+            ]);
 
-                if (!empty($specification['specificationMeaningsList'])) {
-                    foreach ($specification['specificationMeaningsList'] as $item) {
-                        ProductVariationItem::create([
-                            'variation_id'        => $variation->id,
-                            'is_color'            => isset($item['isColor']) && $item['isColor'] ? 1 : 0,
-                            'supplier_product_id' => $item['productId'] ?? null,
-                            'value'               => $item['value'] ?? null,
-                        ]);
-                    }
+            if (!empty($specification['specificationMeaningsList'])) {
+                foreach ($specification['specificationMeaningsList'] as $item) {
+                    ProductVariationItem::create([
+                        'variation_id'        => $variation->id,
+                        'is_color'            => isset($item['isColor']) && $item['isColor'] ? 1 : 0,
+                        'supplier_product_id' => $item['productId'] ?? null,
+                        'value'               => $item['value'] ?? null,
+                    ]);
                 }
             }
-
-        } catch (Exception $e) {
-            Log::error("Error creating variations for product {$product->id}: {$e->getMessage()}");
-            throw $e;
         }
     }
 
     private function createFullSpecifications(Product $product, array $productData): void
     {
-        try {
-            if (empty($productData['specificationGroup'])) {
-                return;
-            }
+        if (empty($productData['specificationGroup'])) return;
 
-            foreach ($productData['specificationGroup'] as $specificationGroup) {
-                if (empty($specificationGroup['groupName'])) {
-                    continue;
-                }
+        foreach ($productData['specificationGroup'] as $specificationGroup) {
+            if (empty($specificationGroup['groupName'])) continue;
 
-                $section = ProductFullSpecificationSection::create([
-                    'product_id' => $product->id,
-                    'name'       => $specificationGroup['groupName'],
+            $section = ProductFullSpecificationSection::create([
+                'product_id' => $product->id,
+                'name'       => $specificationGroup['groupName'],
+            ]);
+
+            foreach ($specificationGroup['specifications'] ?? [] as $spec) {
+                if (empty($spec['specificationName'])) continue;
+
+                ProductFullSpecificationItem::create([
+                    'section_id' => $section->id,
+                    'name'       => $spec['specificationName'],
+                    'value'      => $spec['specificationMeaning'] ?? null,
+                    'filter'     => !empty($spec['specificationLinkedUrl']) ? 1 : 0,
                 ]);
-
-                if (!empty($specificationGroup['specifications'])) {
-                    foreach ($specificationGroup['specifications'] as $spec) {
-                        if (empty($spec['specificationName'])) {
-                            continue;
-                        }
-
-                        ProductFullSpecificationItem::create([
-                            'section_id' => $section->id,
-                            'name'       => $spec['specificationName'],
-                            'value'      => $spec['specificationMeaning'] ?? null,
-                            'filter'     => !empty($spec['specificationLinkedUrl']) ? 1 : 0,
-                        ]);
-                    }
-                }
             }
-
-        } catch (Exception $e) {
-            Log::error("Error creating specifications for product {$product->id}: {$e->getMessage()}");
-            throw $e;
-        }
-    }
-
-    private function downloadImages(Product $product, array $productData): void
-    {
-        try {
-            if (empty($productData['images'])) {
-                return;
-            }
-
-            foreach ($productData['images'] as $index => $imageUrl) {
-                try {
-                    if (empty($imageUrl)) continue;
-
-                    $response = Http::timeout(30)
-                        ->withHeaders([
-                            'Accept'          => 'application/json, text/plain, */*',
-                            'Accept-Language' => 'ka',
-                            'Referer'         => 'https://zoommer.ge/',
-                            'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-                            'os'              => 'web',
-                            'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
-                        ])
-                        ->get($imageUrl);
-
-                    if (!$response->successful()) {
-                        Log::warning("Failed to download image for product {$product->id}: {$imageUrl}");
-                        continue;
-                    }
-
-                    $ext      = $this->getImageExtension($imageUrl);
-                    $filename = Str::random(40) . '.' . $ext;
-                    $path     = "uploads/products/{$product->id}/{$filename}";
-
-                    Storage::disk('public')->put($path, $response->body());
-
-                    if ($index === 0) {
-                        $product->update(['main_image' => $path]);
-                    } else {
-                        ProductImage::create([
-                            'product_id' => $product->id,
-                            'path'       => $path,
-                        ]);
-                    }
-
-                    Log::info("✅ Downloaded image for product {$product->id}: {$filename}");
-
-                } catch (Exception $e) {
-                    Log::warning("Error downloading image {$imageUrl}: {$e->getMessage()}");
-                    continue;
-                }
-            }
-
-        } catch (Exception $e) {
-            Log::error("Error downloading images for product {$product->id}: {$e->getMessage()}");
-            throw $e;
         }
     }
 
     private function createShortSpecifications(Product $product, array $productData): void
     {
-        try {
-            if (empty($productData['mainSpecification'])) {
-                return;
+        if (empty($productData['mainSpecification'])) return;
+
+        $specs = [];
+
+        foreach ($productData['mainSpecification'] as $spec) {
+            if (empty($spec['specificationName'])) continue;
+
+            $specs[] = [
+                'product_id' => $product->id,
+                'name'       => mb_substr($spec['specificationName'] ?? '', 0, 255),
+                'value'      => mb_substr($spec['specificationMeaning'] ?? '', 0, 255), // ← FIX
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (!empty($specs)) {
+            ProductShortSpecification::insert($specs);
+        }
+    }
+
+    private function downloadImages(Product $product, array $productData): void
+    {
+        if (empty($productData['images'])) return;
+
+        foreach ($productData['images'] as $index => $imageUrl) {
+            try {
+                if (empty($imageUrl)) continue;
+
+                $response = Http::timeout(30)
+                    ->withHeaders([
+                        'Accept'          => 'application/json, text/plain, */*',
+                        'Accept-Language' => 'ka',
+                        'Referer'         => 'https://zoommer.ge/',
+                        'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                        'os'              => 'web',
+                        'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
+                    ])
+                    ->get($imageUrl);
+
+                if (!$response->successful()) {
+                    Log::warning("Failed to download image for product {$product->id}: {$imageUrl}");
+                    continue;
+                }
+
+                $ext      = $this->getImageExtension($imageUrl);
+                $filename = Str::random(40) . '.' . $ext;
+                $path     = "uploads/products/{$product->id}/{$filename}";
+
+                Storage::disk('public')->put($path, $response->body());
+
+                if ($index === 0) {
+                    $product->update(['main_image' => $path]);
+                } else {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'path'       => $path,
+                    ]);
+                }
+
+            } catch (Exception $e) {
+                Log::warning("Error downloading image {$imageUrl}: {$e->getMessage()}");
             }
-
-            $specs = [];
-
-            foreach ($productData['mainSpecification'] as $spec) {
-                if (empty($spec['specificationName'])) continue;
-
-                $specs[] = [
-                    'product_id' => $product->id,
-                    'name'       => $spec['specificationName'],
-                    'value'      => $spec['specificationMeaning'] ?? '',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-
-            if (!empty($specs)) {
-                ProductShortSpecification::insert($specs);
-            }
-
-        } catch (Exception $e) {
-            Log::error("Error creating short specifications for product {$product->id}: {$e->getMessage()}");
-            throw $e;
         }
     }
 
     protected function getImageExtension(string $url): string
     {
         try {
-            $parsed = parse_url($url);
-            $path   = $parsed['path'] ?? '';
-            $ext    = pathinfo($path, PATHINFO_EXTENSION);
-
+            $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
             $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
-
         } catch (Exception $e) {
-            Log::warning("Error getting image extension from {$url}: {$e->getMessage()}");
             return 'jpg';
         }
     }
