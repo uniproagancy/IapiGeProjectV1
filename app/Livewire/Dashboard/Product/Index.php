@@ -721,7 +721,7 @@ class Index extends Component
             ->when($this->brand_id,               fn($q) => $q->where('brand_id', $this->brand_id))
             ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
-            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
+            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182, 203, 204, 205]))
             ->when($this->no_brand === true,      fn($q) => $q->whereIn('brand_id', [1, 6]))
             ->when($this->only_locked === true,   fn($q) => $q->where('update_lock', 1))
             ->when($this->no_stock !== null && $this->no_stock !== '',
