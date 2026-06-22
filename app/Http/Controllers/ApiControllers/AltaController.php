@@ -130,35 +130,7 @@ class AltaController extends Controller
 
             $items = $response->PriceList->items->item ?? null;
 
-            if (empty($items)) {
-                return response()->json([
-                    'sku'   => $sku,
-                    'found' => false,
-                ]);
-            }
-
-            if (!is_array($items)) {
-                $items = [$items];
-            }
-
-            $results = [];
-            foreach ($items as $item) {
-                $parsed    = $this->parseQtyText($item->qty_text ?? null);
-                $results[] = [
-                    'item'      => $item->item ?? null,
-                    'name'      => $item->item_name ?? null,
-                    'price'     => $item->price ?? null,
-                    'qty_text'  => $item->qty_text ?? null,
-                    'quantity'  => $parsed['quantity'],
-                    'has_stock' => $parsed['has_stock'],
-                ];
-            }
-
-            return response()->json([
-                'sku'     => $sku,
-                'found'   => true,
-                'results' => $results,
-            ]);
+            return response()->json($response);
 
         } catch (Exception $e) {
             Log::error('Alta check error: ' . $e->getMessage());
