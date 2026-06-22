@@ -596,7 +596,6 @@ class Index extends Component
 
                 $items[$name] = [
                     'stock' => $this->parseStock($row[1] ?? null),
-                    'price' => $this->parsePrice($row[2] ?? null),
                 ];
             }
 
@@ -644,14 +643,13 @@ class Index extends Component
 
                 $items[$name] = [
                     'stock' => $this->parseStock($row[1] ?? null),
-                    'price' => $this->parsePrice($row[2] ?? null),
                 ];
             }
 
             if (empty($items)) { $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა'); return; }
 
             foreach ($items as $name => $info) {
-                \App\Jobs\MideaProductJob::dispatch($name, $info['stock'], $info['price'])->onQueue('midea');
+                \App\Jobs\MideaProductJob::dispatch($name, $info['stock'])->onQueue('midea');
             }
 
             $this->reset('midea_file');
@@ -829,9 +827,11 @@ class Index extends Component
     public function render()
     {
         $query = Product::with(['translations'])
-            ->when($this->search_query, fn($q) => $q->whereHas('translations',
-                fn($sub) => $sub->where('title', 'like', "%{$this->search_query}%")
-            ))
+            ->when($this->search_query, fn($q) => $q->where(function($sub) {
+                $sub->whereHas('translations',
+                    fn($t) => $t->where('title', 'like', "%{$this->search_query}%")
+                )->orWhere('sku', 'like', "%{$this->search_query}%");
+            }))
             ->when($this->show_web === true,      fn($q) => $q->where('show', $this->show_web))
             ->when($this->category_id,            fn($q) => $q->where('category_id', $this->category_id))
             ->when($this->brand_id,               fn($q) => $q->where('brand_id', $this->brand_id))
