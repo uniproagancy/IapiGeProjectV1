@@ -432,7 +432,7 @@ class Index extends Component
 
     public function exportNotFound(): StreamedResponse
     {
-        $rows     = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
+        $rows     = \App\Models\Product\MetroMartNotFound::orderBy('name')->get();
         $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
 
         return response()->streamDownload(function () use ($rows) {

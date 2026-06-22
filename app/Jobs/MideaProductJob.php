@@ -8,7 +8,6 @@ use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductImage;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductTranslation;
-use App\Models\Product\GlobalNotFound;
 use App\Services\Products\MideaService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,22 +50,6 @@ class MideaProductJob implements ShouldQueue
             }
 
             $data = (new MideaService())->searchByName($this->name);
-
-            if (!$data || empty($data['sku'])) {
-                Log::warning("⚠️ Midea job: ვერ მოიძებნა — {$this->name}");
-
-                GlobalNotFound::updateOrCreate(
-                    ['name' => $this->name],
-                    [
-                        'stock'  => $this->stock,
-                        'price'  => null,
-                        'reason' => 'midea_no_result',
-                    ]
-                );
-
-                return;
-            }
-
             $sku      = self::SKU_PREFIX . $data['sku'];
             $existing = Product::where('sku', $sku)->first();
 
@@ -150,9 +133,6 @@ class MideaProductJob implements ShouldQueue
                 if (!empty($data['images']) && empty($product->main_image)) {
                     $this->downloadImages($product, $data['images']);
                 }
-
-                GlobalNotFound::where('name', $this->name)->delete();
-
                 Log::info("✅ Midea saved: {$sku} (regular={$regularPrice}, discount={$discountPrice})");
             });
 

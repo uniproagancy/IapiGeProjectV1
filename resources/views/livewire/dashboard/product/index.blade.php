@@ -16,8 +16,10 @@
                                         <i data-feather="list"></i>
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
-                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal"
+                                           data-bs-target="#changeCategoryModal">კატეგორიის ცვლილება</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal"
+                                           data-bs-target="#changeBrandModal">ბრენდის ცვლილება</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item text-warning" href="#"
                                            onclick="if(confirm('{{ count($selectedProducts) }} პროდუქტი ჩაიკეტება. ავტომატური განახლება გაითიშება.')) { @this.call('bulkLock') }; return false;">
@@ -47,9 +49,10 @@
                             @endif
 
                             {{-- Export --}}
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('dashboard.global.export') }}" target="_blank">
+                            <a class="btn btn-sm btn-outline-danger" href="{{ route('dashboard.global.export') }}"
+                               target="_blank">
                                 <i data-feather="download" class="me-1" style="width:14px;"></i>
-                                ვერ ნაპოვნები ({{ \App\Models\Product\GlobalNotFound::count() }})
+                                ვერ ნაპოვნები ({{ \App\Models\Product\MetroMartNotFound::count() }})
                             </a>
 
                             {{-- Upload Dropdown --}}
@@ -59,17 +62,21 @@
                                     განახლების ატვირთვა
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMideaModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadMideaModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Midea
                                     </a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadKontaktModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadKontaktModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> KontaktHome
                                     </a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadComfoModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadComfoModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Comfo
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadEliteModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadEliteModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Elite — Excel
                                     </a>
                                     <a class="dropdown-item" href="{{ route('elite.scan') }}"
@@ -77,7 +84,8 @@
                                         <i data-feather="search" class="me-1" style="width:14px;"></i> Elite — სკანი
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMetromartModal">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#uploadMetromartModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Metromart — Excel
                                     </a>
                                     <div class="dropdown-divider"></div>
@@ -121,7 +129,8 @@
                                 @foreach($products as $product)
                                     <tr class="text-center">
                                         <td>
-                                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}">
+                                            <input type="checkbox" wire:model.live="selectedProducts"
+                                                   value="{{ $product->id }}">
                                         </td>
                                         <td>
                                             <div class="avatar-group">
@@ -165,9 +174,11 @@
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_active_{{ $product->id }}"
                                                                wire:click="toggleActive({{ $product->id }})" @checked($product->active) />
-                                                        <label class="form-check-label" for="product_active_{{ $product->id }}">
+                                                        <label class="form-check-label"
+                                                               for="product_active_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i
+                                                                        data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -180,9 +191,11 @@
                                                         <input type="checkbox" class="form-check-input"
                                                                id="product_show_{{ $product->id }}"
                                                                wire:click="toggleShow({{ $product->id }})" @checked($product->show) />
-                                                        <label class="form-check-label" for="product_show_{{ $product->id }}">
+                                                        <label class="form-check-label"
+                                                               for="product_show_{{ $product->id }}">
                                                             <span class="switch-icon-left"><i data-feather="check"></i></span>
-                                                            <span class="switch-icon-right"><i data-feather="x"></i></span>
+                                                            <span class="switch-icon-right"><i
+                                                                        data-feather="x"></i></span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -204,17 +217,21 @@
                                         <td>
                                             @if($product->id !== 1)
                                                 @if($product->trashed())
-                                                    <a href="#" class="text-body" wire:click="restoreModal({{ $product->id }})">
+                                                    <a href="#" class="text-body"
+                                                       wire:click="restoreModal({{ $product->id }})">
                                                         <i class="text-success" data-feather="rotate-ccw"></i>
                                                     </a>
                                                 @else
-                                                    <a href="{{ route('dashboard.product.update', $product->id) }}" class="text-body">
+                                                    <a href="{{ route('dashboard.product.update', $product->id) }}"
+                                                       class="text-body">
                                                         <i data-feather="edit"></i>
                                                     </a>
-                                                    <a href="#" class="text-body" wire:click="priceEditModal({{ $product->id }})">
+                                                    <a href="#" class="text-body"
+                                                       wire:click="priceEditModal({{ $product->id }})">
                                                         <i class="text-success" data-feather="dollar-sign"></i>
                                                     </a>
-                                                    <a href="#" class="text-body" wire:click="deleteModal({{ $product->id }})">
+                                                    <a href="#" class="text-body"
+                                                       wire:click="deleteModal({{ $product->id }})">
                                                         <i class="text-danger" data-feather="trash"></i>
                                                     </a>
                                                 @endif
@@ -257,13 +274,15 @@
                         <input type="file"
                                class="form-control @error('midea_file') border-danger is-invalid @enderror"
                                wire:model="midea_file" accept=".xlsx,.xls,.csv">
-                        @error('midea_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('midea_file')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadMidea,midea_file">
                             <span wire:loading.remove wire:target="uploadMidea">დამუშავება</span>
-                            <span wire:loading wire:target="uploadMidea"><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading wire:target="uploadMidea"><span
+                                        class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -286,13 +305,15 @@
                         <input type="file"
                                class="form-control @error('kontakt_file') border-danger is-invalid @enderror"
                                wire:model="kontakt_file" accept=".xlsx,.xls">
-                        @error('kontakt_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('kontakt_file')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadKontakt,kontakt_file">
                             <span wire:loading.remove wire:target="uploadKontakt">დამუშავება</span>
-                            <span wire:loading wire:target="uploadKontakt"><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading wire:target="uploadKontakt"><span
+                                        class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -315,13 +336,15 @@
                         <input type="file"
                                class="form-control @error('comfoFile') border-danger is-invalid @enderror"
                                wire:model="comfoFile" accept=".xlsx,.xls">
-                        @error('comfoFile')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('comfoFile')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadComfo,comfoFile">
                             <span wire:loading.remove wire:target="uploadComfo">დამუშავება</span>
-                            <span wire:loading wire:target="uploadComfo"><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading wire:target="uploadComfo"><span
+                                        class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -344,13 +367,15 @@
                         <input type="file"
                                class="form-control @error('elite_file') border-danger is-invalid @enderror"
                                wire:model="elite_file" accept=".xlsx,.xls">
-                        @error('elite_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('elite_file')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadElite,elite_file">
                             <span wire:loading.remove wire:target="uploadElite">დამუშავება</span>
-                            <span wire:loading wire:target="uploadElite"><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading wire:target="uploadElite"><span
+                                        class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -373,13 +398,15 @@
                         <input type="file"
                                class="form-control @error('metromart_file') border-danger is-invalid @enderror"
                                wire:model="metromart_file" accept=".xlsx,.xls">
-                        @error('metromart_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('metromart_file')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1"
                                 wire:loading.attr="disabled" wire:target="uploadMetromart,metromart_file">
                             <span wire:loading.remove wire:target="uploadMetromart">დამუშავება</span>
-                            <span wire:loading wire:target="uploadMetromart"><span class="spinner-border spinner-border-sm"></span></span>
+                            <span wire:loading wire:target="uploadMetromart"><span
+                                        class="spinner-border spinner-border-sm"></span></span>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
                     </div>
@@ -399,7 +426,8 @@
                 <div class="modal-body flex-grow-1">
                     <div class="mb-1">
                         <label class="form-label">საძიებო სიტყვა</label>
-                        <input type="text" class="form-control" placeholder="დასახელება, SKU" wire:model.lazy="search_query"/>
+                        <input type="text" class="form-control" placeholder="დასახელება, SKU"
+                               wire:model.lazy="search_query"/>
                     </div>
                     <div class="mb-1">
                         <label class="form-label">სორტირება</label>
@@ -453,7 +481,8 @@
                         </select>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="status_active" wire:model.lazy="status_active">
+                        <input type="checkbox" class="form-check-input" id="status_active"
+                               wire:model.lazy="status_active">
                         <label class="form-check-label" for="status_active">მხოლოდ აქტიურები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
@@ -461,7 +490,8 @@
                         <label class="form-check-label" for="show_web">მხოლოდ საიტზე ნაჩვენები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
-                        <input type="checkbox" class="form-check-input" id="with_trashed" wire:model.lazy="with_trashed">
+                        <input type="checkbox" class="form-check-input" id="with_trashed"
+                               wire:model.lazy="with_trashed">
                         <label class="form-check-label" for="with_trashed">წაშლილი ჩანაწერები</label>
                     </div>
                     <div class="mb-1 form-check form-check-primary">
@@ -482,7 +512,8 @@
                     </div>
                     <div class="d-flex justify-content-end mt-2">
                         <button type="submit" class="btn btn-primary me-1">გაფილტრე</button>
-                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება</button>
+                        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">გასუფთავება
+                        </button>
                     </div>
                 </div>
             </form>
@@ -567,7 +598,8 @@
                         <input type="number" step="0.01"
                                class="form-control @error('priceEditRegularPrice') border-danger is-invalid @enderror"
                                wire:model="priceEditRegularPrice" placeholder="0.00">
-                        @error('priceEditRegularPrice')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('priceEditRegularPrice')
+                        <div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-2">
                         <label class="form-label">ფასდაკლების ფასი</label>

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Product\MetroMartNotFound;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductBrandTranslation;
