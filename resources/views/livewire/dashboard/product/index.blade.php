@@ -76,6 +76,10 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadMetromartModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Metromart — Excel
                                     </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadAlneoModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Alneo — Excel
+                                    </a>
                                 </div>
                             </div>
 
@@ -378,6 +382,35 @@
         </div>
     </div>
 
+    {{-- Alneo --}}
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadAlneoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadAlneo">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Alneo — Excel ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A=SKU | B=Stock | C=Price | D=Discount Price</label>
+                        <input type="file"
+                               class="form-control @error('alneo_file') border-danger is-invalid @enderror"
+                               wire:model="alneo_file" accept=".xlsx,.xls">
+                        @error('alneo_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadAlneo,alneo_file">
+                            <span wire:loading.remove wire:target="uploadAlneo">დამუშავება</span>
+                            <span wire:loading wire:target="uploadAlneo"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Filter --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="filterProductModal" tabindex="-1">
         <div class="modal-dialog">
@@ -611,6 +644,10 @@
 
         Livewire.on('uploadEliteModal_close', () => {
             bootstrap.Modal.getInstance(document.getElementById('uploadEliteModal'))?.hide();
+        });
+
+        Livewire.on('uploadAlneoModal_close', () => {
+            bootstrap.Modal.getInstance(document.getElementById('uploadAlneoModal'))?.hide();
         });
 
         Livewire.on('category_modal_close', () => {
