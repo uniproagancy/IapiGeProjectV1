@@ -23,7 +23,6 @@ class BogRefundController extends Controller
 
         try {
             $token = $this->getAccessToken();
-            dd($token);
             if (!$token) {
                 return response()->json(['error' => 'BOG token ვერ მოიძებნა'], 500, [], JSON_UNESCAPED_UNICODE);
             }
