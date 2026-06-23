@@ -34,7 +34,7 @@ class BogRefundController extends Controller
 
             $response = Http::withToken($token)
               ->withHeaders(['Content-Type' => 'application/json'])
-               ->post("https://api.bog.ge/payments/v1/payment/refund/{$orderId}", $body);
+//               ->post("https://api.bog.ge/payments/v1/payment/refund/{$orderId}", $body);
 
             Log::info("💸 BOG Refund: order_id={$orderId}" . ($amount ? " | amount={$amount}" : ' | სრული') . " | status={$response->status()}");
 
