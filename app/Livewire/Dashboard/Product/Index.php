@@ -532,6 +532,17 @@ class Index extends Component
         }
     }
 
+    public function uploadAlneoScan(): void
+    {
+        try {
+            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
+            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
+        } catch (\Throwable $e) {
+            Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
+            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
+        }
+    }
+
     // ============================================
     // Elite
     // ============================================
