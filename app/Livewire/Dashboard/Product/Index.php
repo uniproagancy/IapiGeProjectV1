@@ -32,6 +32,7 @@ class Index extends Component
     public bool $selectAll         = false;
     public array $currentPageIds   = [];
 
+    public $alneo_file;
     public $midea_file;
     public $kontakt_file;
     public $comfoFile        = null;
@@ -432,7 +433,7 @@ class Index extends Component
 
     public function exportNotFound(): StreamedResponse
     {
-        $rows     = \App\Models\Product\MetroMartNotFound::orderBy('name')->get();
+        $rows     = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
         $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
 
         return response()->streamDownload(function () use ($rows) {
@@ -468,7 +469,7 @@ class Index extends Component
     // Alneo
     // ============================================
 
-    public function uploadAlneo(): void
+    public function uploadAlneoScan(): void
     {
         try {
             \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
@@ -476,6 +477,56 @@ class Index extends Component
         } catch (\Throwable $e) {
             Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
             $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
+        }
+    }
+
+    public function uploadAlneoExcel(): void
+    {
+        $this->validate([
+            'alneo_file' => 'required|file|mimes:xlsx,xls|max:20480',
+        ], [
+            'alneo_file.required' => 'ფაილი აუცილებელია',
+            'alneo_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
+        ]);
+
+        try {
+            @ini_set('memory_limit', '256M');
+
+            $rows       = IOFactory::load($this->alneo_file->getRealPath())->getActiveSheet()->toArray(null, true, true, false);
+            $dispatched = 0;
+            $skipped    = 0;
+
+            foreach ($rows as $row) {
+                // A=SKU, B=Stock, C=Price, D=DiscountPrice (optional)
+                $sku   = trim((string) ($row[0] ?? ''));
+                $stock = $row[1] ?? null;
+                $price = $row[2] ?? null;
+
+                if ($sku === '') { $skipped++; continue; }
+                if (in_array(mb_strtolower($sku), ['sku', 'id', 'კოდი', 'დასახელება'])) continue;
+
+                $parsedPrice = $this->parsePrice($price);
+                if (!$parsedPrice || $parsedPrice <= 0) { $skipped++; continue; }
+
+                $parsedDiscount = $this->parsePrice($row[3] ?? null);
+
+                \App\Jobs\AlneoUpdateJob::dispatch(
+                    $sku,
+                    $this->parseStock($stock),
+                    $parsedPrice,
+                    $parsedDiscount > 0 ? $parsedDiscount : null,
+                )->onQueue('alneo');
+
+                $dispatched++;
+            }
+
+            $this->reset('alneo_file');
+            $this->dispatch('uploadAlneoModal_close');
+            $this->dispatch('ui:success', message: "Alneo Excel: {$dispatched} განახლება queue-ში (გამოტ. {$skipped})");
+
+        } catch (\Throwable $e) {
+            Log::error('Alneo Excel upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
 
@@ -721,7 +772,7 @@ class Index extends Component
             ->when($this->brand_id,               fn($q) => $q->where('brand_id', $this->brand_id))
             ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
             ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
-            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182, 203, 204, 205]))
+            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182]))
             ->when($this->no_brand === true,      fn($q) => $q->whereIn('brand_id', [1, 6]))
             ->when($this->only_locked === true,   fn($q) => $q->where('update_lock', 1))
             ->when($this->no_stock !== null && $this->no_stock !== '',
