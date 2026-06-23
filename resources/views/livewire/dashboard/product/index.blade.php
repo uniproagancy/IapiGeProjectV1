@@ -80,6 +80,11 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadAlneoModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Alneo — Excel
                                     </a>
+                                    <a class="dropdown-item text-danger" href="#"
+                                       wire:click="uploadAlneoScan"
+                                       onclick="if(!confirm('Alneo სკანი დაიწყებს ყველა პროდუქტის იმპორტს')) return false;">
+                                        <i data-feather="radio" class="me-1" style="width:14px;"></i> Alneo — სკანი
+                                    </a>
                                 </div>
                             </div>
 
