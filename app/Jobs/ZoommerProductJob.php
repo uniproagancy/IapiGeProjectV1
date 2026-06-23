@@ -181,7 +181,7 @@ class ZoommerProductJob implements ShouldQueue
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         $zoomId = $productData['id'];
-        $sku    = $productData['barCode'] ?? ('ZOOM-' . $zoomId);
+        $sku    = $productData['barCode'];
 
         // ძებნა supplier_product_id-ით — ძირითადი პროდუქტი
         $primary = Product::where('supplier_id', 4)
