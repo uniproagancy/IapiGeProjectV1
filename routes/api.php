@@ -35,6 +35,9 @@ Route::prefix('bog')->group(function () {
     Route::get('/installment/callback', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@installmentCheck')->name('bog.installment-callback');
     Route::post('/installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createInstallment')->name('bog.create-installment-order');
     Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createPartInstallment')->name('bog.create-part-installment-order');
+    Route::post('/part-installment/{order_id}', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@createPartInstallment')->name('bog.create-part-installment-order');
+    Route::get('/refund', '\App\Http\Controllers\ApiControllers\BOGInstallmentController@refund')->name('bog.refund');
+
 });
 
 Route::prefix('tbc')->group(function () {
