@@ -319,13 +319,15 @@ class ZoommerProductJob implements ShouldQueue
                 $product->update($updateData);
 
                 // ===== Short Specs =====
-                ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                $deletedShort = ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                Log::info("🗑️ Zoommer short specs წაიშალა: {$product->id} ({$deletedShort} ჩანაწერი)");
                 $this->createShortSpecifications($product, $productData);
 
                 // ===== Full Specs =====
                 $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
-                ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-                ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                $deletedItems = ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                $deletedSections = ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                Log::info("🗑️ Zoommer full specs წაიშალა: {$product->id} ({$deletedSections} სექცია, {$deletedItems} ჩანაწერი)");
                 $this->createFullSpecifications($product, $productData);
 
                 if (!empty($productData['description'])) {
@@ -401,6 +403,8 @@ class ZoommerProductJob implements ShouldQueue
         $name     = $productData['name'] ?? 'Unnamed Product';
         $baseSlug = Str::slug($name, '-') . '-' . $product->id;
 
+        Log::info("📝 Zoommer translations წერა: {$product->id} | {$name}");
+
         foreach (['ka', 'en', 'ru'] as $locale) {
             ProductTranslation::create([
                 'product_id'  => $product->id,
@@ -443,6 +447,9 @@ class ZoommerProductJob implements ShouldQueue
     {
         if (empty($productData['specificationGroup'])) return;
 
+        $sectionCount = count($productData['specificationGroup']);
+        Log::info("📑 Zoommer full specs წერა: {$product->id} ({$sectionCount} სექცია)");
+
         foreach ($productData['specificationGroup'] as $specificationGroup) {
             if (empty($specificationGroup['groupName'])) continue;
 
@@ -484,6 +491,7 @@ class ZoommerProductJob implements ShouldQueue
 
         if (!empty($specs)) {
             ProductShortSpecification::insert($specs);
+            Log::info("📋 Zoommer short specs შენახულია: {$product->id} (" . count($specs) . " ჩანაწერი)");
         }
     }
 
@@ -519,11 +527,13 @@ class ZoommerProductJob implements ShouldQueue
 
                 if ($index === 0) {
                     $product->update(['main_image' => $path]);
+                    Log::info("🖼️ Zoommer main image: {$product->id} | {$filename}");
                 } else {
                     ProductImage::create([
                         'product_id' => $product->id,
                         'path'       => $path,
                     ]);
+                    Log::info("🖼️ Zoommer gallery image #{$index}: {$product->id} | {$filename}");
                 }
 
             } catch (Exception $e) {
