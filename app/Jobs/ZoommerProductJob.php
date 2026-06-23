@@ -47,13 +47,13 @@ class ZoommerProductJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info("🔄 Processing Zoommer product: {$this->productData['id']}", [
+            Log::info("🔄 Processing Zoommer product: {$this->productData['id']} | barCode={$this->productData['barCode']}", [
                 'attempt' => $this->attempts(),
             ]);
 
             $this->saveProductWithVariants($this->productData, $this->productAvailability);
 
-            Log::info("✅ Product saved: {$this->productData['id']}");
+            Log::info("✅ Product saved: {$this->productData['id']} | barCode={$this->productData['barCode']}");
 
         } catch (Exception $e) {
             Log::error("❌ Error processing product {$this->productData['id']}: {$e->getMessage()}", [
@@ -181,7 +181,7 @@ class ZoommerProductJob implements ShouldQueue
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         $zoomId = $productData['id'];
-        $sku    = $productData['barCode'];
+        $sku    = $productData['barCode'] ?? ('ZOOM-' . $zoomId);
 
         // ძებნა supplier_product_id-ით — ძირითადი პროდუქტი
         $primary = Product::where('supplier_id', 4)
@@ -207,7 +207,7 @@ class ZoommerProductJob implements ShouldQueue
             if ($hasStock) {
                 $this->createNewProduct($productData, $hasStock, $sku);
             } else {
-                Log::info("⏭️  Skipping new product (no Tbilisi stock): {$zoomId}");
+                Log::info("⏭️  Skipping new product (no Tbilisi stock): {$zoomId} | sku={$sku}");
             }
             return;
         }
@@ -334,7 +334,7 @@ class ZoommerProductJob implements ShouldQueue
                         ->update(['description' => $productData['description']]);
                 }
 
-                Log::info("🔁 Updated product: {$product->id}, stock: " . ($hasStock ? 'yes' : 'no'));
+                Log::info("🔁 Updated product: {$product->id} | sku={$product->sku}, stock: " . ($hasStock ? 'yes' : 'no'));
 
             } catch (Exception $e) {
                 Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
