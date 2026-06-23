@@ -469,18 +469,7 @@ class Index extends Component
     // Alneo
     // ============================================
 
-    public function uploadAlneoScan(): void
-    {
-        try {
-            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
-            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
-        } catch (\Throwable $e) {
-            Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
-            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
-        }
-    }
-
-    public function uploadAlneoExcel(): void
+    public function uploadAlneo(): void
     {
         $this->validate([
             'alneo_file' => 'required|file|mimes:xlsx,xls|max:20480',
@@ -492,40 +481,53 @@ class Index extends Component
         try {
             @ini_set('memory_limit', '256M');
 
-            $rows       = IOFactory::load($this->alneo_file->getRealPath())->getActiveSheet()->toArray(null, true, true, false);
-            $dispatched = 0;
-            $skipped    = 0;
+            $rows       = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->alneo_file->getRealPath())
+                ->getActiveSheet()
+                ->toArray(null, true, true, false);
 
-            foreach ($rows as $row) {
-                // A=SKU, B=Stock, C=Price, D=DiscountPrice (optional)
-                $sku   = trim((string) ($row[0] ?? ''));
-                $stock = $row[1] ?? null;
-                $price = $row[2] ?? null;
+            $inserted = 0;
+            $updated  = 0;
+            $skipped  = 0;
 
-                if ($sku === '') { $skipped++; continue; }
-                if (in_array(mb_strtolower($sku), ['sku', 'id', 'კოდი', 'დასახელება'])) continue;
+            foreach ($rows as $index => $row) {
+                // header row გამოვტოვოთ
+                $sku = trim((string) ($row[0] ?? ''));
+                if ($sku === '' || in_array(mb_strtolower($sku), ['sku', 'კოდი', 'id'])) continue;
 
-                $parsedPrice = $this->parsePrice($price);
-                if (!$parsedPrice || $parsedPrice <= 0) { $skipped++; continue; }
+                $stock         = (int) preg_replace('/[^0-9]/', '', (string) ($row[1] ?? 0));
+                $price         = (float) preg_replace('/[^0-9.]/', '', (string) ($row[2] ?? 0));
+                $discountPrice = ($row[3] ?? null) !== null && $row[3] !== ''
+                    ? (float) preg_replace('/[^0-9.]/', '', (string) $row[3])
+                    : null;
 
-                $parsedDiscount = $this->parsePrice($row[3] ?? null);
+                if ($price <= 0) { $skipped++; continue; }
 
-                \App\Jobs\AlneoUpdateJob::dispatch(
-                    $sku,
-                    $this->parseStock($stock),
-                    $parsedPrice,
-                    $parsedDiscount > 0 ? $parsedDiscount : null,
-                )->onQueue('alneo');
+                $exists = \App\Models\AlneoProduct::where('sku', $sku)->first();
 
-                $dispatched++;
+                if ($exists) {
+                    $exists->update([
+                        'stock'         => $stock,
+                        'price'         => $price,
+                        'discount_price'=> $discountPrice,
+                    ]);
+                    $updated++;
+                } else {
+                    \App\Models\AlneoProduct::create([
+                        'sku'           => $sku,
+                        'stock'         => $stock,
+                        'price'         => $price,
+                        'discount_price'=> $discountPrice,
+                    ]);
+                    $inserted++;
+                }
             }
 
             $this->reset('alneo_file');
             $this->dispatch('uploadAlneoModal_close');
-            $this->dispatch('ui:success', message: "Alneo Excel: {$dispatched} განახლება queue-ში (გამოტ. {$skipped})");
+            $this->dispatch('ui:success', message: "Alneo: {$inserted} ახალი, {$updated} განახლდა, {$skipped} გამოტოვებული.");
 
         } catch (\Throwable $e) {
-            Log::error('Alneo Excel upload error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Alneo upload error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
