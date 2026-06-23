@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('zoommer')->group(function () {
     Route::get('/scan', '\App\Http\Controllers\ApiControllers\ZoommerController@scan');
+    Route::get('/debug', '\App\Http\Controllers\ApiControllers\ZoommerController@debug');
 });
 
 Route::prefix('elite')->group(function () {
