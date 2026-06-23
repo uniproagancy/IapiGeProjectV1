@@ -66,7 +66,6 @@ class AlneoImportJob implements ShouldQueue
 
             $sku = 'ALNEO-' . $rawSku;
 
-            // ფასები — A ვარიანტი (პირდაპირ, markup-ის გარეშე)
             [$regularPrice, $discountPrice] = $this->extractPrices($data);
 
             if ($regularPrice <= 0) {
@@ -74,11 +73,8 @@ class AlneoImportJob implements ShouldQueue
                 return;
             }
 
-            // აღწერა — short + full
             $description = $this->extractDescription($html);
-
-            // სურათები — ld+json image + gallery
-            $images = $this->extractImages($html, $data);
+            $images      = $this->extractImages($html, $data);
 
             if (empty($images)) {
                 Log::warning("⚠️ Alneo: სურათები ვერ მოიძებნა", ['url' => $this->url, 'sku' => $sku]);
@@ -86,16 +82,14 @@ class AlneoImportJob implements ShouldQueue
                 Log::info("🖼️ Alneo: ნაპოვნია " . count($images) . " სურათი", ['sku' => $sku]);
             }
 
-            // short specs
             $shortSpecs = $this->extractShortSpecs($html);
 
-            // მარაგი
             $availability = (string)($data['offers'][0]['availability'] ?? '');
             $inStock = str_contains(strtolower($availability), 'instock') ? 1 : 0;
 
             // ============ Product upsert ============
             $product = Product::where('sku', $sku)->first();
-            $isNew = !$product;
+            $isNew   = !$product;
 
             if ($isNew) {
                 $product = Product::create([
@@ -111,16 +105,13 @@ class AlneoImportJob implements ShouldQueue
                     'update_lock'   => 0,
                     'taxonomy_lock' => 0,
                 ]);
-
                 Log::info("➕ Alneo: ახალი პროდუქტი", ['sku' => $sku, 'id' => $product->id]);
             } else {
-                // UPDATE: მხოლოდ მარაგი/ხილვადობა
                 $product->update([
                     'quantity' => $inStock ? max($product->quantity, 10) : 0,
                     'in_stock' => $inStock,
                     'show'     => $inStock,
                 ]);
-
                 Log::info("🔄 Alneo: განახლდა", ['sku' => $sku, 'id' => $product->id]);
             }
 
@@ -154,7 +145,7 @@ class AlneoImportJob implements ShouldQueue
                     ProductShortSpecification::create([
                         'product_id' => $product->id,
                         'locale'     => 'ka',
-                        'name'       => $key,        // ⬅ იყო 'title'
+                        'name'       => $key,
                         'value'      => $value,
                         'sort_order' => $sortOrder++,
                     ]);
@@ -180,9 +171,6 @@ class AlneoImportJob implements ShouldQueue
         }
     }
 
-    /**
-     * ld+json პროდუქტი
-     */
     private function extractProductJson(string $html): ?array
     {
         if (!preg_match_all('/<script[^>]*type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/is', $html, $matches)) {
@@ -193,31 +181,22 @@ class AlneoImportJob implements ShouldQueue
             $decoded = json_decode(trim($jsonRaw), true);
             if (!$decoded) continue;
 
-            // @graph wrapper
             if (isset($decoded['@graph']) && is_array($decoded['@graph'])) {
                 foreach ($decoded['@graph'] as $item) {
-                    if (($item['@type'] ?? '') === 'Product') {
-                        return $item;
-                    }
+                    if (($item['@type'] ?? '') === 'Product') return $item;
                 }
             }
 
-            if (($decoded['@type'] ?? '') === 'Product') {
-                return $decoded;
-            }
+            if (($decoded['@type'] ?? '') === 'Product') return $decoded;
         }
 
         return null;
     }
 
-    /**
-     * ფასები — A ვარიანტი (markup-ის გარეშე)
-     */
     private function extractPrices(array $data): array
     {
-        $offer = $data['offers'][0] ?? [];
-        $specs = $offer['priceSpecification'] ?? [];
-
+        $offer     = $data['offers'][0] ?? [];
+        $specs     = $offer['priceSpecification'] ?? [];
         $mainPrice = (float)($offer['price'] ?? 0);
         $listPrice = 0.0;
         $unitPrice = 0.0;
@@ -233,77 +212,55 @@ class AlneoImportJob implements ShouldQueue
             }
         }
 
-        // ListPrice arsebobs → discount/regular წყვილი
         if ($listPrice > 0 && $unitPrice > 0 && $listPrice > $unitPrice) {
-            return [$listPrice, $unitPrice]; // [regular, discount]
+            return [$listPrice, $unitPrice];
         }
 
-        // მხოლოდ ერთი ფასი
         $regular = $unitPrice > 0 ? $unitPrice : $mainPrice;
         return [$regular, 0.0];
     }
 
-    /**
-     * აღწერა — short-description + electro-description
-     */
     private function extractDescription(string $html): string
     {
         $parts = [];
 
-        // 1. short description
         if (preg_match(
             '/<div class="woocommerce-product-details__short-description">(.*?)<\/div>/is',
-            $html,
-            $m
+            $html, $m
         )) {
             $parts[] = trim($m[1]);
         }
 
-        // 2. full electro-description
         if (preg_match(
             '/<div class="electro-description[^"]*">(.*?)<\/div>\s*<div class="product_meta">/is',
-            $html,
-            $m
+            $html, $m
         )) {
             $parts[] = trim($m[1]);
         }
 
         $combined = implode("\n\n", array_filter($parts));
-        return $this->cleanText($combined);
+        return $this->cleanDescription($combined);
     }
 
-    /**
-     * სურათები — ld+json image + gallery (გაუმჯობესებული regex)
-     */
     private function extractImages(string $html, array $data): array
     {
         $images = [];
 
-        // 1. ld+json image (string ან array)
         if (!empty($data['image'])) {
             if (is_string($data['image'])) {
                 $images[] = $data['image'];
             } elseif (is_array($data['image'])) {
                 foreach ($data['image'] as $img) {
-                    if (is_string($img)) {
-                        $images[] = $img;
-                    } elseif (is_array($img) && !empty($img['url'])) {
-                        $images[] = $img['url'];
-                    }
+                    if (is_string($img)) $images[] = $img;
+                    elseif (is_array($img) && !empty($img['url'])) $images[] = $img['url'];
                 }
             }
         }
 
-        // 2. gallery wrapper-დან — woocommerce-product-gallery__image
-        // ვცდით სხვადასხვა ფორმატს (div/figure, class-ის თანმიმდევრობა, single quotes/double quotes)
         $patterns = [
-            // <div class="...woocommerce-product-gallery__image..."> ... <a href="..."
             '/<(?:div|figure)[^>]*class="[^"]*woocommerce-product-gallery__image[^"]*"[^>]*>\s*<a[^>]+href="([^"]+)"/is',
-            // <div class="...woocommerce-product-gallery__image..."> ... <a href='...'
             "/<(?:div|figure)[^>]*class='[^']*woocommerce-product-gallery__image[^']*'[^>]*>\s*<a[^>]+href='([^']+)'/is",
-            // data-large_image="..." attribute (img tag-ში)
             '/data-large_image=["\']([^"\']+)["\']/i',
-            // data-large-image="..." (electro gallery)
             '/data-large-image=["\']([^"\']+)["\']/i',
         ];
 
@@ -317,39 +274,29 @@ class AlneoImportJob implements ShouldQueue
             }
         }
 
-        // 3. fallback: wp-post-image (მთავარი სურათი)
         if (preg_match('/<img[^>]+class="[^"]*wp-post-image[^"]*"[^>]+src="([^"]+)"/i', $html, $m)) {
             if (preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $m[1])) {
-                // 600x600 thumb-ი თუ არის, ვცადოთ ფული ვერსიის აშენება
-                $fullUrl = preg_replace('/-\d+x\d+(\.(jpe?g|png|webp))$/i', '$1', $m[1]);
+                $fullUrl  = preg_replace('/-\d+x\d+(\.(jpe?g|png|webp))$/i', '$1', $m[1]);
                 $images[] = $fullUrl;
-                $images[] = $m[1]; // thumb-იც დავამატოთ fallback-ად
+                $images[] = $m[1];
             }
         }
 
-        // უნიკალური, თანმიმდევრობა შენარჩუნებული
         $unique = array_values(array_unique($images));
 
-        // ფილტრი: მხოლოდ ვალიდური URL-ები
         return array_values(array_filter($unique, function ($url) {
             return filter_var($url, FILTER_VALIDATE_URL) !== false
                 && preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $url);
         }));
     }
 
-    /**
-     * short specs — სხვადასხვა წყაროდან
-     */
     private function extractShortSpecs(string $html): array
     {
         $specs = [];
 
-        // წყარო 1: .mb-3.5 grid grid-cols-2 (description tab-ში)
         if (preg_match_all(
             '/<div class="mb-3\.5 grid grid-cols-2[^"]*">\s*<span[^>]*>([^<]+)<\/span>\s*<span[^>]*>([^<]+)<\/span>\s*<\/div>/is',
-            $html,
-            $matches,
-            PREG_SET_ORDER
+            $html, $matches, PREG_SET_ORDER
         )) {
             foreach ($matches as $m) {
                 $key   = trim(rtrim(strip_tags($m[1]), ':'));
@@ -361,17 +308,13 @@ class AlneoImportJob implements ShouldQueue
             }
         }
 
-        // წყარო 2: <table class="shop_attributes"> — თუ პირველი ცარიელია
         if (empty($specs) && preg_match(
                 '/<table[^>]*class="[^"]*shop_attributes[^"]*"[^>]*>(.*?)<\/table>/is',
-                $html,
-                $tableMatch
+                $html, $tableMatch
             )) {
             if (preg_match_all(
                 '/<tr[^>]*>\s*<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/is',
-                $tableMatch[1],
-                $rows,
-                PREG_SET_ORDER
+                $tableMatch[1], $rows, PREG_SET_ORDER
             )) {
                 foreach ($rows as $row) {
                     $key   = trim(strip_tags($row[1]));
@@ -387,9 +330,6 @@ class AlneoImportJob implements ShouldQueue
         return $specs;
     }
 
-    /**
-     * სურათის ჩამოტვირთვა local storage-ში
-     */
     private function downloadImage(string $url, int $productId): ?string
     {
         try {
@@ -401,55 +341,41 @@ class AlneoImportJob implements ShouldQueue
                 ->get($url);
 
             if (!$response->successful()) {
-                Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა (HTTP)", [
-                    'url'    => $url,
-                    'status' => $response->status(),
-                ]);
+                Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა", ['url' => $url, 'status' => $response->status()]);
                 return null;
             }
 
-            $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
-            $ext = strtolower($ext);
-            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                $ext = 'jpg';
-            }
+            $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg');
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) $ext = 'jpg';
 
             $filename = 'main_' . time() . '.' . $ext;
-            $path = "uploads/products/{$productId}/{$filename}";
+            $path     = "uploads/products/{$productId}/{$filename}";
 
             Storage::disk('public')->put($path, $response->body());
 
             return $path;
 
         } catch (\Throwable $e) {
-            Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა (exception)", [
-                'url'   => $url,
-                'error' => $e->getMessage(),
-            ]);
+            Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა", ['url' => $url, 'error' => $e->getMessage()]);
             return null;
         }
     }
 
     /**
-     * სათაურიდან "alneo" სიტყვის სრულად ამოღება (არ ცვლის iapi.ge-ით)
+     * სათაური — მხოლოდ html entities დეკოდება, სხვა ცვლილება არ
      */
     private function cleanTitle(string $title): string
     {
-        $title = preg_replace('/\balneo(\.com)?(\.ge)?\b/i', '', $title);
-        $title = preg_replace('/\s+/', ' ', $title);
-        $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return trim($title);
+        return trim(html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
     /**
-     * description-ში alneo.ge → iapi.ge ჩანაცვლება
+     * აღწერა — მხოლოდ alneo.ge → iapi.ge (standalone alneo არ შეიცვლება)
      */
-    private function cleanText(string $text): string
+    private function cleanDescription(string $text): string
     {
         $text = preg_replace('/alneo\.com\.ge/i', 'iapi.ge', $text);
         $text = preg_replace('/alneo\.ge/i', 'iapi.ge', $text);
-        $text = preg_replace('/\balneo\b/i', 'iapi.ge', $text);
-        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return trim($text);
+        return trim(html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 }
