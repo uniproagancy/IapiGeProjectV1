@@ -201,13 +201,9 @@ class ZoommerProductJob implements ShouldQueue
             }
         }
 
-        // ყველა პროდუქტი ამ SKU-ით (ერთნაირი barCode)
-        $allWithSameSku = Product::where('sku', $sku)
-            ->where('supplier_id', 4)
-            ->get();
-
-        if ($allWithSameSku->isEmpty() && !$primary) {
-            // ახალი პროდუქტი
+        // ყოველი პროდუქტი მხოლოდ საკუთარი Zoommer job-ით განახლდება
+        // (duplicate SKU-ების შემთხვევაში თითოეულს თავისი job-ი ანახლებს)
+        if (!$primary) {
             if ($hasStock) {
                 $this->createNewProduct($productData, $hasStock, $sku);
             } else {
@@ -216,18 +212,12 @@ class ZoommerProductJob implements ShouldQueue
             return;
         }
 
-        // ძირითადი პროდუქტი სრულად განახლდება (specs, images, translations)
-        if ($primary && !$primary->update_lock) {
-            $this->updateExistingProduct($productData, $hasStock, $sku);
-        } elseif ($primary && $primary->update_lock) {
-            Log::info("🔒 Zoommer: primary locked, skip full update — {$sku}");
+        if ($primary->update_lock) {
+            Log::info("🔒 Zoommer: locked, skip — {$sku} (id={$primary->id})");
+            return;
         }
 
-        // ყველა დუბლიკატი — მხოლოდ ფასი და მარაგი განახლდება
-        $duplicates = $allWithSameSku->where('id', '!=', optional($primary)->id);
-        if ($duplicates->isNotEmpty()) {
-            $this->updatePriceAndStock($productData, $hasStock, $duplicates);
-        }
+        $this->updateExistingProduct($productData, $hasStock, $sku);
     }
 
     private function updatePriceAndStock(array $productData, bool $hasStock, $products): void
