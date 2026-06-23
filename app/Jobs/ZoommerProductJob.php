@@ -183,38 +183,85 @@ class ZoommerProductJob implements ShouldQueue
         $zoomId = $productData['id'];
         $sku    = $productData['barCode'] ?? ('ZOOM-' . $zoomId);
 
-        // ძებნა supplier_product_id-ით — ყველაზე სანდო (barCode შეიძლება მეორდებოდეს)
-        $existing = Product::where('supplier_id', 4)
+        // ძებნა supplier_product_id-ით — ძირითადი პროდუქტი
+        $primary = Product::where('supplier_id', 4)
             ->where('supplier_product_id', $zoomId)
             ->first();
 
         // fallback: ძველი ჩანაწერები რომლებსაც supplier_product_id არ აქვთ
-        if (!$existing) {
-            $existing = Product::where('sku', $sku)
+        if (!$primary) {
+            $primary = Product::where('sku', $sku)
                 ->where('supplier_id', 4)
                 ->whereNull('supplier_product_id')
                 ->first();
 
-            // თუ ნაპოვნია — supplier_product_id ჩავამატოთ
-            if ($existing) {
-                $existing->update(['supplier_product_id' => $zoomId]);
-                Log::info("🔧 Zoommer: supplier_product_id დაემატა id={$existing->id}, zoom_id={$zoomId}");
+            if ($primary) {
+                $primary->update(['supplier_product_id' => $zoomId]);
+                Log::info("🔧 Zoommer: supplier_product_id დაემატა id={$primary->id}, zoom_id={$zoomId}");
             }
         }
 
-        if ($existing && $existing->update_lock) {
-            Log::info("🔒 Skipping locked Zoommer product: {$sku}");
-            return;
-        }
+        // ყველა პროდუქტი ამ SKU-ით (ერთნაირი barCode)
+        $allWithSameSku = Product::where('sku', $sku)
+            ->where('supplier_id', 4)
+            ->get();
 
-        if ($existing) {
-            $this->updateExistingProduct($productData, $hasStock, $sku);
-        } else {
+        if ($allWithSameSku->isEmpty() && !$primary) {
+            // ახალი პროდუქტი
             if ($hasStock) {
                 $this->createNewProduct($productData, $hasStock, $sku);
             } else {
                 Log::info("⏭️  Skipping new product (no Tbilisi stock): {$zoomId}");
             }
+            return;
+        }
+
+        // ძირითადი პროდუქტი სრულად განახლდება (specs, images, translations)
+        if ($primary && !$primary->update_lock) {
+            $this->updateExistingProduct($productData, $hasStock, $sku);
+        } elseif ($primary && $primary->update_lock) {
+            Log::info("🔒 Zoommer: primary locked, skip full update — {$sku}");
+        }
+
+        // ყველა დუბლიკატი — მხოლოდ ფასი და მარაგი განახლდება
+        $duplicates = $allWithSameSku->where('id', '!=', optional($primary)->id);
+        if ($duplicates->isNotEmpty()) {
+            $this->updatePriceAndStock($productData, $hasStock, $duplicates);
+        }
+    }
+
+    private function updatePriceAndStock(array $productData, bool $hasStock, $products): void
+    {
+        $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
+        $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
+
+        $productPrice  = $this->calculatePrice($productPrice);
+        $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
+
+        foreach ($products as $product) {
+            if ($product->update_lock) {
+                Log::info("🔒 Zoommer: duplicate locked, skip — id={$product->id}");
+                continue;
+            }
+
+            $product->update([
+                'quantity' => $hasStock ? 5 : 0,
+                'in_stock' => $hasStock ? 1 : 0,
+                'show'     => $hasStock ? 1 : 0,
+                'active'   => $hasStock ? 1 : 0,
+            ]);
+
+            ProductPrice::updateOrCreate(
+                ['product_id' => $product->id],
+                [
+                    'dealer_price'     => $productPrice,
+                    'regular_price'    => $productPrice,
+                    'discount_price'   => $discountPrice,
+                    'discount_percent' => $productData['discountPercent'] ?? 0,
+                ]
+            );
+
+            Log::info("🔄 Zoommer: duplicate განახლდა id={$product->id} (sku={$product->sku}, stock=" . ($hasStock ? 'yes' : 'no') . ")");
         }
     }
 
