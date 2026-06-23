@@ -26,7 +26,7 @@ class ZoommerController extends Controller
         $productId = (int) $request->get('id');
 
         if (!$productId) {
-            return response()->json(['error' => 'id პარამეტრი საჭიროა'], 400);
+            return response()->json(['error' => 'id პარამეტრი საჭიროა'], 400, [], JSON_UNESCAPED_UNICODE);
         }
 
         Log::info("🔍 Zoommer Debug: პროდუქტის ხელით განახლება | id={$productId}");
@@ -48,7 +48,7 @@ class ZoommerController extends Controller
                 return response()->json([
                     'error'  => 'Zoommer API შეცდომა',
                     'status' => $productResponse->status(),
-                ], 500);
+                ], 500, [], JSON_UNESCAPED_UNICODE);
             }
 
             $data        = $productResponse->json();
@@ -56,7 +56,7 @@ class ZoommerController extends Controller
             $availability = $data['availabilityInStores'] ?? [];
 
             if (!$productData) {
-                return response()->json(['error' => 'პროდუქტი ვერ მოიძებნა Zoommer-ზე'], 404);
+                return response()->json(['error' => 'პროდუქტი ვერ მოიძებნა Zoommer-ზე'], 404, [], JSON_UNESCAPED_UNICODE);
             }
 
             // availability ინფო
@@ -77,20 +77,20 @@ class ZoommerController extends Controller
             $job->handle();
 
             return response()->json([
-                'success'      => true,
-                'zoommer_id'   => $productId,
-                'name'         => $productData['name'],
-                'barCode'      => $productData['barCode'],
-                'price'        => $productData['price'],
-                'previousPrice'=> $productData['previousPrice'],
-                'isInStock'    => $productData['isInStock'],
+                'success'        => true,
+                'zoommer_id'     => $productId,
+                'name'           => $productData['name'],
+                'barCode'        => $productData['barCode'],
+                'price'          => $productData['price'],
+                'previousPrice'  => $productData['previousPrice'],
+                'isInStock'      => $productData['isInStock'],
                 'tbilisi_stores' => $storeInfo,
-                'message'      => 'განახლება დასრულდა — შეამოწმე laravel.log',
-            ]);
+                'message'        => 'განახლება დასრულდა — შეამოწმე laravel.log',
+            ], 200, [], JSON_UNESCAPED_UNICODE);
 
         } catch (\Throwable $e) {
             Log::error("🔍 Zoommer Debug Error: {$e->getMessage()}");
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
 }
