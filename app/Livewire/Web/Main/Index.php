@@ -37,14 +37,13 @@ class Index extends Component
     #[Computed]
     public function promotions()
     {
-        return cache()->remember('promotions_active', 1800, function () {
+        $locale = app()->getLocale();
+
+        return cache()->remember('promotions_active_' . $locale, 1800, function () use ($locale) {
             return Promotion::with([
                 'translations',
                 'products' => fn ($q) => $q
-                    ->whereHas('product', fn ($q) => $q
-                        ->where('active', 1)
-                        ->where('show', 1)
-                    )
+                    ->whereHas('product', fn ($q) => $q->where('active', 1)->where('show', 1))
                     ->limit(20),
                 'products.product' => fn ($q) => $q
                     ->select('id', 'main_image', 'category_id', 'brand_id')
@@ -52,7 +51,7 @@ class Index extends Component
                     ->where('show', 1),
                 'products.product.translations' => fn ($q) => $q
                     ->select('id', 'product_id', 'title', 'slug', 'locale')
-                    ->where('locale', app()->getLocale()),
+                    ->where('locale', $locale),
                 'products.product.price' => fn ($q) => $q
                     ->select('id', 'product_id', 'regular_price', 'discount_price'),
             ])
@@ -83,15 +82,25 @@ class Index extends Component
         );
     }
 
+    #[Computed]
+    public function homeSections()
+    {
+        return cache()->remember('home_sections_active', 1800, fn () =>
+        \App\Models\Product\ProductSection::with([
+            'products' => fn ($q) => $q->where('show', 1)->where('active', 1),
+        ])
+            ->where('active', 1)
+            ->where('show_on_home', 1)
+            ->whereHas('products', fn ($q) => $q->where('show', 1)->where('active', 1))
+            ->orderBy('sort_order')
+            ->get()
+        );
+    }
+
     public function render()
     {
-        $homeSections = \App\Models\Product\ProductSection::where('active', 1)
-            ->where('show_on_home', 1)
-            ->whereHas('products', function ($q) {
-                $q->where('show', 1)->where('active', 1);
-            })
-            ->orderBy('sort_order')
-            ->get();
-        return view('livewire.web.main.index', compact('homeSections'))->layout('livewire.web.layout');
+        return view('livewire.web.main.index', [
+            'homeSections' => $this->homeSections,
+        ])->layout('livewire.web.layout');
     }
 }

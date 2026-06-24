@@ -16,13 +16,8 @@
         transition: color .25s ease-in-out, background-color .25s ease-in-out;
     }
 
-    .swiper-prev {
-        left: 0px;
-    }
-
-    .swiper-next {
-        right: 0px;
-    }
+    .swiper-prev { left: 0px; }
+    .swiper-next { right: 0px; }
 
     .swiper-prev:hover,
     .swiper-next:hover {
@@ -31,13 +26,15 @@
     }
 
     .swiper-prev i,
-    .swiper-next i {
-        font-size: 20px;
-    }
+    .swiper-next i { font-size: 20px; }
 </style>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    function initSwipers() {
         document.querySelectorAll(".product-swiper").forEach(function (el) {
+            // თუ უკვე ინიციალიზებულია — გამოვტოვოთ
+            if (el.swiper) return;
+
             const id = el.dataset.section;
             new Swiper(el, {
                 spaceBetween: 30,
@@ -47,17 +44,18 @@
                     prevEl: `.swiper-prev[data-section="${id}"]`,
                 },
                 breakpoints: {
-                    0: {slidesPerView: 2},
-                    576: {slidesPerView: 3},
-                    768: {slidesPerView: 4},
-                    992: {slidesPerView: 5},
-                    1200: {slidesPerView: 6},
+                    0:    { slidesPerView: 2 },
+                    576:  { slidesPerView: 3 },
+                    768:  { slidesPerView: 4 },
+                    992:  { slidesPerView: 5 },
+                    1200: { slidesPerView: 6 },
                 }
             });
         });
 
         document.querySelectorAll(".brand-swiper").forEach(function (el) {
-            console.log(el);
+            if (el.swiper) return;
+
             const id = el.dataset.section;
             new Swiper(el, {
                 spaceBetween: 30,
@@ -67,13 +65,29 @@
                     prevEl: `.swiper-prev[data-section="${id}"]`,
                 },
                 breakpoints: {
-                    0: {slidesPerView: 2},
-                    576: {slidesPerView: 3},
-                    768: {slidesPerView: 4},
-                    992: {slidesPerView: 5},
-                    1200: {slidesPerView: 5},
+                    0:    { slidesPerView: 2 },
+                    576:  { slidesPerView: 3 },
+                    768:  { slidesPerView: 4 },
+                    992:  { slidesPerView: 5 },
+                    1200: { slidesPerView: 5 },
                 }
             });
         });
-    });
+    }
+
+    // პირველი ჩატვირთვა
+    document.addEventListener("DOMContentLoaded", initSwipers);
+
+    // Livewire update-ის შემდეგ ხელახლა
+    document.addEventListener("livewire:navigated", initSwipers);
+    document.addEventListener("livewire:update", initSwipers);
+
+    // Livewire v3
+    if (typeof Livewire !== 'undefined') {
+        Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+            succeed(({ snapshot, effect }) => {
+                setTimeout(initSwipers, 50);
+            });
+        });
+    }
 </script>
