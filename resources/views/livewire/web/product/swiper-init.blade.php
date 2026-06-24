@@ -82,6 +82,41 @@
     document.addEventListener("livewire:navigated", initSwipers);
     document.addEventListener("livewire:update", initSwipers);
 
+    // ============ Wishlist Batch Load ============
+    // Alpine Store — wishlist product IDs
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('wishlist', {
+            ids: [],
+            load(productIds) {
+                if (!productIds.length) return;
+                @auth
+                fetch('/wishlist/check?ids=' + productIds.join(','))
+                    .then(r => r.json())
+                    .then(ids => { Alpine.store('wishlist').ids = ids; })
+                    .catch(() => {});
+                @else
+                // არ არის ავტორიზებული — ცარიელი
+                @endauth
+            }
+        });
+    });
+
+    function loadWishlistStatuses() {
+        const ids = [...document.querySelectorAll('[data-product-id]')]
+            .map(el => parseInt(el.dataset.productId))
+            .filter(Boolean);
+
+        if (ids.length && window.Alpine) {
+            Alpine.store('wishlist').load(ids);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(loadWishlistStatuses, 100);
+    });
+
+    document.addEventListener('livewire:navigated', loadWishlistStatuses);
+
     // Livewire v3
     if (typeof Livewire !== 'undefined') {
         Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {

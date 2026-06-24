@@ -19,16 +19,20 @@
 
 @if(!empty($slug))
     <div class="product-card animate-underline hover-effect-opacity bg-body rounded h-100 d-flex flex-column"
+         data-product-id="{{ $product->id }}"
          x-data="{
              loading: false,
              wishlistLoading: false,
              inWishlist: false,
              init() {
-                 @auth
-                 fetch('/wishlist/check?product_id={{ $product->id }}')
-                     .then(r => r.json())
-                     .then(d => { this.inWishlist = d.in_wishlist; });
-                 @endauth
+                 // wishlist სტატუსი batch-ით იტვირთება (იხ. swiper-init.blade.php)
+                 this.$watch('$store.wishlist.ids', ids => {
+                     this.inWishlist = ids.includes({{ $product->id }});
+                 });
+                 // საწყისი სტატუსი store-დან
+                 if (window.Alpine && Alpine.store('wishlist')) {
+                     this.inWishlist = Alpine.store('wishlist').ids.includes({{ $product->id }});
+                 }
              },
              addToCart() {
                  if (this.loading) return;

@@ -47,17 +47,27 @@ class WishlistController extends Controller
         ]);
     }
 
+    /**
+     * GET /wishlist/check?ids=1,2,3,4
+     * ერთი request — ყველა product_id-ისთვის
+     */
     public function check(Request $request)
     {
         if (!auth()->check()) {
-            return response()->json(['in_wishlist' => false]);
+            return response()->json([]);
         }
 
-        $productId   = (int) $request->input('product_id');
-        $inWishlist  = Wishlist::where('user_id', auth()->id())
-            ->where('product_id', $productId)
-            ->exists();
+        $ids = array_filter(array_map('intval', explode(',', $request->input('ids', ''))));
 
-        return response()->json(['in_wishlist' => $inWishlist]);
+        if (empty($ids)) {
+            return response()->json([]);
+        }
+
+        $wishlistIds = Wishlist::where('user_id', auth()->id())
+            ->whereIn('product_id', $ids)
+            ->pluck('product_id')
+            ->toArray();
+
+        return response()->json($wishlistIds);
     }
 }
