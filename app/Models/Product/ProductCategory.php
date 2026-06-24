@@ -48,17 +48,31 @@ class ProductCategory extends Model
         return $this->hasMany(Product::class, 'category_id');
     }
 
-    public function getActiveProducts()
+    public function getActiveProducts(int $limit = 20)
     {
+        $locale = app()->getLocale();
+
         $childCategoryIds = $this->children()->pluck('id');
 
-        return Product::whereIn('category_id', $childCategoryIds)
+        // თუ ქვეკატეგორიები არ აქვს — საკუთარი ID-ით ვეძებთ
+        $categoryIds = $childCategoryIds->isNotEmpty()
+            ? $childCategoryIds
+            : collect([$this->id]);
+
+        return Product::whereIn('category_id', $categoryIds)
             ->where('active', 1)
             ->where('show', 1)
-            ->with(['translations', 'price'])
-            ->orderBy('id','DESC')
+            ->with([
+                // მხოლოდ საჭირო locale — 3x ნაკლები მონაცემი
+                'translations' => fn ($q) => $q
+                    ->select('id', 'product_id', 'title', 'slug', 'locale')
+                    ->where('locale', $locale),
+                'price' => fn ($q) => $q
+                    ->select('id', 'product_id', 'regular_price', 'discount_price', 'discount_percent'),
+            ])
+            ->select('id', 'category_id', 'brand_id', 'main_image', 'sku', 'show', 'active')
+            ->orderByDesc('id')
+            ->limit($limit)  // ← DB-ში LIMIT, არა PHP-ში
             ->get();
     }
-
-
 }

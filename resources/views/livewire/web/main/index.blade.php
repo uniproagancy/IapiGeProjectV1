@@ -56,7 +56,7 @@
 
         @php
             $products = cache()->remember('home_cat_products_' . $category->id, 1800,
-                fn() => $category->getActiveProducts()->take(20)
+                fn() => $category->getActiveProducts(20)
             );
         @endphp
 
