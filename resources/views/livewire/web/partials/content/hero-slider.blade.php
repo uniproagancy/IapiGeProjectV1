@@ -21,7 +21,12 @@
                         <img src="{{ asset('storage'.$slider->path) }}"
                              class="w-100 h-100 object-fit-cover rtl-flip"
                              alt="Slide {{ $loop->index + 1 }}"
-                             loading="lazy">
+                             @if($loop->first)
+                                 loading="eager"
+                             fetchpriority="high"
+                             @else
+                                 loading="lazy"
+                                @endif>
                     </a>
                 </div>
             @endforeach
@@ -29,7 +34,6 @@
         <div class="swiper-pagination pb-sm-2"></div>
     </div>
 
-    <!-- Responsive Heights -->
     <div class="d-md-none" style="height: 100px"></div>
     <div class="d-none d-md-block d-lg-none" style="height: 150px"></div>
     <div class="d-none d-lg-block d-xl-none" style="height: 200px"></div>

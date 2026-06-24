@@ -3,7 +3,7 @@
     $translation = $product->translations->where('locale', $locale)->first()
         ?? $product->translations->where('locale', 'ka')->first();
 
-    $slug = $translation?->slug;
+    $slug  = $translation?->slug;
     $title = $translation?->title;
 
     $price = !empty($product->price?->discount_price)
@@ -18,48 +18,110 @@
 @endphp
 
 @if(!empty($slug))
-    <div class="product-card animate-underline hover-effect-opacity bg-body rounded h-100 d-flex flex-column">
+    <div class="product-card animate-underline hover-effect-opacity bg-body rounded h-100 d-flex flex-column"
+         x-data="{
+             loading: false,
+             wishlistLoading: false,
+             inWishlist: false,
+             init() {
+                 @auth
+                 fetch('/wishlist/check?product_id={{ $product->id }}')
+                     .then(r => r.json())
+                     .then(d => { this.inWishlist = d.in_wishlist; });
+                 @endauth
+             },
+             addToCart() {
+                 if (this.loading) return;
+                 this.loading = true;
+                 fetch('/cart/add', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                     },
+                     body: JSON.stringify({
+                         product_id: {{ $product->id }},
+                         quantity: 1,
+                         source_url: window.location.href,
+                     }),
+                 })
+                 .then(r => r.json())
+                 .then(data => {
+                     if (data.success) {
+                         window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cart_count } }));
+                         window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.message, type: 'success' } }));
+                         // Facebook Pixel
+                         if (typeof fbq !== 'undefined') {
+                             fbq('track', 'AddToCart', {
+                                 content_ids: [data.product_id],
+                                 content_type: 'product',
+                                 value: data.price * data.quantity,
+                                 currency: 'GEL',
+                             }, { eventID: data.event_id });
+                         }
+                     } else {
+                         window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.message, type: 'error' } }));
+                     }
+                 })
+                 .catch(() => {
+                     window.dispatchEvent(new CustomEvent('notify', { detail: { message: 'შეცდომა!', type: 'error' } }));
+                 })
+                 .finally(() => { this.loading = false; });
+             },
+             toggleWishlist() {
+                 if (this.wishlistLoading) return;
+                 this.wishlistLoading = true;
+                 fetch('/wishlist/toggle', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                     },
+                     body: JSON.stringify({ product_id: {{ $product->id }} }),
+                 })
+                 .then(r => r.json())
+                 .then(data => {
+                     if (data.auth === false) {
+                         window.location.href = data.redirect;
+                         return;
+                     }
+                     if (data.success) {
+                         this.inWishlist = data.in_wishlist;
+                         window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.message, type: 'success' } }));
+                     }
+                 })
+                 .finally(() => { this.wishlistLoading = false; });
+             }
+         }">
 
         {{-- სურათის სექცია --}}
         <div class="position-relative">
 
-            {{-- Wishlist ღილაკი - desktop (მუდამ ხილული) --}}
+            {{-- Wishlist ღილაკი --}}
             <div class="position-absolute top-0 end-0 z-2 mt-3 me-3">
-                <div class="d-flex flex-column gap-2">
-                    <livewire:web.components.wishlist-button
-                            :productId="$product->id"
-                            class="wishlist-btn"/>
-                </div>
-            </div>
-
-            {{-- Dropdown - mobile --}}
-            <div class="dropdown d-lg-none position-absolute top-0 end-0 z-2 mt-2 me-2">
                 <button type="button"
-                        class="btn btn-icon btn-sm btn-secondary bg-body"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        aria-label="მეტი მოქმედებები">
-                    <i class="ci-more-vertical fs-lg"></i>
+                        @click="toggleWishlist()"
+                        :disabled="wishlistLoading"
+                        class="btn btn-sm"
+                        :aria-label="inWishlist ? 'სურვილების სიიდან წაშლა' : 'სურვილების სიაში დამატება'">
+                    <template x-if="!wishlistLoading">
+                        <i :class="inWishlist ? 'ci-heart-filled text-danger' : 'ci-heart'" class="fs-sm animate-target"></i>
+                    </template>
+                    <template x-if="wishlistLoading">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </template>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end fs-xs p-2" style="min-width: auto">
-                    <li>
-                        <a class="dropdown-item" href="#!">
-                            <i class="ci-heart fs-sm ms-n1 me-2"></i>
-                            სურვილების სია
-                        </a>
-                    </li>
-                </ul>
             </div>
 
             <a class="d-block rounded-top overflow-hidden p-3 p-sm-4"
                href="{{ route('web.products.view', $slug) }}">
 
-                {{-- ფასდაკლების badge --}}
                 @if(!empty($product->price->discount_percent))
                     <span class="badge bg-danger position-absolute top-0 start-0 mt-2 ms-2 mt-lg-3 ms-lg-3 z-2">
                         -{{ $product->price->discount_percent }}%
                     </span>
                 @endif
+
                 <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
                     <img src="{{ $imageUrl }}"
                          alt="{{ $title }} — შეიძინე iapi.ge-ზე"
@@ -80,25 +142,37 @@
                 </a>
             </h3>
 
-            {{-- ფასი + ღილაკი — ყოველთვის ბოლოში --}}
             <div class="d-flex align-items-end justify-content-between mt-auto">
                 @if(!empty($product->price->discount_price))
                     <div class="lh-1 mb-0">
-                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">{{ number_format($product->price->discount_price, 2) }} ₾</span>
+                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">
+                            {{ number_format($product->price->discount_price, 2) }} ₾
+                        </span>
                         <del class="text-body-tertiary fs-sm fw-normal d-block mt-1">
                             {{ number_format($product->price->regular_price, 2) }} ₾
                         </del>
                     </div>
                 @else
                     <div class="lh-1 mb-0">
-                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">{{ number_format($product->price->regular_price, 2) }} ₾</span>
+                        <span class="text-discount fw-bold" style="font-size:1.15rem;letter-spacing:-0.01em;">
+                            {{ number_format($product->price->regular_price, 2) }} ₾
+                        </span>
                     </div>
                 @endif
 
-                <livewire:web.components.add-to-cart-button
-                        :productId="$product->id"
-                        :productPrice="$price"
-                        :productTitle="$title"/>
+                {{-- კალათის ღილაკი — Alpine.js --}}
+                <button type="button"
+                        @click="addToCart()"
+                        :disabled="loading"
+                        class="product-card-button btn btn-icon btn-primary animate-slide-end ms-2"
+                        aria-label="კალათაში დამატება">
+                    <template x-if="!loading">
+                        <i class="ci-shopping-cart fs-base animate-target"></i>
+                    </template>
+                    <template x-if="loading">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </template>
+                </button>
             </div>
         </div>
     </div>

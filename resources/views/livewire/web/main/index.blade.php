@@ -15,11 +15,17 @@
         @endif
     @endforeach
 
-    @php $catIndex = 0; @endphp
-    @foreach($this->productCategories->where('parent_id', 0) as $category)
+    @php
+        $catIndex      = 0;
+        $catProducts   = $this->categoryProducts;
+        $parentCats    = $this->productCategories->where('parent_id', 0);
+        $parentCount   = count($parentCats);
+    @endphp
+
+    @foreach($parentCats as $category)
 
         {{-- ბრენდები შუაში --}}
-        @if(count($this->productCategories->where('parent_id', 0)) / 2 === $catIndex)
+        @if($parentCount / 2 === $catIndex)
             <div style="background: #ff6900; padding: 0 0 25px;">
                 <section class="container py-4 mt-sm-3 mt-lg-5">
                     <div class="position-relative">
@@ -32,7 +38,10 @@
                                                href="{{ route('web.products.index', ['brands[0]' => $brand->id]) }}"
                                                style="height: 100px; background: #fff;">
                                                 <img src="{{ asset('web-assets/brands/' . $brand->id . '.svg') }}"
-                                                     class="d-none-dark" alt="{{ $brand->name }}" style="height: 80px;">
+                                                     class="d-none-dark"
+                                                     alt="{{ $brand->name }}"
+                                                     style="height: 80px;"
+                                                     loading="lazy">
                                             </a>
                                         </div>
                                     @endif
@@ -45,17 +54,31 @@
                 </section>
             </div>
         @endif
-        @php $products = $category->getActiveProducts()->take(20) @endphp
+
+        {{-- პროდუქტები cache-დან — N+1 გარეშე --}}
+        @php
+            $products = collect();
+            foreach ($category->children as $child) {
+                $products = $products->merge($catProducts->get($child->id, collect()));
+            }
+            if ($products->isEmpty()) {
+                $products = $catProducts->get($category->id, collect());
+            }
+            $products = $products->sortByDesc('id')->take(20);
+        @endphp
+
         @include('livewire.web.partials.category-section', [
             'category' => $category,
             'products' => $products,
         ])
+
         @if($catIndex === 2)
             <div class="container pt-5 mt-2 mt-sm-3 mt-lg-4">
                 <a href="/products/auzebi-183" class="d-block">
                     <img src="{{ asset('web-assets/banners/banner_1.png') }}"
                          alt="ბანერი"
                          class="w-100 rounded-4"
+                         loading="lazy"
                          style="object-fit: cover; max-height: 200px;">
                 </a>
             </div>
@@ -67,10 +90,12 @@
                     <img src="{{ asset('web-assets/banners/banner_2.png') }}"
                          alt="ბანერი"
                          class="w-100 rounded-4"
+                         loading="lazy"
                          style="object-fit: cover; max-height: 200px;">
                 </a>
             </div>
         @endif
+
         @php $catIndex++ @endphp
     @endforeach
 </div>
