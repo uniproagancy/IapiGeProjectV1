@@ -49,7 +49,6 @@ class Index extends Component
     #[Url(as: 'sort', keep: true)]
     public string $sort = 'newest';
 
-    // ✅ URL-ში ინახება — უკან დაბრუნებისას იგივე რაოდენობა გამოჩნდება
     #[Url(as: 'show', keep: true)]
     public $perPage = 12;
 
@@ -88,7 +87,6 @@ class Index extends Component
 
     private function normalizePerPage(): void
     {
-        // URL-დან წამოღებული perPage int-ი იყოს და მინიმუმ 12
         $this->perPage = max(12, (int) $this->perPage);
     }
 
@@ -99,12 +97,8 @@ class Index extends Component
             ->where('parent_id', 0)
             ->where('show', 1)
             ->where(function ($q) {
-                $q->whereHas('products', fn ($p) => $p
-                    ->where('show', 1)->where('active', 1)
-                )
-                    ->orWhereHas('children.products', fn ($p) => $p
-                        ->where('show', 1)->where('active', 1)
-                    );
+                $q->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
+                    ->orWhereHas('children.products', fn ($p) => $p->where('show', 1)->where('active', 1));
             })
             ->orderBy('sortable')
             ->get()
@@ -137,18 +131,14 @@ class Index extends Component
             $this->selectedParent = $category->id;
             $this->subCategories  = $category->children()
                 ->where('show', 1)
-                ->whereHas('products', fn ($p) => $p
-                    ->where('show', 1)->where('active', 1)
-                )
+                ->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
                 ->get();
         } else {
             $this->selectedParent = $category->parent_id;
             $this->subCategories  = ProductCategory::query()
                 ->where('parent_id', $category->parent_id)
                 ->where('show', 1)
-                ->whereHas('products', fn ($p) => $p
-                    ->where('show', 1)->where('active', 1)
-                )
+                ->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
                 ->get();
         }
     }
@@ -171,11 +161,7 @@ class Index extends Component
     private function selectCategoryAndRedirect($categoryId): void
     {
         $category = ProductCategory::find($categoryId);
-
-        if (!$category) {
-            return;
-        }
-
+        if (!$category) return;
         $this->isLoading = true;
         $this->redirectToCategory($category);
     }
@@ -306,9 +292,12 @@ class Index extends Component
     public function loadMore(): void
     {
         $this->perPage += 12;
+        // unsetComputedProperty — cache-ს გავასუფთავებთ
+        unset($this->computedPropertyCache['products']);
     }
 
-    #[Computed]
+    // cache: false — loadMore-ზე perPage იცვლება და ახალი შედეგი ჭირდება
+    #[Computed(cache: false)]
     public function products()
     {
         $query = $this->buildProductQuery();
@@ -339,7 +328,7 @@ class Index extends Component
         return $result;
     }
 
-    #[Computed]
+    #[Computed(cache: false)]
     public function brands()
     {
         return ProductBrand::query()
@@ -367,32 +356,23 @@ class Index extends Component
                     })
                     ->when(!empty($this->priceMin), function ($q) {
                         $q->whereExists(function ($price) {
-                            $price->select('id')
-                                ->from('db_product_prices')
+                            $price->select('id')->from('db_product_prices')
                                 ->whereColumn('product_id', 'db_products.id')
                                 ->whereNull('deleted_at')
-                                ->whereRaw(
-                                    'COALESCE(NULLIF(discount_price, 0), regular_price) >= ?',
-                                    [round((float) $this->priceMin, 2)]
-                                );
+                                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) >= ?', [round((float) $this->priceMin, 2)]);
                         });
                     })
                     ->when(!empty($this->priceMax), function ($q) {
                         $q->whereExists(function ($price) {
-                            $price->select('id')
-                                ->from('db_product_prices')
+                            $price->select('id')->from('db_product_prices')
                                 ->whereColumn('product_id', 'db_products.id')
                                 ->whereNull('deleted_at')
-                                ->whereRaw(
-                                    'COALESCE(NULLIF(discount_price, 0), regular_price) <= ?',
-                                    [round((float) $this->priceMax, 2)]
-                                );
+                                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) <= ?', [round((float) $this->priceMax, 2)]);
                         });
                     })
                     ->when($this->onlyDiscounted, function ($q) {
                         $q->whereExists(function ($price) {
-                            $price->select('id')
-                                ->from('db_product_prices')
+                            $price->select('id')->from('db_product_prices')
                                 ->whereColumn('product_id', 'db_products.id')
                                 ->whereNull('deleted_at')
                                 ->whereNotNull('discount_price')
@@ -427,9 +407,7 @@ class Index extends Component
                 })
                 ->pluck('id');
 
-            if ($productIds->isEmpty()) {
-                return collect();
-            }
+            if ($productIds->isEmpty()) return collect();
 
             $items = \App\Models\Product\ProductFullSpecificationItem::query()
                 ->select('id', 'section_id', 'name', 'value')
@@ -440,9 +418,7 @@ class Index extends Component
                 })
                 ->get();
 
-            if ($items->isEmpty()) {
-                return collect();
-            }
+            if ($items->isEmpty()) return collect();
 
             return $items
                 ->groupBy('name')
@@ -485,18 +461,12 @@ class Index extends Component
 
     private function applyCategoryFilter($query): void
     {
-        if (empty($this->currentCategory)) {
-            return;
-        }
+        if (empty($this->currentCategory)) return;
 
         if ($this->currentCategory->parent_id === 0) {
             $childIds = $this->currentCategory->children()
-                ->whereHas('products', fn ($q) => $q
-                    ->where('db_products.active', 1)
-                    ->where('db_products.show', 1)
-                )
+                ->whereHas('products', fn ($q) => $q->where('db_products.active', 1)->where('db_products.show', 1))
                 ->pluck('id');
-
             $query->whereIn('db_products.category_id', $childIds);
         } else {
             $query->where('db_products.category_id', $this->currentCategory->id);
@@ -506,45 +476,29 @@ class Index extends Component
     private function applyBrandFilter($query): void
     {
         $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
-
-        if (empty($brands)) {
-            return;
-        }
-
+        if (empty($brands)) return;
         $query->whereIn('brand_id', $brands);
     }
 
     private function applyPriceFilter($query): void
     {
-        if (empty($this->priceMin) && empty($this->priceMax)) {
-            return;
-        }
+        if (empty($this->priceMin) && empty($this->priceMax)) return;
 
         $query->whereHas('price', function ($priceQuery) {
             if (!empty($this->priceMin)) {
-                $priceQuery->whereRaw(
-                    'COALESCE(NULLIF(discount_price, 0), regular_price) >= ?',
-                    [round((float) $this->priceMin, 2)]
-                );
+                $priceQuery->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) >= ?', [round((float) $this->priceMin, 2)]);
             }
-
             if (!empty($this->priceMax)) {
-                $priceQuery->whereRaw(
-                    'COALESCE(NULLIF(discount_price, 0), regular_price) <= ?',
-                    [round((float) $this->priceMax, 2)]
-                );
+                $priceQuery->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) <= ?', [round((float) $this->priceMax, 2)]);
             }
         });
     }
 
     private function applySearchFilter($query): void
     {
-        if (empty($this->search)) {
-            return;
-        }
+        if (empty($this->search)) return;
 
         $searchTerm = "%{$this->search}%";
-
         $query->where(function ($q) use ($searchTerm) {
             $q->where('db_products.id', 'like', $searchTerm)
                 ->orWhereHas('translations', fn ($sub) => $sub
@@ -556,35 +510,21 @@ class Index extends Component
 
     private function applyDiscountFilter($query): void
     {
-        if (!$this->onlyDiscounted) {
-            return;
-        }
-
-        $query->whereHas('price', fn ($q) => $q
-            ->whereNotNull('discount_price')
-            ->where('discount_price', '>', 0)
-        );
+        if (!$this->onlyDiscounted) return;
+        $query->whereHas('price', fn ($q) => $q->whereNotNull('discount_price')->where('discount_price', '>', 0));
     }
 
     private function applySpecFilter($query): void
     {
         $specs = array_filter((array) $this->selectedSpecs);
-
-        if (empty($specs)) {
-            return;
-        }
+        if (empty($specs)) return;
 
         foreach ($specs as $spec) {
-            if (!str_contains($spec, '::')) {
-                continue;
-            }
-
+            if (!str_contains($spec, '::')) continue;
             [$name, $value] = explode('::', $spec, 2);
-
             $query->whereHas('fullSpecifications', function ($q) use ($name, $value) {
                 $q->whereHas('list', function ($item) use ($name, $value) {
-                    $item->where('name', $name)
-                        ->where('value', $value);
+                    $item->where('name', $name)->where('value', $value);
                 });
             });
         }

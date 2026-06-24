@@ -8,17 +8,17 @@ use Livewire\Attributes\Computed;
 
 class LiveSearchModal extends Component
 {
-    public $query = '';
-    public $isOpen = false;
-    public $selectedIndex = -1;
+    public string $query         = '';
+    public bool   $isOpen        = false;
+    public int    $selectedIndex = -1;
 
-    public function updatedQuery()
+    public function updatedQuery(): void
     {
-        $this->isOpen = strlen($this->query) >= 2;
+        $this->isOpen        = mb_strlen(trim($this->query)) >= 2;
         $this->selectedIndex = -1;
     }
 
-    #[Computed]
+    #[Computed(cache: false)]
     public function results()
     {
         $q = trim($this->query);
@@ -50,38 +50,39 @@ class LiveSearchModal extends Component
             ->get();
     }
 
-    public function selectProduct($slug)
+    public function selectProduct(string $slug): mixed
     {
         $this->reset(['query', 'isOpen', 'selectedIndex']);
         return $this->redirect(route('web.products.view', $slug), navigate: true);
     }
 
-    public function navigateDown()
+    public function navigateDown(): void
     {
         if ($this->selectedIndex < $this->results->count() - 1) {
             $this->selectedIndex++;
         }
     }
 
-    public function navigateUp()
+    public function navigateUp(): void
     {
         if ($this->selectedIndex > 0) {
             $this->selectedIndex--;
         }
     }
 
-    public function selectCurrent()
+    public function selectCurrent(): void
     {
         if ($this->selectedIndex >= 0 && $this->selectedIndex < $this->results->count()) {
             $product = $this->results[$this->selectedIndex];
-            $slug = $product->translation(app()->getLocale())->slug ?? $product->translation('ka')->slug;
-            $this->selectProduct($slug);
+            $slug    = $product->translation(app()->getLocale())?->slug
+                ?? $product->translation('ka')?->slug;
+            if ($slug) $this->selectProduct($slug);
         }
     }
 
-    public function closeSearch()
+    public function closeSearch(): void
     {
-        $this->isOpen = false;
+        $this->isOpen        = false;
         $this->selectedIndex = -1;
     }
 
