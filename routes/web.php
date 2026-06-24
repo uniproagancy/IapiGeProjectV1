@@ -12,6 +12,9 @@ use App\Models\AltaID;
 Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
 Route::get('/facebook-discount-feed', '\App\Http\Controllers\FacebookFeedController@getDiscountFeed')->middleware('doNotCacheResponse')->name('facebook.get-discount-feed');
 
+Route::post('/cart/add', '\App\Http\Controllers\CartController@add');
+Route::post('/wishlist/toggle', '\App\Http\Controllers\WishlistController@toggle');
+Route::get('/wishlist/check', '\App\Http\Controllers\WishlistController@check');
 
 Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 
