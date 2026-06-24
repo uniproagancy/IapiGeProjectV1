@@ -48,7 +48,8 @@ class WishlistController extends Controller
     }
 
     /**
-     * GET /wishlist/check?ids=1,2,3,4
+     * POST /wishlist/check
+     * body: { ids: [1,2,3...] }
      * ერთი request — ყველა product_id-ისთვის
      */
     public function check(Request $request)
@@ -57,7 +58,7 @@ class WishlistController extends Controller
             return response()->json([]);
         }
 
-        $ids = array_filter(array_map('intval', explode(',', $request->input('ids', ''))));
+        $ids = array_filter(array_map('intval', (array) $request->input('ids', [])));
 
         if (empty($ids)) {
             return response()->json([]);

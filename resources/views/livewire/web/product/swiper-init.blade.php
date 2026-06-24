@@ -90,8 +90,15 @@
             load(productIds) {
                 if (!productIds.length) return;
                 @auth
-                fetch('/wishlist/check?ids=' + productIds.join(','))
-                    .then(r => r.json())
+                fetch('/wishlist/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                    },
+                    body: JSON.stringify({ ids: productIds }),
+                })
+                    .then(r => r.ok ? r.json() : [])
                     .then(ids => { Alpine.store('wishlist').ids = ids; })
                     .catch(() => {});
                 @else
