@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Models\AlneoProduct;
 use App\Models\Product\Product;
 use App\Models\Product\ProductPrice;
 use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
-use App\Models\AlneoProduct;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -56,7 +56,6 @@ class AlneoImportJob implements ShouldQueue
                 return;
             }
 
-            // ============ მონაცემების ამოღება ============
             $name   = $this->cleanTitle($data['name'] ?? '');
             $rawSku = trim((string)($data['sku'] ?? ''));
 
@@ -65,41 +64,29 @@ class AlneoImportJob implements ShouldQueue
                 return;
             }
 
-            $sku = 'ALNEO-' . $rawSku;
-
-            // ============ AlneoProduct შემოწმება ============
+            // ============ შევამოწმოთ db_alneo_products-ში ============
             $alneoProduct = AlneoProduct::where('sku', $rawSku)->first();
 
             if (!$alneoProduct) {
-                $existing = Product::where('sku', $sku)->first();
-                if ($existing) {
-                    $existing->update(['show' => 0, 'in_stock' => 0, 'quantity' => 0]);
-                    Log::info("⏭️ Alneo: პროდუქტი არ არის AlneoProduct-ში, show=0", ['sku' => $sku]);
-                }
+                Log::info("⏭️ Alneo: SKU არ არის ბაზაში, გამოვტოვებთ | sku={$rawSku}");
                 return;
             }
 
+            // ბაზიდან ფასი და მარაგი
             $regularPrice  = (float) $alneoProduct->price;
-            $discountPrice = (float) ($alneoProduct->discount_price ?? 0);
-            $inStock       = (int) $alneoProduct->stock > 0 ? 1 : 0;
+            $discountPrice = $alneoProduct->discount_price ? (float) $alneoProduct->discount_price : null;
+            $stock         = (int) $alneoProduct->stock;
+            $inStock       = $stock > 0 ? 1 : 0;
 
-            if ($regularPrice <= 0) {
-                Log::warning("⛔ Alneo: ფასი 0", ['url' => $this->url]);
-                return;
-            }
+            $sku = 'ALNEO-' . $rawSku;
 
-            $description = $this->extractDescription($html);
-            $images      = $this->extractImages($html, $data);
-
-            if (empty($images)) {
-                Log::warning("⚠️ Alneo: სურათები ვერ მოიძებნა", ['url' => $this->url, 'sku' => $sku]);
-            } else {
-                Log::info("🖼️ Alneo: ნაპოვნია " . count($images) . " სურათი", ['sku' => $sku]);
-            }
-
-            $shortSpecs = $this->extractShortSpecs($html);
+            Log::info("✅ Alneo: SKU ნაპოვნია ბაზაში | sku={$rawSku} | price={$regularPrice} | stock={$stock}");
 
             // ============ Product upsert ============
+            $description = $this->extractDescription($html);
+            $images      = $this->extractImages($html, $data);
+            $shortSpecs  = $this->extractShortSpecs($html);
+
             $product = Product::where('sku', $sku)->first();
             $isNew   = !$product;
 
@@ -109,7 +96,7 @@ class AlneoImportJob implements ShouldQueue
                     'supplier_id'   => self::SUPPLIER_ID,
                     'brand_id'      => self::BRAND_ID,
                     'category_id'   => self::CATEGORY_ID,
-                    'quantity'      => $inStock ? 10 : 0,
+                    'quantity'      => $stock,
                     'in_stock'      => $inStock,
                     'show'          => $inStock,
                     'active'        => 1,
@@ -117,17 +104,22 @@ class AlneoImportJob implements ShouldQueue
                     'update_lock'   => 0,
                     'taxonomy_lock' => 0,
                 ]);
-                Log::info("➕ Alneo: ახალი პროდუქტი", ['sku' => $sku, 'id' => $product->id]);
+                Log::info("➕ Alneo: ახალი პროდუქტი | sku={$sku} | id={$product->id}");
             } else {
+                if ($product->update_lock) {
+                    Log::info("🔒 Alneo: ჩაკეტილია, გამოვტოვებთ | sku={$sku}");
+                    return;
+                }
+
                 $product->update([
-                    'quantity' => $inStock ? max($product->quantity, 10) : 0,
+                    'quantity' => $stock,
                     'in_stock' => $inStock,
                     'show'     => $inStock,
                 ]);
-                Log::info("🔄 Alneo: განახლდა", ['sku' => $sku, 'id' => $product->id]);
+                Log::info("🔄 Alneo: განახლდა | sku={$sku} | id={$product->id}");
             }
 
-            // ============ Translation (ka) ============
+            // ============ Translation ============
             ProductTranslation::updateOrCreate(
                 ['product_id' => $product->id, 'locale' => 'ka'],
                 [
@@ -144,7 +136,7 @@ class AlneoImportJob implements ShouldQueue
                     'dealer_price'     => $regularPrice,
                     'regular_price'    => $regularPrice,
                     'discount_price'   => $discountPrice,
-                    'discount_percent' => $discountPrice > 0 && $regularPrice > 0
+                    'discount_percent' => $discountPrice && $regularPrice > 0
                         ? (int) round((($regularPrice - $discountPrice) / $regularPrice) * 100)
                         : 0,
                 ]
@@ -169,7 +161,7 @@ class AlneoImportJob implements ShouldQueue
                 $localPath = $this->downloadImage($images[0], $product->id);
                 if ($localPath) {
                     $product->update(['main_image' => $localPath]);
-                    Log::info("📸 Alneo: main_image შენახულია", ['sku' => $sku, 'path' => $localPath]);
+                    Log::info("📸 Alneo: სურათი შენახულია | sku={$sku}");
                 }
             }
 
@@ -209,22 +201,15 @@ class AlneoImportJob implements ShouldQueue
     {
         $parts = [];
 
-        if (preg_match(
-            '/<div class="woocommerce-product-details__short-description">(.*?)<\/div>/is',
-            $html, $m
-        )) {
+        if (preg_match('/<div class="woocommerce-product-details__short-description">(.*?)<\/div>/is', $html, $m)) {
             $parts[] = trim($m[1]);
         }
 
-        if (preg_match(
-            '/<div class="electro-description[^"]*">(.*?)<\/div>\s*<div class="product_meta">/is',
-            $html, $m
-        )) {
+        if (preg_match('/<div class="electro-description[^"]*">(.*?)<\/div>\s*<div class="product_meta">/is', $html, $m)) {
             $parts[] = trim($m[1]);
         }
 
-        $combined = implode("\n\n", array_filter($parts));
-        return $this->cleanDescription($combined);
+        return $this->cleanDescription(implode("\n\n", array_filter($parts)));
     }
 
     private function extractImages(string $html, array $data): array
@@ -244,9 +229,7 @@ class AlneoImportJob implements ShouldQueue
 
         $patterns = [
             '/<(?:div|figure)[^>]*class="[^"]*woocommerce-product-gallery__image[^"]*"[^>]*>\s*<a[^>]+href="([^"]+)"/is',
-            "/<(?:div|figure)[^>]*class='[^']*woocommerce-product-gallery__image[^']*'[^>]*>\s*<a[^>]+href='([^']+)'/is",
             '/data-large_image=["\']([^"\']+)["\']/i',
-            '/data-large-image=["\']([^"\']+)["\']/i',
         ];
 
         foreach ($patterns as $pattern) {
@@ -259,17 +242,7 @@ class AlneoImportJob implements ShouldQueue
             }
         }
 
-        if (preg_match('/<img[^>]+class="[^"]*wp-post-image[^"]*"[^>]+src="([^"]+)"/i', $html, $m)) {
-            if (preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $m[1])) {
-                $fullUrl  = preg_replace('/-\d+x\d+(\.(jpe?g|png|webp))$/i', '$1', $m[1]);
-                $images[] = $fullUrl;
-                $images[] = $m[1];
-            }
-        }
-
-        $unique = array_values(array_unique($images));
-
-        return array_values(array_filter($unique, function ($url) {
+        return array_values(array_filter(array_unique($images), function ($url) {
             return filter_var($url, FILTER_VALIDATE_URL) !== false
                 && preg_match('/\.(jpe?g|png|webp)(\?|$|#)/i', $url);
         }));
@@ -293,14 +266,8 @@ class AlneoImportJob implements ShouldQueue
             }
         }
 
-        if (empty($specs) && preg_match(
-                '/<table[^>]*class="[^"]*shop_attributes[^"]*"[^>]*>(.*?)<\/table>/is',
-                $html, $tableMatch
-            )) {
-            if (preg_match_all(
-                '/<tr[^>]*>\s*<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/is',
-                $tableMatch[1], $rows, PREG_SET_ORDER
-            )) {
+        if (empty($specs) && preg_match('/<table[^>]*class="[^"]*shop_attributes[^"]*"[^>]*>(.*?)<\/table>/is', $html, $tableMatch)) {
+            if (preg_match_all('/<tr[^>]*>\s*<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/is', $tableMatch[1], $rows, PREG_SET_ORDER)) {
                 foreach ($rows as $row) {
                     $key   = trim(strip_tags($row[1]));
                     $value = trim(strip_tags($row[2]));
@@ -320,24 +287,19 @@ class AlneoImportJob implements ShouldQueue
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                     'Referer'    => 'https://alneo.ge/',
                 ])
                 ->get($url);
 
-            if (!$response->successful()) {
-                Log::warning("⚠️ Alneo: სურათი ვერ ჩამოიტვირთა", ['url' => $url, 'status' => $response->status()]);
-                return null;
-            }
+            if (!$response->successful()) return null;
 
-            $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg');
-            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) $ext = 'jpg';
-
+            $ext      = strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg');
+            $ext      = in_array($ext, ['jpg', 'jpeg', 'png', 'webp']) ? $ext : 'jpg';
             $filename = 'main_' . time() . '.' . $ext;
             $path     = "uploads/products/{$productId}/{$filename}";
 
             Storage::disk('public')->put($path, $response->body());
-
             return $path;
 
         } catch (\Throwable $e) {

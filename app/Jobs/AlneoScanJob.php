@@ -36,7 +36,7 @@ class AlneoScanJob implements ShouldQueue
                 return;
             }
 
-            $html = $response->body();
+            $html  = $response->body();
             $links = $this->extractProductLinks($html);
             unset($html);
 

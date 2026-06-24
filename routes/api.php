@@ -44,6 +44,10 @@ Route::prefix('tbc')->group(function () {
     Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCInstallmentController@status')->name('tbc.installment-status');
 });
 
+Route::prefix('alneo')->group(function () {
+    Route::get('/scan', [\App\Http\Controllers\ApiControllers\AlneoController::class, 'scan']);
+});
+
 Route::prefix('credo')->group(function () {
     Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('credo-create-order');
 });
