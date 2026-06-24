@@ -481,42 +481,52 @@ class Index extends Component
         try {
             @ini_set('memory_limit', '256M');
 
-            $rows       = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->alneo_file->getRealPath())
-                ->getActiveSheet()
-                ->toArray(null, true, true, false);
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->alneo_file->getRealPath());
+            $sheet       = $spreadsheet->getActiveSheet();
 
             $inserted = 0;
             $updated  = 0;
             $skipped  = 0;
 
-            foreach ($rows as $index => $row) {
-                // header row გამოვტოვოთ
-                $sku = trim((string) ($row[0] ?? ''));
-                if ($sku === '' || in_array(mb_strtolower($sku), ['sku', 'კოდი', 'id'])) continue;
+            foreach ($sheet->getRowIterator() as $row) {
+                $rowIndex = $row->getRowIndex();
 
-                $stock         = (int) preg_replace('/[^0-9]/', '', (string) ($row[1] ?? 0));
-                $price         = (float) preg_replace('/[^0-9.]/', '', (string) ($row[2] ?? 0));
-                $discountPrice = ($row[3] ?? null) !== null && $row[3] !== ''
-                    ? (float) preg_replace('/[^0-9.]/', '', (string) $row[3])
+                // SKU — სტრინგად წამოვიღოთ (წამყვანი 0 შენარჩუნებისთვის)
+                $skuCell = $sheet->getCell('A' . $rowIndex);
+                $skuCell->getStyle()->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+                $sku = trim((string) $skuCell->getFormattedValue());
+
+                if ($sku === '' || in_array(mb_strtolower($sku), ['sku', 'კოდი', 'id', 'code'])) {
+                    continue;
+                }
+
+                $stock         = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
+                $priceRaw      = $sheet->getCell('C' . $rowIndex)->getValue();
+                $discountRaw   = $sheet->getCell('D' . $rowIndex)->getValue();
+
+                $price         = $priceRaw !== null && $priceRaw !== ''
+                    ? (float) preg_replace('/[^0-9.]/', '', (string) $priceRaw)
+                    : 0.0;
+
+                $discountPrice = $discountRaw !== null && $discountRaw !== ''
+                    ? (float) preg_replace('/[^0-9.]/', '', (string) $discountRaw)
                     : null;
-
-                if ($price <= 0) { $skipped++; continue; }
 
                 $exists = \App\Models\AlneoProduct::where('sku', $sku)->first();
 
                 if ($exists) {
                     $exists->update([
-                        'stock'         => $stock,
-                        'price'         => $price,
-                        'discount_price'=> $discountPrice,
+                        'stock'          => $stock,
+                        'price'          => $price,
+                        'discount_price' => $discountPrice,
                     ]);
                     $updated++;
                 } else {
                     \App\Models\AlneoProduct::create([
-                        'sku'           => $sku,
-                        'stock'         => $stock,
-                        'price'         => $price,
-                        'discount_price'=> $discountPrice,
+                        'sku'            => $sku,
+                        'stock'          => $stock,
+                        'price'          => $price,
+                        'discount_price' => $discountPrice,
                     ]);
                     $inserted++;
                 }
