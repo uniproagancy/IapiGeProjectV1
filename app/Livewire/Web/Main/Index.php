@@ -97,37 +97,6 @@ class Index extends Component
         );
     }
 
-    // კატეგორიების პროდუქტები ერთ query-ში — N+1 პრობლემის გადაჭრა
-    #[Computed]
-    public function categoryProducts()
-    {
-        $locale = app()->getLocale();
-
-        return cache()->remember('home_category_products_' . $locale, 1800, function () use ($locale) {
-            $categories = $this->productCategories->where('parent_id', 0);
-            $categoryIds = $categories->pluck('id')->toArray();
-
-            // ყველა კატეგორიის ქვეკატეგორიების ID-ები
-            $childIds = \App\Models\Product\ProductCategory::whereIn('parent_id', $categoryIds)
-                ->pluck('id', 'parent_id');
-
-            $allCategoryIds = array_merge($categoryIds, $childIds->values()->toArray());
-
-            // ერთი query — ყველა კატეგორიის 20 პროდუქტი
-            $products = \App\Models\Product\Product::with([
-                'translations' => fn ($q) => $q->where('locale', $locale),
-                'price',
-            ])
-                ->whereIn('category_id', $allCategoryIds)
-                ->where('show', 1)
-                ->where('active', 1)
-                ->orderByDesc('id')
-                ->get();
-
-            // კატეგორიის ID-ის მიხედვით დავაჯგუფოთ
-            return $products->groupBy('category_id');
-        });
-    }
 
     public function render()
     {

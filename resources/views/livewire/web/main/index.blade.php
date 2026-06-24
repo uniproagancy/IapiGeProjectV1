@@ -16,10 +16,9 @@
     @endforeach
 
     @php
-        $catIndex      = 0;
-        $catProducts   = $this->categoryProducts;
-        $parentCats    = $this->productCategories->where('parent_id', 0);
-        $parentCount   = count($parentCats);
+        $catIndex    = 0;
+        $parentCats  = $this->productCategories->where('parent_id', 0);
+        $parentCount = count($parentCats);
     @endphp
 
     @foreach($parentCats as $category)
@@ -55,16 +54,10 @@
             </div>
         @endif
 
-        {{-- პროდუქტები cache-დან — N+1 გარეშე --}}
         @php
-            $products = collect();
-            foreach ($category->children as $child) {
-                $products = $products->merge($catProducts->get($child->id, collect()));
-            }
-            if ($products->isEmpty()) {
-                $products = $catProducts->get($category->id, collect());
-            }
-            $products = $products->sortByDesc('id')->take(20);
+            $products = cache()->remember('home_cat_products_' . $category->id, 1800,
+                fn() => $category->getActiveProducts()->take(20)
+            );
         @endphp
 
         @include('livewire.web.partials.category-section', [
