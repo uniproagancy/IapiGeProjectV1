@@ -292,8 +292,6 @@ class Index extends Component
     public function loadMore(): void
     {
         $this->perPage += 12;
-        // unsetComputedProperty — cache-ს გავასუფთავებთ
-        unset($this->computedPropertyCache['products']);
     }
 
     // cache: false — loadMore-ზე perPage იცვლება და ახალი შედეგი ჭირდება
