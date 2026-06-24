@@ -99,7 +99,10 @@
                     body: JSON.stringify({ ids: productIds }),
                 })
                     .then(r => r.ok ? r.json() : [])
-                    .then(ids => { Alpine.store('wishlist').ids = ids; })
+                    .then(ids => {
+                        Alpine.store('wishlist').ids = ids;
+                        if (window.Livewire) window.Livewire.dispatch('wishlistUpdated');
+                    })
                     .catch(() => {});
                 @else
                 // არ არის ავტორიზებული — ცარიელი

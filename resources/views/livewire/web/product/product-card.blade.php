@@ -92,6 +92,8 @@
                      if (data.success) {
                          this.inWishlist = data.in_wishlist;
                          window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.message, type: 'success' } }));
+                         // Livewire WishlistCounter განახლება
+                         if (window.Livewire) window.Livewire.dispatch('wishlistUpdated');
                      }
                  })
                  .finally(() => { this.wishlistLoading = false; });

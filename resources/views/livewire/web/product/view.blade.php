@@ -23,9 +23,60 @@
                         <h1 class="h3 mb-1 font-neue">
                             {{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}
                         </h1>
-                        <livewire:web.components.wishlist-button
-                                :productId="$product->id"
-                                class="btn-secondary animate-pulse"/>
+                        <div x-data="{
+    wishlistLoading: false,
+    inWishlist: false,
+    init() {
+        @auth
+        fetch('/wishlist/check?ids={{ $product->id }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+            },
+            body: JSON.stringify({ ids: [{{ $product->id }}] }),
+        })
+        .then(r => r.json())
+        .then(ids => { this.inWishlist = ids.includes({{ $product->id }}); })
+        .catch(() => {});
+        @endauth
+    },
+    toggle() {
+        if (this.wishlistLoading) return;
+        this.wishlistLoading = true;
+        fetch('/wishlist/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+            },
+            body: JSON.stringify({ product_id: {{ $product->id }} }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.auth === false) { window.location.href = data.redirect; return; }
+            if (data.success) {
+                this.inWishlist = data.in_wishlist;
+                window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.message, type: 'success' } }));
+                if (window.Livewire) window.Livewire.dispatch('wishlistUpdated');
+            }
+        })
+        .finally(() => { this.wishlistLoading = false; });
+    }
+}">
+                            <button type="button"
+                                    @click="toggle()"
+                                    :disabled="wishlistLoading"
+                                    class="btn btn-secondary animate-pulse"
+                                    :aria-label="inWishlist ? 'სურვილების სიიდან წაშლა' : 'სურვილების სიაში დამატება'">
+                                <template x-if="!wishlistLoading">
+                                    <i :class="inWishlist ? 'ci-heart-filled text-danger' : 'ci-heart'" class="fs-sm"></i>
+                                </template>
+                                <template x-if="wishlistLoading">
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                </template>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- ⚠️ აუზი — კატეგორია 183 / 206 --}}
