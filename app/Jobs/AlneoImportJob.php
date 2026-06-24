@@ -28,6 +28,7 @@ class AlneoImportJob implements ShouldQueue
     private const BRAND_ID         = 1;
     private const CATEGORY_ID      = 203;
     private const SHORT_SPEC_LIMIT = 5;
+    private const PRICE_MARKUP     = 100;
 
     public function __construct(public string $url) {}
 
@@ -57,14 +58,16 @@ class AlneoImportJob implements ShouldQueue
             }
 
             $name   = $this->cleanTitle($data['name'] ?? '');
+            // SKU სტრინგად — წამყვანი 0 შენარჩუნებისთვის
             $rawSku = trim((string)($data['sku'] ?? ''));
 
-            if (!$name || !$rawSku) {
+            if (!$name || $rawSku === '') {
                 Log::warning("⛔ Alneo: name/sku ცარიელია", ['url' => $this->url]);
                 return;
             }
 
             // ============ შევამოწმოთ db_alneo_products-ში ============
+            // SKU სტრინგის შედარება — WHERE sku = '0123' (არა 123)
             $alneoProduct = AlneoProduct::where('sku', $rawSku)->first();
 
             if (!$alneoProduct) {
@@ -72,15 +75,28 @@ class AlneoImportJob implements ShouldQueue
                 return;
             }
 
-            // ბაზიდან ფასი და მარაგი
-            $regularPrice  = (float) $alneoProduct->price;
-            $discountPrice = $alneoProduct->discount_price ? (float) $alneoProduct->discount_price : null;
-            $stock         = (int) $alneoProduct->stock;
-            $inStock       = $stock > 0 ? 1 : 0;
+            $stock = (int) $alneoProduct->stock;
+            $inStock = $stock > 0 ? 1 : 0;
+
+            // ============ ფასის განსაზღვრა ============
+            if ((float) $alneoProduct->price > 0) {
+                // ბაზიდან
+                $regularPrice  = (float) $alneoProduct->price;
+                $discountPrice = $alneoProduct->discount_price ? (float) $alneoProduct->discount_price : null;
+                Log::info("💰 Alneo: ფასი ბაზიდან | sku={$rawSku} | price={$regularPrice}");
+            } else {
+                // საიტიდან + markup
+                [$regularPrice, $discountPrice] = $this->extractPrices($data);
+                if ($regularPrice <= 0) {
+                    Log::warning("⛔ Alneo: ფასი ვერ მოიძებნა | sku={$rawSku}");
+                    return;
+                }
+                $regularPrice  = $regularPrice + self::PRICE_MARKUP;
+                $discountPrice = $discountPrice > 0 ? $discountPrice + self::PRICE_MARKUP : null;
+                Log::info("💰 Alneo: ფასი საიტიდან + " . self::PRICE_MARKUP . "₾ | sku={$rawSku} | price={$regularPrice}");
+            }
 
             $sku = 'ALNEO-' . $rawSku;
-
-            Log::info("✅ Alneo: SKU ნაპოვნია ბაზაში | sku={$rawSku} | price={$regularPrice} | stock={$stock}");
 
             // ============ Product upsert ============
             $description = $this->extractDescription($html);
@@ -195,6 +211,32 @@ class AlneoImportJob implements ShouldQueue
         }
 
         return null;
+    }
+
+    private function extractPrices(array $data): array
+    {
+        $offer     = $data['offers'][0] ?? [];
+        $specs     = $offer['priceSpecification'] ?? [];
+        $mainPrice = (float)($offer['price'] ?? 0);
+        $listPrice = 0.0;
+        $unitPrice = 0.0;
+
+        foreach ($specs as $spec) {
+            $price     = (float)($spec['price'] ?? 0);
+            $priceType = (string)($spec['priceType'] ?? '');
+            if (str_contains($priceType, 'ListPrice')) {
+                $listPrice = $price;
+            } else {
+                $unitPrice = $price;
+            }
+        }
+
+        if ($listPrice > 0 && $unitPrice > 0 && $listPrice > $unitPrice) {
+            return [$listPrice, $unitPrice];
+        }
+
+        $regular = $unitPrice > 0 ? $unitPrice : $mainPrice;
+        return [$regular, 0.0];
     }
 
     private function extractDescription(string $html): string
