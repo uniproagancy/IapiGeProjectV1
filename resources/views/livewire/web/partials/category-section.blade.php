@@ -1,5 +1,5 @@
 <section class="container pt-5 mt-2 mt-sm-3 mt-lg-4">
-    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 pb-md-2">
+    <div class="d-flex align-items-center justify-content-between pb-2 pb-md-2">
         <h2 class="h3 mb-0 font-neue" style="font-size: 16px">
             {{ $category->translation(app()->getLocale())->title ?? $category->translation('ka')->title }}
         </h2>
@@ -13,7 +13,7 @@
             </a>
         </div>
     </div>
-    <div class="position-relative mb-1">
+    <div class="position-relative">
         <div class="product-swiper overflow-hidden" data-section="{{ $category->id }}">
             <div class="swiper-wrapper">
                 @foreach($products as $product)
