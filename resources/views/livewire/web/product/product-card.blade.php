@@ -158,7 +158,7 @@
             position: relative;
             background: #fff;
             border-radius: 14px;
-            border: 1px solid #f0f1f3;
+            border: none;
             display: flex;
             flex-direction: column;
             height: 100%;
