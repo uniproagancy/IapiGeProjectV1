@@ -104,7 +104,8 @@ class AltaController extends Controller
         }
 
         $results  = [];
-        $apiUrl   = 'https://alta.ge/api/proxy/v1/Products/details?productId=';
+        $workerUrl = env('ALTA_WORKER_URL', 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev');
+        $apiUrl    = $workerUrl . '?token=' . urlencode($token) . '&id=';
         $tested   = 0;
         $found    = 0;
         $notFound = 0;
