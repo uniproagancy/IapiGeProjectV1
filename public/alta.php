@@ -1,9 +1,6 @@
 <?php
 
-// სატესტო ფაილი — public/alta_test.php
-// გაუშვი: https://iapi.ge/alta_test.php
-
-$token = getenv('ALTA_ACCESS_TOKEN') ?: 'u87xozMQwBf8VXOvjJ63qCn4EZWRxmsqJot9BDncIHenc2fRVRMo0NpOIAlwTOyeQQT6QLKDUOp9GNQJICV8mYY57zOZCx%2BKeMkTRrQWxW2IR5MZGqhb%2FHBCQB%2F5vMVwTBVcJeZzc%2Fz3N2QY6E4D5rMs4a1YLtcvyiEtyYCmhuB5%2FiKMO8scKHjCW%2BoRDT1aYPPmiIQEbEN9ugtWYNSib0B843XJ3NYbUm2Gr1FYpFOnDnCgazsuZsadZurxIFI7fVzx5JXN1iU8ByNZ9skHbjO%2BN5thu660Zk4pIgToUBhgsUn5QLrTVwOAbysQYmMvNVY6InOrkMtgn3yEFxK%2F0BSi9uXWeRPG9IyzzfDeh6x1GC3b5h7RP4BMTc6F9vhjrHNp4hxOAgXsHbiyl8XycYY8TcyugnizUbv8P%2BRzwR5q%2FNdKn%2FIJ7zPTkskmswbSEDxPOSB36n41l4IFasWO7to%2FYG2jt2yyCQSE45OxiQBIC143bHy2Gh%2BYx8ZKVKX4GQQYRSswRwkWtgpzaEFv2YI3sDlv1TW3cSY5diczj1bdFh7j0IECdVTlkdYhtvv4EuYg5%2FBCGYr9S4RC3j%2FhG0UaDK3yXjEXHC3xOok2Seh%2BfcAcVft0VKS%2FNkagcSg4ZBY9rKnk6GW2ilsEpS8f4tRixNMHgzqDNkDOlShSvC13C3ClH6cxcqLpooIij38DhMyqdMBrDLdMOOLPshTRwH%2FyoGnLCc%2FS8O01lzUP9kgH9G9h5i9qsZ7aIcfDLxA8ekXPmzMSF23E90n4GHg23cElXAD9MjgXXMH9voGSVkhW%2Bie9HZU3SyiYdU%2BXPjMNbkKF8%2BKDFGMWGwV3mV8D%2B069vJEx2hZw2otcrO1mc%2F8hu32qi89n5I5EDhLQoStEdcM%2FnGbWmxuSz0Jo3nX9A3K0%2FZdvtduRcqS29UliALIfDfPTxL92JIBec2pRDSYRaS5KQ%2FL5jPXYhmKlZdNlzX%2Bo0dVje5QPLGWkf0CAD5Mz06Q7rLq7GbZ3HOQ2PuYbnDuJ';
+$token = 'Q2xTWRP2yINTO0BZjC7cdZpjTKQS9A6Zy5dQWpL%2FgIpMMvvHsEm284G2XzR1yoFUvMY%2BfFm6Wub%2FI1lEf7sbs3542Iua2LG1VMU3f18U6Osh%2BBzD9AaEqb93rpMFVAmhtzXVcgKKFDNXvvKNx%2BJta%2BKYkZJ7TG9SFpz2rR48nDklyYujfKyRPBxQqh3gP1IrBX60lzAp7ebfmRmioq4LWlS8XpIBKrl%2B6jH7R%2BjIEtWvBiIufymg%2FAKRUFo6ygx97NdINHf%2FIjJaZJFCf1y8O0HZq%2BN6iwLoDGK3vdnGEJpvCbf7Uy7IjJdXS4ozR9x4Yw1V6tHa00RfMMTLzyq3X47UgyXieqHPlBx2KxwNk5qSfe9M6UZk5If489GR3ta1K7T%2FOS17PjNzXoMb4QRrCzE3g13TKF6afgRw38pjQiSNlSkBkNmDDFiyLWVWb%2BSE8fmflzBSwKeKV2VbMI0MbXuV19m22eF8yDw5R2fvL2FmAI4wm%2Fgdpq7vFTYPxtRM9AZPXploW11gkGgYOVmChD4L9%2FJJ94LY6xPl9DN9kfZW0BhRxGFXEMqrdzImWvNqT96%2FqIkXSKjE8HLnj84xMptfNe8CyVFZrhUxtUtRYDVy5OO9lgAfuy46mHz%2BmlzzfM7nxbcnjS9IN51rMRNlyb%2F7FU0Zox5avjLgIY5t6TDH3ePoFnZP7y5WysX1rd4KpvOZ2v8C%2FE6ejb5EHPgcoIiXxun4zCZGDOUJqbzBWGLleLj2jSxCSzDiqezPxtL34PkrblY%2Bso1Q3cVXbszePpRd7JFJiX2iG%2B7wN5Bs9ieeDYJGdiFav%2FF9N2UMXLf3aRYPTJpLal754mVK%2FAg727Y4Bi9aVtD7fiN5E3%2FDF%2Fp%2FUgv7Qu2HNFQhr5jy781ZyzWQeQKBaXu1yzhc6djJ%2BC%2FePxAByQwa3rOiBzyci1Go6WbcQn7bto4FerE7jGWQbJIambE0shB2r9HyTlk5kWf%2Bko3%2Fs2cM89fu5C32I5X9Os1wrfVX%2BkqZfnkRKEFefvte';
 
 $curl = curl_init();
 
@@ -14,15 +11,23 @@ curl_setopt_array($curl, [
     CURLOPT_MAXREDIRS      => 10,
     CURLOPT_TIMEOUT        => 30,
     CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_2_0,
     CURLOPT_CUSTOMREQUEST  => 'GET',
     CURLOPT_HTTPHEADER     => [
-        'Cookie: alta-access_token=' . $token,
-        'Accept: application/json, text/plain, */*',
-        'Accept-Language: ka',
-        'Referer: https://alta.ge/',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-        'os: web',
+        'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'accept-encoding: gzip, deflate',  // zstd ამოღებულია — curl არ უჭერს მხარს
+        'accept-language: en-US,en;q=0.9,ka;q=0.8',
+        'cache-control: max-age=0',
+        'cookie: alta-access_token=' . $token . '; alta-is_user_session=0',
+        'sec-ch-ua: "Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+        'sec-ch-ua-mobile: ?0',
+        'sec-ch-ua-platform: "Windows"',
+        'sec-fetch-dest: document',
+        'sec-fetch-mode: navigate',
+        'sec-fetch-site: none',
+        'sec-fetch-user: ?1',
+        'upgrade-insecure-requests: 1',
+        'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
     ],
 ]);
 
@@ -31,9 +36,9 @@ $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 $error    = curl_error($curl);
 curl_close($curl);
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
-    'http_code' => $httpCode,
+    'http_code'  => $httpCode,
     'curl_error' => $error ?: null,
-    'response'  => json_decode($response, true) ?? $response,
+    'response'   => json_decode($response, true) ?? substr($response, 0, 500),
 ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

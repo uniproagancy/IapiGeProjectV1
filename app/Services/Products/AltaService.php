@@ -11,7 +11,7 @@ use Exception;
 
 class AltaService
 {
-    protected string $api_url          = 'https://alta.ge/api/proxy/';
+    protected string $api_url          = 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev/';
     protected int $concurrent_requests = 5;
     protected int $chunk_size          = 50;
     protected int $timeout             = 30;
@@ -125,7 +125,7 @@ class AltaService
                 foreach ($ids as $id) {
                     yield $id => new Request(
                         'GET',
-                        $this->api_url . "v1/Products/details?productId={$id}"
+                        $this->api_url . "?id={$id}&token=" . urlencode(env('ALTA_ACCESS_TOKEN'))
                     );
                 }
             };
