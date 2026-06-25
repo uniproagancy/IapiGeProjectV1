@@ -16,6 +16,8 @@ Route::prefix('alta')->group(function () {
     Route::get('/check', [\App\Http\Controllers\ApiControllers\AltaController::class, 'check']);
     Route::get('/scan', [\App\Http\Controllers\ApiControllers\AltaController::class, 'scan']);
     Route::get('/getProducts', '\App\Http\Controllers\ApiControllers\AltaController@getProducts');
+    Route::get('/debug', [\App\Http\Controllers\ApiControllers\AltaController::class, 'debug']);
+
 });
 
 Route::prefix('citrus')->group(function () {
