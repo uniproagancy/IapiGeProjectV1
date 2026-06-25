@@ -13,7 +13,7 @@
             </a>
         </div>
     </div>
-    <div class="position-relative">
+    <div class="position-relative py-2">
         <div class="product-swiper overflow-hidden" data-section="{{ $category->id }}">
             <div class="swiper-wrapper">
                 @foreach($products as $product)
