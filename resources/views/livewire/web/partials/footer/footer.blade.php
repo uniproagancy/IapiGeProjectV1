@@ -10,11 +10,6 @@
                    class="d-inline-block text-white text-decoration-none fw-bold fs-4 mb-3">
                     IAPI.GE
                 </a>
-                <p class="text-secondary fs-sm mb-4" style="line-height: 1.7;">
-                    საქართველოს წამყვანი ელექტრონიკის მაღაზია. სწრაფი მიტანა, გარანტია, საუკეთესო ფასები.
-                </p>
-
-                {{-- სოციალური ქსელები --}}
                 <div class="d-flex gap-2">
                     <a href="https://www.instagram.com/iapi_ge/"
                        class="footer-social-btn" aria-label="Instagram">
