@@ -4,36 +4,182 @@
     @yield('seo')
     <meta charset="utf-8">
     <meta name="description" content="@yield('meta_description', 'iapi.ge — ელექტრონიკა, ტელეფონები, სახლის ტექნიკა საუკეთესო ფასად საქართველოში. სწრაფი მიტანა, გარანტია.')">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    {{--    <link rel="icon" type="image/png" href="assets/app-icons/icon-32x32.png" sizes="32x32">--}}
-    {{--    <link rel="apple-touch-icon" href="assets/app-icons/icon-180x180.png">--}}
     @yield('og_tags')
 
-    <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2"
-          crossorigin>
-    <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2"
-          crossorigin>
+    <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('web-assets/icons/cartzilla-icons.min.css') }}">
-    <link rel="shortcut icon" type="image/x-icon"
-              href="{{ asset('web-assets/img/logo.png') }}">
-
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('web-assets/img/logo.png') }}">
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.css') }}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="{{ asset('web-assets/css/theme.min.css') }}" id="theme-styles">
     @yield('page_css')
     @livewireStyles
-
     <link rel="stylesheet" href="{{ asset('web-assets/css/style.css') }}">
 
+    <style>
+        /* ============ Skeleton Loader ============ */
+        @keyframes skeleton-shimmer {
+            0%   { background-position: -800px 0; }
+            100% { background-position: 800px 0; }
+        }
 
-    
+        #site-loader {
+            position: fixed;
+            inset: 0;
+            background: #f8f9fa;
+            z-index: 9999;
+            overflow-y: auto;
+            transition: opacity .25s ease;
+        }
+
+        #site-loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sk {
+            background: linear-gradient(90deg, #ebebeb 25%, #d6d6d6 50%, #ebebeb 75%);
+            background-size: 800px 100%;
+            animation: skeleton-shimmer 1.5s infinite linear;
+            border-radius: 8px;
+        }
+
+        /* Fake header */
+        .sk-header {
+            background: #1a1d23;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 24px;
+            border-bottom: 4px solid #ff6900;
+        }
+        .sk-logo { width: 120px; height: 30px; background: #2d3139; border-radius: 6px; flex-shrink: 0; }
+        .sk-search { flex: 1; max-width: 560px; height: 38px; background: #2d3139; border-radius: 24px; }
+        .sk-icons { display: flex; gap: 12px; margin-left: auto; }
+        .sk-icon { width: 36px; height: 36px; background: #2d3139; border-radius: 50%; }
+
+        /* Fake nav */
+        .sk-nav {
+            background: #1a1d23;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 32px;
+        }
+        .sk-nav-item { height: 14px; border-radius: 6px; background: #2d3139; }
+
+        /* Hero slider */
+        .sk-hero-wrap { padding: 20px 24px 0; }
+        .sk-hero { height: 100px; border-radius: 16px; }
+        @media (min-width: 768px)  { .sk-hero { height: 150px; } }
+        @media (min-width: 992px)  { .sk-hero { height: 200px; } }
+        @media (min-width: 1200px) { .sk-hero { height: 250px; } }
+        @media (min-width: 1400px) { .sk-hero { height: 300px; } }
+
+        /* Section */
+        .sk-section { padding: 28px 24px 0; }
+        .sk-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
+        .sk-section-title { height: 16px; width: 150px; border-radius: 6px; }
+        .sk-section-link  { height: 13px; width: 90px; border-radius: 6px; }
+
+        /* Cards grid */
+        .sk-cards { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 576px) { .sk-cards { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 768px) { .sk-cards { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 992px) { .sk-cards { grid-template-columns: repeat(5, 1fr); } }
+        @media (min-width: 1200px){ .sk-cards { grid-template-columns: repeat(6, 1fr); } }
+
+        .sk-card { background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #f0f0f0; }
+        .sk-card-img { width: 100%; aspect-ratio: 1; border-radius: 8px; margin-bottom: 10px; }
+        .sk-card-t1 { height: 11px; width: 90%; border-radius: 5px; margin-bottom: 6px; }
+        .sk-card-t2 { height: 11px; width: 60%; border-radius: 5px; margin-bottom: 14px; }
+        .sk-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .sk-card-price { height: 16px; width: 60px; border-radius: 5px; }
+        .sk-card-btn { height: 30px; width: 30px; border-radius: 8px; }
+    </style>
 </head>
 <body>
+
+{{-- ============ SKELETON LOADER ============ --}}
+<div id="site-loader" aria-hidden="true">
+
+    {{-- Fake Header --}}
+    <div class="sk-header">
+        <div class="sk-logo"></div>
+        <div class="sk-search sk"></div>
+        <div class="sk-icons">
+            <div class="sk-icon sk"></div>
+            <div class="sk-icon sk"></div>
+            <div class="sk-icon sk"></div>
+        </div>
+    </div>
+
+    {{-- Fake Nav --}}
+    <div class="sk-nav">
+        <div class="sk-nav-item sk" style="width:90px;"></div>
+        <div class="sk-nav-item sk" style="width:70px;"></div>
+        <div class="sk-nav-item sk" style="width:80px;"></div>
+        <div class="sk-nav-item sk" style="width:65px;"></div>
+        <div class="sk-nav-item sk" style="width:75px;"></div>
+    </div>
+
+    {{-- Hero Slider --}}
+    <div class="sk-hero-wrap">
+        <div class="sk-hero sk"></div>
+    </div>
+
+    {{-- Section 1 --}}
+    <div class="sk-section">
+        <div class="sk-section-header">
+            <div class="sk-section-title sk"></div>
+            <div class="sk-section-link sk"></div>
+        </div>
+        <div class="sk-cards">
+            @for($i = 0; $i < 6; $i++)
+                <div class="sk-card">
+                    <div class="sk-card-img sk"></div>
+                    <div class="sk-card-t1 sk"></div>
+                    <div class="sk-card-t2 sk"></div>
+                    <div class="sk-card-bottom">
+                        <div class="sk-card-price sk"></div>
+                        <div class="sk-card-btn sk"></div>
+                    </div>
+                </div>
+            @endfor
+        </div>
+    </div>
+
+    {{-- Section 2 --}}
+    <div class="sk-section">
+        <div class="sk-section-header">
+            <div class="sk-section-title sk"></div>
+            <div class="sk-section-link sk"></div>
+        </div>
+        <div class="sk-cards">
+            @for($i = 0; $i < 6; $i++)
+                <div class="sk-card">
+                    <div class="sk-card-img sk"></div>
+                    <div class="sk-card-t1 sk"></div>
+                    <div class="sk-card-t2 sk"></div>
+                    <div class="sk-card-bottom">
+                        <div class="sk-card-price sk"></div>
+                        <div class="sk-card-btn sk"></div>
+                    </div>
+                </div>
+            @endfor
+        </div>
+    </div>
+
+</div>
+{{-- ============ /SKELETON LOADER ============ --}}
+
 <script>
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -46,6 +192,7 @@
     fbq('init', '1280014533998229');
 </script>
 @yield('fb_pixel')
+
 <script>
     document.addEventListener('livewire:init', () => {
         if (window._fbAddToCartListenerAdded) return;
@@ -59,95 +206,52 @@
                 value: item.price,
                 currency: 'GEL',
                 contents: [{ id: String(item.id), quantity: item.quantity }]
-            }, {
-                eventID: item.eventId
-            });
+            }, { eventID: item.eventId });
         });
     });
 </script>
+
 @include('livewire.web.partials.header.header')
 @include('livewire.web.search.search-offcanvas')
 {{ $slot }}
 <livewire:web.cart.shopping-cart-offcanvas/>
 @include('livewire.web.partials.category-offcanvas')
+
 <style>
-    .countInput {
-        background-color: #fff;
-        border: var(--cz-border-width) solid #cad0d9;
-        border-radius: var(--cz-border-radius);
-        display: inline-flex;
-        overflow: hidden;
-        transform: translateZ(0);
-    }
-
-    .countInput .form-control {
-        -moz-appearance: textfield;
-        -webkit-appearance: textfield;
-        appearance: textfield;
-        background-color: transparent;
-        border: 0;
-        border-radius: 0;
-        font-weight: 500;
-        padding: 0 .25rem;
-        text-align: center;
-        width: 2.5rem;
-    }
-
-    .countInput .form-control::-webkit-inner-spin-button,
-    .countInput .form-control::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    .countInput .btn {
-        border: 0;
-        border-radius: 0;
-    }
-
-    .countInput .btn:not(.btn-primary) {
-        --cz-btn-hover-color: var(--cz-component-hover-color);
-        --cz-btn-hover-bg: var(--cz-secondary-bg);
-        --cz-btn-active-bg: var(--cz-secondary-bg);
-    }
-
-    .countInput .btn-group-sm > .btn + .form-control,
-    .countInput .btn-sm + .form-control {
-        width: 2rem;
-    }
-
-    .countInput .btn-group-lg > .btn + .form-control,
-    .countInput .btn-lg + .form-control {
-        width: 3rem;
-    }
-
-    .countInput.disabled {
-        background-color: var(--cz-tertiary-bg);
-        border-color: var(--cz-border-color);
-        border-style: dashed;
-    }
-
-    .countInput-collapsible.collapsed .form-control,
-    .countInput-collapsible.collapsed [data-decrement] {
-        display: none;
-    }
-
-    /* Dark theme support */
-    [data-bs-theme=dark] .countInput:not([data-bs-theme=light]) {
-        background-color: transparent;
-        border-color: #4e5562;
-    }
+    .countInput { background-color: #fff; border: var(--cz-border-width) solid #cad0d9; border-radius: var(--cz-border-radius); display: inline-flex; overflow: hidden; transform: translateZ(0); }
+    .countInput .form-control { -moz-appearance: textfield; -webkit-appearance: textfield; appearance: textfield; background-color: transparent; border: 0; border-radius: 0; font-weight: 500; padding: 0 .25rem; text-align: center; width: 2.5rem; }
+    .countInput .form-control::-webkit-inner-spin-button, .countInput .form-control::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .countInput .btn { border: 0; border-radius: 0; }
+    .countInput .btn:not(.btn-primary) { --cz-btn-hover-color: var(--cz-component-hover-color); --cz-btn-hover-bg: var(--cz-secondary-bg); --cz-btn-active-bg: var(--cz-secondary-bg); }
+    .countInput .btn-group-sm > .btn + .form-control, .countInput .btn-sm + .form-control { width: 2rem; }
+    .countInput .btn-group-lg > .btn + .form-control, .countInput .btn-lg + .form-control { width: 3rem; }
+    .countInput.disabled { background-color: var(--cz-tertiary-bg); border-color: var(--cz-border-color); border-style: dashed; }
+    .countInput-collapsible.collapsed .form-control, .countInput-collapsible.collapsed [data-decrement] { display: none; }
+    [data-bs-theme=dark] .countInput:not([data-bs-theme=light]) { background-color: transparent; border-color: #4e5562; }
 </style>
+
 <script>
-    window.addEventListener('load', () => {
-        document.getElementById('site-loader')?.classList.add('hidden');
-    });
+    // Skeleton hide/show
+    function hideSkeleton() {
+        const loader = document.getElementById('site-loader');
+        if (loader) loader.classList.add('hidden');
+        // 300ms-ის შემდეგ display:none
+        setTimeout(() => { if (loader) loader.style.display = 'none'; }, 300);
+    }
+
+    window.addEventListener('load', hideSkeleton);
 
     document.addEventListener('livewire:navigating', () => {
-        document.getElementById('site-loader')?.classList.remove('hidden');
+        const loader = document.getElementById('site-loader');
+        if (loader) {
+            loader.style.display = 'block';
+            loader.style.opacity  = '1';
+            loader.classList.remove('hidden');
+        }
     });
 
     document.addEventListener('livewire:navigated', () => {
-        document.getElementById('site-loader')?.classList.add('hidden');
+        setTimeout(hideSkeleton, 200);
     });
 </script>
 
@@ -164,118 +268,80 @@
 @livewireScripts
 <script src="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
 @yield('page_scripts')
 <script src="{{ asset('web-assets/js/theme.min.js') }}"></script>
+
 <script type="text/javascript">
     var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
-
     function loadTawk() {
-        var s1 = document.createElement("script"),
-            s0 = document.getElementsByTagName("script")[0];
+        var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
         s1.async = true;
         s1.src = 'https://embed.tawk.to/686bd1bca86aec190ca6b61d/1iviimin6';
         s1.charset = 'UTF-8';
         s1.setAttribute('crossorigin', '*');
         s0.parentNode.insertBefore(s1, s0);
     }
-
     window.addEventListener('scroll', loadTawk, { once: true });
     window.addEventListener('mousemove', loadTawk, { once: true });
     window.addEventListener('touchstart', loadTawk, { once: true });
 </script>
-<!--End of Tawk.to Script-->
+
 <script>
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('ui:error', (data) => {
-            Toastify({
-                text: data.message,
-                duration: 3000
-            }).showToast();
+            Toastify({ text: data.message, duration: 3000 }).showToast();
         });
-
         Livewire.on('ui:success', (data) => {
-            Toastify({
-                text: data.message,
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                },
-                duration: 3000
-            }).showToast();
+            Toastify({ text: data.message, style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }, duration: 3000 }).showToast();
         });
     });
+
+    // notify event from Alpine.js
+    window.addEventListener('notify', (e) => {
+        const { message, type } = e.detail || {};
+        if (!message) return;
+        Toastify({
+            text: message,
+            duration: 3000,
+            style: type === 'success'
+                ? { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                : type === 'error'
+                    ? { background: "linear-gradient(to right, #f00, #c00)" }
+                    : {},
+        }).showToast();
+    });
 </script>
+
 <script>
     function pixelAddToCart(productId, price, name, eventId) {
-        fbq('track', 'AddToCart', {
-            content_ids: [productId],
-            content_name: name,
-            content_type: 'product',
-            value: price,
-            currency: 'GEL',
-            event_id: eventId
-        });
-
-        // event_id ვაგზავნით Livewire-სთვის
+        fbq('track', 'AddToCart', { content_ids: [productId], content_name: name, content_type: 'product', value: price, currency: 'GEL', event_id: eventId });
         Livewire.dispatch('storePixelEventId', { eventId });
     }
 </script>
+
 <script>
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
-        const icon = document.getElementById(fieldId + '-icon');
-
-        if (field.type === 'password') {
-            field.type = 'text';
-            icon.classList.remove('bi-eye');
-            icon.classList.add('bi-eye-slash');
-        } else {
-            field.type = 'password';
-            icon.classList.remove('bi-eye-slash');
-            icon.classList.add('bi-eye');
-        }
+        const icon  = document.getElementById(fieldId + '-icon');
+        if (field.type === 'password') { field.type = 'text'; icon.classList.replace('bi-eye','bi-eye-slash'); }
+        else { field.type = 'password'; icon.classList.replace('bi-eye-slash','bi-eye'); }
     }
-
     document.addEventListener('livewire:init', () => {
         Livewire.on('close-modal', (modalId) => {
             const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
-            if (modal) {
-                modal.hide();
-                if (modalId[0] === 'loginModal') {
-                    location.reload();
-                }
-            }
+            if (modal) { modal.hide(); if (modalId[0] === 'loginModal') location.reload(); }
         });
     });
 </script>
+
 <style>
-    .modal-dialog-scrollable .modal-body {
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
-    }
-
-    .btn-link {
-        text-decoration: none;
-        padding: 0;
-    }
-
-    .btn-link:hover {
-        text-decoration: none;
-    }
-
-    .form-control:focus {
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
-    }
-
-    .form-check-input:checked {
-        background-color: var(--bs-primary);
-        border-color: var(--bs-primary);
-    }
-
-    .position-relative .btn-link {
-        z-index: 10;
-    }
+    .modal-dialog-scrollable .modal-body { max-height: calc(100vh - 120px); overflow-y: auto; }
+    .btn-link { text-decoration: none; padding: 0; }
+    .btn-link:hover { text-decoration: none; }
+    .form-control:focus { border-color: var(--bs-primary); box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15); }
+    .form-check-input:checked { background-color: var(--bs-primary); border-color: var(--bs-primary); }
+    .position-relative .btn-link { z-index: 10; }
 </style>
+
 </body>
 </html>
