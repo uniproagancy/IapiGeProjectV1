@@ -88,3 +88,7 @@ body, .font-helvetica {
 .section-card:hover .section-card-title {
     color: #ff6900;
 }
+
+.container {
+    max-width: 1600px !important;
+}

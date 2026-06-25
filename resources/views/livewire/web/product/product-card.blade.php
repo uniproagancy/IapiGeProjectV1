@@ -157,17 +157,18 @@
         .pc-wrap {
             position: relative;
             background: #fff;
-            border-radius: 14px;
-            border: none;
+            border-radius: 16px;
+            border: 1.5px solid #eff0f2;
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
-            transition: box-shadow .2s ease, transform .2s ease;
+            transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
         }
         .pc-wrap:hover {
-            box-shadow: 0 8px 28px rgba(0,0,0,0.10);
-            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.09);
+            border-color: #e0e1e5;
+            transform: translateY(-3px);
         }
 
         /* Badge */
@@ -210,7 +211,7 @@
         /* სურათი */
         .pc-img-wrap {
             display: block;
-            padding: 16px 16px 8px;
+            padding: 20px 20px 10px;
             aspect-ratio: 1 / 1;
             overflow: hidden;
         }
@@ -225,7 +226,7 @@
 
         /* Body */
         .pc-body {
-            padding: 8px 14px 14px;
+            padding: 10px 16px 16px;
             display: flex;
             flex-direction: column;
             flex: 1;
