@@ -103,31 +103,22 @@ class AltaController extends Controller
             return response()->json(['error' => 'AltaID ცხრილი ცარიელია — გაუშვი /alta/products ჯერ'], 500, [], JSON_UNESCAPED_UNICODE);
         }
 
-        $results  = [];
+        $results   = [];
         $workerUrl = env('ALTA_WORKER_URL', 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev');
         $apiUrl    = $workerUrl . '?token=' . urlencode($token) . '&id=';
-        $tested   = 0;
-        $found    = 0;
-        $notFound = 0;
-        $errors   = 0;
+        $tested    = 0;
+        $found     = 0;
+        $notFound  = 0;
+        $errors    = 0;
 
-        // AltaID-ებიდან პირველი $count * 50 ვინახავთ და ვფილტრავთ
-        $altaIds = range(1, 100000);
-        $client  = new Client([
+        $client = new Client([
             'timeout'         => 15,
             'connect_timeout' => 10,
             'http_errors'     => false,
             'verify'          => false,
             'headers'         => [
-                'Accept'              => 'application/json, text/plain, */*',
-                'Accept-Language'     => 'ka',
-                'Referer'             => 'https://alta.ge/produqtebi',
-                'User-Agent'          => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-                'os'                  => 'web',
-                'sec-ch-ua'           => '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
-                'sec-ch-ua-mobile'    => '?0',
-                'sec-ch-ua-platform'  => '"Windows"',
-                'Cookie'              => 'alta-access_token=' . $token . '; alta-is_user_session=0',
+                'Accept'     => 'application/json',
+                'User-Agent' => 'Mozilla/5.0',
             ],
         ]);
 
