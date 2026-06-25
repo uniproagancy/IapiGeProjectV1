@@ -130,7 +130,7 @@ class AltaController extends Controller
 
                 if ($status === 401 || $status === 403) {
                     return response()->json([
-                        'error'  => "Token invalid! status={$status}",
+                        'error'  => "Token invalid!!!!!!!!!!!!!!!!!!!!! status={$status}",
                         'tested' => $tested,
                     ], 401, [], JSON_UNESCAPED_UNICODE);
                 }
