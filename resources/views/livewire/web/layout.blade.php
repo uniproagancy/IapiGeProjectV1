@@ -22,163 +22,40 @@
     <link rel="stylesheet" href="{{ asset('web-assets/css/style.css') }}">
 
     <style>
-        /* ============ Skeleton Loader ============ */
-        @keyframes skeleton-shimmer {
-            0%   { background-position: -800px 0; }
-            100% { background-position: 800px 0; }
-        }
-
         #site-loader {
             position: fixed;
             inset: 0;
-            background: #f8f9fa;
+            background: rgba(255,255,255,0.85);
             z-index: 9999;
-            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: opacity .25s ease;
         }
-
         #site-loader.hidden {
             opacity: 0;
             pointer-events: none;
         }
-
-        .sk {
-            background: linear-gradient(90deg, #ebebeb 25%, #d6d6d6 50%, #ebebeb 75%);
-            background-size: 800px 100%;
-            animation: skeleton-shimmer 1.5s infinite linear;
-            border-radius: 8px;
+        .site-spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #ff6900;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
         }
-
-        /* Fake header */
-        .sk-header {
-            background: #1a1d23;
-            height: 68px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 24px;
-            border-bottom: 4px solid #ff6900;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .sk-logo { width: 120px; height: 30px; background: #2d3139; border-radius: 6px; flex-shrink: 0; }
-        .sk-search { flex: 1; max-width: 560px; height: 38px; background: #2d3139; border-radius: 24px; }
-        .sk-icons { display: flex; gap: 12px; margin-left: auto; }
-        .sk-icon { width: 36px; height: 36px; background: #2d3139; border-radius: 50%; }
-
-        /* Fake nav */
-        .sk-nav {
-            background: #1a1d23;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 32px;
-        }
-        .sk-nav-item { height: 14px; border-radius: 6px; background: #2d3139; }
-
-        /* Hero slider */
-        .sk-hero-wrap { padding: 20px 24px 0; }
-        .sk-hero { height: 100px; border-radius: 16px; }
-        @media (min-width: 768px)  { .sk-hero { height: 150px; } }
-        @media (min-width: 992px)  { .sk-hero { height: 200px; } }
-        @media (min-width: 1200px) { .sk-hero { height: 250px; } }
-        @media (min-width: 1400px) { .sk-hero { height: 300px; } }
-
-        /* Section */
-        .sk-section { padding: 28px 24px 0; }
-        .sk-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; }
-        .sk-section-title { height: 16px; width: 150px; border-radius: 6px; }
-        .sk-section-link  { height: 13px; width: 90px; border-radius: 6px; }
-
-        /* Cards grid */
-        .sk-cards { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
-        @media (min-width: 576px) { .sk-cards { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 768px) { .sk-cards { grid-template-columns: repeat(4, 1fr); } }
-        @media (min-width: 992px) { .sk-cards { grid-template-columns: repeat(5, 1fr); } }
-        @media (min-width: 1200px){ .sk-cards { grid-template-columns: repeat(6, 1fr); } }
-
-        .sk-card { background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #f0f0f0; }
-        .sk-card-img { width: 100%; aspect-ratio: 1; border-radius: 8px; margin-bottom: 10px; }
-        .sk-card-t1 { height: 11px; width: 90%; border-radius: 5px; margin-bottom: 6px; }
-        .sk-card-t2 { height: 11px; width: 60%; border-radius: 5px; margin-bottom: 14px; }
-        .sk-card-bottom { display: flex; justify-content: space-between; align-items: center; }
-        .sk-card-price { height: 16px; width: 60px; border-radius: 5px; }
-        .sk-card-btn { height: 30px; width: 30px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-{{-- ============ SKELETON LOADER ============ --}}
+{{-- ============ SPINNER LOADER ============ --}}
 <div id="site-loader" aria-hidden="true">
-
-    {{-- Fake Header --}}
-    <div class="sk-header">
-        <div class="sk-logo"></div>
-        <div class="sk-search sk"></div>
-        <div class="sk-icons">
-            <div class="sk-icon sk"></div>
-            <div class="sk-icon sk"></div>
-            <div class="sk-icon sk"></div>
-        </div>
-    </div>
-
-    {{-- Fake Nav --}}
-    <div class="sk-nav">
-        <div class="sk-nav-item sk" style="width:90px;"></div>
-        <div class="sk-nav-item sk" style="width:70px;"></div>
-        <div class="sk-nav-item sk" style="width:80px;"></div>
-        <div class="sk-nav-item sk" style="width:65px;"></div>
-        <div class="sk-nav-item sk" style="width:75px;"></div>
-    </div>
-
-    {{-- Hero Slider --}}
-    <div class="sk-hero-wrap">
-        <div class="sk-hero sk"></div>
-    </div>
-
-    {{-- Section 1 --}}
-    <div class="sk-section">
-        <div class="sk-section-header">
-            <div class="sk-section-title sk"></div>
-            <div class="sk-section-link sk"></div>
-        </div>
-        <div class="sk-cards">
-            @for($i = 0; $i < 6; $i++)
-                <div class="sk-card">
-                    <div class="sk-card-img sk"></div>
-                    <div class="sk-card-t1 sk"></div>
-                    <div class="sk-card-t2 sk"></div>
-                    <div class="sk-card-bottom">
-                        <div class="sk-card-price sk"></div>
-                        <div class="sk-card-btn sk"></div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-    </div>
-
-    {{-- Section 2 --}}
-    <div class="sk-section">
-        <div class="sk-section-header">
-            <div class="sk-section-title sk"></div>
-            <div class="sk-section-link sk"></div>
-        </div>
-        <div class="sk-cards">
-            @for($i = 0; $i < 6; $i++)
-                <div class="sk-card">
-                    <div class="sk-card-img sk"></div>
-                    <div class="sk-card-t1 sk"></div>
-                    <div class="sk-card-t2 sk"></div>
-                    <div class="sk-card-bottom">
-                        <div class="sk-card-price sk"></div>
-                        <div class="sk-card-btn sk"></div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-    </div>
-
+    <div class="site-spinner"></div>
 </div>
-{{-- ============ /SKELETON LOADER ============ --}}
+{{-- ============ /SPINNER LOADER ============ --}}
 
 <script>
     !function(f,b,e,v,n,t,s)
