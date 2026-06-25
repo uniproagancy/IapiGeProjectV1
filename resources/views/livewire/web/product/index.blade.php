@@ -9,39 +9,87 @@
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
     <style>
         [x-cloak] { display: none !important; }
+        /* ===== Filter Sidebar ===== */
         .filter-section-title {
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            padding: 10px 0;
-            font-size: 14px;
+            border-bottom: 1px solid #f0f1f3;
+            padding: 11px 0;
+            font-size: 13px;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             user-select: none;
+            color: #1a1a1a;
+            transition: color .15s ease;
         }
-        .filter-section-title.has-selected { color: #0d6efd; }
+        .filter-section-title:hover { color: #ff6900; }
+        .filter-section-title.has-selected { color: #ff6900; }
+        .filter-section-title i { font-size: 12px; color: #aaa; }
+
         .filter-body { padding: 8px 0 4px 0; }
-        .filter-body .form-check { padding: 3px 0 3px 1.5em; margin: 0; }
-        .filter-body .form-check-label { font-size: 13px; cursor: pointer; color: #444; }
-        .filter-body .form-check-input { margin-top: 3px; }
-        .filter-block { margin-bottom: 6px; }
+        .filter-body .form-check { padding: 4px 0 4px 1.6em; margin: 0; }
+        .filter-body .form-check-label {
+            font-size: 13px;
+            cursor: pointer;
+            color: #555;
+            transition: color .15s ease;
+        }
+        .filter-body .form-check-label:hover { color: #ff6900; }
+        .filter-body .form-check-input {
+            margin-top: 3px;
+            border-color: #ddd;
+        }
+        .filter-body .form-check-input:checked {
+            background-color: #ff6900;
+            border-color: #ff6900;
+        }
+        .filter-block { margin-bottom: 4px; }
+
         .filter-selected-badge {
-            font-size: 11px;
+            font-size: 10px;
             padding: 1px 6px;
             border-radius: 10px;
-            background: #0d6efd;
+            background: #ff6900;
             color: #fff;
             margin-left: 6px;
+            font-weight: 700;
         }
         .filter-show-more {
             font-size: 12px;
-            color: #0d6efd;
+            color: #ff6900;
             background: none;
             border: none;
             padding: 2px 0;
             cursor: pointer;
-            text-decoration: underline;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .filter-show-more:hover { text-decoration: underline; }
+
+        /* ===== Load More Button ===== */
+        .load-more-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 40px;
+            background: #fff;
+            border: 2px solid #ff6900;
+            color: #ff6900;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all .2s ease;
+            min-width: 200px;
+        }
+        .load-more-btn:hover {
+            background: #ff6900;
+            color: #fff;
+        }
+        .load-more-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
         .mobile-filter-modal {
             position: fixed;
@@ -113,7 +161,7 @@
             <div class="row">
 
                 {{-- Desktop Sidebar --}}
-                <aside class="col-lg-3 d-none d-lg-block">
+                <aside class="col-lg-2 d-none d-lg-block">
 
                     {{-- ფასის ფილტრი --}}
                     <div class="filter-block">
@@ -302,23 +350,29 @@
                 </aside>
 
                 {{-- Products --}}
-                <div class="col-lg-9">
+                <div class="col-lg-10">
                     @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
                         @include('livewire.web.partials.sections-carousel2', ['sections' => $categorySections])
                         <span class="mb-1"></span>
                     @endif
                     @if($this->products->count() > 0)
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3 mb-3">
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 pb-3 mb-3">
                             @foreach($this->products as $product)
                                 <div class="col" wire:key="product-{{ $product->id }}">
                                     @include('livewire.web.product.product-card', ['product' => $product])
                                 </div>
                             @endforeach
                         </div>
-                        <div wire:click="loadMore" wire:loading.attr="disabled"
-                             class="btn btn-primary py-3 d-flex justify-content-center">
-                            <span wire:loading.remove class="font-neue">მეტის ნახვა</span>
-                            <span wire:loading class="spinner-border"></span>
+                        <div class="d-flex justify-content-center mt-2">
+                            <button wire:click="loadMore" wire:loading.attr="disabled"
+                                    class="load-more-btn">
+                                <span wire:loading.remove>
+                                    <i class="ci-refresh me-2"></i>მეტის ნახვა
+                                </span>
+                                <span wire:loading>
+                                    <span class="spinner-border spinner-border-sm me-2"></span>იტვირთება...
+                                </span>
+                            </button>
                         </div>
                     @else
                         <div class="text-center py-5">
