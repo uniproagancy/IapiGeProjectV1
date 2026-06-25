@@ -183,6 +183,7 @@
     </style>
 @endsection
 
+<div>
 <main class="content-wrapper">
 
     {{-- Breadcrumb --}}
@@ -440,6 +441,7 @@
         });
     });
 </script>
+</div>
 
 @section('fb_pixel')
     @if($event_id)
