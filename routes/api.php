@@ -40,6 +40,8 @@ Route::prefix('bog')->group(function () {
 
 });
 
+Route::get('/allmarket/scan', [\App\Http\Controllers\ApiControllers\AllmarketController::class, 'scan']);
+
 Route::prefix('tbc')->group(function () {
     Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCInstallmentController@status')->name('tbc.installment-status');
 });
