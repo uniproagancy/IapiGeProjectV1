@@ -118,12 +118,14 @@ class AltaController extends Controller
             'http_errors'     => false,
             'verify'          => false,
             'headers'         => [
-                'Accept'          => 'application/json',
-                'Accept-Language' => 'ka',
-                'Referer'         => 'https://alta.ge/',
-                'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                'os'              => 'web',
-                'Cookie'          => 'alta-access_token=' . $token . '; alta-is_user_session=0',
+                'Accept'              => 'application/json, text/plain, */*',
+                'Accept-Language'     => 'ka',
+                'Referer'             => 'https://alta.ge/produqtebi',
+                'User-Agent'          => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+                'os'                  => 'web',
+                'sec-ch-ua'           => '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+                'sec-ch-ua-mobile'    => '?0',
+                'sec-ch-ua-platform'  => '"Windows"',
             ],
         ]);
 
@@ -131,7 +133,6 @@ class AltaController extends Controller
         for ($id = 1; $id <= 500 && $found < $count; $id++) {
             try {
                 $response = $client->get($apiUrl . $id);
-                dd($response);
                 $status   = $response->getStatusCode();
 
                 if ($status === 401 || $status === 403) {
