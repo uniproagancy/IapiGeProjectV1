@@ -32,6 +32,8 @@ class AltaService
             ini_set('memory_limit', '2048M');
             ini_set('max_execution_time', '0');
 
+            Log::info("🚀 Alta Scan: დაიწყო | range={$this->start_id}-{$this->end_id}");
+
             $startTime = microtime(true);
             $stats     = [
                 'total'  => 0,
@@ -43,9 +45,29 @@ class AltaService
             $allIds         = range($this->start_id, $this->end_id);
             $stats['total'] = count($allIds);
             $chunks         = array_chunk($allIds, $this->chunk_size);
+            $totalChunks    = count($chunks);
+
+            Log::info("📦 Alta Scan: სულ {$stats['total']} ID | {$totalChunks} chunk");
+
+            // ALTA_ACCESS_TOKEN შემოწმება
+            $token = env('ALTA_ACCESS_TOKEN');
+            if (empty($token)) {
+                Log::error("❌ Alta Scan: ALTA_ACCESS_TOKEN არ არის .env-ში!");
+                return $stats;
+            }
+            Log::info("🔑 Alta Scan: token=" . substr($token, 0, 10) . '...');
+
+            // AltaID ცხრილი შემოწმება
+            $altaIdCount = \App\Models\AltaID::count();
+            Log::info("📋 Alta Scan: AltaID ცხრილში {$altaIdCount} ჩანაწერია");
+            if ($altaIdCount === 0) {
+                Log::error("❌ Alta Scan: AltaID ცხრილი ცარიელია — ვერაფერი დაqueue-ვდება!");
+            }
 
             foreach ($chunks as $chunkIndex => $chunk) {
-                Log::info("Alta: Processing chunk {$chunkIndex}/" . count($chunks));
+                if ($chunkIndex % 10 === 0) {
+                    Log::info("⏳ Alta: chunk {$chunkIndex}/{$totalChunks} | queued={$stats['queued']} null={$stats['null']} errors={$stats['errors']}");
+                }
 
                 $chunkStats      = $this->scanChunk($chunk);
                 $stats['queued'] += $chunkStats['queued'];
@@ -59,10 +81,16 @@ class AltaService
             }
 
             $stats['duration'] = round(microtime(true) - $startTime, 2);
+
+            Log::info("✅ Alta Scan: დასრულდა | queued={$stats['queued']} null={$stats['null']} errors={$stats['errors']} duration={$stats['duration']}s");
+
             return $stats;
 
         } catch (Exception $e) {
-            Log::error('AltaProduct scanAllIds error: ' . $e->getMessage());
+            Log::error('❌ AltaProduct scanAllIds error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             throw $e;
         }
     }
@@ -72,6 +100,8 @@ class AltaService
         $stats = ['queued' => 0, 'null' => 0, 'errors' => 0];
 
         try {
+            $token = env('ALTA_ACCESS_TOKEN');
+
             $client = new Client([
                 'timeout'         => $this->timeout,
                 'connect_timeout' => 15,
@@ -83,7 +113,7 @@ class AltaService
                     'Referer'         => 'https://alta.ge/',
                     'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
                     'os'              => 'web',
-                    'Cookie'          => 'alta-access_token=' . env('ALTA_ACCESS_TOKEN') . '; alta-is_user_session=0',
+                    'Cookie'          => 'alta-access_token=' . $token . '; alta-is_user_session=0',
                 ],
                 'curl' => [
                     CURLOPT_DNS_CACHE_TIMEOUT => 300,
@@ -102,15 +132,30 @@ class AltaService
 
             $pool = new Pool($client, $requests($ids), [
                 'concurrency' => $this->concurrent_requests,
-                'fulfilled' => function ($response, $id) use (&$stats) {
+                'fulfilled'   => function ($response, $id) use (&$stats) {
                     try {
-                        if ($response->getStatusCode() !== 200) {
+                        $status = $response->getStatusCode();
+
+                        if ($status === 401 || $status === 403) {
+                            Log::error("🔐 Alta: Token invalid ან expired! status={$status} id={$id}");
+                            $stats['errors']++;
+                            return;
+                        }
+
+                        if ($status !== 200) {
+                            Log::warning("⚠️ Alta: HTTP {$status} id={$id}");
                             $stats['errors']++;
                             return;
                         }
 
                         $body = $response->getBody()->getContents();
                         $data = json_decode($body, true);
+
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            Log::warning("⚠️ Alta: JSON parse error id={$id} | " . substr($body, 0, 100));
+                            $stats['errors']++;
+                            return;
+                        }
 
                         if (!isset($data['product']) || $data['product'] === null) {
                             $stats['null']++;
@@ -119,7 +164,14 @@ class AltaService
 
                         $barCode = $data['product']['barCode'] ?? null;
 
-                        if (empty($barCode) || !\App\Models\AltaID::where('product_id', (string) $barCode)->exists()) {
+                        if (empty($barCode)) {
+                            $stats['null']++;
+                            return;
+                        }
+
+                        $exists = \App\Models\AltaID::where('product_id', (string) $barCode)->exists();
+
+                        if (!$exists) {
                             $stats['null']++;
                             return;
                         }
@@ -132,20 +184,20 @@ class AltaService
                         $stats['queued']++;
 
                     } catch (Exception $e) {
-                        Log::error("Alta: Error processing product {$id}: " . $e->getMessage());
+                        Log::error("❌ Alta: Error processing product id={$id}: " . $e->getMessage());
                         $stats['errors']++;
                     }
                 },
                 'rejected'    => function ($reason, $id) use (&$stats) {
+                    Log::warning("❌ Alta: Request rejected id={$id} | " . $reason->getMessage());
                     $stats['errors']++;
-                    Log::warning("Alta: Request failed for ID {$id}: " . $reason);
                 },
             ]);
 
             $pool->promise()->wait();
 
         } catch (Exception $e) {
-            Log::error('AltaProduct scanChunk error: ' . $e->getMessage());
+            Log::error('❌ AltaProduct scanChunk error: ' . $e->getMessage());
             $stats['errors'] += count($ids);
         }
 
