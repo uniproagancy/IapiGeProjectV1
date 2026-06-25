@@ -125,7 +125,7 @@ class AltaService
                 foreach ($ids as $id) {
                     yield $id => new Request(
                         'GET',
-                        $this->api_url . "?id={$id}&token=" . urlencode(env('ALTA_ACCESS_TOKEN'))
+                        $this->api_url . "?id={$id}&token=" . env('ALTA_ACCESS_TOKEN')
                     );
                 }
             };
