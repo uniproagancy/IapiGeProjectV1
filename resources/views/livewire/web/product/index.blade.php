@@ -85,6 +85,7 @@
         <h1 class="h3 container mb-4 font-neue">
             {{ $currentCategory?->translation('ka')?->title ?? 'პროდუქციის ჩამონათვალი' }}
         </h1>
+
         <section class="container mb-4">
             <div class="row">
                 <div class="col-lg-12">
@@ -110,6 +111,8 @@
 
         <section class="container pb-5 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
             <div class="row">
+
+                {{-- Desktop Sidebar --}}
                 <aside class="col-lg-3 d-none d-lg-block">
 
                     {{-- ფასის ფილტრი --}}
@@ -131,13 +134,11 @@
                                     <input type="number"
                                            class="form-control form-control-sm"
                                            wire:model.live.debounce.500ms="priceMin"
-                                           placeholder="მინ. ₾"
-                                           min="0">
+                                           placeholder="მინ. ₾" min="0">
                                     <input type="number"
                                            class="form-control form-control-sm"
                                            wire:model.live.debounce.500ms="priceMax"
-                                           placeholder="მაქს. ₾"
-                                           min="0">
+                                           placeholder="მაქს. ₾" min="0">
                                 </div>
                                 @if($priceMin || $priceMax)
                                     <button wire:click="clearPriceFilter"
@@ -167,10 +168,8 @@
                                             <ul class="list-unstyled m-0">
                                                 @foreach($parentCategories as $category)
                                                     <li class="py-1">
-                                                        <a class="text-body text-decoration-none"
-                                                           style="font-size: 13px;"
-                                                           href="#"
-                                                           wire:click.prevent="selectParent({{ $category->id }})">
+                                                        <a class="text-body text-decoration-none" style="font-size: 13px;"
+                                                           href="#" wire:click.prevent="selectParent({{ $category->id }})">
                                                             {{ $category->translation('ka')?->title ?? '—' }}
                                                         </a>
                                                     </li>
@@ -182,19 +181,14 @@
                                                     <li class="py-1">
                                                         <a class="text-decoration-none {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : 'text-body' }}"
                                                            style="font-size: 13px;"
-                                                           href="#"
-                                                           wire:click.prevent="selectChild({{ $subCategory->id }})">
+                                                           href="#" wire:click.prevent="selectChild({{ $subCategory->id }})">
                                                             {{ $subCategory->translation('ka')?->title ?? '—' }}
                                                         </a>
                                                     </li>
                                                 @endforeach
                                                 <li class="pt-2">
-                                                    <a href="#"
-                                                       wire:click.prevent="resetCategories"
-                                                       class="text-primary"
-                                                       style="font-size: 12px;">
-                                                        ← უკან
-                                                    </a>
+                                                    <a href="#" wire:click.prevent="resetCategories"
+                                                       class="text-primary" style="font-size: 12px;">← უკან</a>
                                                 </li>
                                             </ul>
                                         @endif
@@ -221,25 +215,20 @@
                                             @foreach($brands as $index => $brand)
                                                 <div class="form-check"
                                                      @if($index >= 5 && !$this->showAllBrands) style="display:none;" @endif>
-                                                    <input type="checkbox"
-                                                           class="form-check-input"
+                                                    <input type="checkbox" class="form-check-input"
                                                            wire:model.live="selectedBrands"
                                                            value="{{ $brand->id }}"
                                                            id="brand_{{ $brand->id }}">
-                                                    <label class="form-check-label"
-                                                           for="brand_{{ $brand->id }}">
+                                                    <label class="form-check-label" for="brand_{{ $brand->id }}">
                                                         {{ $brand->translation('ka')?->title ?? ('ბრენდი #' . $brand->id) }}
                                                     </label>
                                                 </div>
                                             @endforeach
                                             @if($brands->count() > 5)
-                                                <button class="filter-show-more mt-2"
-                                                        type="button"
+                                                <button class="filter-show-more mt-2" type="button"
                                                         wire:click="toggleShowAllBrands">
-                                                    @if($this->showAllBrands)
-                                                        ნაკლები ↑
-                                                    @else
-                                                        მეტის ნახვა ({{ $brands->count() - 5 }}) ↓
+                                                    @if($this->showAllBrands) ნაკლები ↑
+                                                    @else მეტის ნახვა ({{ $brands->count() - 5 }}) ↓
                                                     @endif
                                                 </button>
                                             @endif
@@ -252,9 +241,7 @@
                             @if(!empty($specificationSections) && $specificationSections->count() > 0)
                                 @foreach($specificationSections as $specName => $values)
                                     @php
-                                        $selectedInSection = collect($selectedSpecs)->filter(
-                                            fn($s) => str_starts_with($s, $specName . '::')
-                                        );
+                                        $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
                                         $hasSelected = $selectedInSection->count() > 0;
                                         $specKey     = 'spec_' . md5($specName);
                                         $valuesCount = count($values);
@@ -274,13 +261,10 @@
                                         <div class="collapse show" id="{{ $specKey }}">
                                             <div class="filter-body" x-data="{ open: {{ $hasSelected ? 'true' : 'false' }} }">
                                                 @foreach($values as $i => $item)
-                                                    @php
-                                                        $isSelected = $selectedInSection->contains($specName . '::' . $item->value);
-                                                    @endphp
+                                                    @php $isSelected = $selectedInSection->contains($specName . '::' . $item->value); @endphp
                                                     <div class="form-check"
                                                          @if($i >= 5) x-show="open || {{ $isSelected ? 'true' : 'false' }}" x-cloak @endif>
-                                                        <input type="checkbox"
-                                                               class="form-check-input"
+                                                        <input type="checkbox" class="form-check-input"
                                                                wire:model.live="selectedSpecs"
                                                                value="{{ $specName }}::{{ $item->value }}"
                                                                id="spec_{{ md5($specName . $item->value) }}">
@@ -291,9 +275,7 @@
                                                     </div>
                                                 @endforeach
                                                 @if($valuesCount > 5)
-                                                    <button class="filter-show-more mt-2"
-                                                            type="button"
-                                                            @click="open = !open">
+                                                    <button class="filter-show-more mt-2" type="button" @click="open = !open">
                                                         <span x-show="!open">მეტის ნახვა ({{ $valuesCount - 5 }}) ↓</span>
                                                         <span x-show="open" x-cloak>ნაკლები ↑</span>
                                                     </button>
@@ -307,26 +289,22 @@
                             {{-- მხოლოდ ფასდაკლებული --}}
                             <div class="filter-block pt-2">
                                 <div class="form-check">
-                                    <input type="checkbox"
-                                           class="form-check-input"
+                                    <input type="checkbox" class="form-check-input"
                                            wire:model.live="onlyDiscounted"
                                            id="discountFilter">
-                                    <label class="form-check-label fw-medium"
-                                           style="font-size: 13px;"
-                                           for="discountFilter">
-                                        მხოლოდ ფასდაკლებული
-                                    </label>
+                                    <label class="form-check-label fw-medium" style="font-size: 13px;"
+                                           for="discountFilter">მხოლოდ ფასდაკლებული</label>
                                 </div>
                             </div>
 
                         </div>
                     </div>
                 </aside>
+
+                {{-- Products --}}
                 <div class="col-lg-9">
                     @if($currentCategory && isset($categorySections) && $categorySections->count() > 0)
-                        @include('livewire.web.partials.sections-carousel2', [
-                            'sections' => $categorySections,
-                        ])
+                        @include('livewire.web.partials.sections-carousel2', ['sections' => $categorySections])
                         <span class="mb-1"></span>
                     @endif
                     @if($this->products->count() > 0)
@@ -344,11 +322,9 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <svg class="w-25 h-25 mx-auto text-muted mb-4" fill="none" stroke="currentColor"
-                                 viewBox="0 0 24 24">
+                            <svg class="w-25 h-25 mx-auto text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                                </path>
+                                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                             </svg>
                             <h3 class="h5 mb-2">პროდუქტები არ მოიძებნა</h3>
                             <p class="text-muted">სცადეთ სხვა ფილტრების გამოყენება</p>
@@ -363,47 +339,63 @@
             </div>
         </section>
 
-        {{-- Mobile ფილტრის ღილაკი (fixed) --}}
+        {{-- Mobile ფილტრის ღილაკი --}}
+        @php
+            $activeCount = (int)(!empty($priceMin) || !empty($priceMax))
+                         + count((array)$selectedBrands)
+                         + count((array)$selectedSpecs)
+                         + (int)$onlyDiscounted;
+        @endphp
         <button type="button"
                 class="btn btn-dark d-lg-none position-fixed shadow"
                 style="bottom: 80px; right: 16px; z-index: 1045; border-radius: 50px; padding: 12px 20px;"
-                onclick="document.getElementById('mobileFilterModal').classList.add('show'); document.body.style.overflow='hidden';">
+                @click="$dispatch('open-mobile-filter')">
             <i class="ci-filter me-1"></i> ფილტრი
-            @php
-                $activeCount = (int)(!empty($priceMin) || !empty($priceMax))
-                             + count((array)$selectedBrands)
-                             + count((array)$selectedSpecs)
-                             + (int)$onlyDiscounted;
-            @endphp
             @if($activeCount > 0)
                 <span class="badge bg-light text-dark ms-1">{{ $activeCount }}</span>
             @endif
         </button>
 
-        {{-- Mobile ფილტრის მოდალი --}}
-        <div id="mobileFilterModal" class="mobile-filter-modal d-lg-none">
+        {{--
+            Mobile ფილტრის მოდალი
+            wire:ignore — Livewire re-render-ზე ამ div-ს არ შეეხება
+            Alpine-ი open state-ს ინახავს — body.overflow პრობლემა მოიხსნება
+        --}}
+        <div wire:ignore
+             x-data="{ open: false }"
+             @open-mobile-filter.window="open = true; document.body.style.overflow = 'hidden'"
+             @close-mobile-filter.window="open = false; document.body.style.overflow = ''"
+             id="mobileFilterModal"
+             class="mobile-filter-modal d-lg-none"
+             :class="{ 'show': open }">
+
             <div class="mobile-filter-header">
                 <h5 class="m-0 font-neue">ფილტრი</h5>
                 <button type="button" class="btn-close"
-                        onclick="document.getElementById('mobileFilterModal').classList.remove('show'); document.body.style.overflow='';"></button>
+                        @click="$dispatch('close-mobile-filter')"></button>
             </div>
 
             <div class="mobile-filter-body">
 
                 {{-- ფასი --}}
                 <div class="filter-block">
-                    <div class="filter-section-title {{ ($priceMin || $priceMax) ? 'has-selected' : '' }}">
-                        <span>ფასი @if($priceMin || $priceMax)<span class="filter-selected-badge">✓</span>@endif</span>
+                    <div class="filter-section-title">
+                        <span>ფასი</span>
                     </div>
                     <div class="filter-body">
                         <div class="d-flex gap-2 mb-2">
                             <input type="number" class="form-control form-control-sm"
-                                   wire:model.live.debounce.500ms="priceMin" placeholder="მინ. ₾" min="0">
+                                   wire:model.live.debounce.500ms="priceMin"
+                                   placeholder="მინ. ₾" min="0">
                             <input type="number" class="form-control form-control-sm"
-                                   wire:model.live.debounce.500ms="priceMax" placeholder="მაქს. ₾" min="0">
+                                   wire:model.live.debounce.500ms="priceMax"
+                                   placeholder="მაქს. ₾" min="0">
                         </div>
                         @if($priceMin || $priceMax)
-                            <button wire:click="clearPriceFilter" class="btn btn-sm btn-outline-secondary w-100" style="font-size:12px;">გასუფთავება</button>
+                            <button wire:click="clearPriceFilter"
+                                    class="btn btn-sm btn-outline-secondary w-100" style="font-size:12px;">
+                                გასუფთავება
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -430,14 +422,15 @@
                                 @foreach($subCategories as $subCategory)
                                     <li class="py-1">
                                         <a class="text-decoration-none {{ $currentCategory?->id === $subCategory->id ? 'text-primary fw-semibold' : 'text-body' }}"
-                                           style="font-size:13px;" href="#"
-                                           wire:click.prevent="selectChild({{ $subCategory->id }})">
+                                           style="font-size:13px;"
+                                           href="#" wire:click.prevent="selectChild({{ $subCategory->id }})">
                                             {{ $subCategory->translation('ka')?->title ?? '—' }}
                                         </a>
                                     </li>
                                 @endforeach
                                 <li class="pt-2">
-                                    <a href="#" wire:click.prevent="resetCategories" class="text-primary" style="font-size:12px;">← უკან</a>
+                                    <a href="#" wire:click.prevent="resetCategories"
+                                       class="text-primary" style="font-size:12px;">← უკან</a>
                                 </li>
                             </ul>
                         @endif
@@ -448,11 +441,16 @@
                 @if($brands->count() > 0)
                     <div class="filter-block">
                         <div class="filter-section-title {{ !empty($selectedBrands) ? 'has-selected' : '' }}">
-                            <span>ბრენდი @if(!empty($selectedBrands))<span class="filter-selected-badge">{{ count($selectedBrands) }}</span>@endif</span>
+                            <span>
+                                ბრენდი
+                                @if(!empty($selectedBrands))
+                                    <span class="filter-selected-badge">{{ count($selectedBrands) }}</span>
+                                @endif
+                            </span>
                         </div>
                         <div class="filter-body">
                             @foreach($brands as $index => $brand)
-                                <div class="form-check" @if($index >= 5 && !$this->showAllBrands) style="display:none;" @endif>
+                                <div class="form-check">
                                     <input type="checkbox" class="form-check-input"
                                            wire:model.live="selectedBrands"
                                            value="{{ $brand->id }}"
@@ -462,11 +460,6 @@
                                     </label>
                                 </div>
                             @endforeach
-                            @if($brands->count() > 5)
-                                <button class="filter-show-more mt-2" type="button" wire:click="toggleShowAllBrands">
-                                    @if($this->showAllBrands) ნაკლები ↑ @else მეტის ნახვა ({{ $brands->count() - 5 }}) ↓ @endif
-                                </button>
-                            @endif
                         </div>
                     </div>
                 @endif
@@ -481,9 +474,14 @@
                         @endphp
                         <div class="filter-block">
                             <div class="filter-section-title {{ $hasSelected ? 'has-selected' : '' }}">
-                                <span>{{ $specName }} @if($hasSelected)<span class="filter-selected-badge">{{ $selectedInSection->count() }}</span>@endif</span>
+                                <span>
+                                    {{ $specName }}
+                                    @if($hasSelected)
+                                        <span class="filter-selected-badge">{{ $selectedInSection->count() }}</span>
+                                    @endif
+                                </span>
                             </div>
-                            <div class="filter-body" x-data="{ open: {{ $hasSelected ? 'true' : 'false' }} }">
+                            <div class="filter-body" x-data="{ open: false }">
                                 @foreach($values as $i => $item)
                                     @php $isSelected = $selectedInSection->contains($specName . '::' . $item->value); @endphp
                                     <div class="form-check"
@@ -492,7 +490,8 @@
                                                wire:model.live="selectedSpecs"
                                                value="{{ $specName }}::{{ $item->value }}"
                                                id="m_spec_{{ md5($specName . $item->value) }}">
-                                        <label class="form-check-label" for="m_spec_{{ md5($specName . $item->value) }}">
+                                        <label class="form-check-label"
+                                               for="m_spec_{{ md5($specName . $item->value) }}">
                                             {{ $item->value }}
                                         </label>
                                     </div>
@@ -518,15 +517,20 @@
                                for="m_discountFilter">მხოლოდ ფასდაკლებული</label>
                     </div>
                 </div>
+
             </div>
 
-            {{-- ქვედა ღილაკები --}}
+            {{-- Footer --}}
             <div class="mobile-filter-footer">
                 @if($selectedBrands || $priceMin || $priceMax || $selectedSpecs || $onlyDiscounted)
-                    <button wire:click="resetAllFilters" class="btn btn-outline-secondary flex-fill">გასუფთავება</button>
+                    <button wire:click="resetAllFilters"
+                            class="btn btn-outline-secondary flex-fill">
+                        გასუფთავება
+                    </button>
                 @endif
-                <button type="button" class="btn btn-primary flex-fill font-neue"
-                        onclick="document.getElementById('mobileFilterModal').classList.remove('show'); document.body.style.overflow='';">
+                <button type="button"
+                        class="btn btn-primary flex-fill font-neue"
+                        @click="$dispatch('close-mobile-filter')">
                     ნახვა ({{ $this->products->total() }})
                 </button>
             </div>
@@ -540,8 +544,7 @@
         fbq('track', 'PageView', {}, { eventID: '{{ $eventId }}' });
     </script>
     <noscript><img height="1" width="1" style="display:none"
-                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"
-        /></noscript>
+                   src="https://www.facebook.com/tr?id=1280014533998229&ev=PageView&noscript=1"/></noscript>
 @endsection
 
 @section('page_scripts')
