@@ -55,8 +55,6 @@
                 </h6>
                 <ul class="list-unstyled d-flex flex-column gap-2 m-0">
                     @foreach([
-                        ['title' => 'შესვლა',         'url' => route('web.user.sign_in')],
-                        ['title' => 'რეგისტრაცია',    'url' => route('web.user.sign_up')],
                         ['title' => 'ჩემი შეკვეთები', 'url' => route('web.user.index', ['page' => 'orders'])],
                         ['title' => 'სურვილების სია', 'url' => route('web.user.index', ['page' => 'wishlist'])],
                     ] as $link)
