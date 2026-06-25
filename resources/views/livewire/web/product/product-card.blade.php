@@ -169,6 +169,8 @@
             box-shadow: 0 10px 32px rgba(0,0,0,0.09);
             border-color: #e0e1e5;
             transform: translateY(-3px);
+            z-index: 2;
+            position: relative;
         }
 
         /* Badge */
