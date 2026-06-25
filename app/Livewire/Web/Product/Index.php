@@ -50,7 +50,7 @@ class Index extends Component
     public string $sort = 'newest';
 
     #[Url(as: 'show', keep: true)]
-    public $perPage = 12;
+    public $perPage = 20;
 
     public function mount($category_slug = null): void
     {
@@ -87,7 +87,7 @@ class Index extends Component
 
     private function normalizePerPage(): void
     {
-        $this->perPage = max(12, (int) $this->perPage);
+        $this->perPage = max(20, (int) $this->perPage);
     }
 
     private function loadParentCategories(): void
@@ -196,7 +196,7 @@ class Index extends Component
             'specs'          => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
             'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
             'sort'           => $this->sort !== 'newest' ? $this->sort : null,
-            'show'           => $this->perPage !== 12 ? $this->perPage : null,
+            'show'           => $this->perPage !== 20 ? $this->perPage : null,
         ]);
     }
 
@@ -238,7 +238,7 @@ class Index extends Component
         $this->selectedSpecs   = [];
         $this->onlyDiscounted  = false;
         $this->sort            = 'newest';
-        $this->perPage         = 12;
+        $this->perPage         = 20;
         $this->currentCategory = null;
         $this->selectedParent  = null;
         $this->resetPage();
@@ -291,7 +291,7 @@ class Index extends Component
 
     public function loadMore(): void
     {
-        $this->perPage += 12;
+        $this->perPage += 20;
     }
 
     // cache: false — loadMore-ზე perPage იცვლება და ახალი შედეგი ჭირდება
