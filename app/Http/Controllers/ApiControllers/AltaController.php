@@ -131,6 +131,7 @@ class AltaController extends Controller
         for ($id = 1; $id <= 500 && $found < $count; $id++) {
             try {
                 $response = $client->get($apiUrl . $id);
+                dd($response);
                 $status   = $response->getStatusCode();
 
                 if ($status === 401 || $status === 403) {
