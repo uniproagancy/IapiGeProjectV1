@@ -28,7 +28,7 @@ class AllmarketProductJob implements ShouldQueue
 
     private const SUPPLIER_ID   = 13;
     private const DEFAULT_BRAND = 1;
-    private const DEFAULT_CAT   = 4;
+    private const DEFAULT_CAT   = 210;
     private const SKU_PREFIX    = 'ALLMARKET-';
 
     public function __construct(public array $productData) {}
