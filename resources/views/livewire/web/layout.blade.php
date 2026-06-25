@@ -218,6 +218,9 @@
     .form-control:focus { border-color: var(--bs-primary); box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15); }
     .form-check-input:checked { background-color: var(--bs-primary); border-color: var(--bs-primary); }
     .position-relative .btn-link { z-index: 10; }
+    .container {
+        max-width: 1600px !important;
+    }
 </style>
 
 </body>
