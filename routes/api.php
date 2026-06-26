@@ -59,3 +59,7 @@ Route::prefix('alneo')->group(function () {
 Route::prefix('credo')->group(function () {
     Route::get('/create/order', '\App\Http\Controllers\ApiControllers\CredoController@createOrder')->name('credo-create-order');
 });
+
+Route::prefix('thermocenter')->group(function () {
+    Route::get('/scan', [\App\Http\Controllers\ApiControllers\ThermocenterController::class, 'scan']);
+});
