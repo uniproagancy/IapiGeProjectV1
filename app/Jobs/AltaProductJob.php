@@ -2,274 +2,132 @@
 
 namespace App\Jobs;
 
+use App\Models\Brand;
 use App\Models\Product\Product;
-use App\Models\Product\ProductBrand;
-use App\Models\Product\ProductBrandTranslation;
 use App\Models\Product\ProductCategory;
-use App\Models\Product\ProductFullSpecificationItem;
-use App\Models\Product\ProductFullSpecificationSection;
-use App\Models\Product\ProductImage;
+use App\Models\Product\ProductGallery;
 use App\Models\Product\ProductPrice;
-use App\Models\Product\ProductShortSpecification;
 use App\Models\Product\ProductTranslation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Exception;
 
 class AltaProductJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries         = 3;
-    public int $timeout       = 300;
-    public int $maxExceptions = 3;
+    public int $tries   = 3;
+    public int $timeout = 120;
 
     protected array $productData;
-    protected array $availability;
-    protected int   $altaQuantity;
+    protected int   $quantity;
 
-    public function __construct(array $data, int $altaQuantity = 5)
+    public function __construct(array $productData, int $quantity)
     {
-        $this->productData  = $data['product'];
-        $this->availability = $data['availability'] ?? [];
-        $this->altaQuantity = $altaQuantity;
+        $this->productData = $productData;
+        $this->quantity    = $quantity;
     }
 
     public function handle(): void
     {
-        $product = $this->productData;
-        $barCode = $product['barCode'] ?? null;
-        $name    = $product['name'] ?? 'Unknown';
-        $altaId  = $product['id'] ?? null;
+        $product      = $this->productData['product']      ?? null;
+        $availability = $this->productData['availability'] ?? [];
 
-        Log::info("🔄 AltaJob: processing | barCode={$barCode} | name={$name}");
-
-        if (empty($barCode)) {
-            Log::warning("⚠️ AltaJob: barCode empty, skip | alta_id={$altaId}");
+        if (!$product) {
+            Log::warning("⚠️ AltaJob: product data ცარიელია");
             return;
         }
 
-        $sku = 'ALTA-' . $barCode;
+        $barCode  = $product['barCode']  ?? null;
+        $name     = $product['name']     ?? null;
+        $imageUrl = $product['coverUrl'] ?? null;
 
-        try {
-            DB::transaction(function () use ($product, $barCode, $sku, $name) {
-                $existing = Product::where('sku', $sku)
-                    ->where('supplier_id', 2)
-                    ->first();
-
-                $price          = (float) ($product['price'] ?? 0);
-                $previousPrice  = (float) ($product['previousPrice'] ?? 0);
-                $hasDiscount    = $previousPrice > 0 && $previousPrice > $price;
-                $regularPrice   = $hasDiscount ? $previousPrice : $price;
-                $discountPrice  = $hasDiscount ? $price : null;
-                $discountPct    = (int) ($product['discountPercent'] ?? 0);
-
-                $inStock  = ($product['storageQuantity'] ?? 0) > 0 ? 1 : 0;
-                $quantity = $this->altaQuantity > 0 ? $this->altaQuantity : ($inStock ? 5 : 0);
-
-                if ($existing) {
-                    if ($existing->update_lock) {
-                        Log::info("🔒 AltaJob: locked, skip | sku={$sku}");
-                        return;
-                    }
-
-                    // ფასი + სტოკი განახლება
-                    ProductPrice::updateOrCreate(
-                        ['product_id' => $existing->id],
-                        [
-                            'dealer_price'     => $regularPrice,
-                            'regular_price'    => $regularPrice,
-                            'discount_price'   => $discountPrice,
-                            'discount_percent' => $discountPct,
-                        ]
-                    );
-
-                    $updateData = [
-                        'quantity' => $quantity,
-                        'in_stock' => $inStock,
-                        'show'     => $inStock,
-                        'active'   => 1,
-                    ];
-
-                    if (!$existing->taxonomy_lock) {
-                        $updateData['brand_id']    = $this->getBrandId($product);
-                        $updateData['category_id'] = $this->getCategoryId($product);
-                    }
-
-                    $existing->update($updateData);
-
-                    Log::info("🔄 AltaJob: განახლდა | sku={$sku} | price={$regularPrice}");
-                } else {
-                    // ახალი პროდუქტი
-                    $brandId    = $this->getBrandId($product);
-                    $categoryId = $this->getCategoryId($product);
-
-                    $newProduct = Product::create([
-                        'sku'                 => $sku,
-                        'supplier_id'         => 2,
-                        'supplier_product_id' => (string) ($product['id'] ?? ''),
-                        'brand_id'            => $brandId,
-                        'category_id'         => $categoryId,
-                        'quantity'            => $quantity,
-                        'in_stock'            => $inStock,
-                        'show'                => $inStock,
-                        'active'              => 1,
-                        'main_image'          => null,
-                    ]);
-
-                    // ფასი
-                    ProductPrice::create([
-                        'product_id'       => $newProduct->id,
-                        'dealer_price'     => $regularPrice,
-                        'regular_price'    => $regularPrice,
-                        'discount_price'   => $discountPrice,
-                        'discount_percent' => $discountPct,
-                    ]);
-
-                    // Translation
-                    $baseSlug = Str::slug($name) . '-' . $newProduct->id;
-                    foreach (['ka', 'en'] as $locale) {
-                        ProductTranslation::create([
-                            'product_id'  => $newProduct->id,
-                            'locale'      => $locale,
-                            'title'       => $name,
-                            'slug'        => $baseSlug . ($locale === 'en' ? '-en' : ''),
-                            'description' => $product['description'] ?? null,
-                        ]);
-                    }
-
-                    // Specs
-                    $this->createSpecs($newProduct, $product);
-
-                    // სურათი
-                    $this->downloadImage($newProduct, $product['imageUrl'] ?? ($product['images'][0] ?? null));
-
-                    Log::info("✨ AltaJob: ახალი პროდუქტი | sku={$sku} | id={$newProduct->id}");
-                }
-            });
-        } catch (Exception $e) {
-            Log::error("❌ AltaJob error sku={$sku}: " . $e->getMessage());
-            throw $e;
+        if (!$barCode || !$name) {
+            Log::warning("⚠️ AltaJob: barCode ან name არ არის");
+            return;
         }
-    }
 
-    private function getBrandId(array $product): int
-    {
-        try {
-            // specificationGroup-დან ბრენდი
-            $brandName = null;
-            foreach ($product['specificationGroup'] ?? [] as $group) {
-                foreach ($group['specifications'] ?? [] as $spec) {
-                    if (in_array($spec['specificationName'], ['ბრენდი', 'Brand', 'Бренд'])) {
-                        $brandName = $spec['specificationMeaning'] ?? null;
-                        break 2;
-                    }
-                }
+        Log::info("🔄 AltaJob: processing | barCode={$barCode} | name={$name}");
+
+        // Brand
+        $brandName = $product['brandName'] ?? null;
+        $brandId   = null;
+        if ($brandName) {
+            $brand = Brand::firstOrCreate(
+                ['name' => $brandName],
+                ['status' => 1]
+            );
+            if ($brand->wasRecentlyCreated) {
+                Log::info("✨ Alta: ახალი ბრენდი '{$brandName}' id={$brand->id}");
             }
-
-            if (empty($brandName)) {
-                // mainSpecification-დან
-                foreach ($product['mainSpecification'] ?? [] as $spec) {
-                    if (in_array($spec['specificationName'], ['ბრენდი', 'Brand'])) {
-                        $brandName = $spec['specificationMeaning'] ?? null;
-                        break;
-                    }
-                }
-            }
-
-            if (empty($brandName)) return 1;
-
-            $normalized = mb_strtolower(trim($brandName));
-            $brand = ProductBrand::whereHas('translations',
-                fn($q) => $q->whereRaw('LOWER(TRIM(title)) = ?', [$normalized])
-            )->first();
-
-            if ($brand) return $brand->id;
-
-            // ახალი ბრენდი
-            $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
-            foreach (['ka', 'en'] as $locale) {
-                ProductBrandTranslation::create([
-                    'product_brand_id' => $newBrand->id,
-                    'locale'           => $locale,
-                    'title'            => $brandName,
-                    'slug'             => Str::slug($brandName) . '-' . $newBrand->id . ($locale === 'en' ? '-en' : ''),
-                ]);
-            }
-            Log::info("✨ Alta: ახალი ბრენდი '{$brandName}' id={$newBrand->id}");
-            return $newBrand->id;
-
-        } catch (Exception $e) {
-            return 1;
+            $brandId = $brand->id;
         }
-    }
 
-    private function getCategoryId(array $product): int
-    {
-        try {
-            $categoryName = $product['categoryName'] ?? null;
-            if (empty($categoryName)) return 4;
-
+        // Category
+        $categoryId   = null;
+        $categoryName = $product['categoryName'] ?? null;
+        if ($categoryName) {
             $cat = ProductCategory::whereRaw(
                 'LOWER(TRIM(alta_category_name)) = ?',
                 [mb_strtolower(trim($categoryName))]
             )->first();
 
             if ($cat) {
-                Log::info("✅ Alta category mapped: '{$categoryName}' → id={$cat->id}");
-                return $cat->id;
-            }
-
-            Log::warning("⚠️ Alta category not mapped: '{$categoryName}'");
-            return 4;
-        } catch (Exception $e) {
-            return 4;
-        }
-    }
-
-    private function createSpecs(Product $product, array $data): void
-    {
-        // Full specs
-        foreach ($data['specificationGroup'] ?? [] as $group) {
-            if (empty($group['groupName'])) continue;
-            $section = ProductFullSpecificationSection::create([
-                'product_id' => $product->id,
-                'name'       => $group['groupName'],
-            ]);
-            foreach ($group['specifications'] ?? [] as $spec) {
-                if (empty($spec['specificationName'])) continue;
-                ProductFullSpecificationItem::create([
-                    'section_id' => $section->id,
-                    'name'       => $spec['specificationName'],
-                    'value'      => $spec['specificationMeaning'] ?? null,
-                    'filter'     => 0,
-                ]);
+                $categoryId = $cat->id;
+                Log::info("✅ Alta category mapped: '{$categoryName}' → id={$categoryId}");
+            } else {
+                Log::warning("⚠️ Alta category not mapped: '{$categoryName}'");
             }
         }
 
-        // Short specs (mainSpecification)
-        $shorts = [];
-        foreach ($data['mainSpecification'] ?? [] as $spec) {
-            if (empty($spec['specificationName'])) continue;
-            $shorts[] = [
-                'product_id' => $product->id,
-                'name'       => mb_substr($spec['specificationName'] ?? '', 0, 255),
-                'value'      => mb_substr($spec['specificationMeaning'] ?? '', 0, 255),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+        // Price
+        $originalPrice   = (float) ($product['rrp']['original']   ?? 0);
+        $discountedPrice = (float) ($product['rrp']['discounted']  ?? 0);
+        $finalPrice      = $discountedPrice > 0 ? $discountedPrice : $originalPrice;
+
+        // SKU
+        $sku = 'ALTA-' . $barCode;
+
+        // Product upsert
+        $dbProduct = Product::updateOrCreate(
+            ['sku' => $sku],
+            [
+                'supplier_id'    => 2,
+                'brand_id'       => $brandId,
+                'category_id'    => $categoryId,
+                'status'         => 1,
+                'quantity'       => $this->quantity,
+                'original_price' => $originalPrice,
+                'price'          => $finalPrice,
+            ]
+        );
+
+        if ($dbProduct->wasRecentlyCreated) {
+            Log::info("✨ AltaJob: ახალი პროდუქტი | sku={$sku} | id={$dbProduct->id}");
+        } else {
+            Log::info("🔁 AltaJob: განახლდა | sku={$sku} | id={$dbProduct->id}");
         }
-        if (!empty($shorts)) {
-            ProductShortSpecification::insert($shorts);
-        }
+
+        // Translation
+        ProductTranslation::updateOrCreate(
+            ['product_id' => $dbProduct->id, 'locale' => 'ka'],
+            ['name' => $name, 'description' => $product['description'] ?? null]
+        );
+
+        // Price history
+        ProductPrice::create([
+            'product_id' => $dbProduct->id,
+            'price'      => $finalPrice,
+        ]);
+
+        // სურათი — Worker-ით
+        $this->downloadImage($dbProduct, $imageUrl);
     }
 
     private function downloadImage(Product $product, ?string $imageUrl): void
@@ -277,23 +135,35 @@ class AltaProductJob implements ShouldQueue
         if (empty($imageUrl)) return;
 
         try {
-            // სერვერზე API-ს გამოძახება სურათის ასატვირთად
-            $serverUrl = env('APP_SERVER_URL', 'https://iapi.ge');
-            $secret    = env('UPLOAD_SECRET', 'alta_upload_secret_2026');
+            Log::info("🖼️ Alta image URL: {$imageUrl}");
 
-            $response = Http::timeout(30)->post("{$serverUrl}/api/upload/image", [
-                'product_id' => $product->id,
-                'image_url'  => $imageUrl,
-                'secret'     => $secret,
-            ]);
+            // Worker-ით ჩამოვტვირთოთ სურათი (hotlink protection bypass)
+            $workerUrl = env('ALTA_WORKER_URL', 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev')
+                . '?' . http_build_query([
+                    'type' => 'image',
+                    'url'  => $imageUrl,
+                ]);
 
-            if ($response->successful() && $response->json('success')) {
-                Log::info("📸 Alta: სურათი სერვერზე შენახულია | id={$product->id}");
-            } else {
-                Log::warning("⚠️ Alta: სურათი ვერ შეინახა | " . $response->body());
+            $response = Http::timeout(30)
+                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                ->get($workerUrl);
+
+            if (!$response->successful()) {
+                Log::warning("⚠️ Alta: სურათი ვერ ჩამოიტვირთა HTTP=" . $response->status() . " | {$imageUrl}");
+                return;
             }
+
+            $ext  = strtolower(pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg');
+            $ext  = in_array($ext, ['jpg', 'jpeg', 'png', 'webp']) ? $ext : 'jpg';
+            $path = "uploads/products/{$product->id}/main_{$product->id}.{$ext}";
+
+            Storage::disk('public')->put($path, $response->body());
+            $product->update(['main_image' => $path]);
+
+            Log::info("📸 Alta: სურათი შენახულია | id={$product->id} | path={$path}");
+
         } catch (Exception $e) {
-            Log::warning("⚠️ Alta: სურათის upload შეცდომა | " . $e->getMessage());
+            Log::warning("⚠️ Alta: სურათი ვერ ჩამოიტვირთა | " . $e->getMessage());
         }
     }
 }
