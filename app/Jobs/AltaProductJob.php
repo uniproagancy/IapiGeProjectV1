@@ -102,7 +102,12 @@ class AltaProductJob implements ShouldQueue
             throw new Exception('Product ID is required');
         }
 
+        // DEBUG
+        Log::info("🔍 Alta debug: id={$productData['id']} | barCode=" . ($productData['barCode'] ?? 'null'));
+        Log::info("🔍 Alta availability: " . json_encode($productAvailability, JSON_UNESCAPED_UNICODE));
+
         $hasStock = $this->checkTbilisiStock($productAvailability);
+        Log::info("🔍 Alta hasStock: " . ($hasStock ? 'true' : 'false'));
 
         if (!$hasStock) {
             Log::info("⏭️  Skipping Alta product (no Tbilisi stock): {$productData['id']}");
@@ -119,10 +124,13 @@ class AltaProductJob implements ShouldQueue
         }
 
         $b2bStock = AltaID::where('product_id', (string) $barCode)->first();
-        $exists   = (bool) $existing;
+        Log::info("🔍 Alta b2bStock: " . ($b2bStock ? "qty={$b2bStock->quantity}" : 'null — B2B ცხრილში არ არის'));
+
+        $exists = (bool) $existing;
 
         if (!$b2bStock) {
             if ($exists) {
+                Log::info("🔁 Alta: B2B-ში არ არის მაგრამ DB-შია — quantity=0 | {$sku}");
                 $this->updateExistingProduct($productData, ['quantity' => 0], $sku);
             } else {
                 Log::info("⏭️  Skipping Alta product (not in B2B list, not in DB): {$productData['id']}");
@@ -131,12 +139,14 @@ class AltaProductJob implements ShouldQueue
         }
 
         if ($exists) {
+            Log::info("🔁 Alta: განახლება | {$sku} | qty={$b2bStock->quantity}");
             $this->updateExistingProduct($productData, $b2bStock->toArray(), $sku);
         } else {
             if ($b2bStock->quantity >= 2) {
+                Log::info("✨ Alta: ახალი პროდუქტი | {$sku} | qty={$b2bStock->quantity}");
                 $this->createNewProduct($productData, $b2bStock->toArray(), $sku);
             } else {
-                Log::info("⏭️  Skipping new Alta product (insufficient B2B stock): {$productData['id']}");
+                Log::info("⏭️  Skipping new Alta product (insufficient B2B stock qty={$b2bStock->quantity}): {$productData['id']}");
             }
         }
     }
