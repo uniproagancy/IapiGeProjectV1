@@ -3,204 +3,217 @@
 namespace App\Services\Products;
 
 use App\Jobs\AltaProductJob;
-use GuzzleHttp\Client;
-use GuzzleHttp\Pool;
-use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
 class AltaService
 {
-    protected string $api_url          = 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev/';
-    protected int $concurrent_requests = 5;
-    protected int $chunk_size          = 50;
-    protected int $timeout             = 30;
-    protected int $start_id            = 1;
-    protected int $end_id              = 100000;
+    protected string $worker_url = '';
+    protected string $base_url   = 'https://alta.ge/';
+    protected int    $timeout    = 30;
+    protected int    $chunk_size = 50;
 
-    public function __construct(
-        int $startId = 1,
-        int $endId   = 100000,
-    ) {
-        $this->start_id = $startId;
-        $this->end_id   = $endId;
+    public function __construct()
+    {
+        $this->worker_url = env('ALTA_WORKER_URL', 'https://dry-king-29d3.royal-sunset-e1c6.workers.dev');
     }
 
     public function scanAllIds(): array
     {
-        try {
-            ini_set('memory_limit', '2048M');
-            ini_set('max_execution_time', '0');
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', '0');
 
-            Log::info("🚀 Alta Scan: დაიწყო | range={$this->start_id}-{$this->end_id}");
+        Log::info("🚀 Alta Scan: დაიწყო | worker={$this->worker_url}");
 
-            $startTime = microtime(true);
-            $stats     = [
-                'total'  => 0,
-                'queued' => 0,
-                'null'   => 0,
-                'errors' => 0,
-            ];
+        $token = env('ALTA_ACCESS_TOKEN');
+        if (empty($token)) {
+            Log::error("❌ Alta: ALTA_ACCESS_TOKEN არ არის .env-ში");
+            return ['error' => 'Token missing'];
+        }
 
-            $allIds         = range($this->start_id, $this->end_id);
-            $stats['total'] = count($allIds);
-            $chunks         = array_chunk($allIds, $this->chunk_size);
-            $totalChunks    = count($chunks);
+        $stats = ['total' => 0, 'queued' => 0, 'not_found' => 0, 'errors' => 0];
 
-            Log::info("📦 Alta Scan: სულ {$stats['total']} ID | {$totalChunks} chunk");
+        $items = DB::table('db_alta')
+            ->where('quantity', '>', 2)
+            ->select('product_id', 'quantity')
+            ->get();
 
-            // ALTA_ACCESS_TOKEN შემოწმება
-            $token = env('ALTA_ACCESS_TOKEN');
-            if (empty($token)) {
-                Log::error("❌ Alta Scan: ALTA_ACCESS_TOKEN არ არის .env-ში!");
-                return $stats;
-            }
-            Log::info("🔑 Alta Scan: token=" . substr($token, 0, 10) . '...');
+        $stats['total'] = $items->count();
+        Log::info("📦 Alta: {$stats['total']} პროდუქტი quantity > 2");
 
-            // AltaID ცხრილი შემოწმება
-            $altaIdCount = \App\Models\AltaID::count();
-            Log::info("📋 Alta Scan: AltaID ცხრილში {$altaIdCount} ჩანაწერია");
-            if ($altaIdCount === 0) {
-                Log::error("❌ Alta Scan: AltaID ცხრილი ცარიელია — ვერაფერი დაqueue-ვდება!");
-            }
-
-            foreach ($chunks as $chunkIndex => $chunk) {
-                if ($chunkIndex % 10 === 0) {
-                    Log::info("⏳ Alta: chunk {$chunkIndex}/{$totalChunks} | queued={$stats['queued']} null={$stats['null']} errors={$stats['errors']}");
-                }
-
-                $chunkStats      = $this->scanChunk($chunk);
-                $stats['queued'] += $chunkStats['queued'];
-                $stats['null']   += $chunkStats['null'];
-                $stats['errors'] += $chunkStats['errors'];
-
-                unset($chunk);
-                gc_collect_cycles();
-
-                usleep(1000000);
-            }
-
-            $stats['duration'] = round(microtime(true) - $startTime, 2);
-
-            Log::info("✅ Alta Scan: დასრულდა | queued={$stats['queued']} null={$stats['null']} errors={$stats['errors']} duration={$stats['duration']}s");
-
+        if ($stats['total'] === 0) {
+            Log::warning("⚠️ Alta: db_alta ცარიელია");
             return $stats;
-
-        } catch (Exception $e) {
-            Log::error('❌ AltaProduct scanAllIds error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            throw $e;
         }
-    }
 
-    protected function scanChunk(array $ids): array
-    {
-        $stats = ['queued' => 0, 'null' => 0, 'errors' => 0];
+        $startTime = microtime(true);
+        $chunks    = $items->chunk($this->chunk_size);
 
-        try {
-            $token = env('ALTA_ACCESS_TOKEN');
+        foreach ($chunks as $chunkIndex => $chunk) {
+            if ($chunkIndex % 5 === 0) {
+                Log::info("⏳ Alta chunk {$chunkIndex} | queued={$stats['queued']} not_found={$stats['not_found']} errors={$stats['errors']}");
+            }
 
-            $client = new Client([
-                'timeout'         => $this->timeout,
-                'connect_timeout' => 15,
-                'http_errors'     => false,
-                'verify'          => false,
-                'headers'         => [
-                    'Accept'          => 'application/json, text/plain, */*',
-                    'Accept-Language' => 'ka',
-                    'Referer'         => 'https://alta.ge/',
-                    'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-                    'os'              => 'web',
-                    'Cookie'          => 'alta-access_token=' . $token . '; alta-is_user_session=0',
-                ],
-                'curl' => [
-                    CURLOPT_DNS_CACHE_TIMEOUT => 300,
-                    CURLOPT_IPRESOLVE         => CURL_IPRESOLVE_V4,
-                ],
-            ]);
+            foreach ($chunk as $item) {
+                try {
+                    $result = $this->processProduct((int) $item->product_id, (int) $item->quantity, $token);
 
-            $requests = function ($ids) {
-                foreach ($ids as $id) {
-                    yield $id => new Request(
-                        'GET',
-                        $this->api_url . "?id={$id}&token=" . env('ALTA_ACCESS_TOKEN')
-                    );
-                }
-            };
+                    if ($result === 'queued')     $stats['queued']++;
+                    elseif ($result === 'not_found') $stats['not_found']++;
+                    else                             $stats['errors']++;
 
-            $pool = new Pool($client, $requests($ids), [
-                'concurrency' => $this->concurrent_requests,
-                'fulfilled'   => function ($response, $id) use (&$stats) {
-                    try {
-                        $status = $response->getStatusCode();
+                    usleep(1500000); // 1.5 წამი
 
-                        if ($status === 401 || $status === 403) {
-                            Log::error("🔐 Alta: Token invalid ან expired! status={$status} id={$id}");
-                            $stats['errors']++;
-                            return;
-                        }
-
-                        if ($status !== 200) {
-                            Log::warning("⚠️ Alta: HTTP {$status} id={$id}");
-                            $stats['errors']++;
-                            return;
-                        }
-
-                        $body = $response->getBody()->getContents();
-                        $data = json_decode($body, true);
-
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            Log::warning("⚠️ Alta: JSON parse error id={$id} | " . substr($body, 0, 100));
-                            $stats['errors']++;
-                            return;
-                        }
-
-                        if (!isset($data['product']) || $data['product'] === null) {
-                            $stats['null']++;
-                            return;
-                        }
-
-                        $barCode = $data['product']['barCode'] ?? null;
-
-                        if (empty($barCode)) {
-                            $stats['null']++;
-                            return;
-                        }
-
-                        $exists = \App\Models\AltaID::where('product_id', (string) $barCode)->exists();
-
-                        if (!$exists) {
-                            $stats['null']++;
-                            return;
-                        }
-
-                        AltaProductJob::dispatch(
-                            $data['product'],
-                            $data['availabilityInStores'] ?? []
-                        )->onQueue('alta');
-
-                        $stats['queued']++;
-
-                    } catch (Exception $e) {
-                        Log::error("❌ Alta: Error processing product id={$id}: " . $e->getMessage());
-                        $stats['errors']++;
-                    }
-                },
-                'rejected'    => function ($reason, $id) use (&$stats) {
-                    Log::warning("❌ Alta: Request rejected id={$id} | " . $reason->getMessage());
+                } catch (Exception $e) {
                     $stats['errors']++;
-                },
-            ]);
+                    Log::error("❌ Alta error product_id={$item->product_id}: " . $e->getMessage());
+                }
+            }
 
-            $pool->promise()->wait();
-
-        } catch (Exception $e) {
-            Log::error('❌ AltaProduct scanChunk error: ' . $e->getMessage());
-            $stats['errors'] += count($ids);
+            gc_collect_cycles();
+            sleep(2);
         }
+
+        $stats['duration'] = round(microtime(true) - $startTime, 2);
+        Log::info("✅ Alta Scan დასრულდა | " . json_encode($stats, JSON_UNESCAPED_UNICODE));
 
         return $stats;
+    }
+
+    protected function processProduct(int $productId, int $quantity, string $token): string
+    {
+        // ნაბიჯი 1: Worker → suggestions API
+        $suggestionsUrl = $this->worker_url . '?' . http_build_query([
+                'type'  => 'suggestions',
+                'query' => $productId,
+                'token' => $token,
+            ]);
+
+        $response = $this->makeRequest($suggestionsUrl, [
+            'Accept'     => 'application/json',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        ]);
+
+        if ($response === null) {
+            Log::warning("⚠️ Alta: suggestions ვერ მიიღო product_id={$productId}");
+            return 'error';
+        }
+
+        $data = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE || empty($data['products'])) {
+            return 'not_found';
+        }
+
+        $product = $data['products'][0] ?? null;
+        if (!$product || empty($product['route'])) {
+            return 'not_found';
+        }
+
+        $route = $product['route'];
+        Log::info("🔗 Alta: route={$route} product_id={$productId}");
+
+        // ნაბიჯი 2: Worker → პროდუქტის გვერდის HTML
+        $pageUrl = $this->worker_url . '?' . http_build_query([
+                'type'  => 'page',
+                'route' => $route,
+                'token' => $token,
+            ]);
+
+        $html = $this->makeRequest($pageUrl, [
+            'Accept'     => 'text/html',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        ]);
+
+        if ($html === null) {
+            Log::warning("⚠️ Alta: HTML ვერ მიიღო route={$route}");
+            return 'error';
+        }
+
+        // ნაბიჯი 3: __NEXT_DATA__ parse
+        $productData = $this->parseNextData($html);
+        if ($productData === null) {
+            Log::warning("⚠️ Alta: __NEXT_DATA__ parse ვერ მოხდა route={$route}");
+            return 'error';
+        }
+
+        // Job dispatch სერვერის DB-ში
+        AltaProductJob::dispatch($productData, $quantity)->onQueue('alta');
+
+        $name = $productData['product']['name'] ?? '?';
+        Log::info("✅ Alta queued: product_id={$productId} | name={$name}");
+
+        return 'queued';
+    }
+
+    protected function parseNextData(string $html): ?array
+    {
+        if (!preg_match('/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s', $html, $matches)) {
+            return null;
+        }
+
+        $json = json_decode($matches[1], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        $product      = $json['props']['pageProps']['initialProductData']['product'] ?? null;
+        $availability = $json['props']['pageProps']['initialProductData']['availabilityInStores'] ?? [];
+
+        if (!$product) return null;
+
+        return [
+            'product'      => $product,
+            'availability' => $availability,
+        ];
+    }
+
+    protected function makeRequest(string $url, array $headers): ?string
+    {
+        $curlHeaders = [];
+        foreach ($headers as $key => $value) {
+            $curlHeaders[] = "{$key}: {$value}";
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => 'gzip, deflate',
+            CURLOPT_MAXREDIRS      => 5,
+            CURLOPT_TIMEOUT        => $this->timeout,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_HTTPHEADER     => $curlHeaders,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $error    = curl_error($curl);
+        curl_close($curl);
+
+        if ($error) {
+            Log::warning("⚠️ Alta curl error: {$error}");
+            return null;
+        }
+
+        if ($httpCode === 429) {
+            Log::warning("⏳ Alta: Rate limit (429), 5 წამი...");
+            sleep(5);
+            return null;
+        }
+
+        if ($httpCode === 403) {
+            Log::error("🔐 Alta: 403 Blocked | url={$url}");
+            return null;
+        }
+
+        if ($httpCode !== 200) {
+            Log::warning("⚠️ Alta: HTTP {$httpCode} | url={$url}");
+            return null;
+        }
+
+        return $response ?: null;
     }
 }
