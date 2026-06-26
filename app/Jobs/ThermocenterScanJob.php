@@ -30,7 +30,7 @@ class ThermocenterScanJob implements ShouldQueue
         }
 
         $urls = $this->extractProductUrls($html);
-        Log::info("📦 ThermocenterScan: {$urls} URL ნაპოვნი");
+        Log::info("📦 ThermocenterScan: " . count($urls) . " URL ნაპოვნი");
 
         if (empty($urls)) {
             Log::warning('⚠️ ThermocenterScan: პროდუქტის URL ვერ მოიძებნა');
