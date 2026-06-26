@@ -37,7 +37,6 @@ class ThermocenterScanJob implements ShouldQueue
             return;
         }
 
-        $urls  = array_slice($urls, 0, 20); // TODO: ლიმიტი — წაშალე production-ზე
         $count = 0;
         foreach ($urls as $url) {
             ThermocenterProductJob::dispatch($url)->onQueue('thermocenter');
