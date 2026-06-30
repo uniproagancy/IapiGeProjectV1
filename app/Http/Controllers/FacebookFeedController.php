@@ -167,6 +167,9 @@ class FacebookFeedController extends Controller
             ob_end_clean();
         }
 
+        // XML-ის წინ space/whitespace/BOM ამოვიღოთ
+        $xml = ltrim($xml);
+
         return $xml;
     }
 
