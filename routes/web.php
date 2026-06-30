@@ -9,9 +9,7 @@ use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 use App\Models\Product\Product;
 use App\Models\AltaID;
 
-Route::get('/facebook-feed', [\App\Http\Controllers\FacebookFeedController::class, 'getFeed'])
-    ->middleware('cache.headers:public;max_age=3600')
-    ->name('facebook.get-feed');
+Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
 
 Route::post('/cart/add', '\App\Http\Controllers\Web\CartController@add');
 Route::post('/wishlist/toggle', '\App\Http\Controllers\Web\WishlistController@toggle');
