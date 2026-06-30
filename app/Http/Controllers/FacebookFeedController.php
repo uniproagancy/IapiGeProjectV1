@@ -40,8 +40,6 @@ class FacebookFeedController extends Controller
         foreach ($products as $product) {
             try {
                 Log::info("Processing product ID: {$product->id}");
-
-                // Skip category 21 products under 30 GEL
                 if ($product->category_id == 21) {
                     $price = $product->price->regular_price ?? 0;
                     $discount = $product->price->discount_price ?? 0;
@@ -85,7 +83,9 @@ class FacebookFeedController extends Controller
                     'description'                => strip_tags($translation->description),
                     'availability'               => 'in stock',
                     'price'                      => $product->price->regular_price ?? 0,
-                    'sale_price'                 => $product->price->discount_price ?? 0,
+                    'sale_price' => $product->price->discount_price > 0
+                        ? $product->price->discount_price
+                        : null,
                     'brand'                      => $brandTranslation?->title ?? 'Unknown',
                     'google_product_category'    => $product->category?->google_category_id
                         ?? $product->category?->parent?->google_category_id
