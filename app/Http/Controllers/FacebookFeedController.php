@@ -45,125 +45,23 @@ class FacebookFeedController extends Controller
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
 
-        if (ob_get_level()) {
+        // ყველა output buffer გავასუფთაოთ
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
-        ob_start();
 
         LaravelFacebookCatalog::setTitle('iapi.ge feed');
-        LaravelFacebookCatalog::setDescription('iapi.ge product feed');
-        LaravelFacebookCatalog::setLink('https://iapi.ge');
-        LaravelFacebookCatalog::setCurrency('GEL');
+        // ...
 
-        $successCount = 0;
-        $errorCount   = 0;
+        // generate-ის დროს ob_start არ გამოვიყენოთ
+        $xml = LaravelFacebookCatalog::generate();
 
-        Product::where('active', 1)
-            ->where('show', 1)
-            ->whereHas('category')
-            ->with([
-                'translations',
-                'images',
-                'price',
-                'brand.translations',
-                'category.translations',
-                'category.parent.translations',
-            ])
-            ->chunkById(200, function ($products) use (&$successCount, &$errorCount) {
-                foreach ($products as $product) {
-                    try {
-                        // კატეგორია 21 — 30 ლარზე ნაკლები გამოვტოვოთ
-                        if ($product->category_id == 21) {
-                            $price    = $product->price->regular_price ?? 0;
-                            $discount = $product->price->discount_price ?? 0;
-                            if ($price < 30 || ($discount > 0 && $discount < 30)) {
-                                continue;
-                            }
-                        }
+        // ბოლოს კიდევ ერთხელ გავასუფთაოთ
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
 
-                        $translation = $product->translations->where('locale', 'ka')->first();
-                        if (!$translation) {
-                            $errorCount++;
-                            continue;
-                        }
-
-                        // description — ცარიელია თუ title-ი გამოვიყენოთ
-                        $description = trim(strip_tags($translation->description ?? ''));
-                        if (empty($description)) {
-                            $description = $translation->title;
-                        }
-
-                        // ბრენდი
-                        $brandName = $product->brand?->translations
-                            ->where('locale', 'ka')->first()?->title;
-                        if (empty($brandName) || $brandName === 'Unknown') {
-                            $brandName = null;
-                        }
-
-                        // კატეგორია
-                        $categoryName = $product->category?->translations
-                            ->where('locale', 'ka')->first()?->title;
-                        $parentName   = $product->category?->parent?->translations
-                            ->where('locale', 'ka')->first()?->title;
-
-                        // Google კატეგორია
-                        $googleCategoryId = $product->category?->google_category_id
-                            ?? $product->category?->parent?->google_category_id
-                            ?? null;
-
-                        // ფასები
-                        $regularPrice  = (float) ($product->price->regular_price ?? 0);
-                        $discountPrice = (float) ($product->price->discount_price ?? 0);
-                        $salePrice     = $discountPrice > 0 ? $discountPrice : null;
-                        $productPrice  = $salePrice ?? $regularPrice;
-
-                        $item = [
-                            'id'                           => $product->id,
-                            'link'                         => route('web.products.view', $translation->slug),
-                            'title'                        => $translation->title,
-                            'description'                  => $description,
-                            'image_link'                   => $this->getProductImage($product),
-                            'availability'                 => 'in stock',
-                            'condition'                    => 'new',
-                            'price'                        => $regularPrice,
-                            'brand'                        => $brandName,
-                            'google_product_category'      => $googleCategoryId,
-                            'quantity_to_sell_on_facebook' => intval($product->quantity * 10),
-                            'additional_image_link'        => $this->getProductGallery($product),
-                            'product_type'                 => $parentName && $categoryName
-                                ? $parentName . ' > ' . $categoryName
-                                : ($categoryName ?? ''),
-                            'custom_label_2'               => $parentName ?? '',
-                        ];
-
-                        // sale_price — მხოლოდ თუ არსებობს
-                        if ($salePrice) {
-                            $item['sale_price']     = $salePrice;
-                            $item['custom_label_1'] = $salePrice;
-                        }
-
-                        // განვადება — 150-ზე მეტზე
-                        if ($productPrice > 150) {
-                            $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
-                        }
-
-                        LaravelFacebookCatalog::addItem($item);
-                        $successCount++;
-
-                    } catch (\Exception $e) {
-                        $errorCount++;
-                        Log::error("FacebookFeed error product {$product->id}: " . $e->getMessage());
-                    }
-                }
-
-                gc_collect_cycles();
-            });
-
-        Log::info("FacebookFeed: success={$successCount} errors={$errorCount}");
-
-        ob_end_clean();
-
-        return LaravelFacebookCatalog::generate();
+        return $xml;
     }
 
     private function xmlResponse(string $xml)
