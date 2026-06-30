@@ -178,6 +178,22 @@ class ZoommerProductJob implements ShouldQueue
             throw new Exception('Product ID is required');
         }
 
+        $brandName = $productData['brandName'] ?? null;
+        if (!$brandName) {
+            foreach ($productData['specificationGroup'] ?? [] as $group) {
+                foreach ($group['specifications'] ?? [] as $spec) {
+                    if (in_array($spec['specificationName'], ['Brand', 'ბრენდი', 'Бренд'])) {
+                        $brandName = $spec['specificationMeaning'] ?? null;
+                        break 2;
+                    }
+                }
+            }
+        }
+        if ($brandName && mb_strtolower(trim($brandName)) === 'ugreen') {
+            Log::info("⏭️ Zoommer: Ugreen გამოტოვებულია | id={$productData['id']}");
+            return;
+        }
+
         $hasStock = $this->checkTbilisiStock($productAvailability);
 
         $zoomId = $productData['id'];

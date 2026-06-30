@@ -106,6 +106,11 @@ class EliteProductJob implements ShouldQueue
             Log::warning('⚠️ Elite: barCode ცარიელია');
             return;
         }
+        $brandName = $productData['brandName'] ?? null;
+        if ($brandName && mb_strtolower(trim($brandName)) === 'ugreen') {
+            Log::info("⏭️ Elite: Ugreen გამოტოვებულია | barCode={$barCode}");
+            return;
+        }
 
         // ✅ BarCode ჩვენს სიაშია?
         $eliteProduct = EliteProduct::where('bar_code', $barCode)->first();
