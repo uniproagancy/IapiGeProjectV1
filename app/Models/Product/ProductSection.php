@@ -11,7 +11,7 @@ class ProductSection extends Model
     protected $table = 'db_product_sections';
 
     protected $fillable = [
-        'title', 'image', 'category_id', 'link', 'show_on_home', 'sort_order', 'active',
+        'title', 'image', 'category_id', 'show_on_home', 'sort_order', 'active',
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class ProductSection extends Model
         static::saving(function ($section) {
             if (empty($section->slug)) {
                 $base = \Illuminate\Support\Str::slug($section->title);
+                // ქართული title-ისთვის Str::slug ცარიელს აბრუნებs — fallback
                 if ($base === '') {
                     $base = 'section';
                 }
