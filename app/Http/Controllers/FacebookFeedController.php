@@ -175,6 +175,9 @@ class FacebookFeedController extends Controller
         // თუ მრავლობითი XML declaration-ია — პირველი დავტოვოთ
         $xml = preg_replace('/(<\?xml[^>]+\?>)\s*(<\?xml[^>]+\?>)+/s', '$1', $xml);
 
+        // XML declaration-ის შემდეგ მხოლოდ ერთი newline
+        $xml = preg_replace('/(<\?xml[^>]+\?>)\s+/', "$1\n", $xml);
+
         $xml = ltrim($xml);
 
         return $xml;
