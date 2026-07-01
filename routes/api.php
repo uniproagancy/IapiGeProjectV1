@@ -63,3 +63,8 @@ Route::prefix('credo')->group(function () {
 Route::prefix('thermocenter')->group(function () {
     Route::get('/scan', [\App\Http\Controllers\ApiControllers\ThermocenterController::class, 'scan']);
 });
+
+Route::get('/generate-feed-now', function() {
+    app(\App\Http\Controllers\FacebookFeedController::class)->regenerate();
+    return 'done';
+});
