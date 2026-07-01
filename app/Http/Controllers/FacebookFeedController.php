@@ -21,7 +21,6 @@ class FacebookFeedController extends Controller
             return $this->xmlResponse(file_get_contents($cachePath), $cachePath);
         }
 
-        // ახლიდან generate
         Log::info('FacebookFeed: ახლიდან generate იწყება');
         $xml = $this->generateFeed();
 
@@ -48,6 +47,9 @@ class FacebookFeedController extends Controller
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
+
+        // static container-ის გასუფთავება — წინა request-ის მონაცემები არ დარჩეს
+        LaravelFacebookCatalog::$container = null;
 
         LaravelFacebookCatalog::setTitle('iapi.ge feed');
         LaravelFacebookCatalog::setDescription('iapi.ge product feed');
@@ -162,12 +164,17 @@ class FacebookFeedController extends Controller
 
         $xml = LaravelFacebookCatalog::generate();
 
-        // ბოლოს კიდევ ერთხელ buffer გავასუფთაოთ
+        // buffer გავასუფთაოთ
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
 
-        // XML-ის წინ space/whitespace/BOM ამოვიღოთ
+        // ყველა whitespace და BOM XML-ის წინ ამოვიღოთ
+        $xml = preg_replace('/^[\s\xEF\xBB\xBF]+/', '', $xml);
+
+        // თუ მრავლობითი XML declaration-ია — პირველი დავტოვოთ
+        $xml = preg_replace('/(<\?xml[^>]+\?>)\s*(<\?xml[^>]+\?>)+/s', '$1', $xml);
+
         $xml = ltrim($xml);
 
         return $xml;
