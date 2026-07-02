@@ -35,14 +35,6 @@ class EliteScanService
                 'range' => "{$this->start_id} - {$this->end_id}",
             ]);
 
-            // Token-ის შემოწმება
-            $token = config('services.elite.token', '');
-            if (empty($token)) {
-                Log::error("❌ Elite Scan: Token ცარიელია! შეამოწმე config/services.php → elite.token");
-            } else {
-                Log::info("✅ Elite Scan: Token არსებობს (" . strlen($token) . " სიმბოლო)");
-            }
-
             $startTime = microtime(true);
             $stats = [
                 'total'  => 0,
@@ -55,18 +47,14 @@ class EliteScanService
             $stats['total'] = count($allIds);
             $chunks         = array_chunk($allIds, $this->chunk_size);
 
-            Log::info("📦 Elite Scan: " . count($allIds) . " ID | " . count($chunks) . " chunk");
-
             foreach ($chunks as $chunkIndex => $chunk) {
-                Log::info("⏳ Elite Scan: chunk {$chunkIndex}/" . count($chunks) . " | IDs: {$chunk[0]} - " . end($chunk));
+                Log::info("⏳ Elite Scan: chunk {$chunkIndex}/" . count($chunks));
 
                 $chunkStats = $this->scanChunk($chunk);
 
                 $stats['queued'] += $chunkStats['queued'];
                 $stats['null']   += $chunkStats['null'];
                 $stats['errors'] += $chunkStats['errors'];
-
-                Log::info("📊 Elite chunk {$chunkIndex} შედეგი: queued={$chunkStats['queued']} null={$chunkStats['null']} errors={$chunkStats['errors']}");
 
                 unset($chunk);
                 gc_collect_cycles();
@@ -79,9 +67,7 @@ class EliteScanService
             return $stats;
 
         } catch (Exception $e) {
-            Log::error('❌ EliteScanService scanAllIds error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('EliteScanService scanAllIds error: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -112,26 +98,6 @@ class EliteScanService
                 ],
             ]);
 
-            // პირველი ID-ის ტესტი — ვნახოთ API-ი საერთოდ პასუხობს
-            $testId       = $ids[0];
-            $testResponse = $client->get($this->api_url . "?productId={$testId}");
-            $testStatus   = $testResponse->getStatusCode();
-            $testBody     = substr($testResponse->getBody()->getContents(), 0, 200);
-
-            Log::info("🧪 Elite API ტესტი ID={$testId}: status={$testStatus} | body={$testBody}");
-
-            if ($testStatus === 401) {
-                Log::error("🔒 Elite: 401 Unauthorized — Token ვადაგასულია ან არასწორია!");
-                $stats['errors'] += count($ids);
-                return $stats;
-            }
-
-            if ($testStatus === 403) {
-                Log::error("🚫 Elite: 403 Forbidden — API წვდომა დაბლოკილია!");
-                $stats['errors'] += count($ids);
-                return $stats;
-            }
-
             $requests = function ($ids) {
                 foreach ($ids as $id) {
                     yield $id => new Request(
@@ -153,32 +119,20 @@ class EliteScanService
                             return;
                         }
 
-                        if ($statusCode === 403) {
-                            $stats['errors']++;
-                            Log::warning("🚫 Elite 403 ID {$id} — access denied");
-                            return;
-                        }
-
                         if ($statusCode !== 200) {
                             $stats['errors']++;
-                            Log::warning("⚠️ Elite HTTP {$statusCode} ID {$id}");
                             return;
                         }
 
-                        $body = $response->getBody()->getContents();
-                        $data = json_decode($body, true);
-
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            Log::warning("⚠️ Elite JSON parse error ID {$id}: " . json_last_error_msg());
-                            $stats['errors']++;
-                            return;
-                        }
+                        $data = json_decode($response->getBody()->getContents(), true);
 
                         if (!isset($data['product']) || $data['product'] === null) {
                             $stats['null']++;
                             return;
                         }
 
+                        // Zoommer-ის მსგავსად — ყველა product dispatch-დება
+                        // BarCode-ის შემოწმება Job-ში ხდება
                         EliteProductJob::dispatch(
                             $data['product'],
                             $data['availabilityInStores'] ?? []
@@ -193,16 +147,14 @@ class EliteScanService
                 },
                 'rejected' => function ($reason, $id) use (&$stats) {
                     $stats['errors']++;
-                    Log::warning("Elite: Request failed for ID {$id}: " . $reason->getMessage());
+                    Log::warning("Elite: Request failed for ID {$id}: " . $reason);
                 },
             ]);
 
             $pool->promise()->wait();
 
         } catch (Exception $e) {
-            Log::error('❌ EliteScanService scanChunk error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('EliteScanService scanChunk error: ' . $e->getMessage());
             $stats['errors'] += count($ids);
         }
 
