@@ -430,6 +430,16 @@
                         <input type="text" class="form-control" placeholder="დასახელება, SKU" wire:model.lazy="search_query"/>
                     </div>
                     <div class="mb-1">
+                        <label class="form-label">ფასი</label>
+                        <div class="d-flex gap-1 align-items-center">
+                            <input type="number" class="form-control" placeholder="დან ₾"
+                                   wire:model.lazy="price_min" min="0" step="0.01">
+                            <span class="text-muted px-1">—</span>
+                            <input type="number" class="form-control" placeholder="მდე ₾"
+                                   wire:model.lazy="price_max" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div class="mb-1">
                         <label class="form-label">სორტირება</label>
                         <select class="form-select" wire:model.lazy="order_dir">
                             <option value="desc">ახალ დამატებული</option>
