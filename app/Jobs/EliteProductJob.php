@@ -283,6 +283,10 @@ class EliteProductJob implements ShouldQueue
             }
         }
 
+        $logPath = storage_path('logs/elite-unmapped-categories.log');
+        $line    = now()->format('Y-m-d H:i:s') . " | " . ($categoryName ?? 'null') . " | barCode=" . ($productData['barCode'] ?? '?') . PHP_EOL;
+        file_put_contents($logPath, $line, FILE_APPEND | LOCK_EX);
+
         Log::warning("⚠️ Elite category not mapped: categoryName='{$categoryName}'");
         return self::FALLBACK_CATEGORY_ID;
     }

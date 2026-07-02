@@ -108,6 +108,10 @@ class ZoommerProductJob implements ShouldQueue
             }
         }
 
+        $logPath = storage_path('logs/zoommer-unmapped-categories.log');
+        $line    = now()->format('Y-m-d H:i:s') . " | " . ($categoryName ?? 'null') . " | product_id=" . ($productData['id'] ?? '?') . PHP_EOL;
+        file_put_contents($logPath, $line, FILE_APPEND | LOCK_EX);
+
         Log::warning("⚠️ Zoommer category not mapped: categoryName='{$categoryName}'");
         return 4;
     }
