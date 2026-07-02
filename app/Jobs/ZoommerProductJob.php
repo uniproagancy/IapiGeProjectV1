@@ -182,6 +182,7 @@ class ZoommerProductJob implements ShouldQueue
             throw new Exception('Product ID is required');
         }
 
+        // ბრენდის ფილტრი — Ugreen გამოვტოვოთ
         $brandName = $productData['brandName'] ?? null;
         if (!$brandName) {
             foreach ($productData['specificationGroup'] ?? [] as $group) {
@@ -203,12 +204,12 @@ class ZoommerProductJob implements ShouldQueue
         $zoomId = $productData['id'];
         $sku    = $productData['barCode'] ?? ('ZOOM-' . $zoomId);
 
-        // ძებნა supplier_product_id-ით — ძირითადი პროდუქტი
+        // ძებნა supplier_product_id-ით
         $primary = Product::where('supplier_id', 4)
             ->where('supplier_product_id', $zoomId)
             ->first();
 
-        // fallback: ძველი ჩანაწერები რომლებსაც supplier_product_id არ აქვთ
+        // fallback: ძველი ჩანაწერები
         if (!$primary) {
             $primary = Product::where('sku', $sku)
                 ->where('supplier_id', 4)
@@ -221,8 +222,6 @@ class ZoommerProductJob implements ShouldQueue
             }
         }
 
-        // ყოველი პროდუქტი მხოლოდ საკუთარი Zoommer job-ით განახლდება
-        // (duplicate SKU-ების შემთხვევაში თითოეულს თავისი job-ი ანახლებს)
         if (!$primary) {
             if ($hasStock) {
                 $this->createNewProduct($productData, $hasStock, $sku);
@@ -238,41 +237,6 @@ class ZoommerProductJob implements ShouldQueue
         }
 
         $this->updateExistingProduct($productData, $hasStock, $sku);
-    }
-
-    private function updatePriceAndStock(array $productData, bool $hasStock, $products): void
-    {
-        $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
-        $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
-
-        $productPrice  = $this->calculatePrice($productPrice);
-        $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
-
-        foreach ($products as $product) {
-            if ($product->update_lock) {
-                Log::info("🔒 Zoommer: duplicate locked, skip — id={$product->id}");
-                continue;
-            }
-
-            $product->update([
-                'quantity' => $hasStock ? 5 : 0,
-                'in_stock' => $hasStock ? 1 : 0,
-                'show'     => $hasStock ? 1 : 0,
-                'active'   => $hasStock ? 1 : 0,
-            ]);
-
-            ProductPrice::updateOrCreate(
-                ['product_id' => $product->id],
-                [
-                    'dealer_price'     => $productPrice,
-                    'regular_price'    => $productPrice,
-                    'discount_price'   => $discountPrice,
-                    'discount_percent' => $productData['discountPercent'] ?? 0,
-                ]
-            );
-
-            Log::info("🔄 Zoommer: duplicate განახლდა id={$product->id} (sku={$product->sku}, stock=" . ($hasStock ? 'yes' : 'no') . ")");
-        }
     }
 
     private function checkTbilisiStock($availability): bool
@@ -298,65 +262,72 @@ class ZoommerProductJob implements ShouldQueue
     {
         DB::transaction(function () use ($productData, $hasStock, $sku) {
             try {
-                $product = Product::where('sku', $sku)->firstOrFail();
+                // ← get() ყველა პროდუქტს აიღებს ამ SKU-თი
+                $products = Product::where('sku', $sku)->get();
+
+                if ($products->isEmpty()) {
+                    Log::warning("⚠️ Zoommer: პროდუქტი ვერ მოიძებნა SKU={$sku}");
+                    return;
+                }
 
                 $productPrice  = (float) ($productData['previousPrice'] ?? $productData['price'] ?? 0);
                 $discountPrice = $productData['previousPrice'] ? (float) $productData['price'] : null;
-
                 $productPrice  = $this->calculatePrice($productPrice);
                 $discountPrice = $discountPrice ? $this->calculatePrice($discountPrice) : null;
 
-                // ===== ფასი — ყოველთვის ახლდება =====
-                $oldPrice = $product->price?->regular_price;
-                $oldDiscount = $product->price?->discount_price;
+                foreach ($products as $product) {
+                    if ($product->update_lock) {
+                        Log::info("🔒 Zoommer: locked, skip — id={$product->id}");
+                        continue;
+                    }
 
-                ProductPrice::updateOrCreate(
-                    ['product_id' => $product->id],
-                    [
-                        'dealer_price'     => $productPrice,
-                        'regular_price'    => $productPrice,
-                        'discount_price'   => $discountPrice,
-                        'discount_percent' => $productData['discountPercent'] ?? 0,
-                    ]
-                );
+                    $oldPrice    = $product->price?->regular_price;
+                    $oldDiscount = $product->price?->discount_price;
 
-                Log::info("💰 Zoommer ფასი განახლდა [{$sku}]: regular {$oldPrice} → {$productPrice} | discount {$oldDiscount} → " . ($discountPrice ?? 'null'));
+                    ProductPrice::updateOrCreate(
+                        ['product_id' => $product->id],
+                        [
+                            'dealer_price'     => $productPrice,
+                            'regular_price'    => $productPrice,
+                            'discount_price'   => $discountPrice,
+                            'discount_percent' => $productData['discountPercent'] ?? 0,
+                        ]
+                    );
 
-                $updateData = [
-                    'quantity' => $hasStock ? 5 : 0,
-                    'in_stock' => $hasStock ? 1 : 0,
-                    'show'     => $hasStock ? 1 : 0,
-                    'active'   => $hasStock ? 1 : 0,
-                ];
+                    Log::info("💰 Zoommer ფასი განახლდა [{$sku}] id={$product->id}: regular {$oldPrice} → {$productPrice} | discount {$oldDiscount} → " . ($discountPrice ?? 'null'));
 
-                if (!$product->taxonomy_lock) {
-                    $updateData['category_id'] = $this->getCategoryId($productData);
-                    $updateData['brand_id']    = $this->getBrandId($productData);
-                } else {
-                    Log::info("🏷️ Zoommer: taxonomy locked, category/brand უცვლელი — {$sku}");
+                    $updateData = [
+                        'quantity' => $hasStock ? 5 : 0,
+                        'in_stock' => $hasStock ? 1 : 0,
+                        'show'     => $hasStock ? 1 : 0,
+                        'active'   => $hasStock ? 1 : 0,
+                    ];
+
+                    if (!$product->taxonomy_lock) {
+                        $updateData['category_id'] = $this->getCategoryId($productData);
+                        $updateData['brand_id']    = $this->getBrandId($productData);
+                    } else {
+                        Log::info("🏷️ Zoommer: taxonomy locked, category/brand უცვლელი — {$sku} id={$product->id}");
+                    }
+
+                    $product->update($updateData);
+
+                    ProductShortSpecification::where('product_id', $product->id)->forceDelete();
+                    $this->createShortSpecifications($product, $productData);
+
+                    $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
+                    ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
+                    ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
+                    $this->createFullSpecifications($product, $productData);
+
+                    if (!empty($productData['description'])) {
+                        ProductTranslation::where('product_id', $product->id)
+                            ->where('locale', 'ka')
+                            ->update(['description' => $productData['description']]);
+                    }
+
+                    Log::info("🔁 Updated product: {$product->id} | sku={$sku}, stock: " . ($hasStock ? 'yes' : 'no'));
                 }
-
-                $product->update($updateData);
-
-                // ===== Short Specs =====
-                $deletedShort = ProductShortSpecification::where('product_id', $product->id)->forceDelete();
-                Log::info("🗑️ Zoommer short specs წაიშალა: {$product->id} ({$deletedShort} ჩანაწერი)");
-                $this->createShortSpecifications($product, $productData);
-
-                // ===== Full Specs =====
-                $sectionIds = ProductFullSpecificationSection::where('product_id', $product->id)->pluck('id');
-                $deletedItems = ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
-                $deletedSections = ProductFullSpecificationSection::where('product_id', $product->id)->forceDelete();
-                Log::info("🗑️ Zoommer full specs წაიშალა: {$product->id} ({$deletedSections} სექცია, {$deletedItems} ჩანაწერი)");
-                $this->createFullSpecifications($product, $productData);
-
-                if (!empty($productData['description'])) {
-                    ProductTranslation::where('product_id', $product->id)
-                        ->where('locale', 'ka')
-                        ->update(['description' => $productData['description']]);
-                }
-
-                Log::info("🔁 Updated product: {$product->id} | sku={$product->sku}, stock: " . ($hasStock ? 'yes' : 'no'));
 
             } catch (Exception $e) {
                 Log::error("Error updating product {$productData['id']}: {$e->getMessage()}");
@@ -503,7 +474,7 @@ class ZoommerProductJob implements ShouldQueue
             $specs[] = [
                 'product_id' => $product->id,
                 'name'       => mb_substr($spec['specificationName'] ?? '', 0, 255),
-                'value'      => mb_substr($spec['specificationMeaning'] ?? '', 0, 255), // ← FIX
+                'value'      => mb_substr($spec['specificationMeaning'] ?? '', 0, 255),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
