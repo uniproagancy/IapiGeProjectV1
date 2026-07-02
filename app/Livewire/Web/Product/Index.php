@@ -1,837 +1,550 @@
 <?php
 
-namespace App\Livewire\Dashboard\Product;
+namespace App\Livewire\Web\Product;
 
 use App\Models\Product\Product;
-use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductCategory;
-use App\Models\Product\ProductPrice;
-use App\Models\Product\ProductSupplier;
+use App\Models\Product\ProductBrand;
+use App\Models\Product\ProductSection;
+use App\Models\Product\ProductFullSpecificationSection;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Index extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination;
 
-    public string $search_query = '';
-    public string $order_dir    = 'desc';
-    public int $per_page        = 10;
-    public bool $with_trashed   = false;
-    public bool $show_web       = false;
-    public bool $status_active  = false;
-    public $no_stock            = null;
-    public bool $unsorted       = false;
-    public bool $draft          = false;
+    public $parentCategories = [];
+    public $subCategories    = [];
+    public $currentCategory  = null;
+    public $selectedParent   = null;
+    public $showAllBrands    = false;
+    public $category_slug    = null;
+    public bool $isLoading   = false;
+    public string $eventId   = '';
+    public array $categoryProductIds = [];
 
-    public array $selectedProducts = [];
-    public bool $selectAll         = false;
-    public array $currentPageIds   = [];
+    #[Url]
+    public $search = '';
 
-    public $alneo_file;
-    public $midea_file;
-    public $kontakt_file;
-    public $comfoFile        = null;
-    public $elite_file;
-    public $metromart_file;
+    #[Url(as: 'brands', keep: true)]
+    public $selectedBrands = [];
 
-    public $selectedCategory    = null;
-    public $selectedBrand       = null;
-    public $selectedSubcategory = null;
-    public $subcategories       = [];
+    #[Url(as: 'min', keep: true)]
+    public $priceMin = null;
 
-    public $category_id  = null;
-    public $brand_id     = null;
-    public $supplier_id  = null;
-    public $price_min    = null;
-    public $price_max    = null;
+    #[Url(as: 'max', keep: true)]
+    public $priceMax = null;
 
-    public $priceEditProductId     = null;
-    public $priceEditDealerPrice   = 0;
-    public $priceEditRegularPrice  = 0;
-    public $priceEditDiscountPrice = null;
+    #[Url(as: 'specs', keep: true)]
+    public $selectedSpecs = [];
 
-    // Quick Edit
-    public $quickEditProductId     = null;
-    public $quickEditCategoryId    = null;
-    public $quickEditSubcategoryId = null;
-    public $quickEditBrandId       = null;
-    public $quickEditRegularPrice  = 0;
-    public $quickEditDiscountPrice = null;
-    public array $quickEditSubcategories = [];
+    #[Url]
+    public bool $onlyDiscounted = false;
 
-    // Bulk actions
-    public $bulkCategoryId    = null;
-    public $bulkSubcategoryId = null;
-    public $bulkBrandId       = null;
-    public array $bulkSubcategories = [];
+    #[Url(as: 'sort', keep: true)]
+    public string $sort = 'newest';
 
-    public bool $only_locked = false;
-    public bool $no_brand    = false;
+    #[Url(as: 'show', keep: true)]
+    public $perPage = 20;
 
-    protected $listeners = [
-        'delete',
-        'restore',
-        'product-refresh' => '$refresh',
-        'deleteModal',
-        'restoreModal',
-    ];
-
-    protected $queryString = [
-        'draft'         => ['except' => false],
-        'search_query'  => ['except' => ''],
-        'order_dir'     => ['except' => 'desc'],
-        'per_page'      => ['except' => 10],
-        'brand_id'      => ['except' => 0],
-        'category_id'   => ['except' => 0],
-        'supplier_id'   => ['except' => 0],
-        'with_trashed'  => ['except' => false],
-        'show_web'      => ['except' => false],
-        'status_active' => ['except' => false],
-        'no_stock'      => ['except' => false],
-        'unsorted'      => ['except' => false],
-        'no_brand'      => ['except' => false],
-        'only_locked'   => ['except' => false],
-        'price_min'     => ['except' => ''],
-        'price_max'     => ['except' => ''],
-    ];
-
-    public function mount(): void {}
-
-    public function paginationView(): string
+    public function mount($category_slug = null): void
     {
-        return 'livewire.dashboard.partials._pagination';
+        $this->category_slug = $category_slug;
+        $this->loadParentCategories();
+        $this->loadCategoryFromSlug();
+        $this->normalizeBrands();
+        $this->normalizeSpecs();
+        $this->normalizePerPage();
+        $this->eventId = 'pv_' . time() . '_' . Str::random(6);
     }
 
-    // ============================================
-    // Toggle
-    // ============================================
-
-    public function toggleActive($productId): void
+    private function normalizeBrands(): void
     {
-        $product = Product::findOrFail($productId);
-        $product->active = !$product->active;
-        if ($product->active == 0) $product->show = 0;
-        $product->save();
-        $this->dispatch('ui:success', message: 'სტატუსი განახლდა!');
+        if (is_string($this->selectedBrands)) {
+            $this->selectedBrands = $this->selectedBrands
+                ? explode(',', $this->selectedBrands)
+                : [];
+        }
+
+        $this->selectedBrands = array_filter(array_map('intval', (array) $this->selectedBrands));
     }
 
-    public function toggleShow($productId): void
+    private function normalizeSpecs(): void
     {
-        $product = Product::findOrFail($productId);
-        $product->show = !$product->show;
-        $product->save();
-        $this->dispatch('ui:success', message: 'Show სტატუსი განახლდა!');
+        if (is_string($this->selectedSpecs)) {
+            $this->selectedSpecs = $this->selectedSpecs
+                ? explode(',', $this->selectedSpecs)
+                : [];
+        }
+
+        $this->selectedSpecs = array_filter($this->selectedSpecs);
     }
 
-    public function toggleLock($productId): void
+    private function normalizePerPage(): void
     {
-        $product = Product::findOrFail($productId);
-        $product->update_lock = !$product->update_lock;
-        $product->save();
-        $this->dispatch('ui:success', message: $product->update_lock
-            ? 'პროდუქტი ჩაიკეტა (განახლება გათიშულია)'
-            : 'პროდუქტი განიბლოკა');
+        $this->perPage = max(20, (int) $this->perPage);
     }
 
-    // ============================================
-    // Delete / Restore
-    // ============================================
-
-    public function deleteModal($productId): void
+    private function loadParentCategories(): void
     {
-        $this->dispatch('swal:deleteModal', [
-            'id'                => $productId,
-            'title'             => 'პროდუქტის წაშლა?',
-            'icon'              => 'warning',
-            'confirmButtonText' => 'წაშლა!',
-            'cancelButtonText'  => 'დახურვა!',
-            'type'              => 'delete',
+        $this->parentCategories = cache()->remember('parent_categories_with_products', 3600, fn () =>
+        ProductCategory::query()
+            ->where('parent_id', 0)
+            ->where('show', 1)
+            ->where(function ($q) {
+                $q->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
+                    ->orWhereHas('children.products', fn ($p) => $p->where('show', 1)->where('active', 1));
+            })
+            ->orderBy('sortable')
+            ->get()
+        );
+    }
+
+    private function loadCategoryFromSlug(): void
+    {
+        if (empty($this->category_slug)) {
+            return;
+        }
+
+        $category = ProductCategory::query()
+            ->whereHas('translations', function ($query) {
+                $query->where('slug', $this->category_slug);
+            })
+            ->first();
+
+        if (!$category) {
+            abort(404);
+        }
+
+        $this->currentCategory = $category;
+        $this->loadSubcategories($category);
+    }
+
+    private function loadSubcategories(ProductCategory $category): void
+    {
+        if ($category->parent_id === 0) {
+            $this->selectedParent = $category->id;
+            $this->subCategories  = $category->children()
+                ->where('show', 1)
+                ->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
+                ->get();
+        } else {
+            $this->selectedParent = $category->parent_id;
+            $this->subCategories  = ProductCategory::query()
+                ->where('parent_id', $category->parent_id)
+                ->where('show', 1)
+                ->whereHas('products', fn ($p) => $p->where('show', 1)->where('active', 1))
+                ->get();
+        }
+    }
+
+    public function toggleShowAllBrands(): void
+    {
+        $this->showAllBrands = !$this->showAllBrands;
+    }
+
+    public function selectParent($id): void
+    {
+        $this->selectCategoryAndRedirect($id);
+    }
+
+    public function selectChild($id): void
+    {
+        $this->selectCategoryAndRedirect($id);
+    }
+
+    private function selectCategoryAndRedirect($categoryId): void
+    {
+        $category = ProductCategory::find($categoryId);
+        if (!$category) return;
+        $this->isLoading = true;
+        $this->redirectToCategory($category);
+    }
+
+    public function resetCategories(): void
+    {
+        $this->isLoading = true;
+        $this->redirect(route('web.products.index'));
+    }
+
+    private function redirectToCategory(ProductCategory $category): void
+    {
+        $params = $this->buildFilterParams();
+        $url    = route('web.products.index', [
+            'category_slug' => $category->translation('ka')->slug,
+        ]);
+
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+
+        $this->redirect($url);
+    }
+
+    private function buildFilterParams(): array
+    {
+        return array_filter([
+            'brands'         => !empty($this->selectedBrands) ? implode(',', $this->selectedBrands) : null,
+            'min'            => $this->priceMin,
+            'max'            => $this->priceMax,
+            'search'         => !empty($this->search) ? $this->search : null,
+            'specs'          => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
+            'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
+            'sort'           => $this->sort !== 'newest' ? $this->sort : null,
+            'show'           => $this->perPage !== 20 ? $this->perPage : null,
         ]);
     }
 
-    public function restoreModal($productId): void
+    public function clearPriceFilter(): void
     {
-        $this->dispatch('swal:restoreModal', [
-            'id'                => $productId,
-            'title'             => 'პროდუქტის აღდგენა?',
-            'icon'              => 'warning',
-            'confirmButtonText' => 'აღდგენა!',
-            'cancelButtonText'  => 'დახურვა!',
-            'type'              => 'restore',
-        ]);
+        $this->priceMin  = null;
+        $this->priceMax  = null;
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    public function restore($id): void
+    public function clearBrandFilter(): void
     {
-        Product::withTrashed()->findOrFail($id)->restore();
-        $this->dispatch('ui:success', message: 'პროდუქტი აღდგა!');
+        $this->selectedBrands = [];
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    public function delete($id): void
+    public function clearSpecFilter(): void
     {
-        $product = Product::findOrFail($id);
-        $product->update(['active' => 0]);
-        $product->delete();
-        $this->dispatch('ui:success', message: 'პროდუქტი წაიშალა!');
+        $this->selectedSpecs = [];
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    // ============================================
-    // Filters
-    // ============================================
+    public function clearDiscountFilter(): void
+    {
+        $this->onlyDiscounted = false;
+        $this->resetPage();
+        $this->isLoading = true;
+    }
 
-    public function applyFilters(): void
+    public function resetAllFilters(): void
+    {
+        $this->selectedBrands  = [];
+        $this->priceMin        = null;
+        $this->priceMax        = null;
+        $this->search          = '';
+        $this->selectedSpecs   = [];
+        $this->onlyDiscounted  = false;
+        $this->sort            = 'newest';
+        $this->perPage         = 20;
+        $this->currentCategory = null;
+        $this->selectedParent  = null;
+        $this->resetPage();
+        $this->isLoading = true;
+    }
+
+    public function updatedSelectedBrands(): void
+    {
+        $this->normalizeBrands();
+        $this->resetPage();
+        $this->isLoading = true;
+    }
+
+    public function updatedPriceMin(): void
     {
         $this->resetPage();
-        $this->dispatch('filter_modal_close');
+        $this->isLoading = true;
     }
 
-    public function resetFilters(): void
+    public function updatedPriceMax(): void
     {
-        $this->reset([
-            'search_query', 'no_brand', 'order_dir', 'per_page',
-            'with_trashed', 'show_web', 'status_active', 'unsorted',
-            'supplier_id', 'price_min', 'price_max',
-        ]);
         $this->resetPage();
-        $this->dispatch('filter_modal_close');
+        $this->isLoading = true;
     }
 
-    // ============================================
-    // Select
-    // ============================================
-
-    public function updatedSelectAll($value): void
+    public function updatedSearch(): void
     {
-        $this->selectedProducts = $value ? $this->currentPageIds : [];
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    public function updatedSelectedProducts(): void
+    public function updatedSelectedSpecs(): void
     {
-        $this->selectAll = !empty($this->currentPageIds)
-            && count($this->selectedProducts) === count($this->currentPageIds);
+        $this->normalizeSpecs();
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    public function updatingPage(): void
+    public function updatedOnlyDiscounted(): void
     {
-        $this->selectAll        = false;
-        $this->selectedProducts = [];
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    public function updatedSelectedCategory($value): void
+    public function updatedSort(): void
     {
-        $this->subcategories       = ProductCategory::where('parent_id', $value)->get();
-        $this->selectedSubcategory = null;
+        $this->resetPage();
+        $this->isLoading = true;
     }
 
-    // ============================================
-    // Category / Brand update
-    // ============================================
-
-    public function updateProductCategory(): void
+    public function loadMore(): void
     {
-        $this->validate(['selectedCategory' => 'required|exists:db_product_categories,id']);
-
-        $categoryId = $this->selectedSubcategory ?? $this->selectedCategory;
-        Product::whereIn('id', $this->selectedProducts)->update(['category_id' => $categoryId]);
-        $this->selectedProducts = [];
-        $this->dispatch('category_modal_close');
-        $this->dispatch('ui:success', message: 'კატეგორია განახლდა!');
+        $this->perPage += 20;
     }
 
-    public function updateProductBrand(): void
+    // cache: false — loadMore-ზე perPage იცვლება და ახალი შედეგი ჭირდება
+    #[Computed(cache: false)]
+    public function products()
     {
-        $this->validate(['selectedBrand' => 'required|exists:db_product_brands,id']);
+        $query = $this->buildProductQuery();
 
-        Product::whereIn('id', $this->selectedProducts)->update(['brand_id' => $this->selectedBrand]);
-        $this->selectedProducts = [];
-        $this->dispatch('brand_modal_close');
-        $this->dispatch('ui:success', message: 'ბრენდი განახლდა!');
-    }
+        switch ($this->sort) {
+            case 'price_asc':
+                $query->leftJoin('db_product_prices', 'db_product_prices.product_id', '=', 'db_products.id')
+                    ->orderByRaw('COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price) ASC');
+                break;
 
-    // ============================================
-    // Price Edit
-    // ============================================
+            case 'price_desc':
+                $query->leftJoin('db_product_prices', 'db_product_prices.product_id', '=', 'db_products.id')
+                    ->orderByRaw('COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price) DESC');
+                break;
 
-    public function priceEditModal($productId): void
-    {
-        $product = Product::with('price')->findOrFail($productId);
-        $this->priceEditProductId     = $product->id;
-        $this->priceEditDealerPrice   = $product->price->dealer_price ?? 0;
-        $this->priceEditRegularPrice  = $product->price->regular_price ?? 0;
-        $this->priceEditDiscountPrice = $product->price->discount_price;
-        $this->dispatch('price_edit_modal_open');
-    }
+            case 'oldest':
+                $query->orderBy('db_products.id', 'ASC');
+                break;
 
-    public function updatePrice(): void
-    {
-        $this->validate([
-            'priceEditRegularPrice' => 'required|numeric|min:0',
-        ], [
-            'priceEditRegularPrice.required' => 'ფასი აუცილებელია',
-            'priceEditRegularPrice.numeric'  => 'ფასი უნდა იყოს რიცხვი',
-        ]);
-
-        $product = Product::with('price')->findOrFail($this->priceEditProductId);
-
-        ProductPrice::updateOrCreate(
-            ['product_id' => $product->id],
-            [
-                'regular_price'  => (float) $this->priceEditRegularPrice,
-                'discount_price' => !empty($this->priceEditDiscountPrice)
-                    ? (float) $this->priceEditDiscountPrice
-                    : null,
-            ]
-        );
-
-        $this->priceEditProductId = null;
-        $this->dispatch('price_edit_modal_close');
-        $this->dispatch('ui:success', message: 'ფასი განახლდა!');
-    }
-
-    // ============================================
-    // Quick Edit
-    // ============================================
-
-    public function quickEditModal(int $productId): void
-    {
-        $product = Product::with('price')->findOrFail($productId);
-
-        $this->quickEditProductId     = $product->id;
-        $this->quickEditBrandId       = $product->brand_id;
-        $this->quickEditRegularPrice  = $product->price->regular_price ?? 0;
-        $this->quickEditDiscountPrice = $product->price->discount_price;
-        $this->quickEditSubcategories = [];
-        $this->quickEditCategoryId    = null;
-        $this->quickEditSubcategoryId = null;
-
-        if ($product->category_id) {
-            $category = ProductCategory::find($product->category_id);
-            if ($category) {
-                if ($category->parent_id == 0 || $category->parent_id === null) {
-                    $this->quickEditCategoryId    = $category->id;
-                    $this->quickEditSubcategories = ProductCategory::where('parent_id', $category->id)->get()->toArray();
-                } else {
-                    $this->quickEditCategoryId    = $category->parent_id;
-                    $this->quickEditSubcategoryId = $category->id;
-                    $this->quickEditSubcategories = ProductCategory::where('parent_id', $category->parent_id)->get()->toArray();
-                }
-            }
+            case 'newest':
+            default:
+                $query->orderBy('db_products.id', 'DESC');
+                break;
         }
 
-        $this->dispatch('quick_edit_modal_open');
+        $result          = $query->paginate($this->perPage);
+        $this->isLoading = false;
+        return $result;
     }
 
-    public function updatedQuickEditCategoryId($value): void
+    #[Computed(cache: false)]
+    public function brands()
     {
-        $this->quickEditSubcategories = ProductCategory::where('parent_id', $value)->get()->toArray();
-        $this->quickEditSubcategoryId = null;
+        return ProductBrand::query()
+            ->select('id', 'logo', 'show', 'active')
+            ->with(['translations' => fn ($q) => $q
+                ->select('id', 'product_brand_id', 'title', 'slug', 'locale')
+                ->where('locale', app()->getLocale())
+            ])
+            ->where('show', 1)
+            ->where('active', 1)
+            ->whereIn('id', function ($sub) {
+                $sub->select('brand_id')
+                    ->from('db_products')
+                    ->where('show', 1)
+                    ->where('active', 1)
+                    ->whereNull('deleted_at')
+                    ->whereNotNull('brand_id')
+                    ->when($this->currentCategory, function ($q) {
+                        if ($this->currentCategory->parent_id === 0) {
+                            $childIds = $this->currentCategory->children()->pluck('id');
+                            $q->whereIn('category_id', $childIds);
+                        } else {
+                            $q->where('category_id', $this->currentCategory->id);
+                        }
+                    })
+                    ->when(!empty($this->priceMin), function ($q) {
+                        $q->whereExists(function ($price) {
+                            $price->select('id')->from('db_product_prices')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
+                                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) >= ?', [round((float) $this->priceMin, 2)]);
+                        });
+                    })
+                    ->when(!empty($this->priceMax), function ($q) {
+                        $q->whereExists(function ($price) {
+                            $price->select('id')->from('db_product_prices')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
+                                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) <= ?', [round((float) $this->priceMax, 2)]);
+                        });
+                    })
+                    ->when($this->onlyDiscounted, function ($q) {
+                        $q->whereExists(function ($price) {
+                            $price->select('id')->from('db_product_prices')
+                                ->whereColumn('product_id', 'db_products.id')
+                                ->whereNull('deleted_at')
+                                ->whereNotNull('discount_price')
+                                ->where('discount_price', '>', 0);
+                        });
+                    })
+                    ->distinct();
+            })
+            ->get();
     }
 
-    public function quickEditSave(): void
+    #[Computed]
+    public function specificationSections()
     {
-        $this->validate([
-            'quickEditRegularPrice' => 'required|numeric|min:0',
-        ], [
-            'quickEditRegularPrice.required' => 'ფასი აუცილებელია',
-        ]);
+        if (empty($this->currentCategory)) {
+            return collect();
+        }
 
-        $product         = Product::findOrFail($this->quickEditProductId);
-        $finalCategoryId = $this->quickEditSubcategoryId ?? $this->quickEditCategoryId;
+        $categoryId = $this->currentCategory->id;
+        $parentId   = $this->currentCategory->parent_id;
+        $cacheKey   = 'spec_sections_v2_' . $categoryId;
 
-        $product->update([
-            'category_id' => $finalCategoryId,
-            'brand_id'    => $this->quickEditBrandId,
-        ]);
+        return cache()->remember($cacheKey, 3600, function () use ($parentId) {
+            $productIds = Product::query()
+                ->where('show', 1)
+                ->where('active', 1)
+                ->when($parentId === 0, function ($q) {
+                    $childIds = $this->currentCategory->children()->pluck('id');
+                    $q->whereIn('category_id', $childIds);
+                }, function ($q) {
+                    $q->where('category_id', $this->currentCategory->id);
+                })
+                ->pluck('id');
 
-        ProductPrice::updateOrCreate(
-            ['product_id' => $product->id],
-            [
-                'regular_price'  => (float) $this->quickEditRegularPrice,
-                'discount_price' => !empty($this->quickEditDiscountPrice)
-                    ? (float) $this->quickEditDiscountPrice
-                    : null,
-            ]
-        );
+            if ($productIds->isEmpty()) return collect();
 
-        $this->quickEditProductId = null;
-        $this->dispatch('quick_edit_modal_close');
-        $this->dispatch('ui:success', message: 'პროდუქტი განახლდა!');
+            $items = \App\Models\Product\ProductFullSpecificationItem::query()
+                ->select('id', 'section_id', 'name', 'value')
+                ->whereNotNull('value')
+                ->where('value', '!=', '')
+                ->whereHas('section', function ($q) use ($productIds) {
+                    $q->whereIn('product_id', $productIds);
+                })
+                ->get();
+
+            if ($items->isEmpty()) return collect();
+
+            return $items
+                ->groupBy('name')
+                ->map(fn ($group) => $group->unique('value')->map(fn ($item) => (object) ['value' => $item->value])->values())
+                ->filter(fn ($values) => $values->count() > 1)
+                ->filter(fn ($values, $name) => strtolower($name) !== 'ბრენდი' && strtolower($name) !== 'brand');
+        });
     }
 
-    // ============================================
-    // Bulk actions
-    // ============================================
-
-    public function updatedBulkCategoryId($value): void
+    private function buildProductQuery()
     {
-        $this->bulkSubcategories = ProductCategory::where('parent_id', $value)->get()->toArray();
-        $this->bulkSubcategoryId = null;
+        return Product::query()
+            ->select('db_products.id', 'db_products.category_id', 'db_products.brand_id', 'db_products.show', 'db_products.active', 'db_products.main_image', 'db_products.sku')
+            ->with([
+                'translations' => fn ($q) => $q
+                    ->select('id', 'product_id', 'title', 'slug', 'locale')
+                    ->where('locale', app()->getLocale()),
+                'price' => fn ($q) => $q
+                    ->select('id', 'product_id', 'regular_price', 'discount_price'),
+                'brand' => fn ($q) => $q
+                    ->select('id', 'logo', 'active'),
+            ])
+            ->where('db_products.show', 1)
+            ->where('db_products.active', 1)
+            ->whereHas('price', fn ($q) => $q
+                ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) > 0')
+            )
+            ->tap(fn ($q) => $this->applyAllFilters($q));
     }
 
-    public function bulkUpdateCategory(): void
+    private function applyAllFilters($query): void
     {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        $finalCategoryId = $this->bulkSubcategoryId ?? $this->bulkCategoryId;
-        if (empty($finalCategoryId)) { $this->dispatch('ui:error', message: 'კატეგორია აუცილებელია!'); return; }
-        Product::whereIn('id', $this->selectedProducts)->update(['category_id' => $finalCategoryId]);
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: 'კატეგორია განახლდა!');
+        $this->applyCategoryFilter($query);
+        $this->applyBrandFilter($query);
+        $this->applyPriceFilter($query);
+        $this->applySearchFilter($query);
+        $this->applyDiscountFilter($query);
+        $this->applySpecFilter($query);
     }
 
-    public function bulkUpdateBrand(): void
+    private function applyCategoryFilter($query): void
     {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        if (empty($this->bulkBrandId)) { $this->dispatch('ui:error', message: 'ბრენდი აუცილებელია!'); return; }
-        Product::whereIn('id', $this->selectedProducts)->update(['brand_id' => $this->bulkBrandId]);
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: 'ბრენდი განახლდა!');
-    }
+        if (empty($this->currentCategory)) return;
 
-    public function bulkDelete(): void
-    {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        $count = count($this->selectedProducts);
-        Product::whereIn('id', $this->selectedProducts)->update(['active' => 0]);
-        Product::whereIn('id', $this->selectedProducts)->delete();
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: "{$count} პროდუქტი წაიშალა!");
-    }
-
-    public function bulkRestore(): void
-    {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        $count = count($this->selectedProducts);
-        Product::withTrashed()->whereIn('id', $this->selectedProducts)->restore();
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: "{$count} პროდუქტი აღდგა!");
-    }
-
-    public function bulkLock(): void
-    {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        $count = count($this->selectedProducts);
-        Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 1]);
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: "{$count} პროდუქტი ჩაიკეტა!");
-    }
-
-    public function bulkUnlock(): void
-    {
-        if (empty($this->selectedProducts)) { $this->dispatch('ui:error', message: 'პროდუქტი არ არის არჩეული!'); return; }
-        $count = count($this->selectedProducts);
-        Product::whereIn('id', $this->selectedProducts)->update(['update_lock' => 0]);
-        $this->selectedProducts = []; $this->selectAll = false;
-        $this->dispatch('bulk_modal_close');
-        $this->dispatch('ui:success', message: "{$count} პროდუქტი განიბლოკა!");
-    }
-
-    // ============================================
-    // Export
-    // ============================================
-
-    public function exportNotFound(): StreamedResponse
-    {
-        $rows     = \App\Models\Product\GlobalNotFound::orderBy('name')->get();
-        $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
-
-        return response()->streamDownload(function () use ($rows) {
-            $out = fopen('php://output', 'w');
-            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Name', 'Stock', 'Price', 'Reason', 'Date']);
-            foreach ($rows as $r) {
-                fputcsv($out, [$r->name, $r->stock, $r->price, $r->reason, $r->created_at]);
-            }
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    // ============================================
-    // Helpers
-    // ============================================
-
-    private function parsePrice($value): ?float
-    {
-        if ($value === null || $value === '') return null;
-        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
-        return $clean === '' ? null : (float) $clean;
-    }
-
-    private function parseStock($value): int
-    {
-        if ($value === null || $value === '') return 0;
-        $digits = preg_replace('/[^0-9]/', '', (string) $value);
-        return $digits === '' ? 0 : (int) $digits;
-    }
-
-    // ============================================
-    // Alneo
-    // ============================================
-
-    public function uploadAlneo(): void
-    {
-        $this->validate([
-            'alneo_file' => 'required|file|mimes:xlsx,xls|max:20480',
-        ], [
-            'alneo_file.required' => 'ფაილი აუცილებელია',
-            'alneo_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
-        ]);
-
-        try {
-            @ini_set('memory_limit', '256M');
-
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($this->alneo_file->getRealPath());
-            $sheet       = $spreadsheet->getActiveSheet();
-
-            $inserted = 0;
-            $updated  = 0;
-            $skipped  = 0;
-
-            foreach ($sheet->getRowIterator() as $row) {
-                $rowIndex = $row->getRowIndex();
-
-                $skuCell = $sheet->getCell('A' . $rowIndex);
-                $skuCell->getStyle()->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
-                $sku = trim((string) $skuCell->getFormattedValue());
-
-                if ($sku === '' || in_array(mb_strtolower($sku), ['sku', 'კოდი', 'id', 'code'])) {
-                    continue;
-                }
-
-                $stock         = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
-                $priceRaw      = $sheet->getCell('C' . $rowIndex)->getValue();
-                $discountRaw   = $sheet->getCell('D' . $rowIndex)->getValue();
-
-                $price         = $priceRaw !== null && $priceRaw !== ''
-                    ? (float) preg_replace('/[^0-9.]/', '', (string) $priceRaw)
-                    : 0.0;
-
-                $discountPrice = $discountRaw !== null && $discountRaw !== ''
-                    ? (float) preg_replace('/[^0-9.]/', '', (string) $discountRaw)
-                    : null;
-
-                $exists = \App\Models\AlneoProduct::where('sku', $sku)->first();
-
-                if ($exists) {
-                    $exists->update([
-                        'stock'          => $stock,
-                        'price'          => $price,
-                        'discount_price' => $discountPrice,
-                    ]);
-                    $updated++;
-                } else {
-                    \App\Models\AlneoProduct::create([
-                        'sku'            => $sku,
-                        'stock'          => $stock,
-                        'price'          => $price,
-                        'discount_price' => $discountPrice,
-                    ]);
-                    $inserted++;
-                }
-            }
-
-            $this->reset('alneo_file');
-            $this->dispatch('uploadAlneoModal_close');
-            $this->dispatch('ui:success', message: "Alneo: {$inserted} ახალი, {$updated} განახლდა, {$skipped} გამოტოვებული.");
-
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Alneo upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        if ($this->currentCategory->parent_id === 0) {
+            $childIds = $this->currentCategory->children()
+                ->whereHas('products', fn ($q) => $q->where('db_products.active', 1)->where('db_products.show', 1))
+                ->pluck('id');
+            $query->whereIn('db_products.category_id', $childIds);
+        } else {
+            $query->where('db_products.category_id', $this->currentCategory->id);
         }
     }
 
-    public function uploadAlneoScan(): void
+    private function applyBrandFilter($query): void
     {
-        try {
-            \App\Jobs\AlneoScanJob::dispatch()->onQueue('alneo');
-            $this->dispatch('ui:success', message: 'Alneo სკანი დაიწყო!');
-        } catch (\Throwable $e) {
-            Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
-            $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
-        }
+        $brands = array_filter(array_map('intval', (array) $this->selectedBrands));
+        if (empty($brands)) return;
+        $query->whereIn('brand_id', $brands);
     }
 
-    // ============================================
-    // Elite
-    // ============================================
-
-    public function uploadElite(): void
+    private function applyPriceFilter($query): void
     {
-        $this->validate([
-            'elite_file' => 'required|file|mimes:xlsx,xls|max:20480',
-        ]);
+        if (empty($this->priceMin) && empty($this->priceMax)) return;
 
-        try {
-            @ini_set('memory_limit', '256M');
-
-            $spreadsheet = IOFactory::load($this->elite_file->getRealPath());
-            $sheet       = $spreadsheet->getActiveSheet();
-
-            $inserted  = 0;
-            $duplicate = 0;
-            $skipped   = 0;
-
-            foreach ($sheet->getRowIterator() as $row) {
-                $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
-
-                if (!$barCode) { $skipped++; continue; }
-
-                if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
-                    $duplicate++; continue;
-                }
-
-                \App\Models\EliteProduct::create(['bar_code' => $barCode, 'synced' => false]);
-                $inserted++;
+        $query->whereHas('price', function ($priceQuery) {
+            if (!empty($this->priceMin)) {
+                $priceQuery->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) >= ?', [round((float) $this->priceMin, 2)]);
             }
-
-            $this->reset('elite_file');
-            $this->dispatch('uploadEliteModal_close');
-            $this->dispatch('ui:success', message: "Elite: {$inserted} ჩაიწერა, {$duplicate} დუბლიკატი, {$skipped} გამოტოვებული.");
-
-        } catch (\Throwable $e) {
-            Log::error('Elite Upload error', ['error' => $e->getMessage()]);
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
+            if (!empty($this->priceMax)) {
+                $priceQuery->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) <= ?', [round((float) $this->priceMax, 2)]);
+            }
+        });
     }
 
-    // ============================================
-    // Metromart
-    // ============================================
-
-    public function uploadMetromart(): void
+    private function applySearchFilter($query): void
     {
-        $this->validate([
-            'metromart_file' => 'required|file|mimes:xlsx,xls|max:20480',
-        ], [
-            'metromart_file.required' => 'ფაილი აუცილებელია',
-            'metromart_file.mimes'    => 'მხოლოდ Excel ფაილი',
-        ]);
+        if (empty($this->search)) return;
 
-        try {
-            @ini_set('memory_limit', '256M');
-
-            $spreadsheet = IOFactory::load($this->metromart_file->getRealPath());
-            $sheet       = $spreadsheet->getActiveSheet();
-
-            $dispatched = 0;
-            $skipped    = 0;
-
-            foreach ($sheet->getRowIterator() as $row) {
-                $model = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
-
-                if (!$model) { $skipped++; continue; }
-
-                \App\Jobs\MetromartProductJob::dispatch($model)->onQueue('metromart');
-                $dispatched++;
-            }
-
-            Log::info("📂 Metromart upload: {$dispatched} job queue-ში, გამოტოვებული: {$skipped}");
-
-            $this->reset('metromart_file');
-            $this->dispatch('ui:success', message: "{$dispatched} მოდელი queue-ში გაიგზავნა.");
-
-        } catch (\Throwable $e) {
-            Log::error('Metromart upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
+        $searchTerm = "%{$this->search}%";
+        $query->where(function ($q) use ($searchTerm) {
+            $q->where('db_products.id', 'like', $searchTerm)
+                ->orWhereHas('translations', fn ($sub) => $sub
+                    ->where('title', 'like', $searchTerm)
+                    ->orWhere('description', 'like', $searchTerm)
+                );
+        });
     }
 
-    // ============================================
-    // Midea
-    // ============================================
-
-    public function uploadMidea(): void
+    private function applyDiscountFilter($query): void
     {
-        $this->validate([
-            'midea_file' => 'required|file|mimes:xlsx,xls,csv',
-        ], [
-            'midea_file.required' => 'ფაილი აუცილებელია',
-            'midea_file.mimes'    => 'მხოლოდ Excel ან CSV ფაილი',
-        ]);
-
-        try {
-            $rows  = IOFactory::load($this->midea_file->getRealPath())->getActiveSheet()->toArray(null, true, true, false);
-            $items = [];
-
-            foreach ($rows as $row) {
-                $name = trim((string) ($row[0] ?? ''));
-                if ($name === '') continue;
-                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 3) continue;
-
-                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
-                $name = preg_replace('/\s+/u', ' ', $name);
-                $name = trim($name);
-
-                $items[$name] = [
-                    'stock' => $this->parseStock($row[1] ?? null),
-                ];
-            }
-
-            if (empty($items)) { $this->dispatch('ui:error', message: 'დასახელებები ვერ მოიძებნა'); return; }
-
-            foreach ($items as $name => $info) {
-                \App\Jobs\MideaProductJob::dispatch($name, $info['stock'])->onQueue('midea');
-            }
-
-            $this->reset('midea_file');
-            $this->dispatch('ui:success', message: count($items) . ' პროდუქტი queue-ში გაიგზავნა.');
-
-        } catch (\Throwable $e) {
-            Log::error('Midea upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
-        }
+        if (!$this->onlyDiscounted) return;
+        $query->whereHas('price', fn ($q) => $q->whereNotNull('discount_price')->where('discount_price', '>', 0));
     }
 
-    // ============================================
-    // Kontakt
-    // ============================================
-
-    public function uploadKontakt(): void
+    private function applySpecFilter($query): void
     {
-        $this->validate([
-            'kontakt_file' => 'required|file|mimes:xlsx,xls',
-        ], [
-            'kontakt_file.required' => 'ფაილი აუცილებელია',
-            'kontakt_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
-        ]);
+        $specs = array_filter((array) $this->selectedSpecs);
+        if (empty($specs)) return;
 
-        try {
-            $sheet      = IOFactory::load($this->kontakt_file->getRealPath())->getActiveSheet();
-            $highestRow = $sheet->getHighestRow();
-            $dispatched = 0;
-            $skipped    = 0;
-
-            for ($r = 2; $r <= $highestRow; $r++) {
-                $cell = $sheet->getCell('A' . $r);
-                $name = trim((string) $cell->getValue());
-                $name = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}]/u', ' ', $name);
-                $name = preg_replace('/\s+/u', ' ', $name);
-                $name = trim($name);
-
-                if ($name === '') continue;
-                if (in_array(mb_strtolower($name), ['item', 'items', 'model', 'დასახელება', 'name', 'სახელი', 'პროდუქტი'])) continue;
-                if (mb_strlen($name) < 2) continue;
-
-                $url = '';
-                if ($cell->hasHyperlink()) {
-                    $url = trim($cell->getHyperlink()->getUrl());
-                }
-
-                if ($url === '' || !str_starts_with($url, 'http')) { $skipped++; continue; }
-
-                \App\Jobs\KontaktImportJob::dispatch(
-                    $name,
-                    $url,
-                    $this->parseStock($sheet->getCell('B' . $r)->getValue()),
-                    $this->parsePrice($sheet->getCell('C' . $r)->getValue())
-                )->onQueue('kontakt');
-                $dispatched++;
-            }
-
-            if ($dispatched === 0) { $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა'); return; }
-
-            $this->reset('kontakt_file');
-            $this->dispatch('ui:success', message: "{$dispatched} პროდუქტი queue-ში გაიგზავნა (გამოტოვებული: {$skipped}).");
-
-        } catch (\Throwable $e) {
-            Log::error('Kontakt upload error: ' . $e->getMessage());
-            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
+        foreach ($specs as $spec) {
+            if (!str_contains($spec, '::')) continue;
+            [$name, $value] = explode('::', $spec, 2);
+            $query->whereHas('fullSpecifications', function ($q) use ($name, $value) {
+                $q->whereHas('list', function ($item) use ($name, $value) {
+                    $item->where('name', $name)->where('value', $value);
+                });
+            });
         }
     }
-
-    // ============================================
-    // Comfo
-    // ============================================
-
-    public function uploadComfo(): void
-    {
-        $this->validate(['comfoFile' => 'required|file|mimes:xlsx,xls|max:10240']);
-
-        try {
-            $sheet      = IOFactory::load($this->comfoFile->getRealPath())->getActiveSheet();
-            $rows       = $sheet->getHighestRow();
-            $dispatched = 0;
-            $skipped    = 0;
-
-            for ($r = 2; $r <= $rows; $r++) {
-                $id    = trim((string) $sheet->getCell("A{$r}")->getValue());
-                $stock = $sheet->getCell("B{$r}")->getValue();
-                $url   = trim((string) $sheet->getCell("C{$r}")->getValue());
-
-                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) { $skipped++; continue; }
-
-                $stockInt = is_numeric($stock) ? (int) $stock : (int) preg_replace('/\D+/', '', (string) $stock);
-
-                \App\Jobs\ComfoImportJob::dispatch($id, $stockInt, $url)->onQueue('comfo');
-                $dispatched++;
-            }
-
-            $this->dispatch('uploadComfoModal_close');
-            $this->dispatch('ui:success', message: "Comfo: დაიგზავნა {$dispatched}, გამოტოვებული {$skipped}");
-            $this->reset('comfoFile');
-
-        } catch (\Throwable $e) {
-            $this->dispatch('ui:error', message: 'Comfo Excel შეცდომა: ' . $e->getMessage());
-        }
-    }
-
-    // ============================================
-    // Render
-    // ============================================
 
     public function render()
     {
-        $query = Product::with(['translations'])
-            ->when($this->search_query, fn($q) => $q->where(function($sub) {
-                $sub->whereHas('translations',
-                    fn($t) => $t->where('title', 'like', "%{$this->search_query}%")
-                )->orWhere('sku', 'like', "%{$this->search_query}%");
-            }))
-            ->when($this->show_web === true,      fn($q) => $q->where('show', $this->show_web))
-            ->when($this->category_id,            fn($q) => $q->where('category_id', $this->category_id))
-            ->when($this->brand_id,               fn($q) => $q->where('brand_id', $this->brand_id))
-            ->when($this->supplier_id,            fn($q) => $q->where('supplier_id', $this->supplier_id))
-            ->when($this->status_active === true, fn($q) => $q->where('active', $this->status_active))
-            ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182, 203, 204, 205, 210]))
-            ->when($this->no_brand === true,      fn($q) => $q->whereIn('brand_id', [1, 6]))
-            ->when($this->only_locked === true,   fn($q) => $q->where('update_lock', 1))
-            ->when($this->price_min,              fn($q) => $q->whereHas('price',
-                fn($p) => $p->whereRaw('COALESCE(NULLIF(discount_price,0), regular_price) >= ?', [(float) $this->price_min])
-            ))
-            ->when($this->price_max,              fn($q) => $q->whereHas('price',
-                fn($p) => $p->whereRaw('COALESCE(NULLIF(discount_price,0), regular_price) <= ?', [(float) $this->price_max])
-            ))
-            ->when($this->no_stock !== null && $this->no_stock !== '',
-                fn($q) => $this->no_stock === '1'
-                    ? $q->where('quantity', '>', 0)
-                    : $q->where('quantity', 0)
-            )
-            ->when($this->draft === true,
-                fn($q) => $q->where('draft', 1),
-                fn($q) => $q->where('draft', 0)->orWhereNull('draft')
-            )
-            ->when($this->with_trashed, fn($q) => $q->withTrashed())
-            ->orderBy('id', $this->order_dir);
+        $categorySections = collect();
+        if ($this->currentCategory) {
+            $categorySections = ProductSection::query()
+                ->where('active', 1)
+                ->where('category_id', $this->currentCategory->id)
+                ->get();
+        }
 
-        $products = $query->paginate($this->per_page);
-
-        $this->currentPageIds = $products->pluck('id')->map(fn($id) => (string) $id)->toArray();
-
-        return view('livewire.dashboard.product.index', [
-            'products'   => $products,
-            'brands'     => ProductBrand::where('active', 1)->get(),
-            'categories' => ProductCategory::where('parent_id', 0)->where('active', 1)->get(),
-            'suppliers'  => ProductSupplier::where('active', 1)->get(),
-        ])->layout('livewire.dashboard.layout');
+        return view('livewire.web.product.index', [
+            'products'              => $this->products,
+            'brands'                => $this->brands,
+            'specificationSections' => $this->specificationSections,
+            'isLoading'             => $this->isLoading,
+            'event_id'              => $this->eventId,
+            'categorySections'      => $categorySections,
+        ])->layout('livewire.web.layout');
     }
 }

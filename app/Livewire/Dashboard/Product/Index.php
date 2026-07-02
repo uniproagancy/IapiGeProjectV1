@@ -47,6 +47,8 @@ class Index extends Component
     public $category_id  = null;
     public $brand_id     = null;
     public $supplier_id  = null;
+    public $price_min    = null;
+    public $price_max    = null;
 
     public $priceEditProductId     = null;
     public $priceEditDealerPrice   = 0;
@@ -94,6 +96,8 @@ class Index extends Component
         'unsorted'      => ['except' => false],
         'no_brand'      => ['except' => false],
         'only_locked'   => ['except' => false],
+        'price_min'     => ['except' => ''],
+        'price_max'     => ['except' => ''],
     ];
 
     public function mount(): void {}
@@ -188,7 +192,11 @@ class Index extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['search_query', 'no_brand', 'order_dir', 'per_page', 'with_trashed', 'show_web', 'status_active', 'unsorted', 'supplier_id']);
+        $this->reset([
+            'search_query', 'no_brand', 'order_dir', 'per_page',
+            'with_trashed', 'show_web', 'status_active', 'unsorted',
+            'supplier_id', 'price_min', 'price_max',
+        ]);
         $this->resetPage();
         $this->dispatch('filter_modal_close');
     }
@@ -491,7 +499,6 @@ class Index extends Component
             foreach ($sheet->getRowIterator() as $row) {
                 $rowIndex = $row->getRowIndex();
 
-                // SKU — სტრინგად წამოვიღოთ (წამყვანი 0 შენარჩუნებისთვის)
                 $skuCell = $sheet->getCell('A' . $rowIndex);
                 $skuCell->getStyle()->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
                 $sku = trim((string) $skuCell->getFormattedValue());
@@ -798,6 +805,12 @@ class Index extends Component
             ->when($this->unsorted === true,      fn($q) => $q->whereIn('category_id', [3, 4, 182, 203, 204, 205, 210]))
             ->when($this->no_brand === true,      fn($q) => $q->whereIn('brand_id', [1, 6]))
             ->when($this->only_locked === true,   fn($q) => $q->where('update_lock', 1))
+            ->when($this->price_min,              fn($q) => $q->whereHas('price',
+                fn($p) => $p->whereRaw('COALESCE(NULLIF(discount_price,0), regular_price) >= ?', [(float) $this->price_min])
+            ))
+            ->when($this->price_max,              fn($q) => $q->whereHas('price',
+                fn($p) => $p->whereRaw('COALESCE(NULLIF(discount_price,0), regular_price) <= ?', [(float) $this->price_max])
+            ))
             ->when($this->no_stock !== null && $this->no_stock !== '',
                 fn($q) => $this->no_stock === '1'
                     ? $q->where('quantity', '>', 0)
