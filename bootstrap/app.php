@@ -42,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('sitemap:generate')->daily();
+        $schedule->command('livewire:cleanup')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
