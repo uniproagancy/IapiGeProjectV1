@@ -18,12 +18,12 @@
 @section('structured_data')
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
         "name": "IAPI.GE",
         "url": "{{ route('web.main.index') }}",
         "potentialAction": {
-            "@type": "SearchAction",
+            "@@type": "SearchAction",
             "target": "{{ route('web.products.index') }}?search={search_term_string}",
             "query-input": "required name=search_term_string"
         }
@@ -31,19 +31,19 @@
     </script>
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Organization",
+        "@@context": "https://schema.org",
+        "@@type": "Organization",
         "name": "IAPI.GE",
         "url": "{{ route('web.main.index') }}",
         "logo": "{{ asset('web-assets/img/logo.png') }}",
         "contactPoint": {
-            "@type": "ContactPoint",
+            "@@type": "ContactPoint",
             "telephone": "+995555700720",
             "contactType": "customer service",
             "availableLanguage": "Georgian"
         },
         "address": {
-            "@type": "PostalAddress",
+            "@@type": "PostalAddress",
             "streetAddress": "შარტავას ქ. №3",
             "addressLocality": "თბილისი",
             "addressCountry": "GE"

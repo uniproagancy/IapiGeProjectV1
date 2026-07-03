@@ -32,73 +32,47 @@
 @endsection
 
 @section('structured_data')
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "name": "{{ $seoTitle }}",
-        "image": "{{ $seoImage }}",
-        "description": "{{ addslashes($seoDescription) }}",
-        "sku": "{{ $product->id }}",
-        @if($seoBrand)
-        "brand": {
-            "@type": "Brand",
-            "name": "{{ $seoBrand }}"
-        },
-        @endif
-        "offers": {
-            "@type": "Offer",
-            "url": "{{ route('web.products.view', $seoSlug) }}",
-            "priceCurrency": "GEL",
-            "price": "{{ $seoPrice }}",
-            "availability": "https://schema.org/InStock",
-            "seller": {
-                "@type": "Organization",
-                "name": "IAPI.GE"
-            }
+    @php
+        $productSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $seoTitle,
+            'image' => $seoImage,
+            'description' => $seoDescription,
+            'sku' => (string) $product->id,
+        ];
+        if ($seoBrand) {
+            $productSchema['brand'] = ['@type' => 'Brand', 'name' => $seoBrand];
         }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "მთავარი",
-                "item": "{{ route('web.main.index') }}"
-            }
-            @if($product->category?->parent)
-            ,{
-                "@type": "ListItem",
-                "position": 2,
-                "name": "{{ $product->category->parent->translation('ka')?->title }}",
-                "item": "{{ route('web.products.index', $product->category->parent->translation('ka')?->slug) }}"
-            }
-            ,{
-                "@type": "ListItem",
-                "position": 3,
-                "name": "{{ $seoCategory }}",
-                "item": "{{ route('web.products.index', $product->category->translation('ka')?->slug) }}"
-            }
-            @elseif($seoCategory)
-            ,{
-                "@type": "ListItem",
-                "position": 2,
-                "name": "{{ $seoCategory }}",
-                "item": "{{ route('web.products.index', $product->category?->translation('ka')?->slug) }}"
-            }
-            @endif
-            ,{
-                "@type": "ListItem",
-                "position": {{ $product->category?->parent ? 4 : ($seoCategory ? 3 : 2) }},
-                "name": "{{ $seoTitle }}"
-            }
-        ]
-    }
-    </script>
+        $productSchema['offers'] = [
+            '@type' => 'Offer',
+            'url' => route('web.products.view', $seoSlug),
+            'priceCurrency' => 'GEL',
+            'price' => (string) $seoPrice,
+            'availability' => 'https://schema.org/InStock',
+            'seller' => ['@type' => 'Organization', 'name' => 'IAPI.GE'],
+        ];
+
+        $breadcrumbItems = [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'მთავარი', 'item' => route('web.main.index')],
+        ];
+        $pos = 2;
+        if ($product->category?->parent) {
+            $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos++, 'name' => $product->category->parent->translation('ka')?->title, 'item' => route('web.products.index', $product->category->parent->translation('ka')?->slug)];
+            $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos++, 'name' => $seoCategory, 'item' => route('web.products.index', $product->category->translation('ka')?->slug)];
+        } elseif ($seoCategory) {
+            $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos++, 'name' => $seoCategory, 'item' => route('web.products.index', $product->category?->translation('ka')?->slug)];
+        }
+        $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => $pos, 'name' => $seoTitle];
+
+        $breadcrumbSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => $breadcrumbItems,
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($productSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    <script type="application/ld+json">{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endsection
 
 <main class="content-wrapper">

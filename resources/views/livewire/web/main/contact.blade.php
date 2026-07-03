@@ -15,24 +15,25 @@
 @endsection
 
 @section('structured_data')
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Store",
-        "name": "IAPI.GE",
-        "url": "{{ route('web.main.index') }}",
-        "logo": "{{ asset('web-assets/img/logo.png') }}",
-        "telephone": "+995555700720",
-        "email": "info@iapi.ge",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "შარტავას ქ. №3",
-            "addressLocality": "თბილისი",
-            "addressCountry": "GE"
-        },
-        "openingHours": "Mo-Su 10:00-00:00"
-    }
-    </script>
+    @php
+        $storeSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Store',
+            'name' => 'IAPI.GE',
+            'url' => route('web.main.index'),
+            'logo' => asset('web-assets/img/logo.png'),
+            'telephone' => '+995555700720',
+            'email' => 'info@iapi.ge',
+            'address' => [
+                '@type' => 'PostalAddress',
+                'streetAddress' => 'შარტავას ქ. №3',
+                'addressLocality' => 'თბილისი',
+                'addressCountry' => 'GE',
+            ],
+            'openingHours' => 'Mo-Su 10:00-00:00',
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($storeSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endsection
 
 <div>

@@ -26,34 +26,17 @@
 @endsection
 
 @section('structured_data')
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "მთავარი",
-                "item": "{{ route('web.main.index') }}"
-            }
-            @if($currentCategory)
-            ,{
-                "@type": "ListItem",
-                "position": 2,
-                "name": "{{ $catTitle }}",
-                "item": "{{ route('web.products.index', $currentCategory->translation('ka')?->slug) }}"
-            }
-            @else
-            ,{
-                "@type": "ListItem",
-                "position": 2,
-                "name": "კატალოგი"
-            }
-            @endif
-        ]
-    }
-    </script>
+    @php
+        $breadcrumbItems = [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'მთავარი', 'item' => route('web.main.index')],
+        ];
+        if ($currentCategory) {
+            $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => 2, 'name' => $catTitle, 'item' => route('web.products.index', $currentCategory->translation('ka')?->slug)];
+        } else {
+            $breadcrumbItems[] = ['@type' => 'ListItem', 'position' => 2, 'name' => 'კატალოგი'];
+        }
+    @endphp
+    <script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $breadcrumbItems], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endsection
 
 @section('page_css')
