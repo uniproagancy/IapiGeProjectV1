@@ -20,7 +20,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -106,15 +105,16 @@ class EliteProductJob implements ShouldQueue
             Log::warning('⚠️ Elite: barCode ცარიელია');
             return;
         }
+
+        // ბრენდის ფილტრი
         $brandName = $productData['brandName'] ?? null;
         if ($brandName && mb_strtolower(trim($brandName)) === 'ugreen') {
             Log::info("⏭️ Elite: Ugreen გამოტოვებულია | barCode={$barCode}");
             return;
         }
 
-        // ✅ BarCode ჩვენს სიაშია?
+        // BarCode ჩვენს სიაშია?
         $eliteProduct = EliteProduct::where('bar_code', $barCode)->first();
-
         if (!$eliteProduct) {
             return;
         }
@@ -128,21 +128,6 @@ class EliteProductJob implements ShouldQueue
         } else {
             $this->createNewProduct($productData, $sku, $eliteProduct);
         }
-    }
-
-    // ============================================
-    // Stock
-    // ============================================
-
-    private function checkTbilisiStock(array $availability): bool
-    {
-        if (empty($availability)) {
-            return false;
-        }
-
-        return collect($availability)
-            ->where('city', 'თბილისი')
-            ->contains(fn ($store) => $store['inStock'] === true);
     }
 
     // ============================================
@@ -182,7 +167,7 @@ class EliteProductJob implements ShouldQueue
                     $updateData['category_id'] = $this->getCategoryId($productData);
                     $updateData['brand_id']    = $this->getBrandId($productData);
                 } else {
-                    Log::info("🏷️ Elite: taxonomy locked, category/brand უცვლელი — {$sku}");
+                    Log::info("🏷️ Elite: taxonomy locked — {$sku}");
                 }
 
                 $product->update($updateData);
@@ -287,7 +272,7 @@ class EliteProductJob implements ShouldQueue
         $line    = now()->format('Y-m-d H:i:s') . " | " . ($categoryName ?? 'null') . " | barCode=" . ($productData['barCode'] ?? '?') . PHP_EOL;
         file_put_contents($logPath, $line, FILE_APPEND | LOCK_EX);
 
-        Log::warning("⚠️ Elite category not mapped: categoryName='{$categoryName}'");
+        Log::warning("⚠️ Elite category not mapped: '{$categoryName}'");
         return self::FALLBACK_CATEGORY_ID;
     }
 
@@ -330,11 +315,7 @@ class EliteProductJob implements ShouldQueue
                         return $brand->id;
                     }
 
-                    // Alta-ს მსგავსად: ბრენდი ვერ მოიძებნა → ახალი შევქმნათ
-                    $newBrand = ProductBrand::create([
-                        'active' => 1,
-                        'show'   => 1,
-                    ]);
+                    $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
 
                     ProductBrandTranslation::create([
                         'product_brand_id' => $newBrand->id,
@@ -351,7 +332,6 @@ class EliteProductJob implements ShouldQueue
                     ]);
 
                     Log::info("✨ Elite: New brand created: '{$brandName}', id={$newBrand->id}");
-
                     return $newBrand->id;
                 }
             );
@@ -416,39 +396,31 @@ class EliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Full Specifications — Alta-ს ზუსტი პატერნი
+    // Full Specifications
     // ============================================
 
     private function createFullSpecifications(Product $product, array $productData): void
     {
         try {
-            if (empty($productData['specificationGroup'])) {
-                return;
-            }
+            if (empty($productData['specificationGroup'])) return;
 
             foreach ($productData['specificationGroup'] as $specificationGroup) {
-                if (empty($specificationGroup['groupName'])) {
-                    continue;
-                }
+                if (empty($specificationGroup['groupName'])) continue;
 
                 $section = ProductFullSpecificationSection::create([
                     'product_id' => $product->id,
                     'name'       => $specificationGroup['groupName'],
                 ]);
 
-                if (!empty($specificationGroup['specifications'])) {
-                    foreach ($specificationGroup['specifications'] as $spec) {
-                        if (empty($spec['specificationName'])) {
-                            continue;
-                        }
+                foreach ($specificationGroup['specifications'] ?? [] as $spec) {
+                    if (empty($spec['specificationName'])) continue;
 
-                        ProductFullSpecificationItem::create([
-                            'section_id' => $section->id,
-                            'name'       => $this->sanitizeString($spec['specificationName']),
-                            'value'      => $this->sanitizeString($spec['specificationMeaning'] ?? null),
-                            'filter'     => 0,
-                        ]);
-                    }
+                    ProductFullSpecificationItem::create([
+                        'section_id' => $section->id,
+                        'name'       => $this->sanitizeString($spec['specificationName']),
+                        'value'      => $this->sanitizeString($spec['specificationMeaning'] ?? null),
+                        'filter'     => 0,
+                    ]);
                 }
             }
 
@@ -459,15 +431,13 @@ class EliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Short Specifications — Alta-ს მსგავსი bulk insert
+    // Short Specifications
     // ============================================
 
     private function createShortSpecifications(Product $product, array $productData): void
     {
         try {
-            if (empty($productData['mainSpecification'])) {
-                return;
-            }
+            if (empty($productData['mainSpecification'])) return;
 
             $specs = [];
             $count = 0;
@@ -502,7 +472,7 @@ class EliteProductJob implements ShouldQueue
     }
 
     // ============================================
-    // Images — Alta-ს მსგავსი (main + gallery)
+    // Images — Worker-ის გავლით
     // ============================================
 
     private function downloadAndSaveImages(Product $product, array $productData): void
@@ -517,66 +487,35 @@ class EliteProductJob implements ShouldQueue
             }
             $images = array_values(array_unique(array_filter($images)));
 
-            if (empty($images)) {
-                return;
-            }
+            if (empty($images)) return;
 
             $processedUrls = [];
             $mainImageSet  = false;
             $galleryImages = [];
 
             foreach ($images as $index => $imageUrl) {
-                if (in_array($imageUrl, $processedUrls)) {
-                    continue;
-                }
+                if (in_array($imageUrl, $processedUrls)) continue;
                 $processedUrls[] = $imageUrl;
 
-                try {
-                    $response = Http::timeout(30)
-                        ->withHeaders([
-                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-                            'Referer'    => 'https://ee.ge/',
-                        ])
-                        ->get($imageUrl);
+                $path = $this->downloadImageViaWorker($product, $imageUrl);
+                if (!$path) continue;
 
-                    if (!$response->successful()) {
-                        Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა: {$imageUrl}");
-                        continue;
-                    }
-
-                    $imageSize = strlen($response->body());
-                    if ($imageSize > self::MAX_IMAGE_SIZE) {
-                        Log::warning("⚠️ Elite: სურათი ძალიან დიდია ({$imageSize} bytes): {$imageUrl}");
-                        continue;
-                    }
-
-                    $ext      = $this->getImageExtension($imageUrl);
-                    $filename = Str::random(40) . '.' . $ext;
-                    $path     = "uploads/products/{$product->id}/{$filename}";
-
-                    Storage::disk('public')->put($path, $response->body());
-
-                    if ($index === 0 && !$mainImageSet) {
-                        $product->update(['main_image' => $path]);
-                        $mainImageSet = true;
-                    } else {
-                        $galleryImages[] = [
-                            'product_id' => $product->id,
-                            'path'       => $path,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-
-                } catch (Exception $e) {
-                    Log::warning("⚠️ Elite: სურათის შეცდომა: {$e->getMessage()}");
-                    continue;
+                if ($index === 0 && !$mainImageSet) {
+                    $product->update(['main_image' => $path]);
+                    $mainImageSet = true;
+                } else {
+                    $galleryImages[] = [
+                        'product_id' => $product->id,
+                        'path'       => $path,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
                 }
             }
 
             if (!empty($galleryImages)) {
                 ProductImage::insert($galleryImages);
-                Log::info("📦 Elite: Inserted " . count($galleryImages) . " gallery images for product {$product->id}");
+                Log::info("📦 Elite: " . count($galleryImages) . " gallery image product {$product->id}");
             }
 
             if (!$mainImageSet) {
@@ -589,15 +528,63 @@ class EliteProductJob implements ShouldQueue
         }
     }
 
+    private function downloadImageViaWorker(Product $product, string $imageUrl): ?string
+    {
+        try {
+            $workerUrl = env('ELITE_WORKER_URL', 'https://divine-king-feac.royal-sunset-e1c6.workers.dev')
+                . '?' . http_build_query([
+                    'type' => 'image',
+                    'url'  => $imageUrl,
+                ]);
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL            => $workerUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_HTTPHEADER     => ['User-Agent: Mozilla/5.0'],
+            ]);
+
+            $body     = curl_exec($curl);
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $error    = curl_error($curl);
+            curl_close($curl);
+
+            if ($error || $httpCode !== 200 || empty($body)) {
+                Log::warning("⚠️ Elite: სურათი ვერ ჩამოიტვირთა: {$imageUrl} | HTTP={$httpCode}");
+                return null;
+            }
+
+            $imageSize = strlen($body);
+            if ($imageSize === 0 || $imageSize > self::MAX_IMAGE_SIZE) {
+                Log::warning("⚠️ Elite: სურათის ზომა არასწორია ({$imageSize} bytes): {$imageUrl}");
+                return null;
+            }
+
+            $ext      = $this->getImageExtension($imageUrl);
+            $filename = Str::random(40) . '.' . $ext;
+            $path     = "uploads/products/{$product->id}/{$filename}";
+
+            Storage::disk('public')->put($path, $body);
+            Log::info("📸 Elite: სურათი შენახულია: {$filename} | product_id={$product->id}");
+
+            return $path;
+
+        } catch (Exception $e) {
+            Log::warning("⚠️ Elite: სურათის შეცდომა: {$e->getMessage()}");
+            return null;
+        }
+    }
+
     // ============================================
     // Helpers
     // ============================================
 
     private function sanitizeString(?string $value): ?string
     {
-        if (empty($value)) {
-            return null;
-        }
+        if (empty($value)) return null;
         $trimmed = trim($value);
         return !empty($trimmed) ? $trimmed : null;
     }
@@ -605,15 +592,10 @@ class EliteProductJob implements ShouldQueue
     protected function getImageExtension(string $url): string
     {
         try {
-            $parsed = parse_url($url);
-            $path   = $parsed['path'] ?? '';
-            $ext    = pathinfo($path, PATHINFO_EXTENSION);
-
+            $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
             $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
-
         } catch (Exception $e) {
-            Log::warning("⚠️ Error getting image extension: {$e->getMessage()}");
             return 'jpg';
         }
     }
