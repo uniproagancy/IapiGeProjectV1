@@ -603,7 +603,11 @@ class AltaProductJob implements ShouldQueue
                 return null;
             }
 
-            $imageSize = strlen($response->body());
+            $imageSize = strlen($response->body()); // binary-safe
+            if ($imageSize === 0) {
+                Log::warning("⚠️  Image empty (0 bytes): {$imageUrl}");
+                return null;
+            }
             if ($imageSize > self::MAX_IMAGE_SIZE) {
                 Log::warning("⚠️  Image too large ({$imageSize} bytes): {$imageUrl}");
                 return null;

@@ -19,8 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return route('web.main.index');
         });
-        $middleware->append(\Litespeed\LSCache\LSCacheMiddleware::class);
-        $middleware->append(\Litespeed\LSCache\LSTagsMiddleware::class);
+//        $middleware->append(\Litespeed\LSCache\LSCacheMiddleware::class);
+//        $middleware->append(\Litespeed\LSCache\LSTagsMiddleware::class);
         $middleware->alias([
             'localize' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
             'localizationRedirect' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
