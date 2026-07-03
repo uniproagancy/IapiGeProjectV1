@@ -59,7 +59,7 @@ class AltaService
                 try {
                     $result = $this->processProduct((int) $item->product_id, (int) $item->quantity, $token);
 
-                    if ($result === 'queued')     $stats['queued']++;
+                    if ($result === 'queued')        $stats['queued']++;
                     elseif ($result === 'not_found') $stats['not_found']++;
                     else                             $stats['errors']++;
 
@@ -137,8 +137,11 @@ class AltaService
             return 'error';
         }
 
-        // Job dispatch სერვერის DB-ში
-        AltaProductJob::dispatch($productData, $quantity)->onQueue('alta');
+        // ✅ Fix: product და availability ცალ-ცალკე გადაეცემა Job-ს
+        AltaProductJob::dispatch(
+            $productData['product'],
+            $productData['availability']
+        )->onQueue('alta');
 
         $name = $productData['product']['name'] ?? '?';
         Log::info("✅ Alta queued: product_id={$productId} | name={$name}");
