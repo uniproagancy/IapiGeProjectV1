@@ -41,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('cache:clear')->weekly();
+        $schedule->command('sitemap:generate')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
