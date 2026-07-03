@@ -1,6 +1,43 @@
+@section('seo')
+    <title>კონტაქტი — IAPI.GE | დაგვიკავშირდით</title>
+@endsection
+
+@section('meta_description')დაგვიკავშირდით IAPI.GE-ზე. მისამართი: თბილისი, შარტავას ქ. №3. ტელ: +995 555 700 720. ელ-ფოსტა: info@iapi.ge. ყოველდღე 10:00-დან 00:00-მდე.@endsection
+
+@section('canonical'){{ route('web.main.contact') }}@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="კონტაქტი — IAPI.GE">
+    <meta property="og:description" content="დაგვიკავშირდით — თბილისი, შარტავას ქ. №3. ტელ: +995 555 700 720.">
+    <meta property="og:url" content="{{ route('web.main.contact') }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/logo.png') }}">
+@endsection
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "IAPI.GE",
+        "url": "{{ route('web.main.index') }}",
+        "logo": "{{ asset('web-assets/img/logo.png') }}",
+        "telephone": "+995555700720",
+        "email": "info@iapi.ge",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "შარტავას ქ. №3",
+            "addressLocality": "თბილისი",
+            "addressCountry": "GE"
+        },
+        "openingHours": "Mo-Su 10:00-00:00"
+    }
+    </script>
+@endsection
+
 <div>
 	<section class="position-relative bg-body-tertiary py-4">
-		<img src="{{ asset('web-assets/img/contact.png') }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rtl-flip" alt="Background image">
+		<img src="{{ asset('web-assets/img/contact.png') }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rtl-flip" alt="IAPI.GE კონტაქტი — დაგვიკავშირდით">
 		<div class="container position-relative z-2 py-4 py-md-5 my-lg-3 my-xl-4 my-xxl-5">
 		  <div class="row pt-lg-2 pb-2 pb-sm-3 pb-lg-4">
 			<div class="col-9 col-md-8 col-lg-6">
@@ -45,7 +82,7 @@
                 <ul class="list-unstyled">
                     <li class="d-flex justify-content-between">
                         <span>ელ-ფოსტა:</span>
-                        <span><a href="mailto:info@iapige">info@iapi.ge</a></span>
+                        <span><a href="mailto:info@iapi.ge">info@iapi.ge</a></span>
                     </li>
                 </ul>
             </div>

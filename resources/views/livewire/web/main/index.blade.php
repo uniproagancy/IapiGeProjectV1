@@ -1,7 +1,56 @@
 @section('seo')
-    <title>IAPI.GE — შეიძინე იაფად | iapi.ge</title>
-    <meta name="keywords"
-          content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    <title>IAPI.GE — ტექნიკის ონლაინ მაღაზია | ელექტრონიკა საუკეთესო ფასად</title>
+    <meta name="keywords" content="iapi.ge, ტექნიკის მაღაზია, ელექტრონიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, კონდიციონერები, სახლის ტექნიკა, ონლაინ მაღაზია საქართველო">
+@endsection
+
+@section('meta_description')იყიდე ტექნიკა და ელექტრონიკა საუკეთესო ფასად IAPI.GE-ზე. ტელეფონები, კომპიუტერები, სახლის ტექნიკა, კონდიციონერები — სწრაფი მიტანა და გარანტია მთელ საქართველოში.@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="IAPI.GE — ტექნიკის ონლაინ მაღაზია საქართველოში">
+    <meta property="og:description" content="იყიდე ტექნიკა და ელექტრონიკა საუკეთესო ფასად. ტელეფონები, კომპიუტერები, სახლის ტექნიკა — სწრაფი მიტანა და გარანტია.">
+    <meta property="og:url" content="{{ route('web.main.index') }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/logo.png') }}">
+@endsection
+
+@section('canonical'){{ route('web.main.index') }}@endsection
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "IAPI.GE",
+        "url": "{{ route('web.main.index') }}",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ route('web.products.index') }}?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "IAPI.GE",
+        "url": "{{ route('web.main.index') }}",
+        "logo": "{{ asset('web-assets/img/logo.png') }}",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+995555700720",
+            "contactType": "customer service",
+            "availableLanguage": "Georgian"
+        },
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "შარტავას ქ. №3",
+            "addressLocality": "თბილისი",
+            "addressCountry": "GE"
+        },
+        "sameAs": []
+    }
+    </script>
 @endsection
 
 <div>

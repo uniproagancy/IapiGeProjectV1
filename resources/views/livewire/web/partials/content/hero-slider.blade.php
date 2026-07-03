@@ -20,7 +20,7 @@
                     <a href="{{ $slider->url ?? '' }}" class="d-block h-100">
                         <img src="{{ asset('storage'.$slider->path) }}"
                              class="w-100 h-100 object-fit-cover rtl-flip"
-                             alt="Slide {{ $loop->index + 1 }}"
+                             alt="{{ $slider->title ?? ('IAPI.GE — აქცია ' . ($loop->index + 1)) }}"
                              @if($loop->first)
                                  loading="eager"
                              fetchpriority="high"

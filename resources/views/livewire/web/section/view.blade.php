@@ -1,3 +1,41 @@
+@section('seo')
+    <title>{{ $section->title }} — IAPI.GE</title>
+@endsection
+
+@section('meta_description'){{ $section->title }} — იყიდე საუკეთესო ფასად IAPI.GE-ზე. სწრაფი მიტანა და გარანტია მთელ საქართველოში.@endsection
+
+@section('canonical'){{ route('web.section.view', $section->slug) }}@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $section->title }} — IAPI.GE">
+    <meta property="og:description" content="{{ $section->title }} — იყიდე საუკეთესო ფასად IAPI.GE-ზე.">
+    <meta property="og:url" content="{{ route('web.section.view', $section->slug) }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/logo.png') }}">
+@endsection
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "მთავარი",
+                "item": "{{ route('web.main.index') }}"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ $section->title }}"
+            }
+        ]
+    }
+    </script>
+@endsection
+
 <div>
     <section class="container py-4 py-lg-5">
         <nav aria-label="breadcrumb" class="mb-3">

@@ -12,15 +12,15 @@
                 </a>
                 <div class="d-flex gap-2">
                     <a href="https://www.instagram.com/iapi_ge/"
-                       class="footer-social-btn" aria-label="Instagram">
+                       class="footer-social-btn" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                         <i class="ci-instagram"></i>
                     </a>
                     <a href="https://www.facebook.com/profile.php?id=100091503274684"
-                       class="footer-social-btn" aria-label="Facebook">
+                       class="footer-social-btn" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
                         <i class="ci-facebook"></i>
                     </a>
                     <a href="https://www.tiktok.com/@iapi.ge"
-                       class="footer-social-btn" aria-label="TikTok">
+                       class="footer-social-btn" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                         <i class="ci-tiktok"></i>
                     </a>
                 </div>

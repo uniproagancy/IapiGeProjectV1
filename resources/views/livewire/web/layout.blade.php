@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light" data-pwa="true">
+<html lang="ka" data-bs-theme="light" data-pwa="true">
 <head>
     @yield('seo')
     <meta charset="utf-8">
@@ -8,12 +8,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
     @yield('og_tags')
+    <meta property="og:site_name" content="IAPI.GE">
+    <meta property="og:locale" content="ka_GE">
+    @yield('structured_data')
 
     <link rel="preload" href="{{ asset('web-assets/fonts/inter-variable-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('web-assets/icons/cartzilla-icons.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('web-assets/icons/cartzilla-icons.min.css') }}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('web-assets/img/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('web-assets/img/logo.png') }}">
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/swiper/swiper-bundle.min.css') }}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="{{ asset('web-assets/css/theme.min.css') }}" id="theme-styles">

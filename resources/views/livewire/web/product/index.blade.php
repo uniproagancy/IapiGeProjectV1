@@ -1,8 +1,59 @@
+@php
+    $catTitle = $currentCategory?->translation('ka')?->title;
+    $seoTitle = $catTitle
+        ? $catTitle . ' — იყიდე საუკეთესო ფასად | IAPI.GE'
+        : 'პროდუქციის კატალოგი — ტექნიკა და ელექტრონიკა | IAPI.GE';
+    $seoDesc = $catTitle
+        ? $catTitle . ' — ფართო არჩევანი საუკეთესო ფასად IAPI.GE-ზე. სწრაფი მიტანა და გარანტია მთელ საქართველოში.'
+        : 'იყიდე ტექნიკა და ელექტრონიკა IAPI.GE-ზე. ტელეფონები, კომპიუტერები, სახლის ტექნიკა საუკეთესო ფასად საქართველოში.';
+@endphp
+
 @section('seo')
-    <title>
-        {{ ($currentCategory?->translation('ka')?->title ? $currentCategory->translation('ka')->title . ' — შეიძინე იაფად | iapi.ge' : 'პროდუქციის ჩამონათვალი — შეიძინე იაფად | iapi.ge') }}
-    </title>
-    <meta name="keywords" content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    <title>{{ $seoTitle }}</title>
+    <meta name="keywords" content="{{ $catTitle ?? 'ტექნიკა' }}, iapi.ge, ონლაინ მაღაზია, ელექტრონიკა, საუკეთესო ფასი, საქართველო">
+@endsection
+
+@section('meta_description'){{ $seoDesc }}@endsection
+
+@section('canonical'){{ $currentCategory ? route('web.products.index', $currentCategory->translation('ka')?->slug) : route('web.products.index') }}@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDesc }}">
+    <meta property="og:url" content="{{ $currentCategory ? route('web.products.index', $currentCategory->translation('ka')?->slug) : route('web.products.index') }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/logo.png') }}">
+@endsection
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "მთავარი",
+                "item": "{{ route('web.main.index') }}"
+            }
+            @if($currentCategory)
+            ,{
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ $catTitle }}",
+                "item": "{{ route('web.products.index', $currentCategory->translation('ka')?->slug) }}"
+            }
+            @else
+            ,{
+                "@type": "ListItem",
+                "position": 2,
+                "name": "კატალოგი"
+            }
+            @endif
+        ]
+    }
+    </script>
 @endsection
 
 @section('page_css')

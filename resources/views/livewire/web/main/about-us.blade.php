@@ -1,9 +1,25 @@
+@section('seo')
+    <title>ჩვენ შესახებ — IAPI.GE | ტექნიკის ონლაინ მაღაზია</title>
+@endsection
+
+@section('meta_description')IAPI.GE — ტექნიკის ონლაინ მაღაზია საქართველოში. ხარისხიანი ტექნიკა და ელექტრონიკა საუკეთესო ფასად, სწრაფი მიტანა და გარანტია.@endsection
+
+@section('canonical'){{ route('web.main.about') }}@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ჩვენ შესახებ — IAPI.GE">
+    <meta property="og:description" content="IAPI.GE — ტექნიკის ონლაინ მაღაზია საქართველოში. ხარისხიანი ტექნიკა საუკეთესო ფასად.">
+    <meta property="og:url" content="{{ route('web.main.about') }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/about.png') }}">
+@endsection
+
 <div>
 	<section class="container pt-5">
         <div class="row pt-2 pt-sm-3 pt-md-4 pt-lg-5">
           <div class="col-md-5 col-lg-6 pb-1 pb-sm-2 pb-md-0 mb-4 mb-md-0">
             <div>
-              <img src="{{ asset('web-assets/img/about.png') }}" class="rounded-5" alt="Image">
+              <img src="{{ asset('web-assets/img/about.png') }}" class="rounded-5" alt="IAPI.GE — ტექნიკის ონლაინ მაღაზია საქართველოში">
             </div>
           </div>
           <div class="col-md-7 col-lg-6">

@@ -1,16 +1,104 @@
+@php
+    $seoTitle = $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title;
+    $seoSlug = $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug;
+    $seoImage = asset('storage/' . $product->main_image);
+    $seoPrice = ($product->price->discount_price && $product->price->discount_price > 0)
+        ? $product->price->discount_price
+        : $product->price->regular_price;
+    $seoDescription = $product->translation('ka')->description
+        ? \Illuminate\Support\Str::limit(strip_tags($product->translation('ka')->description), 155)
+        : $seoTitle . ' — იყიდე საუკეთესო ფასად IAPI.GE-ზე. სწრაფი მიტანა და გარანტია საქართველოში.';
+    $seoBrand = $product->brand?->translation('ka')?->title ?? '';
+    $seoCategory = $product->category?->translation('ka')?->title ?? '';
+@endphp
+
 @section('seo')
-    <title>{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }} - IAPI.GE</title>
-    <meta name="keywords"
-          content="Iapi.ge, იაფი,ჯი, იაფი, მაღაზია, ტექნიკა, ტელეფონები, სმარტფონები, კომპიუტერული ტექნიკა, მაცივრები, გათბობის სისტემები, Phones, Tech, PC, Refrigerators, Air cond,">
+    <title>{{ $seoTitle }} | იყიდე IAPI.GE-ზე</title>
+    <meta name="keywords" content="{{ $seoTitle }}, {{ $seoBrand }}, {{ $seoCategory }}, იყიდე, ფასი, iapi.ge">
 @endsection
 
+@section('meta_description'){{ $seoDescription }}@endsection
+
+@section('canonical'){{ route('web.products.view', $seoSlug) }}@endsection
+
 @section('og_tags')
-    <meta property="og:url"
-          content="{{ route('web.products.view', $product->translations->where('locale', app()->getLocale())->first()->slug ?? $product->translations->where('locale', 'ka')->first()->slug) }}"/>
-    <meta property="og:type" content="article"/>
-    <meta property="og:title"
-          content="{{ $product->translation(app()->getLocale())->title ?? $product->translation('ka')->title }}"/>
-    <meta property="og:image" content="{{ asset('storage/'.$product->main_image) }}"/>
+    <meta property="og:url" content="{{ route('web.products.view', $seoSlug) }}">
+    <meta property="og:type" content="product">
+    <meta property="og:title" content="{{ $seoTitle }} | IAPI.GE">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:image" content="{{ $seoImage }}">
+    <meta property="product:price:amount" content="{{ $seoPrice }}">
+    <meta property="product:price:currency" content="GEL">
+@endsection
+
+@section('structured_data')
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "{{ $seoTitle }}",
+        "image": "{{ $seoImage }}",
+        "description": "{{ addslashes($seoDescription) }}",
+        "sku": "{{ $product->id }}",
+        @if($seoBrand)
+        "brand": {
+            "@type": "Brand",
+            "name": "{{ $seoBrand }}"
+        },
+        @endif
+        "offers": {
+            "@type": "Offer",
+            "url": "{{ route('web.products.view', $seoSlug) }}",
+            "priceCurrency": "GEL",
+            "price": "{{ $seoPrice }}",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+                "@type": "Organization",
+                "name": "IAPI.GE"
+            }
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "მთავარი",
+                "item": "{{ route('web.main.index') }}"
+            }
+            @if($product->category?->parent)
+            ,{
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ $product->category->parent->translation('ka')?->title }}",
+                "item": "{{ route('web.products.index', $product->category->parent->translation('ka')?->slug) }}"
+            }
+            ,{
+                "@type": "ListItem",
+                "position": 3,
+                "name": "{{ $seoCategory }}",
+                "item": "{{ route('web.products.index', $product->category->translation('ka')?->slug) }}"
+            }
+            @elseif($seoCategory)
+            ,{
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ $seoCategory }}",
+                "item": "{{ route('web.products.index', $product->category?->translation('ka')?->slug) }}"
+            }
+            @endif
+            ,{
+                "@type": "ListItem",
+                "position": {{ $product->category?->parent ? 4 : ($seoCategory ? 3 : 2) }},
+                "name": "{{ $seoTitle }}"
+            }
+        ]
+    }
+    </script>
 @endsection
 
 <main class="content-wrapper">

@@ -1,3 +1,9 @@
+@section('seo')
+    <title>შეკვეთის გაფორმება — IAPI.GE</title>
+@endsection
+
+@section('robots')noindex, nofollow@endsection
+
 <main class="content-wrapper">
     <div class="container py-5">
         <div class="row pt-1 pt-sm-3 pt-lg-4 pb-2 pb-md-3 pb-lg-4 pb-xl-5">

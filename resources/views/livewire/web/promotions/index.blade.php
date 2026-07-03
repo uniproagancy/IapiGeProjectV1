@@ -1,3 +1,19 @@
+@section('seo')
+    <title>აქციები და ფასდაკლებები — IAPI.GE | სპეციალური შეთავაზებები</title>
+@endsection
+
+@section('meta_description')იხილეთ მიმდინარე აქციები და ფასდაკლებები IAPI.GE-ზე. სპეციალური შეთავაზებები ტექნიკაზე და ელექტრონიკაზე საუკეთესო ფასად.@endsection
+
+@section('canonical'){{ route('web.promotions.index') }}@endsection
+
+@section('og_tags')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="აქციები და ფასდაკლებები — IAPI.GE">
+    <meta property="og:description" content="სპეციალური შეთავაზებები ტექნიკაზე და ელექტრონიკაზე საუკეთესო ფასად IAPI.GE-ზე.">
+    <meta property="og:url" content="{{ route('web.promotions.index') }}">
+    <meta property="og:image" content="{{ asset('web-assets/img/logo.png') }}">
+@endsection
+
 @section('page_css')
     <link rel="stylesheet" href="{{ asset('web-assets/vendor/nouislider/nouislider.min.css') }}">
 @endsection
@@ -5,7 +21,7 @@
     <main class="content-wrapper">
         <div class="container">
             <div class="img-fluid my-4">
-                <img src="{{ asset('storage/uploads/slider/c41a1080-c557-4bd3-943d-f8ba55625f11.jpg') }}" style="border-radius: 5px">
+                <img src="{{ asset('storage/uploads/slider/c41a1080-c557-4bd3-943d-f8ba55625f11.jpg') }}" style="border-radius: 5px" alt="სპეციალური ფასდაკლება კრედო ბანკის მომხმარებლებისთვის">
             </div>
         </div>
         <h1 class="h3 container mb-4 font-neue">
