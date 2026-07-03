@@ -571,7 +571,6 @@ class Index extends Component
         return view('livewire.web.promotions.index', [
             'products'              => $this->products,
             'brands'                => $this->brands,
-            'specificationSections' => $this->specificationSections,
             'isLoading'             => $this->isLoading,
             'event_id'              => $this->eventId,
         ])->layout('livewire.web.layout');
