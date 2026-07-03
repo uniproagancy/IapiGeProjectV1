@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "55735bf436459138ed01dca25ebe9645",
+    "content-hash": "628241c70aafee6060b71801d439a2cd",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -7431,16 +7431,16 @@
         },
         {
             "name": "spatie/laravel-sitemap",
-            "version": "8.1.0",
+            "version": "8.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-sitemap.git",
-                "reference": "5a8d3467f670d4dbe277c00bf960617912c97fb1"
+                "reference": "51f52030ab22abf5e95ed037fea5f8073114e784"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-sitemap/zipball/5a8d3467f670d4dbe277c00bf960617912c97fb1",
-                "reference": "5a8d3467f670d4dbe277c00bf960617912c97fb1",
+                "url": "https://api.github.com/repos/spatie/laravel-sitemap/zipball/51f52030ab22abf5e95ed037fea5f8073114e784",
+                "reference": "51f52030ab22abf5e95ed037fea5f8073114e784",
                 "shasum": ""
             },
             "require": {
@@ -7493,7 +7493,7 @@
                 "spatie"
             ],
             "support": {
-                "source": "https://github.com/spatie/laravel-sitemap/tree/8.1.0"
+                "source": "https://github.com/spatie/laravel-sitemap/tree/8.2.0"
             },
             "funding": [
                 {
@@ -7501,7 +7501,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2026-03-12T09:30:40+00:00"
+            "time": "2026-06-24T07:59:14+00:00"
         },
         {
             "name": "spatie/phpunit-snapshot-assertions",
@@ -12735,5 +12735,5 @@
         "ext-soap": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
