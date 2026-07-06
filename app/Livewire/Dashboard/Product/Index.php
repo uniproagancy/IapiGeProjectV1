@@ -462,8 +462,37 @@ class Index extends Component
     private function parsePrice($value): ?float
     {
         if ($value === null || $value === '') return null;
-        $clean = preg_replace('/[^0-9.]/', '', (string) $value);
-        return $clean === '' ? null : (float) $clean;
+        $str = trim((string) $value);
+        $str = preg_replace('/[^0-9,.]/', '', $str);
+        if ($str === '') return null;
+
+        // თუ მძიმის შემდეგ 2 ციფრია → ათწილადი (689,00 → 689.00)
+        // თუ მძიმის შემდეგ 3 ციფრია → ათასების გამყოფი (1,299 → 1299)
+        if (preg_match('/,(\d{2})$/', $str)) {
+            $str = str_replace(',', '.', $str);
+        } else {
+            $str = str_replace(',', '', $str);
+        }
+
+        return (float) $str ?: null;
+    }
+
+    private function parseAlneoPrice($value): float
+    {
+        if ($value === null || $value === '') return 0.0;
+        $str = trim((string) $value);
+        $str = preg_replace('/[^0-9,.]/', '', $str);
+        if ($str === '') return 0.0;
+
+        // 689,00 → ათწილადი (მძიმის შემდეგ 2 ციფრი)
+        if (preg_match('/,(\d{2})$/', $str)) {
+            $str = str_replace(',', '.', $str);
+        } else {
+            // 1,299 → ათასების გამყოფი
+            $str = str_replace(',', '', $str);
+        }
+
+        return (float) $str;
     }
 
     private function parseStock($value): int
@@ -507,17 +536,12 @@ class Index extends Component
                     continue;
                 }
 
-                $stock       = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
-                $priceRaw    = $sheet->getCell('C' . $rowIndex)->getFormattedValue(); // ← შეცვლილი
-                $discountRaw = $sheet->getCell('D' . $rowIndex)->getFormattedValue(); // ← შეცვლილი
+                $stock         = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
+                $priceRaw      = $sheet->getCell('C' . $rowIndex)->getFormattedValue();
+                $discountRaw   = $sheet->getCell('D' . $rowIndex)->getFormattedValue();
 
-                $price = $priceRaw !== null && $priceRaw !== ''
-                    ? (float) preg_replace('/[^0-9.]/', '', (string) $priceRaw)
-                    : 0.0;
-
-                $discountPrice = $discountRaw !== null && $discountRaw !== ''
-                    ? (float) preg_replace('/[^0-9.]/', '', (string) $discountRaw)
-                    : null;
+                $price         = $this->parseAlneoPrice($priceRaw);
+                $discountPrice = $this->parseAlneoPrice($discountRaw);
 
                 $exists = \App\Models\AlneoProduct::where('sku', $sku)->first();
 
