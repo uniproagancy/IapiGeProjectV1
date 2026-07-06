@@ -507,11 +507,11 @@ class Index extends Component
                     continue;
                 }
 
-                $stock         = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
-                $priceRaw      = $sheet->getCell('C' . $rowIndex)->getValue();
-                $discountRaw   = $sheet->getCell('D' . $rowIndex)->getValue();
+                $stock       = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('B' . $rowIndex)->getValue());
+                $priceRaw    = $sheet->getCell('C' . $rowIndex)->getFormattedValue(); // ← შეცვლილი
+                $discountRaw = $sheet->getCell('D' . $rowIndex)->getFormattedValue(); // ← შეცვლილი
 
-                $price         = $priceRaw !== null && $priceRaw !== ''
+                $price = $priceRaw !== null && $priceRaw !== ''
                     ? (float) preg_replace('/[^0-9.]/', '', (string) $priceRaw)
                     : 0.0;
 
