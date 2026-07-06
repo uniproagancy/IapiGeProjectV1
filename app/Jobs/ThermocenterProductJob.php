@@ -146,6 +146,13 @@ class ThermocenterProductJob implements ShouldQueue
 
     private function saveProduct(array $data): void
     {
+        $finalPrice = $data['old_price'] ?? $data['price'];
+
+        if ($finalPrice < 100) {
+            Log::info("⏭️ Thermocenter: ფასი 100₾-ზე ნაკლებია ({$finalPrice}₾), გამოტოვება | {$data['sku']}");
+            return;
+        }
+
         DB::transaction(function () use ($data) {
             $brandId    = $this->getBrandId($data['brand']);
             $categoryId = $this->getCategoryId($data['category']);
