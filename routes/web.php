@@ -98,9 +98,6 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
     });
 
     Route::middleware('auth')->group(function () {
-        Route::get('/specifications', \App\Livewire\Dashboard\Specification\Index::class)
-            ->name('dashboard.specifications.index');
-
         Route::get('/global-export', function () {
             $rows = \App\Models\Product\MetroMartNotFound::orderBy('name')->get();
             $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
@@ -141,6 +138,9 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
 
                 Route::get('/sections', App\Livewire\Dashboard\ProductSection\Index::class)->name('sections.index');
                 Route::get('/sections/{id}/manage', App\Livewire\Dashboard\ProductSection\Manage::class)->name('sections.manage');
+
+                Route::get('/specifications', \App\Livewire\Dashboard\Specification\Index::class)
+                    ->name('dashboard.specifications.index');
 
                 // JSON იმპორტი — დააგდე ფაილი: storage/app/import/products_import.json
                 // გახსენი: /dashboard/products/run-import?category=ID&supplier=ID
