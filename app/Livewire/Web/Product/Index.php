@@ -430,6 +430,7 @@ class Index extends Component
         return cache()->remember($cacheKey, 3600, function () use ($parentId) {
             $productIds = Product::query()
                 ->where('show', 1)
+                ->where('filter', 1)
                 ->where('active', 1)
                 ->when($parentId === 0, function ($q) {
                     $childIds = $this->currentCategory->children()->pluck('id');
