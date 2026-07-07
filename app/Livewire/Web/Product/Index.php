@@ -294,7 +294,41 @@ class Index extends Component
         $this->perPage += 20;
     }
 
-    // cache: false — loadMore-ზე perPage იცვლება და ახალი შედეგი ჭირდება
+    // ============================================
+    // Price Range — კატეგორიის მიხედვით min/max
+    // ============================================
+
+    #[Computed(cache: false)]
+    public function priceRange(): array
+    {
+        $query = Product::where('active', 1)
+            ->where('show', 1)
+            ->join('db_product_prices', 'db_product_prices.product_id', '=', 'db_products.id');
+
+        if ($this->currentCategory) {
+            if ($this->currentCategory->parent_id === 0) {
+                $childIds = $this->currentCategory->children()->pluck('id');
+                $query->whereIn('db_products.category_id', $childIds);
+            } else {
+                $query->where('db_products.category_id', $this->currentCategory->id);
+            }
+        }
+
+        $result = $query->selectRaw('
+            MIN(COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price)) as min_price,
+            MAX(COALESCE(NULLIF(db_product_prices.discount_price, 0), db_product_prices.regular_price)) as max_price
+        ')->first();
+
+        return [
+            'min' => (int) floor($result->min_price ?? 0),
+            'max' => (int) ceil($result->max_price ?? 50000),
+        ];
+    }
+
+    // ============================================
+    // Products
+    // ============================================
+
     #[Computed(cache: false)]
     public function products()
     {

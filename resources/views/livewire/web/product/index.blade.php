@@ -148,13 +148,34 @@
         .price-input:focus { border-color: #ff6900; }
         .price-sep { color: #bbb; font-size: 13px; flex-shrink: 0; }
 
+        /* ===== noUiSlider custom style ===== */
+        .noUi-target {
+            background: #f0f0f0;
+            border: none;
+            box-shadow: none;
+            height: 4px;
+            border-radius: 4px;
+        }
         .noUi-connect { background: #ff6900; }
         .noUi-handle {
-            border-color: #ff6900;
-            box-shadow: none;
+            width: 18px !important;
+            height: 18px !important;
+            top: -7px !important;
+            right: -9px !important;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #ff6900;
+            box-shadow: 0 2px 6px rgba(255,105,0,0.25);
+            cursor: pointer;
         }
-        .noUi-handle:before, .noUi-handle:after {
+        .noUi-handle:before, .noUi-handle:after { display: none; }
+        .noUi-tooltip {
             background: #ff6900;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            padding: 2px 6px;
         }
 
         /* ===== Category Tree ===== */
@@ -342,21 +363,32 @@
                             </div>
                             <div class="collapse show" id="filter_price">
                                 <div class="filter-body">
-                                    {{-- Slider --}}
-                                    <div id="price-slider" class="mb-3" wire:ignore></div>
                                     {{-- Inputs --}}
-                                    <div class="price-inputs">
+                                    <div class="price-inputs mb-2">
                                         <input type="number" class="price-input"
                                                wire:model.live.debounce.600ms="priceMin"
-                                               placeholder="მინ. ₾" min="0" id="price-min-input">
+                                               placeholder="{{ $this->priceRange['min'] }} ₾"
+                                               min="{{ $this->priceRange['min'] }}"
+                                               max="{{ $this->priceRange['max'] }}"
+                                               id="price-min-input">
                                         <span class="price-sep">—</span>
                                         <input type="number" class="price-input"
                                                wire:model.live.debounce.600ms="priceMax"
-                                               placeholder="მაქს. ₾" min="0" id="price-max-input">
+                                               placeholder="{{ $this->priceRange['max'] }} ₾"
+                                               min="{{ $this->priceRange['min'] }}"
+                                               max="{{ $this->priceRange['max'] }}"
+                                               id="price-max-input">
+                                    </div>
+                                    {{-- Slider --}}
+                                    <div id="price-slider" wire:ignore
+                                         data-min="{{ $this->priceRange['min'] }}"
+                                         data-max="{{ $this->priceRange['max'] }}"
+                                         data-current-min="{{ $priceMin ?: $this->priceRange['min'] }}"
+                                         data-current-max="{{ $priceMax ?: $this->priceRange['max'] }}">
                                     </div>
                                     @if($priceMin || $priceMax)
                                         <button wire:click="clearPriceFilter"
-                                                class="filter-show-more">გასუფთავება ✕</button>
+                                                class="filter-show-more mt-2">გასუფთავება ✕</button>
                                     @endif
                                 </div>
                             </div>
@@ -683,43 +715,70 @@
     <script src="{{ asset('web-assets/vendor/nouislider/nouislider.min.js') }}"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        function initPriceSlider() {
             const slider = document.getElementById('price-slider');
-            if (!slider) return;
+            if (!slider || slider.noUiSlider) return;
+
+            const rangeMin    = parseFloat(slider.dataset.min) || 0;
+            const rangeMax    = parseFloat(slider.dataset.max) || 50000;
+            const currentMin  = parseFloat(slider.dataset.currentMin) || rangeMin;
+            const currentMax  = parseFloat(slider.dataset.currentMax) || rangeMax;
 
             const minInput = document.getElementById('price-min-input');
             const maxInput = document.getElementById('price-max-input');
 
-            const initMin = parseFloat(minInput?.value) || 0;
-            const initMax = parseFloat(maxInput?.value) || 50000;
-
             noUiSlider.create(slider, {
-                start: [initMin, initMax],
+                start: [currentMin, currentMax],
                 connect: true,
-                range: { min: 0, max: 50000 },
+                range: { min: rangeMin, max: rangeMax },
                 step: 1,
-                tooltips: false,
+                tooltips: [
+                    { to: v => Math.round(v) + ' ₾', from: v => Number(v) },
+                    { to: v => Math.round(v) + ' ₾', from: v => Number(v) },
+                ],
                 format: {
                     to: v => Math.round(v),
                     from: v => Number(v),
                 },
             });
 
+            // Slider → inputs (live)
             slider.noUiSlider.on('update', function (values) {
                 if (minInput) minInput.value = values[0];
                 if (maxInput) maxInput.value = values[1];
             });
 
+            // Slider → Livewire (მხოლოდ drag-ის შემდეგ)
             slider.noUiSlider.on('change', function (values) {
-            @this.set('priceMin', values[0]);
-            @this.set('priceMax', values[1]);
+            @this.set('priceMin', values[0] > rangeMin ? values[0] : null);
+            @this.set('priceMax', values[1] < rangeMax ? values[1] : null);
             });
 
-            // Livewire-ის update-ზე slider-ი განახლდეს
-            Livewire.on('filter-updated', () => {
-                const min = parseFloat(minInput?.value) || 0;
-                const max = parseFloat(maxInput?.value) || 50000;
-                slider.noUiSlider.set([min, max]);
+            // Inputs → Slider
+            if (minInput) {
+                minInput.addEventListener('change', function () {
+                    slider.noUiSlider.set([this.value, null]);
+                });
+            }
+            if (maxInput) {
+                maxInput.addEventListener('change', function () {
+                    slider.noUiSlider.set([null, this.value]);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initPriceSlider);
+
+        // Livewire re-render-ზე slider-ი ხელახლა init-ი
+        document.addEventListener('livewire:navigated', initPriceSlider);
+        Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+            succeed(({ snapshot, effect }) => {
+                setTimeout(() => {
+                    const slider = document.getElementById('price-slider');
+                    if (slider && !slider.noUiSlider) {
+                        initPriceSlider();
+                    }
+                }, 50);
             });
         });
     </script>
