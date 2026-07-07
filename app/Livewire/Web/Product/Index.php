@@ -430,7 +430,6 @@ class Index extends Component
         return cache()->remember($cacheKey, 3600, function () use ($parentId) {
             $productIds = Product::query()
                 ->where('show', 1)
-                ->where('filter', 1)
                 ->where('active', 1)
                 ->when($parentId === 0, function ($q) {
                     $childIds = $this->currentCategory->children()->pluck('id');
@@ -445,6 +444,7 @@ class Index extends Component
             $items = \App\Models\Product\ProductFullSpecificationItem::query()
                 ->select('id', 'section_id', 'name', 'value')
                 ->whereNotNull('value')
+                ->where('filter', 1)
                 ->where('value', '!=', '')
                 ->whereHas('section', function ($q) use ($productIds) {
                     $q->whereIn('product_id', $productIds);
