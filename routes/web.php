@@ -98,6 +98,9 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
     });
 
     Route::middleware('auth')->group(function () {
+        Route::get('/specifications', \App\Livewire\Dashboard\Specification\Index::class)
+            ->name('dashboard.specifications.index');
+
         Route::get('/global-export', function () {
             $rows = \App\Models\Product\MetroMartNotFound::orderBy('name')->get();
             $filename = 'not_found_' . now()->format('Y-m-d_His') . '.csv';
