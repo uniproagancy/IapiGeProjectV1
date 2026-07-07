@@ -2,9 +2,7 @@
 
 use App\Http\Controllers\InvoiceController;
 
-use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Support\Facades\Route;
-use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
 use App\Models\Product\Product;
 use App\Models\AltaID;
@@ -89,7 +87,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
 //    });
 });
 
-Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::class)->group(function () {
+Route::prefix('/dashboard')->name('dashboard.')->group(function () {
     // AUTH ROUTES
     Route::middleware('guest')->group(function () {
         Route::get('/login', App\Livewire\Dashboard\Login::class)->name('login');
@@ -128,7 +126,7 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
             });
 
             //PRODUCTS
-            Route::prefix('products')->group(function () {
+            Route::prefix('products')->group(callback: function () {
                 Route::get('/', App\Livewire\Dashboard\Product\Index::class)->name('product.index');
                 Route::get('/create', App\Livewire\Dashboard\Product\Create::class)->name('product.create');
                 Route::get('/update/{id}', App\Livewire\Dashboard\Product\Update::class)->name('product.update');
@@ -139,41 +137,8 @@ Route::prefix('/dashboard')->name('dashboard.')->middleware(DoNotCacheResponse::
                 Route::get('/sections', App\Livewire\Dashboard\ProductSection\Index::class)->name('sections.index');
                 Route::get('/sections/{id}/manage', App\Livewire\Dashboard\ProductSection\Manage::class)->name('sections.manage');
 
-                Route::get('/specifications', \App\Livewire\Dashboard\Specification\Index::class)
-                    ->name('dashboard.specifications.index');
-
-                // JSON იმპორტი — დააგდე ფაილი: storage/app/import/products_import.json
-                // გახსენი: /dashboard/products/run-import?category=ID&supplier=ID
-                Route::get('/run-import', function () {
-                    $file = storage_path('app/import/products_import.json');
-
-                    if (!file_exists($file)) {
-                        return 'ფაილი ვერ მოიძებნა: ' . $file;
-                    }
-
-                    $products = json_decode(file_get_contents($file), true);
-
-                    if (!$products) {
-                        return 'JSON წაკითხვა ვერ მოხდა';
-                    }
-
-                    $categoryId = (int) request('category');
-                    $supplierId = (int) request('supplier');
-                    $brandId    = 143;
-
-                    if (!$categoryId || !$supplierId) {
-                        return 'მიუთითე: ?category=ID&supplier=ID';
-                    }
-
-                    \App\Jobs\ImportProductsJob::dispatch(
-                        products: $products,
-                        categoryId: $categoryId,
-                        brandId: $brandId,
-                        supplierId: $supplierId,
-                    );
-
-                    return '✅ იმპორტი დაიწყო — ' . count($products) . ' პროდუქტი. შეამოწმე logs.';
-                })->name('product.run-import');
+                Route::get('/specifications', App\Livewire\Dashboard\Specification\Index::class)
+                    ->name('specifications.index');
             });
 
             //ORDERS
