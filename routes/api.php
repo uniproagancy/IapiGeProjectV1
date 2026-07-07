@@ -50,6 +50,7 @@ Route::get('/allmarket/scan', [\App\Http\Controllers\ApiControllers\AllmarketCon
 
 Route::prefix('tbc')->group(function () {
     Route::get('/installment/status', '\App\Http\Controllers\ApiControllers\TBCInstallmentController@status')->name('tbc.installment-status');
+    Route::get('/installment/one/status', '\App\Http\Controllers\ApiControllers\TBCInstallmentController@checkOne')->name('tbc.installment-status-one');
 });
 
 Route::prefix('alneo')->group(function () {

@@ -87,6 +87,39 @@ class TBCInstallmentController extends Controller
         }
     }
 
+    public function checkOne(\Illuminate\Http\Request $request)
+    {
+        $sessionId = $request->query('session');
+
+        if (empty($sessionId)) {
+            return response()->json(['error' => 'session პარამეტრი აუცილებელია'], 400);
+        }
+
+        try {
+            $token = $this->token();
+
+            $response = Http::withHeaders([
+                'Accept'        => 'application/json',
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $token,
+            ])->withBody(json_encode([
+                'merchantKey' => $this->merchantKey,
+            ]), 'application/json')
+                ->get("https://api.tbcbank.ge/v1/online-installments/applications/{$sessionId}/status");
+
+            return response()->json([
+                'session_id' => $sessionId,
+                'response'   => $response->json(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'session_id' => $sessionId,
+                'error'      => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // ============================================
     // Facebook Pixel - Purchase
     // ============================================
