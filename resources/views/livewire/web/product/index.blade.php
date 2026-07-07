@@ -732,10 +732,7 @@
                 connect: true,
                 range: { min: rangeMin, max: rangeMax },
                 step: 1,
-                tooltips: [
-                    { to: v => Math.round(v) + ' ₾', from: v => Number(v) },
-                    { to: v => Math.round(v) + ' ₾', from: v => Number(v) },
-                ],
+                tooltips: false,
                 format: {
                     to: v => Math.round(v),
                     from: v => Number(v),
