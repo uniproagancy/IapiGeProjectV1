@@ -60,33 +60,33 @@
         @endif
     </div>
 
-    @foreach($product->variations as $variation)
-        <div class="mb-4">
-            <div class="d-flex">
-                <small class="px-1">{{ $variation->name }}: </small>
-                <label class="form-label fw-semibold pb-1 mb-2 font-neue">{{ $variation->value }}</label>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                @foreach($variation->items as $item)
-                    @if(!empty($item->product) && $item->product->show === 1)
-                        @php
-                            $slug = \App\Models\Product\ProductTranslation::where('product_id', $item->product->id)->where('locale', 'ka')->first();
-                        @endphp
-                        @if($item->is_color === 0)
-                            <a href="{{ route('web.products.view', $slug->slug) }}"
-                               class="btn btn-outline-secondary @if($item->supplier_product_id === $product->supplier_product_id) active @endif">
-                                {{ $item->value }}
-                            </a>
-                        @else
-                            <a href="{{ route('web.products.view', $slug->slug) }}"
-                               class="btn btn-color fs-xl @if($item->supplier_product_id === $product->supplier_product_id) active @endif"
-                               style="color: {{ $item->value }}"></a>
-                        @endif
-                    @endif
-                @endforeach
-            </div>
-        </div>
-    @endforeach
+{{--    @foreach($product->variations as $variation)--}}
+{{--        <div class="mb-4">--}}
+{{--            <div class="d-flex">--}}
+{{--                <small class="px-1">{{ $variation->name }}: </small>--}}
+{{--                <label class="form-label fw-semibold pb-1 mb-2 font-neue">{{ $variation->value }}</label>--}}
+{{--            </div>--}}
+{{--            <div class="d-flex flex-wrap gap-2">--}}
+{{--                @foreach($variation->items as $item)--}}
+{{--                    @if(!empty($item->product) && $item->product->show === 1)--}}
+{{--                        @php--}}
+{{--                            $slug = \App\Models\Product\ProductTranslation::where('product_id', $item->product->id)->where('locale', 'ka')->first();--}}
+{{--                        @endphp--}}
+{{--                        @if($item->is_color === 0)--}}
+{{--                            <a href="{{ route('web.products.view', $slug->slug) }}"--}}
+{{--                               class="btn btn-outline-secondary @if($item->supplier_product_id === $product->supplier_product_id) active @endif">--}}
+{{--                                {{ $item->value }}--}}
+{{--                            </a>--}}
+{{--                        @else--}}
+{{--                            <a href="{{ route('web.products.view', $slug->slug) }}"--}}
+{{--                               class="btn btn-color fs-xl @if($item->supplier_product_id === $product->supplier_product_id) active @endif"--}}
+{{--                               style="color: {{ $item->value }}"></a>--}}
+{{--                        @endif--}}
+{{--                    @endif--}}
+{{--                @endforeach--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    @endforeach--}}
 
     @include('livewire.web.product.delivery-info')
 
