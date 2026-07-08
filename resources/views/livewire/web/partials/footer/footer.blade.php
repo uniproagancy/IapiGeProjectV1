@@ -67,9 +67,9 @@
                 </h6>
                 <ul class="list-unstyled d-flex flex-column gap-2 m-0">
                     @foreach([
-                        ['title' => 'მიტანის პირობები',  'url' => '/delivery'],
-                        ['title' => 'დაბრუნების პოლიტიკა', 'url' => '/return-policy'],
-                        ['title' => 'კონფიდენციალობა',  'url' => '/privacy'],
+                        ['title' => 'წესები და პირობები',  'url' => '/static/rules'],
+                        ['title' => 'უსაფრთხოების პოლიტიკა', 'url' => '/static/privacy-policy'],
+                        ['title' => 'მიწოდების პირობები',  'url' => '/static/delivery'],
                     ] as $link)
                         <li>
                             <a href="{{ $link['url'] }}" class="footer-link">{{ $link['title'] }}</a>
