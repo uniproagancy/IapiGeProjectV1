@@ -38,6 +38,7 @@ class Index extends Component
     public $comfoFile        = null;
     public $elite_file;
     public $metromart_file;
+    public $ingco_file;
 
     public $selectedCategory    = null;
     public $selectedBrand       = null;
@@ -466,8 +467,6 @@ class Index extends Component
         $str = preg_replace('/[^0-9,.]/', '', $str);
         if ($str === '') return null;
 
-        // თუ მძიმის შემდეგ 2 ციფრია → ათწილადი (689,00 → 689.00)
-        // თუ მძიმის შემდეგ 3 ციფრია → ათასების გამყოფი (1,299 → 1299)
         if (preg_match('/,(\d{2})$/', $str)) {
             $str = str_replace(',', '.', $str);
         } else {
@@ -484,11 +483,9 @@ class Index extends Component
         $str = preg_replace('/[^0-9,.]/', '', $str);
         if ($str === '') return 0.0;
 
-        // 689,00 → ათწილადი (მძიმის შემდეგ 2 ციფრი)
         if (preg_match('/,(\d{2})$/', $str)) {
             $str = str_replace(',', '.', $str);
         } else {
-            // 1,299 → ათასების გამყოფი
             $str = str_replace(',', '', $str);
         }
 
@@ -549,7 +546,7 @@ class Index extends Component
                     $exists->update([
                         'stock'          => $stock,
                         'price'          => $price,
-                        'discount_price' => $discountPrice,
+                        'discount_price' => $discountPrice ?: null,
                     ]);
                     $updated++;
                 } else {
@@ -557,7 +554,7 @@ class Index extends Component
                         'sku'            => $sku,
                         'stock'          => $stock,
                         'price'          => $price,
-                        'discount_price' => $discountPrice,
+                        'discount_price' => $discountPrice ?: null,
                     ]);
                     $inserted++;
                 }
@@ -581,6 +578,83 @@ class Index extends Component
         } catch (\Throwable $e) {
             Log::error('Alneo Scan dispatch failed', ['error' => $e->getMessage()]);
             $this->dispatch('ui:error', message: 'შეცდომა Alneo სკანის გაშვებისას');
+        }
+    }
+
+    // ============================================
+    // Ingco
+    // ============================================
+
+    public function uploadIngco(): void
+    {
+        $this->validate([
+            'ingco_file' => 'required|file|mimes:xlsx,xls|max:20480',
+        ], [
+            'ingco_file.required' => 'ფაილი აუცილებელია',
+            'ingco_file.mimes'    => 'მხოლოდ Excel ფაილი (.xlsx/.xls)',
+        ]);
+
+        try {
+            @ini_set('memory_limit', '256M');
+
+            $spreadsheet = IOFactory::load($this->ingco_file->getRealPath());
+            $sheet       = $spreadsheet->getActiveSheet();
+
+            $inserted = 0;
+            $updated  = 0;
+            $skipped  = 0;
+
+            foreach ($sheet->getRowIterator() as $row) {
+                $rowIndex = $row->getRowIndex();
+
+                // A = მოდელი (SKU)
+                $skuCell = $sheet->getCell('A' . $rowIndex);
+                $skuCell->getStyle()->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+                $sku = trim((string) $skuCell->getFormattedValue());
+
+                if ($sku === '' || in_array(mb_strtolower($sku), ['მოდელი', 'model', 'sku', 'კოდი', 'id'])) {
+                    $skipped++;
+                    continue;
+                }
+
+                // B = ფასი, C = სააქციო ფასი
+                $priceRaw    = $sheet->getCell('B' . $rowIndex)->getFormattedValue();
+                $discountRaw = $sheet->getCell('C' . $rowIndex)->getFormattedValue();
+
+                $price         = $this->parseAlneoPrice($priceRaw);
+                $discountPrice = $this->parseAlneoPrice($discountRaw) ?: null;
+
+                if ($price <= 0) {
+                    $skipped++;
+                    continue;
+                }
+
+                $exists = \App\Models\IngcoProduct::where('sku', $sku)->first();
+
+                if ($exists) {
+                    $exists->update([
+                        'price'          => $price,
+                        'discount_price' => $discountPrice,
+                    ]);
+                    $updated++;
+                } else {
+                    \App\Models\IngcoProduct::create([
+                        'sku'            => $sku,
+                        'stock'          => 1,
+                        'price'          => $price,
+                        'discount_price' => $discountPrice,
+                    ]);
+                    $inserted++;
+                }
+            }
+
+            $this->reset('ingco_file');
+            $this->dispatch('uploadIngcoModal_close');
+            $this->dispatch('ui:success', message: "Ingco: {$inserted} ახალი, {$updated} განახლდა, {$skipped} გამოტოვებული.");
+
+        } catch (\Throwable $e) {
+            Log::error('Ingco upload error: ' . $e->getMessage());
+            $this->dispatch('ui:error', message: 'შეცდომა: ' . $e->getMessage());
         }
     }
 
