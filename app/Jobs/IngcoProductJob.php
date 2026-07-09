@@ -155,16 +155,39 @@ class IngcoProductJob implements ShouldQueue
 
     private function fetchPage(string $url): ?string
     {
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept'          => 'text/html,application/xhtml+xml,*/*',
-                'Accept-Language' => 'ka',
-                'Referer'         => self::BASE_URL . '/',
-            ])
-            ->get($url);
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_ENCODING       => 'gzip, deflate',
+            CURLOPT_HTTPHEADER     => [
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language: ka,en;q=0.9',
+                'Referer: https://ingco.ge/',
+            ],
+        ]);
 
-        return $response->successful() ? $response->body() : null;
+        $body     = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $error    = curl_error($curl);
+        curl_close($curl);
+
+        if ($error) {
+            Log::warning("⚠️ Ingco fetchPage curl error: {$error} | url={$url}");
+            return null;
+        }
+
+        if ($httpCode !== 200) {
+            Log::warning("⚠️ Ingco fetchPage: HTTP={$httpCode} | url={$url}");
+            return null;
+        }
+
+        Log::info("✅ Ingco fetchPage: OK | url={$url}");
+        return $body ?: null;
     }
 
     // ============================================
@@ -173,7 +196,7 @@ class IngcoProductJob implements ShouldQueue
 
     private function parsePage(string $html, string $url): ?array
     {
-        Log::info("🔍 Ingco page HTML: " . substr($html, 0, 500) . " | url={$url}");
+        // JSON-LD — მთავარი წყარო
         $json = null;
         if (preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $m)) {
             $decoded = json_decode($m[1], true);
