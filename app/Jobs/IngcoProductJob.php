@@ -248,7 +248,7 @@ class IngcoProductJob implements ShouldQueue
 
         return [
             'name'        => $name,
-            'sku'         => $sku ? 'INGCO-' . $sku : 'INGCO-' . Str::slug($name),
+            'sku' => 'INGCO-' . $this->model,
             'brand'       => $brand,
             'description' => $description,
             'images'      => $images,
