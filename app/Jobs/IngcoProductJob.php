@@ -103,9 +103,10 @@ class IngcoProductJob implements ShouldQueue
         $response = Http::timeout(30)
             ->withHeaders([
                 'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept'          => 'text/html,application/xhtml+xml,*/*',
+                'Accept'          => '*/*',
                 'Accept-Language' => 'ka',
                 'Referer'         => self::BASE_URL . '/',
+                'X-Requested-With' => 'XMLHttpRequest',
             ])
             ->get(self::SEARCH_URL, [
                 'term'      => $model,
@@ -119,14 +120,30 @@ class IngcoProductJob implements ShouldQueue
 
         $html = $response->body();
 
-        // პირველი result-ის href ამოვიღოთ
-        if (preg_match('/<a[^>]+href="([^"]+)"[^>]*class="[^"]*search[^"]*"/', $html, $m)) {
+        Log::info("🔍 Ingco search response: " . substr($html, 0, 200) . " | model={$model}");
+
+        // search__result__item class-ით
+        if (preg_match('/<a[^>]+href="(\/ka\/[^"]+)"[^>]*class="search__result__item/', $html, $m)) {
             return self::BASE_URL . $m[1];
         }
 
-        // fallback — ნებისმიერი /ka/ link
-        if (preg_match('/<a[^>]+href="(\/ka\/[^"]+)"/', $html, $m)) {
+        // class ბოლოში
+        if (preg_match('/class="search__result__item[^"]*"[^>]*href="(\/ka\/[^"]+)"/', $html, $m)) {
             return self::BASE_URL . $m[1];
+        }
+
+        // fallback — ნებისმიერი /ka/ product link
+        if (preg_match_all('/<a[^>]+href="(\/ka\/[^"]+)"/', $html, $matches)) {
+            foreach ($matches[1] as $href) {
+                // product link-ები შეიცავს ingco-ს ან ხელსაწყოს სახელს
+                if (str_contains($href, 'ingco') || preg_match('/\/ka\/[a-z0-9\-]+-p\d+/', $href)) {
+                    return self::BASE_URL . $href;
+                }
+            }
+            // პირველი /ka/ link
+            if (!empty($matches[1][0])) {
+                return self::BASE_URL . $matches[1][0];
+            }
         }
 
         return null;
