@@ -117,10 +117,10 @@ class IngcoProductJob implements ShouldQueue
             Log::warning("⚠️ Ingco search: HTTP={$response->status()} | model={$model}");
             return null;
         }
-
+        
         $html = $response->body();
+        $html = str_replace(["\r\n", "\r", "\n"], ' ', $html); // ← ეს დაამატე
 
-        // <a href="/ka/..." class="search__result__item flex">
         if (preg_match('/<a href="(\/ka\/[^"]+)" class="search__result__item/', $html, $m)) {
             Log::info("✅ Ingco search: link found | model={$model} | href={$m[1]}");
             return self::BASE_URL . $m[1];
