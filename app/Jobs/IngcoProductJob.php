@@ -102,10 +102,10 @@ class IngcoProductJob implements ShouldQueue
     {
         $response = Http::timeout(30)
             ->withHeaders([
-                'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept'          => '*/*',
-                'Accept-Language' => 'ka',
-                'Referer'         => self::BASE_URL . '/',
+                'User-Agent'       => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept'           => '*/*',
+                'Accept-Language'  => 'ka',
+                'Referer'          => self::BASE_URL . '/',
                 'X-Requested-With' => 'XMLHttpRequest',
             ])
             ->get(self::SEARCH_URL, [
@@ -120,30 +120,9 @@ class IngcoProductJob implements ShouldQueue
 
         $html = $response->body();
 
-        Log::info("🔍 Ingco search response: " . substr($html, 0, 200) . " | model={$model}");
-
-        // search__result__item class-ით
-        if (preg_match('/<a[^>]+href="(\/ka\/[^"]+)"[^>]*class="search__result__item/', $html, $m)) {
+        // <a href="/ka/..." class="search__result__item flex">
+        if (preg_match('/<a href="(\/ka\/[^"]+)" class="search__result__item/', $html, $m)) {
             return self::BASE_URL . $m[1];
-        }
-
-        // class ბოლოში
-        if (preg_match('/class="search__result__item[^"]*"[^>]*href="(\/ka\/[^"]+)"/', $html, $m)) {
-            return self::BASE_URL . $m[1];
-        }
-
-        // fallback — ნებისმიერი /ka/ product link
-        if (preg_match_all('/<a[^>]+href="(\/ka\/[^"]+)"/', $html, $matches)) {
-            foreach ($matches[1] as $href) {
-                // product link-ები შეიცავს ingco-ს ან ხელსაწყოს სახელს
-                if (str_contains($href, 'ingco') || preg_match('/\/ka\/[a-z0-9\-]+-p\d+/', $href)) {
-                    return self::BASE_URL . $href;
-                }
-            }
-            // პირველი /ka/ link
-            if (!empty($matches[1][0])) {
-                return self::BASE_URL . $matches[1][0];
-            }
         }
 
         return null;
@@ -225,9 +204,6 @@ class IngcoProductJob implements ShouldQueue
 
         // ბრენდი
         $brand = $json['brand']['name'] ?? null;
-        if (!$brand && preg_match('/brand["\s:]+["\'](.*?)["\']/i', $html, $m)) {
-            $brand = trim($m[1]);
-        }
         if (!$brand) $brand = 'INGCO';
 
         // აღწერა
@@ -248,7 +224,7 @@ class IngcoProductJob implements ShouldQueue
             }
         }
 
-        // fallback სურათები OG-დან
+        // fallback — OG image
         if (empty($images)) {
             if (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $m)) {
                 $images[] = $m[1];
@@ -258,19 +234,20 @@ class IngcoProductJob implements ShouldQueue
         // gallery სურათები
         if (preg_match_all('/<img[^>]+src="([^"]+\/images\/thumbs\/[^"]+)"/i', $html, $m)) {
             foreach ($m[1] as $img) {
-                if (!in_array($img, $images)) {
-                    $images[] = strpos($img, 'http') === 0 ? $img : self::BASE_URL . $img;
+                $full = strpos($img, 'http') === 0 ? $img : self::BASE_URL . $img;
+                if (!in_array($full, $images)) {
+                    $images[] = $full;
                 }
             }
         }
 
         $images = array_values(array_unique(array_filter($images)));
 
-        // სპეციფიკაციები — ცხრილიდან
+        // სპეციფიკაციები
         $fullSpecs  = $this->extractFullSpecs($html);
-        $shortSpecs = array_slice($fullSpecs['მახასიათებლები'] ?? (reset($fullSpecs) ?: []), 0, self::SHORT_SPEC_LIMIT, true);
+        $shortSpecs = array_slice(reset($fullSpecs) ?: [], 0, self::SHORT_SPEC_LIMIT, true);
 
-        // მარაგი — JSON-LD-დან
+        // მარაგი
         $inStock = 1;
         if (!empty($json['offers']['availability'])) {
             $inStock = str_contains($json['offers']['availability'], 'InStock') ? 1 : 0;
@@ -386,7 +363,7 @@ class IngcoProductJob implements ShouldQueue
                 );
             }
 
-            // Price — IngcoProduct-იდან
+            // Price
             ProductPrice::updateOrCreate(
                 ['product_id' => $existing->id],
                 [
