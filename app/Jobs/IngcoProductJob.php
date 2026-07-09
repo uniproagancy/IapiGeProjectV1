@@ -6,7 +6,6 @@ use App\Models\IngcoProduct;
 use App\Models\Product\Product;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductBrandTranslation;
-use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFullSpecificationItem;
 use App\Models\Product\ProductFullSpecificationSection;
 use App\Models\Product\ProductImage;
@@ -49,7 +48,6 @@ class IngcoProductJob implements ShouldQueue
         try {
             Log::info("🔧 Ingco: დაიწყო | model={$this->model}");
 
-            // Step 1: Search
             $productUrl = $this->searchProduct($this->model);
             if (!$productUrl) {
                 Log::info("🔧 Ingco: ვერ მოიძებნა | model={$this->model}");
@@ -58,21 +56,18 @@ class IngcoProductJob implements ShouldQueue
 
             Log::info("✅ Ingco: URL მოიძებნა | model={$this->model} | url={$productUrl}");
 
-            // Step 2: Fetch product page
             $html = $this->fetchPage($productUrl);
             if (!$html) {
                 Log::warning("⚠️ Ingco: გვერდი ვერ ჩამოიტვირთა | url={$productUrl}");
                 return;
             }
 
-            // Step 3: Parse
             $data = $this->parsePage($html, $productUrl);
             if (!$data || empty($data['name'])) {
                 Log::warning("⚠️ Ingco: parse ვერ მოხდა | url={$productUrl}");
                 return;
             }
 
-            // Step 4: ფასი IngcoProduct-იდან
             $ingcoProduct = IngcoProduct::where('sku', $this->model)->first();
             if (!$ingcoProduct) {
                 Log::info("⏭️ Ingco: SKU არ არის ბაზაში | sku={$this->model}");
@@ -83,7 +78,6 @@ class IngcoProductJob implements ShouldQueue
             $data['discount_price'] = $ingcoProduct->discount_price ? (float) $ingcoProduct->discount_price : null;
             $data['stock']          = (int) ($ingcoProduct->stock ?? 1);
 
-            // Step 5: Save
             $this->saveProduct($data);
 
             Log::info("✅ Ingco: შენახულია | model={$this->model} | name={$data['name']}");
@@ -117,16 +111,17 @@ class IngcoProductJob implements ShouldQueue
             Log::warning("⚠️ Ingco search: HTTP={$response->status()} | model={$model}");
             return null;
         }
-        
-        $html = $response->body();
-        $html = str_replace(["\r\n", "\r", "\n"], ' ', $html); // ← ეს დაამატე
 
+        // \r\n ამოვიღოთ
+        $html = str_replace(["\r\n", "\r", "\n"], ' ', $response->body());
+
+        // <a href="/ka/..." class="search__result__item flex">
         if (preg_match('/<a href="(\/ka\/[^"]+)" class="search__result__item/', $html, $m)) {
             Log::info("✅ Ingco search: link found | model={$model} | href={$m[1]}");
             return self::BASE_URL . $m[1];
         }
 
-        Log::info("⚠️ Ingco search: link not found | model={$model} | html_snippet=" . substr($html, 0, 300));
+        Log::info("⚠️ Ingco search: link not found | model={$model}");
         return null;
     }
 
@@ -167,7 +162,6 @@ class IngcoProductJob implements ShouldQueue
             return null;
         }
 
-        Log::info("✅ Ingco fetchPage: OK | url={$url}");
         return $body ?: null;
     }
 
@@ -177,7 +171,7 @@ class IngcoProductJob implements ShouldQueue
 
     private function parsePage(string $html, string $url): ?array
     {
-        // JSON-LD — მთავარი წყარო
+        // JSON-LD
         $json = null;
         if (preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $m)) {
             $decoded = json_decode($m[1], true);
@@ -198,15 +192,12 @@ class IngcoProductJob implements ShouldQueue
 
         // SKU
         $sku = $json['sku'] ?? $json['mpn'] ?? null;
-        if (!$sku) {
-            if (preg_match('/sku["\s:]+([A-Z0-9\-]+)/i', $html, $m)) {
-                $sku = trim($m[1]);
-            }
+        if (!$sku && preg_match('/sku["\s:]+([A-Z0-9\-]+)/i', $html, $m)) {
+            $sku = trim($m[1]);
         }
 
         // ბრენდი
-        $brand = $json['brand']['name'] ?? null;
-        if (!$brand) $brand = 'INGCO';
+        $brand = $json['brand']['name'] ?? 'INGCO';
 
         // აღწერა
         $description = $json['description'] ?? null;
@@ -225,24 +216,15 @@ class IngcoProductJob implements ShouldQueue
                 $images[] = $json['image'];
             }
         }
-
-        // fallback — OG image
-        if (empty($images)) {
-            if (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $m)) {
-                $images[] = $m[1];
-            }
+        if (empty($images) && preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $m)) {
+            $images[] = $m[1];
         }
-
-        // gallery სურათები
         if (preg_match_all('/<img[^>]+src="([^"]+\/images\/thumbs\/[^"]+)"/i', $html, $m)) {
             foreach ($m[1] as $img) {
                 $full = strpos($img, 'http') === 0 ? $img : self::BASE_URL . $img;
-                if (!in_array($full, $images)) {
-                    $images[] = $full;
-                }
+                if (!in_array($full, $images)) $images[] = $full;
             }
         }
-
         $images = array_values(array_unique(array_filter($images)));
 
         // სპეციფიკაციები
@@ -277,27 +259,21 @@ class IngcoProductJob implements ShouldQueue
         $specs        = [];
         $currentGroup = 'მახასიათებლები';
 
-        // ცხრილი — <tr><td>name</td><td>value</td></tr>
         if (preg_match('/<table[^>]*>(.*?)<\/table>/s', $html, $tableMatch)) {
             if (preg_match_all('/<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/s', $tableMatch[1], $rows, PREG_SET_ORDER)) {
                 foreach ($rows as $row) {
                     $key   = trim(strip_tags($row[1]));
                     $value = trim(strip_tags($row[2]));
-                    if ($key && $value) {
-                        $specs[$currentGroup][$key] = $value;
-                    }
+                    if ($key && $value) $specs[$currentGroup][$key] = $value;
                 }
             }
         }
 
-        // dl/dt/dd სია
         if (empty($specs) && preg_match_all('/<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/s', $html, $rows, PREG_SET_ORDER)) {
             foreach ($rows as $row) {
                 $key   = trim(strip_tags($row[1]));
                 $value = trim(strip_tags($row[2]));
-                if ($key && $value) {
-                    $specs[$currentGroup][$key] = $value;
-                }
+                if ($key && $value) $specs[$currentGroup][$key] = $value;
             }
         }
 
@@ -313,7 +289,6 @@ class IngcoProductJob implements ShouldQueue
         $sku      = $data['sku'];
         $existing = Product::where('sku', $sku)->first();
         $isNew    = !$existing;
-
         $brandId  = $this->getBrandId($data['brand']);
         $inStock  = $data['in_stock'];
         $quantity = $inStock ? max((int)($data['stock'] ?? 1), 1) : 0;
@@ -334,21 +309,18 @@ class IngcoProductJob implements ShouldQueue
                     'update_lock'   => 0,
                     'taxonomy_lock' => 0,
                 ]);
-
                 Log::info("➕ Ingco: ახალი პროდუქტი | sku={$sku} | id={$existing->id}");
             } else {
                 if ($existing->update_lock) {
                     Log::info("🔒 Ingco: ჩაკეტილია | sku={$sku}");
                     return;
                 }
-
                 $existing->update([
                     'quantity' => $quantity,
                     'in_stock' => $inStock,
                     'show'     => $inStock,
                     'active'   => 1,
                 ]);
-
                 Log::info("🔄 Ingco: განახლდა | sku={$sku} | id={$existing->id}");
             }
 
@@ -451,8 +423,7 @@ class IngcoProductJob implements ShouldQueue
                 ])->get($imageUrl);
 
                 if (!$response->successful()) continue;
-                if (strlen($response->body()) > self::MAX_IMAGE_SIZE) continue;
-                if (strlen($response->body()) === 0) continue;
+                if (strlen($response->body()) === 0 || strlen($response->body()) > self::MAX_IMAGE_SIZE) continue;
 
                 $ext  = $this->getImageExtension($imageUrl);
                 $path = "uploads/products/{$product->id}/" . Str::random(40) . ".{$ext}";
