@@ -116,7 +116,7 @@ class IngcoProductJob implements ShouldQueue
 
         // <a href="/ka/..." class="search__result__item flex">
         // \s+ — whitespace (\r\n, space, tab) href-სა და class-ს შორის
-        if (preg_match('/<a\s+href="(\/ka\/[^"]+)"\s+class="search__result__item/', $html, $m)) {
+        if (preg_match('/href="(\/ka\/[^"]+)"/', $html, $m)) {
             Log::info("✅ Ingco search: link found | model={$model} | href={$m[1]}");
             return self::BASE_URL . $m[1];
         }
