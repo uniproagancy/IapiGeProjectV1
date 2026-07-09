@@ -173,7 +173,7 @@ class IngcoProductJob implements ShouldQueue
 
     private function parsePage(string $html, string $url): ?array
     {
-        // JSON-LD — მთავარი წყარო
+        Log::info("🔍 Ingco page HTML: " . substr($html, 0, 500) . " | url={$url}");
         $json = null;
         if (preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $m)) {
             $decoded = json_decode($m[1], true);
