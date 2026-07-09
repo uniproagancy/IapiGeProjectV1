@@ -28,6 +28,10 @@ Route::prefix('upload')->group(function () {
     Route::post('/image', [\App\Http\Controllers\ApiControllers\ImageUploadController::class, 'upload']);
 });
 
+Route::prefix('ingco')->group(function () {
+    Route::get('/scan', [\App\Http\Controllers\ApiControllers\IngcoController::class, 'scan']);
+});
+
 Route::prefix('promotions')->group(function () {
     Route::get('/get', '\App\Http\Controllers\ApiControllers\PromotionProductsController@index');
 });
