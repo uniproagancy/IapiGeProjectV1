@@ -173,10 +173,14 @@ class IngcoProductJob implements ShouldQueue
     {
         // JSON-LD
         $json = null;
-        if (preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $m)) {
+        $hasJsonLd = preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $html, $m);
+        Log::info("🔍 Ingco parse: json_ld=" . ($hasJsonLd ? 'YES' : 'NO') . " | url={$url}");
+        if ($hasJsonLd) {
             $decoded = json_decode($m[1], true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 $json = $decoded;
+            } else {
+                Log::info("🔍 Ingco parse: json_decode error=" . json_last_error_msg());
             }
         }
 
@@ -185,10 +189,15 @@ class IngcoProductJob implements ShouldQueue
         if (!empty($json['name'])) {
             $name = trim($json['name']);
         }
-        if (!$name && preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $html, $m)) {
-            $name = trim(strip_tags($m[1]));
+        $hasH1 = preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $html, $hm);
+        Log::info("🔍 Ingco parse: h1=" . ($hasH1 ? trim(strip_tags($hm[1])) : 'NOT FOUND') . " | json_name=" . ($json['name'] ?? 'null'));
+        if (!$name && $hasH1) {
+            $name = trim(strip_tags($hm[1]));
         }
-        if (!$name) return null;
+        if (!$name) {
+            Log::warning("⚠️ Ingco parse: name ვერ მოიძებნა | url={$url}");
+            return null;
+        }
 
         // SKU
         $sku = $json['sku'] ?? $json['mpn'] ?? null;
