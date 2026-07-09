@@ -120,7 +120,7 @@ class IngcoProductJob implements ShouldQueue
 
         $html = $response->body();
 
-        Log::info("🔍 Ingco search response: " . substr($html, 0, 800) . " | model={$model}");
+        Log::info("🔍 Ingco search response: " . substr($html, 0, 200) . " | model={$model}");
 
         // search__result__item class-ით
         if (preg_match('/<a[^>]+href="(\/ka\/[^"]+)"[^>]*class="search__result__item/', $html, $m)) {
