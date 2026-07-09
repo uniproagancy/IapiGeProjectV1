@@ -80,6 +80,9 @@
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadAlneoModal">
                                         <i data-feather="upload" class="me-1" style="width:14px;"></i> Alneo — Excel
                                     </a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#uploadIngcoModal">
+                                        <i data-feather="upload" class="me-1" style="width:14px;"></i> Ingco — Excel
+                                    </a>
                                     <a class="dropdown-item text-danger" href="#"
                                        wire:click="uploadAlneoScan"
                                        onclick="if(!confirm('Alneo სკანი დაიწყებს ყველა პროდუქტის იმპორტს')) return false;">
@@ -386,7 +389,32 @@
             </form>
         </div>
     </div>
-
+    <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadIngcoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content pt-0" wire:submit.prevent="uploadIngco">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                <div class="modal-header mb-1">
+                    <h5 class="modal-title">Ingco — ატვირთვა</h5>
+                </div>
+                <div class="modal-body flex-grow-1">
+                    <div class="mb-1">
+                        <label class="form-label">ფაილი (.xlsx) — A=მოდელი | B=ფასი | C=სააქციო ფასი</label>
+                        <input type="file" class="form-control @error('ingco_file') border-danger is-invalid @enderror"
+                               wire:model="ingco_file" accept=".xlsx,.xls">
+                        @error('ingco_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary me-1"
+                                wire:loading.attr="disabled" wire:target="uploadIngco,ingco_file">
+                            <span wire:loading.remove wire:target="uploadIngco">დამუშავება</span>
+                            <span wire:loading wire:target="uploadIngco"><span class="spinner-border spinner-border-sm"></span></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">დახურვა</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     {{-- Alneo --}}
     <div class="modal modal-slide-in new-user-modal fade" wire:ignore.self id="uploadAlneoModal" tabindex="-1">
         <div class="modal-dialog">
@@ -685,6 +713,10 @@
 
         Livewire.on('price_edit_modal_close', () => {
             bootstrap.Modal.getInstance(document.getElementById('priceEditModal'))?.hide();
+        });
+
+        Livewire.on('uploadIngcoModal_close', () => {
+            bootstrap.Modal.getInstance(document.getElementById('uploadIngcoModal'))?.hide();
         });
     </script>
 @endsection
