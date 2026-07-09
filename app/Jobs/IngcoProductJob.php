@@ -120,8 +120,7 @@ class IngcoProductJob implements ShouldQueue
             Log::info("✅ Ingco search: link found | model={$model} | href={$m[1]}");
             return self::BASE_URL . $m[1];
         }
-
-        Log::info("⚠️ Ingco search: link not found | model={$model}");
+        Log::info("⚠️ Ingco search: link not found | model={$model} | html=" . substr($html, 0, 600));
         return null;
     }
 
