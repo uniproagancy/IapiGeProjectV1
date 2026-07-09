@@ -112,15 +112,16 @@ class IngcoProductJob implements ShouldQueue
             return null;
         }
 
-        $html = $response->body();
+        $raw  = $response->body();
+        // Http client ზოგჯერ JSON-encoded სტრინგს აბრუნებს — decode
+        $html = json_decode($raw) ?? $raw;
 
-        // <a href="/ka/..." class="search__result__item flex">
-        // \s+ — whitespace (\r\n, space, tab) href-სა და class-ს შორის
         if (preg_match('/href="(\/ka\/[^"]+)"/', $html, $m)) {
             Log::info("✅ Ingco search: link found | model={$model} | href={$m[1]}");
             return self::BASE_URL . $m[1];
         }
-        Log::info("⚠️ Ingco search: link not found | model={$model} | html=" . substr($html, 0, 600));
+
+        Log::info("⚠️ Ingco search: link not found | model={$model}");
         return null;
     }
 
