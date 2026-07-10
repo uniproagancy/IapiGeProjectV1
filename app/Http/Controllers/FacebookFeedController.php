@@ -3,157 +3,194 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use MeeeetDev\LaravelFacebookCatalog\LaravelFacebookCatalog;
 
 class FacebookFeedController extends Controller
 {
+    private const CACHE_PATH = 'app/facebook-feed.xml';
+    private const CACHE_TTL  = 86400; // 24 საათი
+
     public function getFeed()
     {
-        ini_set('memory_limit', '512M');
-        Log::info('Facebook Feed Generation Started');
+        $cachePath = storage_path(self::CACHE_PATH);
 
-        if (ob_get_level()) {
-            Log::info('Output buffer cleared, level: ' . ob_get_level());
+        if (file_exists($cachePath) && (time() - filemtime($cachePath)) < self::CACHE_TTL) {
+            Log::info('FacebookFeed: cache-იდან დაბრუნდა');
+            return $this->xmlResponse(file_get_contents($cachePath), $cachePath);
+        }
+
+        Log::info('FacebookFeed: ახლიდან generate იწყება');
+        $xml = $this->generateFeed();
+
+        file_put_contents($cachePath, $xml);
+        Log::info('FacebookFeed: cache ფაილი განახლდა');
+
+        return $this->xmlResponse($xml, $cachePath);
+    }
+
+    public function regenerate(): void
+    {
+        Log::info('FacebookFeed: scheduled regenerate დაიწყო');
+        $xml = $this->generateFeed();
+        file_put_contents(storage_path(self::CACHE_PATH), $xml);
+        Log::info('FacebookFeed: scheduled regenerate დასრულდა');
+    }
+
+    private function generateFeed(): string
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
+
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
-        ob_start();
 
-        LaravelFacebookCatalog::setTitle('Example feed');
-        LaravelFacebookCatalog::setDescription('Example feed of the Example shop');
-        LaravelFacebookCatalog::setLink('https://example.shop');
+        LaravelFacebookCatalog::$container = null;
+
+        LaravelFacebookCatalog::setTitle('iapi.ge feed');
+        LaravelFacebookCatalog::setDescription('iapi.ge product feed');
+        LaravelFacebookCatalog::setLink('https://iapi.ge');
         LaravelFacebookCatalog::setCurrency('GEL');
-        Log::info('Feed metadata set');
-
-        $products = Product::where('active', 1)
-            ->where('show', 1)
-            ->whereHas('category')
-            ->with(['translations', 'images', 'price', 'brand.translations', 'category.parent'])
-            ->get();
-
-        Log::info('Products loaded: ' . $products->count());
 
         $successCount = 0;
-        $errorCount = 0;
+        $errorCount   = 0;
 
-        foreach ($products as $product) {
-            try {
-                Log::info("Processing product ID: {$product->id}");
+        Product::where('active', 1)
+            ->where('show', 1)
+            ->whereHas('category')
+            ->with([
+                'translations',
+                'images',
+                'price',
+                'brand.translations',
+                'category.translations',
+                'category.parent.translations',
+            ])
+            ->chunkById(200, function ($products) use (&$successCount, &$errorCount) {
+                foreach ($products as $product) {
+                    try {
+                        // ფასი null-ია — გამოვტოვოთ
+                        if (!$product->price) {
+                            $errorCount++;
+                            continue;
+                        }
 
-                // Skip category 21 products under 30 GEL
-                if ($product->category_id == 21) {
-                    $price = $product->price->regular_price ?? 0;
-                    $discount = $product->price->discount_price ?? 0;
-                    if ($price < 30 || ($discount > 0 && $discount < 30)) {
-                        Log::info("Product {$product->id} skipped: category 21 with price under 30 GEL");
-                        continue;
+                        // კატეგორია 21 — 30 ლარზე ნაკლები გამოვტოვოთ
+                        if ($product->category_id == 21) {
+                            $price    = $product->price->regular_price ?? 0;
+                            $discount = $product->price->discount_price ?? 0;
+                            if ($price < 30 || ($discount > 0 && $discount < 30)) {
+                                continue;
+                            }
+                        }
+
+                        $translation = $product->translations->where('locale', 'ka')->first();
+                        if (!$translation) {
+                            $errorCount++;
+                            continue;
+                        }
+
+                        // description
+                        $description = trim(strip_tags($translation->description ?? ''));
+                        if (empty($description)) {
+                            $description = $translation->title;
+                        }
+
+                        // ბრენდი
+                        $brandName = $product->brand?->translations
+                            ->where('locale', 'ka')->first()?->title;
+                        if (empty($brandName) || $brandName === 'Unknown') {
+                            $brandName = 'უცნობი';
+                        }
+
+                        // კატეგორია
+                        $categoryName = $product->category?->translations
+                            ->where('locale', 'ka')->first()?->title;
+                        $parentName   = $product->category?->parent?->translations
+                            ->where('locale', 'ka')->first()?->title;
+
+                        // Google კატეგორია
+                        $googleCategoryId = $product->category?->google_category_id
+                            ?? $product->category?->parent?->google_category_id
+                            ?? null;
+
+                        // ფასები
+                        $regularPrice  = (float) ($product->price->regular_price ?? 0);
+                        $discountPrice = (float) ($product->price->discount_price ?? 0);
+                        $salePrice     = $discountPrice > 0 ? $discountPrice : null;
+                        $productPrice  = $salePrice ?? $regularPrice;
+
+                        // SKU prefix — custom_label_3
+                        $skuParts  = explode('-', $product->sku ?? '', 2);
+                        $skuPrefix = $skuParts[0] ?? '';
+
+                        $item = [
+                            'id'                           => $product->id,
+                            'link'                         => route('web.products.view', $translation->slug),
+                            'title'                        => $translation->title,
+                            'description'                  => $description,
+                            'image_link'                   => $this->getProductImage($product),
+                            'availability'                 => 'in stock',
+                            'condition'                    => 'new',
+                            'price'                        => $regularPrice,
+                            'brand'                        => $brandName,
+                            'google_product_category'      => $googleCategoryId,
+                            'quantity_to_sell_on_facebook' => intval($product->quantity * 10),
+                            'additional_image_link'        => $this->getProductGallery($product),
+                            'product_type'                 => $parentName && $categoryName
+                                ? $parentName . ' > ' . $categoryName
+                                : ($categoryName ?? ''),
+                            'custom_label_2'               => $parentName ?? '',
+                            'custom_label_3'               => $skuPrefix,
+                        ];
+
+                        // sale_price — მხოლოდ თუ არსებობს
+                        if ($salePrice) {
+                            $item['sale_price']     = $salePrice;
+                            $item['custom_label_1'] = $salePrice;
+                        }
+
+                        // განვადება — 150-ზე მეტზე
+                        if ($productPrice > 150) {
+                            $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
+                        }
+
+                        LaravelFacebookCatalog::addItem($item);
+                        $successCount++;
+
+                    } catch (\Exception $e) {
+                        $errorCount++;
+                        Log::error("FacebookFeed error product {$product->id}: " . $e->getMessage());
                     }
                 }
 
-                $productImage = $this->getProductImage($product);
-                Log::debug("Product {$product->id} image: {$productImage}");
+                gc_collect_cycles();
+            });
 
-                $productPrice = $this->getProductPrice($product);
-                Log::debug("Product {$product->id} price: {$productPrice}");
+        Log::info("FacebookFeed: success={$successCount} errors={$errorCount}");
 
-                $productGallery = $this->getProductGallery($product);
-                Log::debug("Product {$product->id} gallery count: " . count($productGallery));
+        $xml = LaravelFacebookCatalog::generate();
 
-                $translation = $product->translations->where('locale', 'ka')->first();
-
-                if (!$translation) {
-                    Log::warning("Product {$product->id} has no translation");
-                    $errorCount++;
-                    continue;
-                }
-
-                $brandTranslation = $product->brand?->translations->where('locale', 'ka')->first();
-
-                if (!$brandTranslation) {
-                    Log::warning("Product {$product->id} brand has no translation");
-                }
-
-                $categoryName = $product->category?->translations->where('locale', 'ka')->first()?->title;
-                $parentName   = $product->category?->parent?->translations->where('locale', 'ka')->first()?->title;
-
-                $skuParts = explode('-', $product->sku, 2);
-                $supplier = $skuParts[0] ?? '';
-
-                $item = [
-                    'link'                       => route('web.products.view', $translation->slug),
-                    'id'                         => $product->id,
-                    'title'                      => $translation->title,
-                    'image_link'                 => $productImage,
-                    'description'                => strip_tags($translation->description),
-                    'availability'               => 'in stock',
-                    'price'                      => $product->price->regular_price ?? 0,
-                    'sale_price'                 => $product->price->discount_price ?? 0,
-                    'brand'                      => $brandTranslation?->title ?? 'Unknown',
-                    'google_product_category'    => $product->category?->google_category_id
-                        ?? $product->category?->parent?->google_category_id
-                            ?? null,
-                    'quantity_to_sell_on_facebook' => intval($product->quantity * 10),
-                    'condition'                  => 'new',
-                    'additional_image_link'      => $productGallery,
-                    'product_type'               => $parentName && $categoryName
-                        ? $parentName . ' > ' . $categoryName
-                        : ($categoryName ?? ''),
-                    'custom_label_2'             => $parentName ?? '',
-                    'custom_label_3' => $supplier,
-                ];
-
-                if ($productPrice > 150) {
-                    $item['custom_label_0'] = 'თვეში ' . number_format($productPrice / 24) . '₾ დან';
-                }
-
-                if (!empty($product->price->discount_price)) {
-                    $item['custom_label_1'] = $product->price->discount_price;
-                }
-
-                LaravelFacebookCatalog::addItem($item);
-                $successCount++;
-                Log::info("Product {$product->id} added successfully");
-
-            } catch (\Exception $e) {
-                $errorCount++;
-                Log::error("Error processing product {$product->id}: " . $e->getMessage(), [
-                    'exception'  => $e,
-                    'product_id' => $product->id,
-                    'trace'      => $e->getTraceAsString()
-                ]);
-            }
-        }
-
-        Log::info("Feed processing complete. Success: {$successCount}, Errors: {$errorCount}");
-
-        try {
-            $xml = LaravelFacebookCatalog::generate();
-            Log::info('XML generated, length: ' . strlen($xml));
-
-            $firstChars = substr($xml, 0, 10);
-            $hexDump    = bin2hex($firstChars);
-            Log::debug('XML first 10 chars HEX: ' . $hexDump);
-
-            if ($hexDump !== '3c3f786d6c207665') {
-                Log::warning('XML does not start with proper declaration. HEX: ' . $hexDump);
-            }
-
+        while (ob_get_level() > 0) {
             ob_end_clean();
-            Log::info('Output buffer cleaned, returning response');
-
-            return response($xml, 200, [
-                'Content-Type' => 'application/xml; charset=utf-8',
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error generating XML: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace'     => $e->getTraceAsString()
-            ]);
-
-            return response('Error generating feed', 500);
         }
+
+        $xml = preg_replace('/^[\s\xEF\xBB\xBF]+/', '', $xml);
+        $xml = preg_replace('/(<\?xml[^>]+\?>)\s*(<\?xml[^>]+\?>)+/s', '$1', $xml);
+        $xml = preg_replace('/(<\?xml[^>]+\?>)\s+/', "$1\n", $xml);
+        $xml = ltrim($xml);
+
+        return $xml;
+    }
+
+    private function xmlResponse(string $xml, string $cachePath): \Illuminate\Http\Response
+    {
+        return response($xml, 200, [
+            'Content-Type'  => 'application/xml; charset=utf-8',
+            'Cache-Control' => 'public, max-age=86400',
+            'Last-Modified' => gmdate('D, d M Y H:i:s', file_exists($cachePath) ? filemtime($cachePath) : time()) . ' GMT',
+        ]);
     }
 
     private function getProductImage($product): string
@@ -167,45 +204,24 @@ class FacebookFeedController extends Controller
                 return url('storage/' . $product->images[0]->path);
             }
 
-            Log::debug("Product {$product->id} using default image");
             return url('web-assets/img/no-product.png');
 
         } catch (\Exception $e) {
-            Log::error("Error getting image for product {$product->id}: " . $e->getMessage());
             return url('web-assets/img/no-product.png');
-        }
-    }
-
-    private function getProductPrice($product): float
-    {
-        try {
-            if ($product->price->discount_price) {
-                return $product->price->discount_price;
-            }
-
-            return $product->price->regular_price ?? 0;
-
-        } catch (\Exception $e) {
-            Log::error("Error getting price for product {$product->id}: " . $e->getMessage());
-            return 0;
         }
     }
 
     private function getProductGallery($product): array
     {
         try {
-            $gallery = [];
+            if ($product->images->count() <= 1) return [];
 
-            if ($product->images->count() > 1) {
-                foreach ($product->images as $image) {
-                    $gallery[] = url('storage/' . $image->path);
-                }
-            }
-
-            return $gallery;
+            return $product->images
+                ->take(10)
+                ->map(fn($img) => url('storage/' . $img->path))
+                ->toArray();
 
         } catch (\Exception $e) {
-            Log::error("Error getting gallery for product {$product->id}: " . $e->getMessage());
             return [];
         }
     }
