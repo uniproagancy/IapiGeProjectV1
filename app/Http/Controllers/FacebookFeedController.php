@@ -8,8 +8,9 @@ use MeeeetDev\LaravelFacebookCatalog\LaravelFacebookCatalog;
 
 class FacebookFeedController extends Controller
 {
-    private const CACHE_PATH = 'app/facebook-feed.xml';
-    private const CACHE_TTL  = 86400; // 24 საათი
+    private const CACHE_PATH  = 'app/facebook-feed.xml';
+    private const CACHE_TTL   = 86400; // 24 საათი
+    private const MIN_PRICE   = 70;   // ← მინიმალური ფასი — შეცვალე საჭიროებისამებრ
 
     public function getFeed()
     {
@@ -55,6 +56,7 @@ class FacebookFeedController extends Controller
 
         $successCount = 0;
         $errorCount   = 0;
+        $skippedPrice = 0;
 
         Product::where('active', 1)
             ->where('show', 1)
@@ -67,7 +69,7 @@ class FacebookFeedController extends Controller
                 'category.translations',
                 'category.parent.translations',
             ])
-            ->chunkById(200, function ($products) use (&$successCount, &$errorCount) {
+            ->chunkById(200, function ($products) use (&$successCount, &$errorCount, &$skippedPrice) {
                 foreach ($products as $product) {
                     try {
                         // ფასი null-ია — გამოვტოვოთ
@@ -76,13 +78,14 @@ class FacebookFeedController extends Controller
                             continue;
                         }
 
-                        // კატეგორია 21 — 30 ლარზე ნაკლები გამოვტოვოთ
-                        if ($product->category_id == 21) {
-                            $price    = $product->price->regular_price ?? 0;
-                            $discount = $product->price->discount_price ?? 0;
-                            if ($price < 30 || ($discount > 0 && $discount < 30)) {
-                                continue;
-                            }
+                        // ფასი MIN_PRICE-ზე ნაკლებია — გამოვტოვოთ
+                        $regularPrice  = (float) ($product->price->regular_price ?? 0);
+                        $discountPrice = (float) ($product->price->discount_price ?? 0);
+                        $finalPrice    = $discountPrice > 0 ? $discountPrice : $regularPrice;
+
+                        if ($finalPrice < self::MIN_PRICE) {
+                            $skippedPrice++;
+                            continue;
                         }
 
                         $translation = $product->translations->where('locale', 'ka')->first();
@@ -115,11 +118,8 @@ class FacebookFeedController extends Controller
                             ?? $product->category?->parent?->google_category_id
                             ?? null;
 
-                        // ფასები
-                        $regularPrice  = (float) ($product->price->regular_price ?? 0);
-                        $discountPrice = (float) ($product->price->discount_price ?? 0);
-                        $salePrice     = $discountPrice > 0 ? $discountPrice : null;
-                        $productPrice  = $salePrice ?? $regularPrice;
+                        $salePrice    = $discountPrice > 0 ? $discountPrice : null;
+                        $productPrice = $salePrice ?? $regularPrice;
 
                         // SKU prefix — custom_label_3
                         $skuParts  = explode('-', $product->sku ?? '', 2);
@@ -168,7 +168,7 @@ class FacebookFeedController extends Controller
                 gc_collect_cycles();
             });
 
-        Log::info("FacebookFeed: success={$successCount} errors={$errorCount}");
+        Log::info("FacebookFeed: success={$successCount} errors={$errorCount} skipped_price={$skippedPrice} min_price=" . self::MIN_PRICE);
 
         $xml = LaravelFacebookCatalog::generate();
 
