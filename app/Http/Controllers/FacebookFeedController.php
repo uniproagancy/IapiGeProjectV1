@@ -77,6 +77,9 @@ class FacebookFeedController extends Controller
                 $categoryName = $product->category?->translations->where('locale', 'ka')->first()?->title;
                 $parentName   = $product->category?->parent?->translations->where('locale', 'ka')->first()?->title;
 
+                $skuParts = explode('-', $product->sku, 2);
+                $supplier = $skuParts[0] ?? '';
+
                 $item = [
                     'link'                       => route('web.products.view', $translation->slug),
                     'id'                         => $product->id,
@@ -97,6 +100,7 @@ class FacebookFeedController extends Controller
                         ? $parentName . ' > ' . $categoryName
                         : ($categoryName ?? ''),
                     'custom_label_2'             => $parentName ?? '',
+                    'custom_label_3' => $supplier,
                 ];
 
                 if ($productPrice > 150) {
