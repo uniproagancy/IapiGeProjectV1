@@ -44,7 +44,7 @@ class MetromartProductJob implements ShouldQueue
     private const SEARCH_URL           = 'https://metromart.ge/find-products-suggestions';
     private const PRODUCT_URL          = 'https://metromart.ge/ka_GE/shop/product/';
 
-    public function __construct(public string $model) {}
+    public function __construct(public string $model, public ?float $price = null) {}
 
     public function handle(): void
     {
@@ -161,12 +161,20 @@ class MetromartProductJob implements ShouldQueue
         $regularPrice  = (float) ($this->metaContent($xpath, 'product:price:amount') ?? 0);
         $salePriceMeta = (float) ($this->metaContent($xpath, 'product:sale_price:amount') ?? 0);
 
-        // Alta-ს ლოგიკა
         if ($salePriceMeta > 0 && $salePriceMeta < $regularPrice) {
             $discountPrice = $salePriceMeta;
         } else {
             $discountPrice = null;
             if ($salePriceMeta > 0) $regularPrice = $salePriceMeta;
+        }
+
+        if ($this->price !== null && $this->price > 0) {
+            if ($discountPrice !== null && $discountPrice < $this->price) {
+                $regularPrice = $this->price; // scraped ფასდაკლება ნარჩუნდება
+            } else {
+                $regularPrice  = $this->price;
+                $discountPrice = null;
+            }
         }
 
         return [

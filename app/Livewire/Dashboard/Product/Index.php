@@ -724,11 +724,14 @@ class Index extends Component
             $skipped    = 0;
 
             foreach ($sheet->getRowIterator() as $row) {
-                $model = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
+                $model    = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
+                $priceRaw = $sheet->getCell('B' . $row->getRowIndex())->getValue();
 
                 if (!$model) { $skipped++; continue; }
 
-                \App\Jobs\MetromartProductJob::dispatch($model)->onQueue('metromart');
+                $price = is_numeric($priceRaw) ? (float) $priceRaw : null;
+
+                \App\Jobs\MetromartProductJob::dispatch($model, $price)->onQueue('metromart');
                 $dispatched++;
             }
 
