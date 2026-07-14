@@ -724,12 +724,14 @@ class Index extends Component
             $skipped    = 0;
 
             foreach ($sheet->getRowIterator() as $row) {
-                $model    = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
-                $priceRaw = $sheet->getCell('B' . $row->getRowIndex())->getValue();
+                $rowIndex = $row->getRowIndex();
+                $model    = trim((string) $sheet->getCell('A' . $rowIndex)->getValue());
 
                 if (!$model) { $skipped++; continue; }
+                if (in_array(mb_strtolower($model), ['მოდელი', 'model', 'sku', 'id'])) { $skipped++; continue; }
 
-                $price = is_numeric($priceRaw) ? (float) $priceRaw : null;
+                // B სვეტი — ფასი (სურვილისამებრ)
+                $price = $this->parseAlneoPrice($sheet->getCell('B' . $rowIndex)->getFormattedValue());
 
                 \App\Jobs\MetromartProductJob::dispatch($model, $price)->onQueue('metromart');
                 $dispatched++;
