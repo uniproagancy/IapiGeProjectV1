@@ -95,20 +95,27 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
-        // ჯერ session cookie ავიღოთ
+        // ჯერ session cookie ავიღოთ მთავარი გვერდიდან
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
-        $client = new \GuzzleHttp\Client(['cookies' => true]);
-
-        $initResponse = Http::withOptions(['cookies' => $cookieJar])
-            ->get(self::BASE_URL . '/ka_GE/');
+        try {
+            Http::withOptions(['cookies' => $cookieJar])
+                ->timeout(15)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
+                ])
+                ->get(self::BASE_URL . '/ka_GE/');
+        } catch (Exception $e) {
+            Log::warning("⚠️ Metromart: session init ვერ მოხდა | {$e->getMessage()}");
+        }
 
         $response = Http::withOptions(['cookies' => $cookieJar])
+            ->timeout(30)
             ->withHeaders([
                 'Content-Type'     => 'application/json',
                 'Accept'           => 'application/json, text/javascript, */*; q=0.01',
                 'X-Requested-With' => 'XMLHttpRequest',
-                'User-Agent'       => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'User-Agent'       => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
                 'Referer'          => self::BASE_URL . '/ka_GE/',
                 'Origin'           => self::BASE_URL,
             ])
