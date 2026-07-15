@@ -95,13 +95,22 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
-        $response = Http::timeout(30)
+        // ჯერ session cookie ავიღოთ
+        $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
+
+        $client = new \GuzzleHttp\Client(['cookies' => true]);
+
+        $initResponse = Http::withOptions(['cookies' => $cookieJar])
+            ->get(self::BASE_URL . '/ka_GE/');
+
+        $response = Http::withOptions(['cookies' => $cookieJar])
             ->withHeaders([
-                'Content-Type' => 'application/json',
-                'Accept'       => 'application/json',
-                'User-Agent'   => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-                'Referer'      => self::BASE_URL . '/',
-                'Origin'       => self::BASE_URL,
+                'Content-Type'     => 'application/json',
+                'Accept'           => 'application/json, text/javascript, */*; q=0.01',
+                'X-Requested-With' => 'XMLHttpRequest',
+                'User-Agent'       => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Referer'          => self::BASE_URL . '/ka_GE/',
+                'Origin'           => self::BASE_URL,
             ])
             ->post(self::SEARCH_URL, [
                 'jsonrpc' => '2.0',
