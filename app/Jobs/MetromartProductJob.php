@@ -206,14 +206,10 @@ class MetromartProductJob implements ShouldQueue
             if ($salePriceMeta > 0) $regularPrice = $salePriceMeta;
         }
 
-        // Excel-ის ფასი — override თუ მოცემულია
+        // Excel-ის ფასი — ყოველთვის სრულად override-ავს საიტის ფასს/ფასდაკლებას
         if ($this->price !== null && $this->price > 0) {
-            if ($discountPrice !== null && $discountPrice < $this->price) {
-                $regularPrice = $this->price; // scraped ფასდაკლება ნარჩუნდება
-            } else {
-                $regularPrice  = $this->price;
-                $discountPrice = null;
-            }
+            $regularPrice  = $this->price;
+            $discountPrice = null;
         }
 
         return [
