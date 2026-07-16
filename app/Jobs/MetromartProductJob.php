@@ -187,7 +187,13 @@ class MetromartProductJob implements ShouldQueue
         );
         if (!$name) return null;
 
-        $metromartId   = basename(parse_url($url, PHP_URL_PATH));
+        // URL-ის ბოლო რიცხვითი ნაწილი — მდგრადი ID (slug-ის ტექსტური ნაწილი შეიძლება იცვლებოდეს)
+        $path = parse_url($url, PHP_URL_PATH);
+        if (preg_match('/-(\d+)$/', $path, $idMatch)) {
+            $metromartId = $idMatch[1];
+        } else {
+            $metromartId = basename($path);
+        }
         $brand         = $this->xpathAttr($xpath, '//meta[@itemprop="brand"]', 'content');
         $regularPrice  = (float) ($this->metaContent($xpath, 'product:price:amount') ?? 0);
         $salePriceMeta = (float) ($this->metaContent($xpath, 'product:sale_price:amount') ?? 0);
