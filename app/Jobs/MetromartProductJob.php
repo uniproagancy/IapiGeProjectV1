@@ -187,12 +187,12 @@ class MetromartProductJob implements ShouldQueue
         );
         if (!$name) return null;
 
-        // URL-ის ბოლო რიცხვითი ნაწილი — მდგრადი ID (slug-ის ტექსტური ნაწილი შეიძლება იცვლებოდეს)
-        $path = parse_url($url, PHP_URL_PATH);
-        if (preg_match('/-(\d+)$/', $path, $idMatch)) {
-            $metromartId = $idMatch[1];
-        } else {
-            $metromartId = basename($path);
+        $metromartId = basename(parse_url($url, PHP_URL_PATH));
+
+        // ბოლო რიცხვითი ID — slug-ის ტექსტური ნაწილი შეიძლება იცვლებოდეს, მაგრამ ეს მუდმივია
+        $metromartNumericId = null;
+        if (preg_match('/-(\d+)$/', $metromartId, $idMatch)) {
+            $metromartNumericId = $idMatch[1];
         }
         $brand         = $this->xpathAttr($xpath, '//meta[@itemprop="brand"]', 'content');
         $regularPrice  = (float) ($this->metaContent($xpath, 'product:price:amount') ?? 0);
@@ -220,6 +220,7 @@ class MetromartProductJob implements ShouldQueue
             'name'          => $name,
             'brand'         => $brand ? trim($brand) : null,
             'metromartId'   => $metromartId,
+            'metromartNumericId' => $metromartNumericId,
             'regularPrice'  => $regularPrice,
             'discountPrice' => $discountPrice,
             'inStock'       => $this->checkTbilisiStock($xpath),
@@ -236,7 +237,21 @@ class MetromartProductJob implements ShouldQueue
     private function importProduct(array $data): void
     {
         $sku      = 'METROMART-' . $data['metromartId'];
-        $existing = Product::where('sku', $sku)->first();
+        $numericId = $data['metromartNumericId'] ?? null;
+
+        // ჯერ ID-ით ვცადოთ პოვნა (slug-ის ტექსტი შეიძლება შეცვლილიყო, ID მუდმივია)
+        $existing = null;
+        if ($numericId) {
+            $existing = Product::where('sku', 'like', 'METROMART-%')
+                ->where('sku', 'like', '%-' . $numericId)
+                ->first();
+        }
+
+        // fallback — ზუსტი SKU-ით
+        if (!$existing) {
+            $existing = Product::where('sku', $sku)->first();
+        }
+
         $isNew    = !$existing;
         $brandId  = $this->getBrandId($data['brand']);
         $inStock  = $data['inStock'] ? 1 : 0;
@@ -266,6 +281,7 @@ class MetromartProductJob implements ShouldQueue
                 }
 
                 $existing->update([
+                    'sku'      => $sku, // slug-ის ტექსტი განახლდეს (ID იგივე რჩება)
                     'quantity' => $inStock,
                     'in_stock' => $inStock,
                     'show'     => $inStock,
