@@ -95,11 +95,11 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
-        // ჯერ session cookie ავიღოთ მთავარი გვერდიდან
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
+        // 1. მთავარი გვერდიდან csrf_token + session cookie ავიღოთ
         try {
-            Http::withOptions(['cookies' => $cookieJar])
+            $initResponse = Http::withOptions(['cookies' => $cookieJar])
                 ->timeout(15)
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
@@ -107,8 +107,20 @@ class MetromartProductJob implements ShouldQueue
                 ->get(self::BASE_URL . '/ka_GE/');
         } catch (Exception $e) {
             Log::warning("⚠️ Metromart: session init ვერ მოხდა | {$e->getMessage()}");
+            return null;
         }
 
+        $csrfToken = null;
+        if (preg_match('/csrf_token:\s*"([^"]+)"/', $initResponse->body(), $m)) {
+            $csrfToken = $m[1];
+        }
+
+        if (!$csrfToken) {
+            Log::warning("⚠️ Metromart: csrf_token ვერ მოიძებნა | model={$model}");
+            return null;
+        }
+
+        // 2. POST request csrf_token-ით
         $response = Http::withOptions(['cookies' => $cookieJar])
             ->timeout(30)
             ->withHeaders([
@@ -122,8 +134,11 @@ class MetromartProductJob implements ShouldQueue
             ->post(self::SEARCH_URL, [
                 'jsonrpc' => '2.0',
                 'method'  => 'call',
-                'params'  => ['search' => $model],
-                'id'      => rand(100000000, 999999999),
+                'params'  => [
+                    'search'     => $model,
+                    'csrf_token' => $csrfToken,
+                ],
+                'id' => rand(100000000, 999999999),
             ]);
 
         if (!$response->successful()) {
