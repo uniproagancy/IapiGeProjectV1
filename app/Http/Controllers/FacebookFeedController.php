@@ -15,6 +15,10 @@ class FacebookFeedController extends Controller
 
     public function getFeed()
     {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $cachePath = storage_path(self::CACHE_PATH);
 
         if (file_exists($cachePath) && (time() - filemtime($cachePath)) < self::CACHE_TTL) {

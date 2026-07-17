@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Product\Product;
 use App\Models\AltaID;
 
-Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->middleware('doNotCacheResponse')->name('facebook.get-feed');
+Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
 
 Route::post('/cart/add', '\App\Http\Controllers\Web\CartController@add');
 Route::post('/wishlist/toggle', '\App\Http\Controllers\Web\WishlistController@toggle');
