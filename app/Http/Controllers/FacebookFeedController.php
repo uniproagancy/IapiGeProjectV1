@@ -94,6 +94,10 @@ class FacebookFeedController extends Controller
                             continue;
                         }
 
+                        if($product->category_id === 21) {
+                            continue;
+                        }
+
                         // description
                         $description = trim(strip_tags($translation->description ?? ''));
                         if (empty($description)) {
