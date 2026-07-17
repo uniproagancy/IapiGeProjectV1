@@ -144,9 +144,7 @@ class FacebookFeedController extends Controller
                             'google_product_category'      => $googleCategoryId,
                             'quantity_to_sell_on_facebook' => intval($product->quantity * 10),
                             'additional_image_link'        => $this->getProductGallery($product),
-                            'product_type'                 => $parentName && $categoryName
-                                ? $parentName . ' > ' . $categoryName
-                                : ($categoryName ?? ''),
+                            'product_type'                 => $categoryName ?? '',
                             'custom_label_2'               => $parentName ?? '',
                             'custom_label_3'               => $skuPrefix,
                         ];
