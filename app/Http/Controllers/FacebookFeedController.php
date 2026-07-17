@@ -10,7 +10,8 @@ class FacebookFeedController extends Controller
 {
     private const CACHE_PATH  = 'app/facebook-feed.xml';
     private const CACHE_TTL   = 86400; // 24 საათი
-    private const MIN_PRICE   = 70;   // ← მინიმალური ფასი — შეცვალე საჭიროებისამებრ
+    private const MIN_PRICE   = 70;    // ← მინიმალური ფასი — შეცვალე საჭიროებისამებრ
+    private const EXCLUDED_CATEGORY_IDS = [21]; // ← ამოსაშლელი კატეგორიები
 
     public function getFeed()
     {
@@ -61,6 +62,7 @@ class FacebookFeedController extends Controller
         Product::where('active', 1)
             ->where('show', 1)
             ->whereHas('category')
+            ->whereNotIn('category_id', self::EXCLUDED_CATEGORY_IDS) // ← კატეგორია 21 გამოირიცხა
             ->with([
                 'translations',
                 'images',
@@ -91,10 +93,6 @@ class FacebookFeedController extends Controller
                         $translation = $product->translations->where('locale', 'ka')->first();
                         if (!$translation) {
                             $errorCount++;
-                            continue;
-                        }
-
-                        if($product->category_id === 21) {
                             continue;
                         }
 
