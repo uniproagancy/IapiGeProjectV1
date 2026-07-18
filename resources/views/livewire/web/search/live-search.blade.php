@@ -116,13 +116,6 @@
         </div>
     @endif
     <style>
-        /* === Selection === */
-        .live-search-input::selection,
-        .live-search-input::-moz-selection {
-            background: #b3d4ff;
-            color: #1a1a1a;
-        }
-
         /* === Search Input === */
         .live-search-input {
             font-size: 14px;
