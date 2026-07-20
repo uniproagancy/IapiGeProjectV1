@@ -89,3 +89,7 @@ body, .font-helvetica {
     color: #ff6900;
 }
 
+::selection {
+    color: white;
+    background-color: rgba(0, 136, 255, 0.85);
+}
