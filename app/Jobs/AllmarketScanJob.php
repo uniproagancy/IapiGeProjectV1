@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Product\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,6 +17,9 @@ class AllmarketScanJob implements ShouldQueue
 
     public int $tries   = 2;
     public int $timeout = 120;
+
+    private const SUPPLIER_ID = 13;
+    private const SKU_PREFIX  = 'ALLMARKET-';
 
     public function handle(): void
     {
@@ -52,12 +56,22 @@ class AllmarketScanJob implements ShouldQueue
             Log::info("📦 Allmarket Scan: ნაპოვნია " . count($products) . " პროდუქტი");
 
             $dispatched = 0;
+            $scannedSkus = [];
+
             foreach ($products as $product) {
+                $productCode = $product['productCode'] ?? null;
+                if ($productCode) {
+                    $scannedSkus[] = self::SKU_PREFIX . $productCode;
+                }
+
                 AllmarketProductJob::dispatch($product)->onQueue('allmarket');
                 $dispatched++;
             }
 
             Log::info("✅ Allmarket Scan: დაიგზავნა {$dispatched} job queue-ში");
+
+            // feed-იდან გამქრალი პროდუქტების გათიშვა
+            $this->deactivateMissingProducts($scannedSkus);
 
         } catch (\Throwable $e) {
             Log::error("❌ Allmarket Scan შეცდომა: " . $e->getMessage(), [
@@ -66,5 +80,34 @@ class AllmarketScanJob implements ShouldQueue
             ]);
             throw $e;
         }
+    }
+
+    private function deactivateMissingProducts(array $scannedSkus): void
+    {
+        if (empty($scannedSkus)) {
+            Log::warning("⚠️ Allmarket Scan: scannedSkus ცარიელია, გამორთვა გამოტოვებულია უსაფრთხოებისთვის");
+            return;
+        }
+
+        $missingProducts = Product::where('supplier_id', self::SUPPLIER_ID)
+            ->where('active', 1)
+            ->where('update_lock', 0)
+            ->whereNotIn('sku', $scannedSkus)
+            ->get();
+
+        if ($missingProducts->isEmpty()) {
+            return;
+        }
+
+        Product::whereIn('id', $missingProducts->pluck('id'))
+            ->update([
+                'active'   => 0,
+                'show'     => 0,
+                'in_stock' => 0,
+                'quantity' => 0,
+            ]);
+
+        Log::info("🚫 Allmarket Scan: გაითიშა " . $missingProducts->count() . " პროდუქტი (feed-ში აღარ მოიძებნა): "
+            . $missingProducts->pluck('sku')->implode(', '));
     }
 }
