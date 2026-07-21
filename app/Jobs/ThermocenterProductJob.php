@@ -170,15 +170,15 @@ class ThermocenterProductJob implements ShouldQueue
                     'active'      => $data['in_stock'],
                 ]);
 
+                $markup = 1.2;
                 ProductPrice::updateOrCreate(
                     ['product_id' => $existing->id],
                     [
-                        'regular_price'  => $data['old_price'] ?? $data['price'],
-                        'discount_price' => $data['old_price'] ? $data['price'] : null,
-                        'dealer_price'   => $data['price'],
+                        'regular_price'  => round(($data['old_price'] ?? $data['price']) * $markup, 2),
+                        'discount_price' => $data['old_price'] ? round($data['price'] * $markup, 2) : null,
+                        'dealer_price'   => round($data['price'] * $markup, 2),
                     ]
                 );
-
                 if (!empty($data['description'])) {
                     ProductTranslation::where('product_id', $existing->id)
                         ->where('locale', 'ka')
