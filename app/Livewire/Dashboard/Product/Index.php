@@ -811,7 +811,7 @@ class Index extends Component
         try {
             $sheet      = IOFactory::load($this->kontakt_file->getRealPath())->getActiveSheet();
             $highestRow = $sheet->getHighestRow();
-            $dispatched = 0;
+            $rows       = [];
             $skipped    = 0;
 
             for ($r = 2; $r <= $highestRow; $r++) {
@@ -832,19 +832,21 @@ class Index extends Component
 
                 if ($url === '' || !str_starts_with($url, 'http')) { $skipped++; continue; }
 
-                \App\Jobs\KontaktImportJob::dispatch(
-                    $name,
-                    $url,
-                    $this->parseStock($sheet->getCell('B' . $r)->getValue()),
-                    $this->parsePrice($sheet->getCell('C' . $r)->getValue())
-                )->onQueue('kontakt');
-                $dispatched++;
+                $rows[] = [
+                    'model' => $name,
+                    'url' => $url,
+                    'stock' => $this->parseStock($sheet->getCell('B' . $r)->getValue()),
+                    'price' => $this->parsePrice($sheet->getCell('C' . $r)->getValue()),
+                    'discount_price' => $this->parsePrice($sheet->getCell('D' . $r)->getValue()),
+                ];
             }
 
-            if ($dispatched === 0) { $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა'); return; }
+            if (empty($rows)) { $this->dispatch('ui:error', message: 'ვერცერთი ვალიდური ლინკი ვერ მოიძებნა'); return; }
+
+            \App\Jobs\KontaktBulkImportJob::dispatch($rows)->onQueue('kontakt');
 
             $this->reset('kontakt_file');
-            $this->dispatch('ui:success', message: "{$dispatched} პროდუქტი queue-ში გაიგზავნა (გამოტოვებული: {$skipped}).");
+            $this->dispatch('ui:success', message: count($rows) . " პროდუქტი გაიგზავნა ერთ bulk job-ში (გამოტოვებული: {$skipped}).");
 
         } catch (\Throwable $e) {
             Log::error('Kontakt upload error: ' . $e->getMessage());
