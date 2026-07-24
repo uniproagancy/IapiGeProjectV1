@@ -732,7 +732,6 @@ class Index extends Component
 
                 // B სვეტი — ფასი (სურვილისამებრ)
                 $price = $this->parseAlneoPrice($sheet->getCell('B' . $rowIndex)->getFormattedValue());
-                dd($price);
 
                 \App\Jobs\MetromartProductJob::dispatch($model, $price)->onQueue('metromart');
                 $dispatched++;

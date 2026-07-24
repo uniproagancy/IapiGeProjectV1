@@ -309,12 +309,7 @@ class MetromartProductJob implements ShouldQueue
             ProductPrice::updateOrCreate(
                 ['product_id' => $existing->id],
                 [
-                    'dealer_price'     => $data['regularPrice'],
-                    'regular_price'    => $data['regularPrice'],
-                    'discount_price'   => $data['discountPrice'],
-                    'discount_percent' => $data['discountPrice']
-                        ? (int) round((($data['regularPrice'] - $data['discountPrice']) / $data['regularPrice']) * 100)
-                        : 0,
+                    'regular_price'    => $this->price ?? $data['regularPrice'],
                 ]
             );
 
