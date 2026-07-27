@@ -44,7 +44,7 @@ class BOGInstallmentController extends Controller
     public function installmentCheck(Request $request)
     {
         $orders = Order::whereIn('payment_id', [4, 5])
-            ->where('payment_status_id', 1)
+            ->whereNotIn('payment_status_id', [2,3])
             ->get();
 
         if ($orders->isEmpty()) {
