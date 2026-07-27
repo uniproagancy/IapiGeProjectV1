@@ -4,7 +4,7 @@
         <li class="breadcrumb-item">
             <a href="{{ route('web.main.index') }}"> მთავარი გვერდი</a>
         </li>
-        @if($product->category->parent)
+        @if($product->category?->parent)
             <li class="breadcrumb-item">
                 <a href="{{ route('web.products.index', $product->category->parent->translation('ka')->slug) }}">
                     {{ $product->category->parent->translation(app()->getLocale())->title ?? $product->category->parent->translation('ka')->title }}
