@@ -75,9 +75,11 @@ class KontaktBulkImportJob implements ShouldQueue
     {
         $model = $row['model'];
         $url = $this->normalizeUrl($row['url']);
-        $stock = $row['stock'] ?? 0;
         $price = $row['price'] ?? null;
         $discountPriceInput = $row['discount_price'] ?? null;
+
+        // ექსელის მე-2 სვეტი (რაოდენობა) შეიძლება იყოს: "0.00", "6.00", "10+", "Н/Д" და ა.შ.
+        $parsedStock = $this->parseStockValue($row['stock'] ?? null);
 
         if (empty($url) || !str_starts_with($url, 'http')) {
             Log::warning("⚠️ Kontakt: არასწორი URL — {$model}");
@@ -105,10 +107,13 @@ class KontaktBulkImportJob implements ShouldQueue
         $title        = $this->cleanBrandText($this->cleanTitle($jsonData['name'] ?? $model));
         $price        = $price ?? (float) ($jsonData['offers']['price'] ?? 0);
         $availability = $jsonData['offers']['availability'] ?? '';
-        $inStock      = str_contains($availability, 'InStock');
         $image        = $jsonData['image'] ?? null;
         $brandName    = $jsonData['brand']['name'] ?? null;
         $desc         = $this->cleanBrandText($jsonData['description'] ?? null);
+
+        // საბოლოო in_stock: გვერდზე უნდა ეწეროს InStock ᲓᲐ ექსელის სვეტი არ უნდა იყოს 0/Н/Д
+        $inStock = str_contains($availability, 'InStock') && $parsedStock['available'];
+        $stock   = $parsedStock['qty'];
 
         if ($price <= 0) {
             Log::warning("⚠️ Kontakt: ფასი 0 — გამოტოვება — {$model}");
@@ -341,6 +346,53 @@ class KontaktBulkImportJob implements ShouldQueue
         $text = trim($text, " \t\n\r\0\x0B.,;-");
 
         return trim($text);
+    }
+
+    /**
+     * ამუშავებს ექსელის "რაოდენობის" სვეტს, რომელიც შეიძლება მოვიდეს სხვადასხვა ფორმატში:
+     * "0.00", "6.00", "10+", "Н/Д", "N/A" და ა.შ.
+     *
+     * "10+" აღნიშნავს "10 ან მეტს" — ვიღებთ რიცხვს (10) როგორც მინიმალურ მარაგს.
+     * "0.00" ან "Н/Д"/"N/A" ტიპის მნიშვნელობებზე პროდუქტი მიიჩნევა არასაწყობოდ.
+     *
+     * @return array{qty: int, available: bool}
+     */
+    private function parseStockValue(mixed $raw): array
+    {
+        if ($raw === null) {
+            return ['qty' => 0, 'available' => false];
+        }
+
+        $value = trim((string) $raw);
+
+        if ($value === '' || $this->isNoDataStockValue($value)) {
+            return ['qty' => 0, 'available' => false];
+        }
+
+        // "10+" ტიპის მნიშვნელობა
+        if (str_ends_with($value, '+')) {
+            $qty = (int) preg_replace('/[^\d]/', '', $value);
+            return ['qty' => max($qty, 1), 'available' => $qty > 0];
+        }
+
+        // ჩვეულებრივი რიცხვი, მაგ. "0.00", "6.00", "6,00"
+        $numericStr = preg_replace('/[^\d.,]/', '', $value);
+        $numericStr = str_replace(',', '.', $numericStr);
+        $numeric    = $numericStr === '' ? 0.0 : (float) $numericStr;
+
+        return ['qty' => (int) $numeric, 'available' => $numeric > 0];
+    }
+
+    /**
+     * ამოწმებს არის თუ არა მნიშვნელობა "მონაცემი არ არის" ტიპის (Н/Д, N/A და ა.შ.),
+     * non-breaking space-ების და სხვა უხილავი სიმბოლოების გათვალისწინებით.
+     */
+    private function isNoDataStockValue(string $value): bool
+    {
+        $normalized = preg_replace('/[\x{00A0}\s]+/u', '', $value);
+        $normalized = mb_strtoupper($normalized);
+
+        return in_array($normalized, ['Н/Д', 'НД', 'N/A', 'NA', 'N\A'], true);
     }
 
     private function resolveBrand(?string $brandName): int
