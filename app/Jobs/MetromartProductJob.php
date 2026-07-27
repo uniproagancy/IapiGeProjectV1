@@ -305,7 +305,6 @@ class MetromartProductJob implements ShouldQueue
                 );
             }
 
-            // Price
             ProductPrice::updateOrCreate(
                 ['product_id' => $existing->id],
                 [
@@ -313,7 +312,6 @@ class MetromartProductJob implements ShouldQueue
                 ]
             );
 
-            // Short Specs
             ProductShortSpecification::where('product_id', $existing->id)->forceDelete();
             $rows = [];
             $cnt  = 0;
@@ -323,7 +321,6 @@ class MetromartProductJob implements ShouldQueue
             }
             if ($rows) ProductShortSpecification::insert($rows);
 
-            // Full Specs
             $sectionIds = ProductFullSpecificationSection::where('product_id', $existing->id)->pluck('id');
             ProductFullSpecificationItem::whereIn('section_id', $sectionIds)->forceDelete();
             ProductFullSpecificationSection::where('product_id', $existing->id)->forceDelete();

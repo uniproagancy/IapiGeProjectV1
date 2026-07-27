@@ -34,6 +34,13 @@ class BOGInstallmentController extends Controller
         Log::warning($request);
     }
 
+    public function checkManualy(Request $request)
+    {
+        $orderData = (new \App\Services\Payments\BOGInstallment)
+            ->installmentCallback($request->order_id);
+        dd($orderData);
+    }
+
     public function installmentCheck(Request $request)
     {
         $orders = Order::whereIn('payment_id', [4, 5])
