@@ -13,7 +13,7 @@
         @endif
         <li class="breadcrumb-item">
             <a href="{{ route('web.products.index', $product->category?->translation('ka')->slug) }}">
-                {{ $product->category->translation(app()->getLocale())->title ?? $product->category->translation('ka')->title }}
+                {{ $product->category->translation(app()->getLocale())->title ?? $product->category?->translation('ka')->title }}
             </a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">
