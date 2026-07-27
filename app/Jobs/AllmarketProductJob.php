@@ -79,11 +79,6 @@ class AllmarketProductJob implements ShouldQueue
                     'active'   => 1,
                 ];
 
-                if (!$product->taxonomy_lock) {
-                    $updateData['brand_id']    = $this->getBrandId();
-                    $updateData['category_id'] = $this->getCategoryId();
-                }
-
                 $product->update($updateData);
 
                 ProductPrice::updateOrCreate(
