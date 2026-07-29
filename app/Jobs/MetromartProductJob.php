@@ -50,7 +50,12 @@ class MetromartProductJob implements ShouldQueue
     {
         try {
             Log::info("🔍 Metromart: დაიწყო", ['model' => $this->model, 'excel_price' => $this->price]);
-            dd($this->model);
+
+            $parsed_model = trim($this->model);
+            $parsed_model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $parsed_model);
+            $parsed_model = preg_replace('/\s+/', ' ', $parsed_model);
+            dd($parsed_model);
+            
             // ===== Step 1: Search =====
             $productUrl = $this->searchProduct($this->model);
             if (!$productUrl) {
@@ -95,10 +100,6 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
-        $model = trim($model);
-        $model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $model);
-        $model = preg_replace('/\s+/', ' ', $model);
-
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
         // 1. მთავარი გვერდიდან csrf_token + session cookie ავიღოთ
