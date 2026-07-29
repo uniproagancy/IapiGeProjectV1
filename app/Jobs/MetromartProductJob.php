@@ -101,7 +101,6 @@ class MetromartProductJob implements ShouldQueue
 
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
-        dd($model);
         // 1. მთავარი გვერდიდან csrf_token + session cookie ავიღოთ
         try {
             $initResponse = Http::withOptions(['cookies' => $cookieJar])
