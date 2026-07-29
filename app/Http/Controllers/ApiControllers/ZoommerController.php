@@ -24,7 +24,6 @@ class ZoommerController extends Controller
     public function debug(Request $request)
     {
         $productId = (int) $request->get('id');
-
         if (!$productId) {
             return response()->json(['error' => 'id პარამეტრი საჭიროა'], 400, [], JSON_UNESCAPED_UNICODE);
         }
