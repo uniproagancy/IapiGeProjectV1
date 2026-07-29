@@ -544,7 +544,9 @@ class Index extends Component
     private function applyDiscountFilter($query): void
     {
         if (!$this->onlyDiscounted) return;
-        $query->whereHas('price', fn ($q) => $q->whereNotNull('discount_price')->where('discount_price', '>', 0));
+        $query->whereHas('price', fn ($q) => $q
+            ->whereRaw('COALESCE(NULLIF(discount_price, 0), regular_price) > 150')
+        )
     }
 
     private function applySpecFilter($query): void
