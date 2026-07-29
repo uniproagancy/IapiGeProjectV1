@@ -95,6 +95,7 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
+        dd($model);
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
         // 1. მთავარი გვერდიდან csrf_token + session cookie ავიღოთ
