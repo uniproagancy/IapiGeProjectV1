@@ -54,8 +54,8 @@ class MetromartProductJob implements ShouldQueue
             $parsed_model = trim($this->model);
             $parsed_model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $parsed_model);
             $parsed_model = preg_replace('/\s+/', ' ', $parsed_model);
-            dd($parsed_model);
-            
+            dd(trim($parsed_model));
+
             // ===== Step 1: Search =====
             $productUrl = $this->searchProduct($this->model);
             if (!$productUrl) {
