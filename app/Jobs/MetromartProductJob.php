@@ -50,7 +50,7 @@ class MetromartProductJob implements ShouldQueue
     {
         try {
             Log::info("🔍 Metromart: დაიწყო", ['model' => $this->model, 'excel_price' => $this->price]);
-
+            dd($this->model);
             // ===== Step 1: Search =====
             $productUrl = $this->searchProduct($this->model);
             if (!$productUrl) {
@@ -98,8 +98,6 @@ class MetromartProductJob implements ShouldQueue
         $model = trim($model);
         $model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $model);
         $model = preg_replace('/\s+/', ' ', $model);
-
-        dd($model);
 
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
