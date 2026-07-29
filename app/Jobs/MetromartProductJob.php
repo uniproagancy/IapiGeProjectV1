@@ -54,16 +54,16 @@ class MetromartProductJob implements ShouldQueue
             $parsed_model = trim($this->model);
             $parsed_model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $parsed_model);
             $parsed_model = preg_replace('/\s+/', ' ', $parsed_model);
-            dd(trim($parsed_model));
-
+            $parsed_model = trim($parsed_model);
+            
             // ===== Step 1: Search =====
-            $productUrl = $this->searchProduct($this->model);
+            $productUrl = $this->searchProduct($parsed_model);
             if (!$productUrl) {
-                Log::info("🔍 Metromart: შედეგი არ მოიძებნა", ['model' => $this->model]);
+                Log::info("🔍 Metromart: შედეგი არ მოიძებნა", ['model' => $parsed_model]);
                 return;
             }
 
-            Log::info("✅ Metromart: URL მოიძებნა", ['model' => $this->model, 'url' => $productUrl]);
+            Log::info("✅ Metromart: URL მოიძებნა", ['model' => $parsed_model, 'url' => $productUrl]);
 
             // ===== Step 2: Fetch Page =====
             $html = $this->fetchPage($productUrl);
