@@ -95,9 +95,11 @@ class MetromartProductJob implements ShouldQueue
 
     private function searchProduct(string $model): ?string
     {
-        $model = trim(preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', ' ', $model));
-        $model = preg_replace('/\s+/u', ' ', $model);
         $model = trim($model);
+        $model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $model);
+        $model = preg_replace('/\s+/', ' ', $model);
+
+        dd($model);
 
         $cookieJar = new \GuzzleHttp\Cookie\CookieJar();
 
