@@ -100,51 +100,51 @@ class AllmarketProductJob implements ShouldQueue
 
             } else {
                 // ახალი პროდუქტი
-                $brandId    = $this->getBrandId();
-                $categoryId = $this->getCategoryId();
-
-                $product = Product::create([
-                    'sku'                 => $sku,
-                    'supplier_id'         => self::SUPPLIER_ID,
-                    'supplier_product_id' => (string) $id,
-                    'brand_id'            => $brandId,
-                    'category_id'         => $categoryId,
-                    'quantity'            => $quantity,
-                    'in_stock'            => $inStock,
-                    'show'                => $inStock,
-                    'active'              => 1,
-                    'main_image'          => null,
-                    'update_lock'         => 0,
-                    'taxonomy_lock'       => 0,
-                ]);
-
-                // ფასი
-                ProductPrice::create([
-                    'product_id'       => $product->id,
-                    'dealer_price'     => $regularPrice,
-                    'regular_price'    => $regularPrice,
-                    'discount_price'   => $hasDiscount ? $discountPrice : null,
-                    'discount_percent' => $discountPercent,
-                ]);
-
-                // translation
-                $title    = $this->productData['title'] ?? 'Unnamed';
-                $baseSlug = Str::slug($title) . '-' . $product->id;
-
-                foreach (['ka', 'en'] as $locale) {
-                    ProductTranslation::create([
-                        'product_id'  => $product->id,
-                        'locale'      => $locale,
-                        'title'       => $title,
-                        'slug'        => $baseSlug . ($locale === 'en' ? '-en' : ''),
-                        'description' => $this->productData['descrption'] ?? null,
-                    ]);
-                }
-
-                // სურათი
-                $this->downloadMainImage($product);
-
-                Log::info("✨ Allmarket: ახალი პროდუქტი | sku={$sku} | id={$product->id} | cat={$categoryId} | brand={$brandId}");
+//                $brandId    = $this->getBrandId();
+//                $categoryId = $this->getCategoryId();
+//
+//                $product = Product::create([
+//                    'sku'                 => $sku,
+//                    'supplier_id'         => self::SUPPLIER_ID,
+//                    'supplier_product_id' => (string) $id,
+//                    'brand_id'            => $brandId,
+//                    'category_id'         => $categoryId,
+//                    'quantity'            => $quantity,
+//                    'in_stock'            => $inStock,
+//                    'show'                => $inStock,
+//                    'active'              => 1,
+//                    'main_image'          => null,
+//                    'update_lock'         => 0,
+//                    'taxonomy_lock'       => 0,
+//                ]);
+//
+//                // ფასი
+//                ProductPrice::create([
+//                    'product_id'       => $product->id,
+//                    'dealer_price'     => $regularPrice,
+//                    'regular_price'    => $regularPrice,
+//                    'discount_price'   => $hasDiscount ? $discountPrice : null,
+//                    'discount_percent' => $discountPercent,
+//                ]);
+//
+//                // translation
+//                $title    = $this->productData['title'] ?? 'Unnamed';
+//                $baseSlug = Str::slug($title) . '-' . $product->id;
+//
+//                foreach (['ka', 'en'] as $locale) {
+//                    ProductTranslation::create([
+//                        'product_id'  => $product->id,
+//                        'locale'      => $locale,
+//                        'title'       => $title,
+//                        'slug'        => $baseSlug . ($locale === 'en' ? '-en' : ''),
+//                        'description' => $this->productData['descrption'] ?? null,
+//                    ]);
+//                }
+//
+//                // სურათი
+//                $this->downloadMainImage($product);
+//
+//                Log::info("✨ Allmarket: ახალი პროდუქტი | sku={$sku} | id={$product->id} | cat={$categoryId} | brand={$brandId}");
             }
 
         } catch (\Throwable $e) {
