@@ -107,20 +107,20 @@ class AlneoImportJob implements ShouldQueue
             $isNew   = !$product;
 
             if ($isNew) {
-                $product = Product::create([
-                    'sku'           => $sku,
-                    'supplier_id'   => self::SUPPLIER_ID,
-                    'brand_id'      => self::BRAND_ID,
-                    'category_id'   => self::CATEGORY_ID,
-                    'quantity'      => $stock,
-                    'in_stock'      => $inStock,
-                    'show'          => $inStock,
-                    'active'        => 1,
-                    'main_image'    => null,
-                    'update_lock'   => 0,
-                    'taxonomy_lock' => 0,
-                ]);
-                Log::info("➕ Alneo: ახალი პროდუქტი | sku={$sku} | id={$product->id}");
+//                $product = Product::create([
+//                    'sku'           => $sku,
+//                    'supplier_id'   => self::SUPPLIER_ID,
+//                    'brand_id'      => self::BRAND_ID,
+//                    'category_id'   => self::CATEGORY_ID,
+//                    'quantity'      => $stock,
+//                    'in_stock'      => $inStock,
+//                    'show'          => $inStock,
+//                    'active'        => 1,
+//                    'main_image'    => null,
+//                    'update_lock'   => 0,
+//                    'taxonomy_lock' => 0,
+//                ]);
+//                Log::info("➕ Alneo: ახალი პროდუქტი | sku={$sku} | id={$product->id}");
             } else {
                 if ($product->update_lock) {
                     Log::info("🔒 Alneo: ჩაკეტილია, გამოვტოვებთ | sku={$sku}");
