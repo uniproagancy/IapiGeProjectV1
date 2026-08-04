@@ -70,6 +70,7 @@
                         ['title' => 'წესები და პირობები',  'url' => '/static/rules'],
                         ['title' => 'უსაფრთხოების პოლიტიკა', 'url' => '/static/privacy-policy'],
                         ['title' => 'მიწოდების პირობები',  'url' => '/static/delivery'],
+                        ['title' => 'დაბრუნების პოლიტიკა',  'url' => '/static/return'],
                     ] as $link)
                         <li>
                             <a href="{{ $link['url'] }}" class="footer-link">{{ $link['title'] }}</a>
