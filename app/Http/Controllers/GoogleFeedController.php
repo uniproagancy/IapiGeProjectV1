@@ -15,10 +15,6 @@ class GoogleFeedController extends Controller
 
     public function getFeed()
     {
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
         $cachePath = storage_path(self::CACHE_PATH);
 
         if (file_exists($cachePath) && (time() - filemtime($cachePath)) < self::CACHE_TTL) {
@@ -180,16 +176,13 @@ class GoogleFeedController extends Controller
 
         Log::info("GoogleFeed: success={$successCount} errors={$errorCount} skipped_price={$skippedPrice}");
 
-        $xml = $feed->generate();
+        // toXml() — string-ს აბრუნებს (generate() Response object-ს აბრუნებს — არ გამოვიყენოთ)
+        $xml = $feed->toXml();
 
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
 
-        // XML declaration fix
-        $xml = preg_replace('/^[\s\xEF\xBB\xBF]+/', '', $xml);
-        $xml = preg_replace('/(<\?xml[^>]+\?>)\s*(<\?xml[^>]+\?>)+/s', '$1', $xml);
-        $xml = preg_replace('/(<\?xml[^>]+\?>)\s+/', "$1\n", $xml);
         $xml = ltrim($xml);
 
         return $xml;
