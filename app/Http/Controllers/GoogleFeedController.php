@@ -190,6 +190,8 @@ class GoogleFeedController extends Controller
 
     private function xmlResponse(string $xml, string $cachePath): \Illuminate\Http\Response
     {
+        $xml = ltrim($xml);
+
         return response($xml, 200, [
             'Content-Type'  => 'application/xml; charset=utf-8',
             'Cache-Control' => 'public, max-age=86400',
