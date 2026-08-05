@@ -491,64 +491,45 @@ class ZoommerProductJob implements ShouldQueue
         if (empty($productData['images'])) return;
 
         foreach ($productData['images'] as $index => $imageUrl) {
-            $path = $this->downloadImageViaWorker($product, $imageUrl, $index);
-            if (!$path) continue;
+            try {
+                if (empty($imageUrl)) continue;
 
-            if ($index === 0) {
-                $product->update(['main_image' => $path]);
-                Log::info("🖼️ Zoommer main image: {$product->id}");
-            } else {
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'path'       => $path,
-                ]);
-                Log::info("🖼️ Zoommer gallery image #{$index}: {$product->id}");
+                $response = Http::timeout(30)
+                    ->withHeaders([
+                        'Accept'          => 'application/json, text/plain, */*',
+                        'Accept-Language' => 'ka',
+                        'Referer'         => 'https://zoommer.ge/',
+                        'User-Agent'      => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+                        'os'              => 'web',
+                        'Cookie'          => 'zoommer-access_token=' . env('ZOOMMER_ACCESS_TOKEN') . '; zoommer-cookie_agreed=true; cf_clearance=' . env('ZOOMMER_CF_CLEARANCE'),
+                    ])
+                    ->get($imageUrl);
+
+                if (!$response->successful()) {
+                    Log::warning("Failed to download image for product {$product->id}: {$imageUrl}");
+                    continue;
+                }
+
+                $ext      = $this->getImageExtension($imageUrl);
+                $filename = Str::random(40) . '.' . $ext;
+                $path     = "uploads/products/{$product->id}/{$filename}";
+
+                Storage::disk('public')->put($path, $response->body());
+
+                if ($index === 0) {
+                    $product->update(['main_image' => $path]);
+                    Log::info("🖼️ Zoommer main image: {$product->id} | {$filename}");
+                } else {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'path'       => $path,
+                    ]);
+                    Log::info("🖼️ Zoommer gallery image #{$index}: {$product->id} | {$filename}");
+                }
+
+            } catch (Exception $e) {
+                Log::warning("Error downloading image {$imageUrl}: {$e->getMessage()}");
             }
-        }
-    }
-
-    private function downloadImageViaWorker(Product $product, string $imageUrl, int $index): ?string
-    {
-        try {
-            if (empty($imageUrl)) return null;
-
-            $workerUrl = env('ZOOMMER_WORKER_URL') . '?' . http_build_query([
-                    'type'        => 'image',
-                    'url'         => $imageUrl,
-                    'accessToken' => env('ZOOMMER_ACCESS_TOKEN'),
-                    'cfClearance' => env('ZOOMMER_CF_CLEARANCE'),
-                ]);
-
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL            => $workerUrl,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT        => 30,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_HTTPHEADER     => ['User-Agent: Mozilla/5.0'],
-            ]);
-
-            $body     = curl_exec($curl);
-            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $error    = curl_error($curl);
-            curl_close($curl);
-
-            if ($error || $httpCode !== 200 || empty($body)) {
-                Log::warning("⚠️ Zoommer Worker: სურათი ვერ ჩამოიტვირთა | HTTP={$httpCode} | {$imageUrl}");
-                return null;
-            }
-
-            $ext      = $this->getImageExtension($imageUrl);
-            $filename = Str::random(40) . '.' . $ext;
-            $path     = "uploads/products/{$product->id}/{$filename}";
-
-            Storage::disk('public')->put($path, $body);
-
-            return $path;
-
-        } catch (Exception $e) {
-            Log::warning("⚠️ Zoommer Worker: სურათის შეცდომა | {$e->getMessage()}");
-            return null;
         }
     }
 
