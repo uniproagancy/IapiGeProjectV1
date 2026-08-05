@@ -127,6 +127,7 @@ class GoogleFeedController extends Controller
                         $productPrice = $salePrice ?? $regularPrice;
 
                         $item = [
+                            'id'                     => (string) $product->id,
                             'g:id'                     => (string) $product->id,
                             'title'                  => $translation->title,
                             'description'            => $description,
