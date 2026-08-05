@@ -18,7 +18,7 @@ class GoogleFeedController extends Controller
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
-        
+
         $cachePath = storage_path(self::CACHE_PATH);
 
         if (file_exists($cachePath) && (time() - filemtime($cachePath)) < self::CACHE_TTL) {
@@ -127,7 +127,7 @@ class GoogleFeedController extends Controller
                         $productPrice = $salePrice ?? $regularPrice;
 
                         $item = [
-                            'id'                     => (string) $product->id,
+                            'g.id'                     => (string) $product->id,
                             'title'                  => $translation->title,
                             'description'            => $description,
                             'link'                   => route('web.products.view', $translation->slug),
