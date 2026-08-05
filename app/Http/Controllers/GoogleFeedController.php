@@ -194,7 +194,7 @@ class GoogleFeedController extends Controller
 
         return response($xml, 200, [
             'Content-Type'  => 'application/xml; charset=utf-8',
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control'  => 'no-transform, public, max-age=86400',
             'Last-Modified' => gmdate('D, d M Y H:i:s', file_exists($cachePath) ? filemtime($cachePath) : time()) . ' GMT',
         ]);
     }
