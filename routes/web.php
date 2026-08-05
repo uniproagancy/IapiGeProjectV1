@@ -8,7 +8,13 @@ use App\Models\Product\Product;
 use App\Models\AltaID;
 
 Route::get('/facebook-feed', '\App\Http\Controllers\FacebookFeedController@getFeed')->name('facebook.get-feed');
+Route::get('/google-feed', [\App\Http\Controllers\GoogleFeedController::class, 'getFeed'])
+    ->name('google.feed');
 
+Route::get('/generate-google-feed', function() {
+    app(\App\Http\Controllers\GoogleFeedController::class)->regenerate();
+    return 'done';
+});
 Route::post('/cart/add', '\App\Http\Controllers\Web\CartController@add');
 Route::post('/wishlist/toggle', '\App\Http\Controllers\Web\WishlistController@toggle');
 Route::post('/wishlist/check', '\App\Http\Controllers\Web\WishlistController@check');
