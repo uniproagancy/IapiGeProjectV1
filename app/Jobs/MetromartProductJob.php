@@ -146,8 +146,6 @@ class MetromartProductJob implements ShouldQueue
                 'id' => rand(100000000, 999999999),
             ]);
 
-        dd($response);
-
         if (!$response->successful()) {
             Log::warning("⚠️ Metromart Search: API error [{$response->status()}]", ['model' => $model]);
             return null;
