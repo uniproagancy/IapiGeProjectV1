@@ -51,9 +51,9 @@ class MetromartProductJob implements ShouldQueue
         try {
             Log::info("🔍 Metromart: დაიწყო", ['model' => $this->model, 'excel_price' => $this->price]);
 
-            $parsed_model = trim($this->model);
-            $parsed_model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}]/u', '', $parsed_model);
-            $parsed_model = preg_replace('/\s+/', ' ', $parsed_model);
+            $parsed_model = $this->model;
+            $parsed_model = preg_replace('/[\x{00A0}\x{200B}\x{FEFF}\x{200C}\x{200D}\x{2060}]/u', ' ', $parsed_model);
+            $parsed_model = preg_replace('/\s+/u', ' ', $parsed_model);
             $parsed_model = trim($parsed_model);
             
             // ===== Step 1: Search =====
