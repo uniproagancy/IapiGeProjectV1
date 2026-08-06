@@ -44,8 +44,11 @@ class MideaProductJob implements ShouldQueue
         Log::info("🔄 Midea job START: '{$this->name}' (stock={$this->stock})");
 
         try {
+            // ==========================================
+            // stock=0 — API-ს ეძახით SKU-სთვის, გავთიშოთ
+            // ==========================================
             if ($this->stock <= 0) {
-                $this->disableByName();
+                $this->disableBySearch();
                 return;
             }
 
@@ -78,6 +81,7 @@ class MideaProductJob implements ShouldQueue
 
                     $product->update($updateData);
                     Log::info("🔁 Midea: updated {$sku} (stock={$this->stock})");
+
                 } else {
                     $product = Product::create([
                         'supplier_product_id' => null,
@@ -91,14 +95,13 @@ class MideaProductJob implements ShouldQueue
                         'in_stock'            => 1,
                         'show'                => 1,
                     ]);
+
                     Log::info("✨ Midea: created {$sku} (id={$product->id}, stock={$this->stock})");
                 }
 
-                // ===== ფასი JSON-დან =====
+                // ===== ფასი =====
                 $regularPrice  = (float) ($data['price'] ?? 0);
                 $salePrice     = !empty($data['sale_price']) ? (float) $data['sale_price'] : null;
-
-                // sale_price მხოლოდ თუ ნამდვილად დაბალია
                 $discountPrice = ($salePrice && $salePrice < $regularPrice) ? $salePrice : null;
 
                 $discountPercent = 0;
@@ -118,6 +121,7 @@ class MideaProductJob implements ShouldQueue
 
                 $name = $data['name'] ?? $this->name;
                 $slug = Str::slug($name, '-') . '-' . $product->id;
+
                 foreach (['ka', 'en', 'ru'] as $locale) {
                     ProductTranslation::updateOrCreate(
                         ['product_id' => $product->id, 'locale' => $locale],
@@ -133,6 +137,7 @@ class MideaProductJob implements ShouldQueue
                 if (!empty($data['images']) && empty($product->main_image)) {
                     $this->downloadImages($product, $data['images']);
                 }
+
                 Log::info("✅ Midea saved: {$sku} (regular={$regularPrice}, discount={$discountPrice})");
             });
 
@@ -141,6 +146,55 @@ class MideaProductJob implements ShouldQueue
             throw $e;
         }
     }
+
+    // ============================================
+    // Stock=0 — API-დან SKU ვიღებთ, SKU-თი ვთიშავთ
+    // ============================================
+
+    private function disableBySearch(): void
+    {
+        try {
+            $data = (new MideaService())->searchByName($this->name);
+            $sku  = self::SKU_PREFIX . ($data['sku'] ?? '');
+
+            if (empty($sku) || $sku === self::SKU_PREFIX) {
+                // API-დან SKU ვერ მოვიღეთ — სახელით ვცდით fallback
+                $this->disableByName();
+                return;
+            }
+
+            $product = Product::where('sku', $sku)
+                ->where('supplier_id', self::SUPPLIER_ID)
+                ->first();
+
+            if (!$product) {
+                Log::info("⏭️ Midea disable: '{$sku}' DB-ში ვერ მოიძებნა — გამოტოვება");
+                return;
+            }
+
+            if ($product->update_lock) {
+                Log::info("🔒 Midea disable: locked, skip — {$sku}");
+                return;
+            }
+
+            $product->update([
+                'quantity' => 0,
+                'in_stock' => 0,
+                'show'     => 0,
+            ]);
+
+            Log::info("🚫 Midea: disabled {$sku} (id={$product->id}) — stock=0");
+
+        } catch (Exception $e) {
+            // API error — fallback სახელით
+            Log::warning("⚠️ Midea disableBySearch API error: {$e->getMessage()} — fallback to name");
+            $this->disableByName();
+        }
+    }
+
+    // ============================================
+    // Fallback — სახელით გათიშვა (თუ API-ი ვერ გვეხმარება)
+    // ============================================
 
     private function disableByName(): void
     {
@@ -165,8 +219,12 @@ class MideaProductJob implements ShouldQueue
             'show'     => 0,
         ]);
 
-        Log::info("🚫 Midea: disabled {$product->sku} (id={$product->id}) — stock=0");
+        Log::info("🚫 Midea: disabled by name {$product->sku} (id={$product->id}) — stock=0");
     }
+
+    // ============================================
+    // Brand
+    // ============================================
 
     private function resolveBrand(?string $brandName): int
     {
@@ -185,6 +243,7 @@ class MideaProductJob implements ShouldQueue
         }
 
         $newBrand = ProductBrand::create(['active' => 1, 'show' => 1]);
+
         foreach (['ka', 'en'] as $locale) {
             ProductBrandTranslation::create([
                 'product_brand_id' => $newBrand->id,
@@ -197,6 +256,10 @@ class MideaProductJob implements ShouldQueue
         Log::info("✨ Midea: new brand '{$brandName}' id={$newBrand->id}");
         return $newBrand->id;
     }
+
+    // ============================================
+    // Images
+    // ============================================
 
     private function downloadImages(Product $product, array $images): void
     {
@@ -231,6 +294,7 @@ class MideaProductJob implements ShouldQueue
                         'updated_at' => now(),
                     ];
                 }
+
             } catch (Exception $e) {
                 Log::warning("⚠️ Midea image: " . $e->getMessage());
             }
