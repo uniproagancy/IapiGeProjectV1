@@ -44,7 +44,11 @@ class MetromartProductJob implements ShouldQueue
     private const PRODUCT_URL          = 'https://metromart.ge/ka_GE/shop/product/';
 
     // $price — Excel-იდან გადმოცემული ფასი (თუ > 0, override-ავს საიტის ფასს)
-    public function __construct(public string $model, public ?float $price = null) {}
+    public function __construct(
+        public string $model,
+        public ?float $price = null,
+        public int    $stock = 1   // ← დაამატე
+    ) {}
 
     public function handle(): void
     {
@@ -289,7 +293,7 @@ class MetromartProductJob implements ShouldQueue
 
                 $existing->update([
                     'sku'      => $sku, // slug-ის ტექსტი განახლდეს (ID იგივე რჩება)
-                    'quantity' => $inStock,
+                    'quantity' => $this->stock > 0 ? $this->stock : $inStock,
                     'in_stock' => $inStock,
                     'show'     => $inStock,
                     'active'   => 1,
