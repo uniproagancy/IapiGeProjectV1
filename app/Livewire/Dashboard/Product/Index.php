@@ -733,8 +733,9 @@ class Index extends Component
                 // B სვეტი — ფასი (სურვილისამებრ)
                 $price = $this->parseAlneoPrice($sheet->getCell('B' . $rowIndex)->getFormattedValue());
 
-                $stock = (int) preg_replace('/[^0-9]/', '', (string) $sheet->getCell('C' . $rowIndex)->getValue());
-
+                $stockRaw = trim((string) $sheet->getCell('C' . $rowIndex)->getValue());
+                $stock    = $stockRaw === '' ? 1 : (int) preg_replace('/[^0-9]/', '', $stockRaw);
+                
                 \App\Jobs\MetromartProductJob::dispatch($model, $price, $stock)->onQueue('metromart');
                 $dispatched++;
             }
