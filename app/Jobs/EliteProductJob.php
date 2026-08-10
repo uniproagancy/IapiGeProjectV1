@@ -113,9 +113,21 @@ class EliteProductJob implements ShouldQueue
             return;
         }
 
-        // BarCode ჩვენს სიაშია?
+        // BarCode ჩვენს ექსელ სიაშია?
         $eliteProduct = EliteProduct::where('bar_code', $barCode)->first();
+
         if (!$eliteProduct) {
+            // ექსელში არ არის — თუ DB-ში გვაქვს, გავთიშოთ
+            $existingProduct = Product::where('sku', 'ELITE-' . $barCode)->first();
+            if ($existingProduct && !$existingProduct->update_lock) {
+                $existingProduct->update([
+                    'show'     => 0,
+                    'active'   => 0,
+                    'quantity' => 0,
+                    'in_stock' => 0,
+                ]);
+                Log::info("🚫 Elite: გაითიშა (ექსელში არ არის) | barCode={$barCode}");
+            }
             return;
         }
 
@@ -592,7 +604,7 @@ class EliteProductJob implements ShouldQueue
     protected function getImageExtension(string $url): string
     {
         try {
-            $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
+            $ext             = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
             $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             return in_array(strtolower($ext), $validExtensions) ? strtolower($ext) : 'jpg';
         } catch (Exception $e) {
