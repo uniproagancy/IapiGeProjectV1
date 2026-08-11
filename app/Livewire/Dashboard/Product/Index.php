@@ -677,10 +677,15 @@ class Index extends Component
             $inserted  = 0;
             $duplicate = 0;
             $skipped   = 0;
-
+            Product::where('sku', 'LIKE', 'ELITE-')->update([
+                'show' => 0
+            ]);
             foreach ($sheet->getRowIterator() as $row) {
-                $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
 
+                $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
+                Product::where('sku', 'LIKE', 'ELITE-'.$barCode)->update([
+                    'show' => 1
+                ]);
                 if (!$barCode) { $skipped++; continue; }
 
                 if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
