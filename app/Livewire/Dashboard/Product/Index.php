@@ -683,10 +683,9 @@ class Index extends Component
             foreach ($sheet->getRowIterator() as $row) {
 
                 $barCode = trim((string) $sheet->getCell('A' . $row->getRowIndex())->getValue());
-                Log::info($barCode);
-//                Product::where('sku', 'LIKE', 'ELITE-'.$barCode)->update([
-//                    'show' => 1
-//                ]);
+                Product::where('sku', 'LIKE', 'ELITE-'.$barCode)->update([
+                    'show' => 1
+                ]);
                 if (!$barCode) { $skipped++; continue; }
 
                 if (\App\Models\EliteProduct::where('bar_code', $barCode)->exists()) {
