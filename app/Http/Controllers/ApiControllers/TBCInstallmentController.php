@@ -69,8 +69,10 @@ class TBCInstallmentController extends Controller
                     $order->update(['payment_status_id' => 1]);
                 }
                 else if($data['statusId'] === 2) {
-                    $order->update(['payment_status_id' => 2]);
-                    $this->trackPurchase($order->fresh(['items', 'items.product']));
+                    if ($order->payment_status_id !== 2) {
+                        $order->update(['payment_status_id' => 2]);
+                        $this->trackPurchase($order->fresh(['items', 'items.product']));
+                    }
                 } else {
                     $order->update(['payment_status_id' => 3]);
                 }
