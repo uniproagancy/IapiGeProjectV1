@@ -618,8 +618,8 @@ class Index extends Component
                 }
 
                 // B = ფასი, C = სააქციო ფასი
-                $priceRaw    = $sheet->getCell('B' . $rowIndex)->getFormattedValue();
-                $discountRaw = $sheet->getCell('C' . $rowIndex)->getFormattedValue();
+                $priceRaw    = $sheet->getCell('C' . $rowIndex)->getFormattedValue();
+                $discountRaw = $sheet->getCell('B' . $rowIndex)->getFormattedValue();
 
                 $price         = $this->parseAlneoPrice($priceRaw);
                 $discountPrice = $this->parseAlneoPrice($discountRaw) ?: null;
