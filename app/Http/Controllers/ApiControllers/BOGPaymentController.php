@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApiControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order\Order;
+use App\Models\Order\OrderPixelData;
 use App\Models\Order\OrderTransaction;
 use App\Services\Facebook\FacebookPixelService;
 use Illuminate\Http\Request;
@@ -76,7 +77,8 @@ class BOGPaymentController extends Controller
                 return;
             }
 
-            $eventId    = 'purchase_' . time() . '_' . Str::random(6);
+            // ✅ დეტერმინისტული — Meta 48სთ-იან ფანჯარაში დუბლიკატს თავად გააერთიანებს
+            $eventId    = 'purchase_order_' . $order->id;
             $contents   = [];
             $contentIds = [];
 
@@ -89,23 +91,32 @@ class BOGPaymentController extends Controller
                 $contentIds[] = $item->product_id;
             }
 
-            app(FacebookPixelService::class)->trackPurchase(
-                value: $order->amount,
-                currency: 'GEL',
-                params: [
-                    'contents'     => $contents,
-                    'content_ids'  => $contentIds,
-                    'content_type' => 'product',
-                    'num_items'    => count($contents),
-                ],
-                eventId: $eventId
-            );
+            $params = [
+                'contents'     => $contents,
+                'content_ids'  => $contentIds,
+                'content_type' => 'product',
+                'num_items'    => count($contents),
+            ];
+
+            $service = app(FacebookPixelService::class);
+
+            // ✅ შეკვეთისას დამახსოვრებული fbp/fbc/IP/UA + იდენტობა.
+            //    callback ბანკის სერვერიდან მოდის — request()-ს კლიენტთან კავშირი არ აქვს.
+            $pixelData = OrderPixelData::where('order_id', $order->id)->first();
+
+            if ($pixelData) {
+                $service->trackPurchaseWithPixelData($order->amount, 'GEL', $params, $eventId, $pixelData);
+                $pixelData->update(['purchase_event_id' => $eventId]);
+            } else {
+                $service->trackPurchase($order->amount, 'GEL', $params, $eventId);
+            }
 
             Log::info('✅ Purchase tracked (BOG Payment)', [
-                'order_id' => $order->id,
-                'event_id' => $eventId,
-                'amount'   => $order->amount,
-                'items'    => count($contents),
+                'order_id'       => $order->id,
+                'event_id'       => $eventId,
+                'amount'         => $order->amount,
+                'items'          => count($contents),
+                'has_pixel_data' => !is_null($pixelData),
             ]);
 
         } catch (\Exception $e) {

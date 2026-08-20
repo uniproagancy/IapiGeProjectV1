@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.role' => \App\Http\Middleware\CheckRole::class,
             'doNotCacheResponse' => \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class,
         ]);
+        // ✅ proxy-ის უკან რეალური კლიენტის IP — Facebook CAPI-ს სწორი client_ip_address სჭირდება
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES', '*'));
+
         $middleware->encryptCookies(except: [
             '_fbp',
             '_fbc',

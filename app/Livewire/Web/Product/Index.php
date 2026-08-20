@@ -60,7 +60,8 @@ class Index extends Component
         $this->normalizeBrands();
         $this->normalizeSpecs();
         $this->normalizePerPage();
-        $this->eventId = 'pv_' . time() . '_' . Str::random(6);
+        // ✅ იგივე event_id, რაც middleware-მ CAPI-ს გაუგზავნა — თორემ ორ ივენთად ითვლება
+        $this->eventId = view()->shared('fb_event_id', 'pv_' . time() . '_' . Str::random(6));
     }
 
     private function normalizeBrands(): void

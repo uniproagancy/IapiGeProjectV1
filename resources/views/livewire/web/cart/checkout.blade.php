@@ -118,8 +118,9 @@
                         value: data.value,
                         currency: 'GEL',
                         content_type: 'product',
-                        num_items: data.num_items,
-                        eventID: data.event_id // ✅ server-side-თან დუბლიკატის თავიდან ასაცილებლად
+                        num_items: data.num_items
+                    }, {
+                        eventID: data.event_id // ✅ მე-3 არგუმენტში — თორემ dedup არ მუშაობს
                     });
                 }
             });

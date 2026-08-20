@@ -70,7 +70,8 @@ class View extends Component
             }
 
             $pixelData  = \App\Models\Order\OrderPixelData::where('order_id', $order->id)->first();
-            $eventId    = 'purchase_' . time() . '_' . \Illuminate\Support\Str::random(6);
+            // ✅ დეტერმინისტული — Meta 48სთ-იან ფანჯარაში დუბლიკატს თავად გააერთიანებს
+            $eventId    = 'purchase_order_' . $order->id;
             $contents   = [];
             $contentIds = [];
 

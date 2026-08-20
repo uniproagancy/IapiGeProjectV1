@@ -441,7 +441,9 @@ class Checkout extends Component
                 $contentNames[] = $translation->title ?? 'Product #' . $product->id;
             }
 
-            app(FacebookPixelService::class)->trackLead(
+            $pixelService = app(FacebookPixelService::class);
+
+            $pixelService->trackLead(
                 userData: $userData,
                 customData: [
                     'value'            => $order->amount,
@@ -455,6 +457,10 @@ class Checkout extends Component
                 ],
                 eventId: $leadEventId
             );
+
+            // ✅ fbp/fbc/IP/UA + იდენტობა ბაზაში — Purchase მოგვიანებით cron-იდან იგზავნება,
+            //    სადაც არც cookie არსებობს და არც სესია
+            $pixelService->savePixelData($order->id, $leadEventId, $userData);
 
             $this->dispatch('pixel:lead',
                 value: $order->amount,

@@ -71,7 +71,27 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
+    @php
+        // ✅ advanced matching — pixel თავად ჰეშავს ბრაუზერში, ამიტომ ღია მნიშვნელობები მიდის
+        $fbMatch = [];
+        if (auth()->check()) {
+            $fbUser  = auth()->user();
+            $fbPhone = preg_replace('/\D/', '', (string) $fbUser->phone);
+            $fbMatch = array_filter([
+                'em'          => $fbUser->email,
+                'ph'          => strlen($fbPhone) >= 9 ? $fbPhone : null,
+                'fn'          => $fbUser->name,
+                'ln'          => $fbUser->lastname,
+                'ct'          => $fbUser->city,
+                'external_id' => (string) $fbUser->id,
+            ]);
+        }
+    @endphp
+    @if($fbMatch)
+    fbq('init', '1280014533998229', {!! json_encode($fbMatch) !!});
+    @else
     fbq('init', '1280014533998229');
+    @endif
 </script>
 @yield('fb_pixel')
 
@@ -196,7 +216,7 @@
 
 <script>
     function pixelAddToCart(productId, price, name, eventId) {
-        fbq('track', 'AddToCart', { content_ids: [productId], content_name: name, content_type: 'product', value: price, currency: 'GEL', event_id: eventId });
+        fbq('track', 'AddToCart', { content_ids: [productId], content_name: name, content_type: 'product', value: price, currency: 'GEL' }, { eventID: eventId });
         Livewire.dispatch('storePixelEventId', { eventId });
     }
 </script>
