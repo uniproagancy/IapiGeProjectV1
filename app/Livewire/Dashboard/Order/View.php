@@ -87,32 +87,23 @@ class View extends Component
                 'num_items'    => count($contents),
             ];
 
-            $testCode = config('services.facebook.test_event_code');
-            $service  = app(\App\Services\Facebook\FacebookPixelService::class);
+            // ✅ ტესტ/ცოცხალ რეჟიმს სერვისი თავად წყვეტს კონფიგიდან
+            $service = app(\App\Services\Facebook\FacebookPixelService::class);
 
             if ($pixelData) {
-                if ($testCode) {
-                    $service->trackPurchaseWithPixelDataAndTest($testCode, $order->amount, 'GEL', $params, $eventId, $pixelData);
-                } else {
-                    $service->trackPurchaseWithPixelData($order->amount, 'GEL', $params, $eventId, $pixelData);
-                }
+                $service->trackPurchaseWithPixelData($order->amount, 'GEL', $params, $eventId, $pixelData);
 
                 // ✅ purchase_event_id ბაზაში — client-side deduplication-ისთვის
                 $pixelData->update(['purchase_event_id' => $eventId]);
-
             } else {
-                if ($testCode) {
-                    $service->trackPurchaseWithTest($testCode, $order->amount, 'GEL', $params, $eventId);
-                } else {
-                    $service->trackPurchase($order->amount, 'GEL', $params, $eventId);
-                }
+                $service->trackPurchase($order->amount, 'GEL', $params, $eventId);
             }
 
             \Illuminate\Support\Facades\Log::info('✅ Purchase tracked', [
                 'order_id'       => $order->id,
                 'event_id'       => $eventId,
                 'has_pixel_data' => !is_null($pixelData),
-                'is_test'        => !empty($testCode),
+                'is_test'        => $service->isTestMode(),
             ]);
 
         } catch (\Exception $e) {

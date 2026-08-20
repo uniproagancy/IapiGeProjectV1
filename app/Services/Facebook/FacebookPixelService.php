@@ -13,14 +13,46 @@ class FacebookPixelService
     protected string $apiVersion = 'v24.0';
     protected string $endpoint;
 
+    /**
+     * ⚠️ როცა შევსებულია, ყველა ივენთი მხოლოდ Test Events-ში ხვდება
+     *    და ცოცხალ dataset-ში აღარ ითვლება.
+     */
+    protected ?string $testEventCode = null;
+
     protected static array $sentEvents = [];
 
     public function __construct()
     {
-        $this->pixelId     = config('services.facebook.pixel_id', '1280014533998229');
-        $this->accessToken = config('services.facebook.access_token', 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD');
-        $this->apiVersion  = config('services.facebook.api_version', 'v24.0');
-        $this->endpoint    = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
+        $this->pixelId       = config('services.facebook.pixel_id') ?: '1280014533998229';
+        $this->accessToken   = config('services.facebook.access_token') ?: 'EAACRpZCqfAR0BQqXVLIuKjIkrDyqOw4KZC68mb5Ov3nHlnUGwQ55YBtDqSqt3ht8g44ClFnK5eNEqT75qeMcuh749JvbfONOqAfjeaLcYZBNzfJhrdRcZAzy7ThPbvjK5p717jLFvWH6Q7KdDWmLVYIJNQw1fbBKVo9eitQtCgONvp1U1R6XhdDtZAKUnNgZDZD';
+        $this->apiVersion    = config('services.facebook.api_version') ?: 'v24.0';
+        $this->testEventCode = config('services.facebook.test_event_code') ?: null;
+        $this->endpoint      = "https://graph.facebook.com/{$this->apiVersion}/{$this->pixelId}/events";
+    }
+
+    /**
+     * ✅ ერთადერთი ადგილი, სადაც POST-ის სხეული იწყობა.
+     *    test_event_code ავტომატურად ერთვება, თუ კონფიგში ჩაწერილია.
+     */
+    private function payload(array $eventData, ?string $testCode = null): array
+    {
+        $payload = [
+            'data'         => [$eventData],
+            'access_token' => $this->accessToken,
+        ];
+
+        $testCode = $testCode ?: $this->testEventCode;
+
+        if ($testCode) {
+            $payload['test_event_code'] = $testCode;
+        }
+
+        return $payload;
+    }
+
+    public function isTestMode(): bool
+    {
+        return !empty($this->testEventCode);
     }
 
     // ─────────────────────────────────────────────
@@ -80,10 +112,7 @@ class FacebookPixelService
 
             if ($eventId) $eventData['event_id'] = $eventId;
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'         => [$eventData],
-                'access_token' => $this->accessToken,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData));
 
             if ($response->successful()) return true;
 
@@ -241,10 +270,7 @@ class FacebookPixelService
 
             $eventData = $this->buildEventData($eventName, $customData);
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'         => [$eventData],
-                'access_token' => $this->accessToken,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData));
 
             if (!$response->successful()) {
                 Log::error("❌ Facebook Pixel error: " . $response->status(), [
@@ -272,11 +298,7 @@ class FacebookPixelService
 
             $eventData = $this->buildEventData($eventName, $customData);
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'            => [$eventData],
-                'access_token'    => $this->accessToken,
-                'test_event_code' => $testCode,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData, $testCode));
 
             if (!$response->successful()) {
                 Log::error("❌ TEST Event failed: {$eventName}", ['response' => $response->body()]);
@@ -328,10 +350,7 @@ class FacebookPixelService
             $eventData['user_data'] = $userData;
             if (!empty($customData)) $eventData['custom_data'] = $customData;
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'         => [$eventData],
-                'access_token' => $this->accessToken,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData));
 
             if (!$response->successful()) {
                 Log::error("❌ Event failed: {$eventName}", ['response' => $response->body()]);
@@ -383,11 +402,7 @@ class FacebookPixelService
             $eventData['user_data'] = $userData;
             if (!empty($customData)) $eventData['custom_data'] = $customData;
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'            => [$eventData],
-                'access_token'    => $this->accessToken,
-                'test_event_code' => $testCode,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData, $testCode));
 
             if (!$response->successful()) {
                 Log::error("❌ TEST Event failed: {$eventName}", ['response' => $response->body()]);
@@ -530,7 +545,7 @@ class FacebookPixelService
         }
     }
 
-    public function trackPurchaseWithPixelData(float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
+    public function trackPurchaseWithPixelData(float $value, string $currency = 'GEL', array $params = [], string $eventId = '', ?\App\Models\Order\OrderPixelData $pixelData = null): bool
     {
         try {
             $customData = ['value' => $value, 'currency' => $currency];
@@ -561,10 +576,7 @@ class FacebookPixelService
                 'custom_data'      => $customData,
             ];
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'         => [$eventData],
-                'access_token' => $this->accessToken,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData));
 
             if (!$response->successful()) {
                 Log::error('❌ Purchase failed', ['response' => $response->body()]);
@@ -579,7 +591,7 @@ class FacebookPixelService
         }
     }
 
-    public function trackPurchaseWithPixelDataAndTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], string $eventId = '', \App\Models\Order\OrderPixelData $pixelData = null): bool
+    public function trackPurchaseWithPixelDataAndTest(string $testCode, float $value, string $currency = 'GEL', array $params = [], string $eventId = '', ?\App\Models\Order\OrderPixelData $pixelData = null): bool
     {
         try {
             $customData = ['value' => $value, 'currency' => $currency];
@@ -610,11 +622,7 @@ class FacebookPixelService
                 'custom_data'      => $customData,
             ];
 
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data'            => [$eventData],
-                'access_token'    => $this->accessToken,
-                'test_event_code' => $testCode,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload($eventData, $testCode));
 
             if (!$response->successful()) {
                 Log::error('❌ TEST Purchase failed', ['response' => $response->body()]);
@@ -636,18 +644,15 @@ class FacebookPixelService
     public function test(): bool
     {
         try {
-            $response = Http::timeout(10)->post($this->endpoint, [
-                'data' => [[
-                    'event_name'    => 'TestEvent',
-                    'event_time'    => time(),
-                    'action_source' => 'website',
-                    'user_data'     => [
-                        'client_ip_address' => request()->ip(),
-                        'client_user_agent' => request()->userAgent(),
-                    ],
-                ]],
-                'access_token' => $this->accessToken,
-            ]);
+            $response = Http::timeout(10)->post($this->endpoint, $this->payload([
+                'event_name'    => 'TestEvent',
+                'event_time'    => time(),
+                'action_source' => 'website',
+                'user_data'     => [
+                    'client_ip_address' => request()->ip(),
+                    'client_user_agent' => request()->userAgent(),
+                ],
+            ]));
 
             if (!$response->successful()) {
                 Log::error('❌ Facebook Pixel test failed', ['response' => $response->body()]);

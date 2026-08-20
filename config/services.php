@@ -27,6 +27,18 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'facebook' => [
+        'pixel_id'     => env('FACEBOOK_PIXEL_ID'),
+        'access_token' => env('FACEBOOK_ACCESS_TOKEN'),
+        'api_version'  => env('FACEBOOK_API_VERSION', 'v24.0'),
+
+        /*
+        | ⚠️ როცა შევსებულია, ყველა CAPI ივენთი მხოლოდ Test Events-ში ხვდება
+        |    და ცოცხალ dataset-ში აღარ ითვლება. ტესტის შემდეგ .env-ში დააცარიელე.
+        */
+        'test_event_code' => env('FACEBOOK_TEST_EVENT_CODE') ?: null,
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

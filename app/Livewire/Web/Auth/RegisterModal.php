@@ -65,7 +65,8 @@ class RegisterModal extends Component
         ]);
 
         // ✅ Track with custom user data (before auto-login)
-        app(FacebookPixelService::class)->trackCompleteRegistrationWithTest('TEST61083',
+        //    ტესტ/ცოცხალ რეჟიმს კონფიგი წყვეტს — ჩაშენებული test code აღარაა
+        app(FacebookPixelService::class)->trackCompleteRegistration(
             [
                 'email' => $this->email,
                 'phone' => $this->phone,
