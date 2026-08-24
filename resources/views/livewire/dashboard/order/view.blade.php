@@ -185,6 +185,91 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- ===== ოპერატორების კომენტარები ===== --}}
+                    <div class="card mt-2">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h4 class="card-title mb-0">ოპერატორების კომენტარები</h4>
+                            <span class="badge bg-label-primary">{{ $this->comments->count() }}</span>
+                        </div>
+
+                        <div class="card-body">
+                            <form wire:submit.prevent="addComment" class="mb-4">
+                                <div class="mb-2">
+                                    <textarea wire:model="newComment"
+                                              class="form-control @error('newComment') is-invalid @enderror"
+                                              rows="3"
+                                              placeholder="დაწერეთ კომენტარი ამ შეკვეთაზე..."></textarea>
+                                    @error('newComment')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm" wire:loading.attr="disabled" wire:target="addComment">
+                                    <span wire:loading.remove wire:target="addComment">
+                                        <i class="bx bx-plus me-1"></i>დამატება
+                                    </span>
+                                    <span wire:loading wire:target="addComment">
+                                        <span class="spinner-border spinner-border-sm me-1"></span>იგზავნება...
+                                    </span>
+                                </button>
+                            </form>
+
+                            @forelse($this->comments as $comment)
+                                <div class="border rounded p-3 mb-2 {{ $comment->user_id === auth()->id() ? 'border-primary' : '' }}">
+
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ $comment->author_name }}</strong>
+                                            @if($comment->user_id === auth()->id())
+                                                <span class="badge bg-label-primary ms-1">თქვენ</span>
+                                            @endif
+                                            <div class="text-muted" style="font-size: 12px;">
+                                                {{ $comment->created_at?->format('d.m.Y H:i') }}
+                                                @if($comment->created_at != $comment->updated_at)
+                                                    <em>(რედაქტირებული)</em>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @if($comment->user_id === auth()->id() || in_array((int) auth()->user()?->role_id, [2, 3], true))
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-sm btn-icon btn-label-secondary"
+                                                        wire:click="startEdit({{ $comment->id }})" title="რედაქტირება">
+                                                    <i class="bx bx-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-icon btn-label-danger"
+                                                        wire:click="deleteComment({{ $comment->id }})"
+                                                        wire:confirm="დარწმუნებული ხართ, რომ გსურთ კომენტარის წაშლა?"
+                                                        title="წაშლა">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    @if($editingId === $comment->id)
+                                        <form wire:submit.prevent="updateComment">
+                                            <textarea wire:model="editingComment"
+                                                      class="form-control mb-2 @error('editingComment') is-invalid @enderror"
+                                                      rows="3"></textarea>
+                                            @error('editingComment')
+                                                <div class="invalid-feedback d-block mb-2">{{ $message }}</div>
+                                            @enderror
+                                            <button type="submit" class="btn btn-sm btn-primary">შენახვა</button>
+                                            <button type="button" class="btn btn-sm btn-label-secondary" wire:click="cancelEdit">გაუქმება</button>
+                                        </form>
+                                    @else
+                                        <div style="white-space: pre-wrap;">{{ $comment->comment }}</div>
+                                    @endif
+
+                                </div>
+                            @empty
+                                <div class="text-center text-muted py-3">
+                                    ჯერ არცერთი კომენტარი არ არის
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
