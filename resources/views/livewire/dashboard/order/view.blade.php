@@ -190,7 +190,7 @@
                     <div class="card mt-2">
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h4 class="card-title mb-0">ოპერატორების კომენტარები</h4>
-                            <span class="badge bg-label-primary">{{ $this->comments->count() }}</span>
+                            <span class="badge bg-label-primary">{{ $comments->count() }}</span>
                         </div>
 
                         <div class="card-body">
@@ -214,7 +214,7 @@
                                 </button>
                             </form>
 
-                            @forelse($this->comments as $comment)
+                            @forelse($comments as $comment)
                                 <div class="border rounded p-3 mb-2 {{ $comment->user_id === auth()->id() ? 'border-primary' : '' }}">
 
                                     <div class="d-flex justify-content-between align-items-start mb-2">
