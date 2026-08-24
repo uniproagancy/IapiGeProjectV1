@@ -91,7 +91,7 @@
                     </li>
                     <li class="d-flex align-items-center gap-2">
                         <i class="ci-phone text-secondary" style="font-size: 15px; flex-shrink:0;"></i>
-                        <a href="tel:+995555700720" class="footer-link">0322 12 10 28</a>
+                        <a href="tel:0322 12 10 28" class="footer-link">0322 12 10 28</a>
                     </li>
                     <li class="d-flex align-items-center gap-2">
                         <i class="ci-mail text-secondary" style="font-size: 15px; flex-shrink:0;"></i>
