@@ -22,7 +22,7 @@
             'name' => 'IAPI.GE',
             'url' => route('web.main.index'),
             'logo' => asset('web-assets/img/logo.png'),
-            'telephone' => '+995555700720',
+            'telephone' => '0322 12 10 28',
             'email' => 'info@iapi.ge',
             'address' => [
                 '@type' => 'PostalAddress',
@@ -70,7 +70,7 @@
                 <ul class="list-unstyled text-center" style="font-size: 14px;">
                     <li class="d-flex justify-content-between">
                         <span>ტელ:</span>
-                        <span>+995 555 700 720</span>
+                        <span>0322 12 10 28</span>
                     </li>
                 </ul>
             </div>
