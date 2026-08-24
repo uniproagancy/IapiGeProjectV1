@@ -5,6 +5,7 @@ namespace App\Livewire\Dashboard\Order;
 use App\Models\Delivery\DeliveryCompany;
 use App\Models\Order\Order;
 use App\Models\Order\OrderDelivery;
+use App\Models\Order\OrderComment;
 use App\Models\Order\OrderPixelData;
 use App\Models\Order\OrderStatus;
 use App\Models\Payments\PaymentStatus;
@@ -19,6 +20,11 @@ class View extends Component
     public $payment_status_id;
 
     public $delivery_company_id;
+
+    // ── ოპერატორების კომენტარები ──
+    public string $newComment     = '';
+    public ?int   $editingId      = null;
+    public string $editingComment = '';
 
     protected $listeners = [
         'order-refresh' => '$refresh',
@@ -99,6 +105,17 @@ class View extends Component
                 $service->trackPurchase($order->amount, 'GEL', $params, $eventId);
             }
 
+
+            // ✅ GA4 — იმავე pixelData-ს იყენებს, ორმაგი გაგზავნისგან დაცულია
+            if ($pixelData) {
+                app(\App\Services\Google\GoogleAnalyticsService::class)->trackPurchase(
+                    $pixelData,
+                    $order->id,
+                    (float) $order->amount,
+                    \App\Services\Google\GoogleAnalyticsService::itemsFromOrder($order)
+                );
+            }
+
             \Illuminate\Support\Facades\Log::info('✅ Purchase tracked', [
                 'order_id'       => $order->id,
                 'event_id'       => $eventId,
@@ -109,6 +126,105 @@ class View extends Component
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('❌ Purchase pixel error: ' . $e->getMessage(), ['order_id' => $order->id ?? null]);
         }
+    }
+
+    // ============================================
+    // ოპერატორების კომენტარები
+    // ============================================
+
+    private function loadComments()
+    {
+        return OrderComment::with('user')
+            ->where('order_id', $this->order_id)
+            ->latest()
+            ->get();
+    }
+
+    public function addComment(): void
+    {
+        $this->validate(
+            ['newComment' => 'required|string|min:2|max:2000'],
+            [
+                'newComment.required' => 'კომენტარი ცარიელია',
+                'newComment.min'      => 'კომენტარი ძალიან მოკლეა',
+                'newComment.max'      => 'კომენტარი 2000 სიმბოლოს არ უნდა აღემატებოდეს',
+            ]
+        );
+
+        OrderComment::create([
+            'order_id' => $this->order_id,
+            'user_id'  => auth()->id(),
+            'comment'  => trim($this->newComment),
+        ]);
+
+        $this->newComment = '';
+
+        $this->dispatch('ui:success', message: 'კომენტარი დაემატა!', title: 'შეტყობინება');
+    }
+
+    public function startEdit(int $commentId): void
+    {
+        $comment = OrderComment::find($commentId);
+
+        if (!$comment || !$this->canManage($comment)) {
+            $this->dispatch('ui:error', message: 'რედაქტირების უფლება არ გაქვთ');
+            return;
+        }
+
+        $this->editingId      = $comment->id;
+        $this->editingComment = $comment->comment;
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editingId      = null;
+        $this->editingComment = '';
+    }
+
+    public function updateComment(): void
+    {
+        $this->validate(
+            ['editingComment' => 'required|string|min:2|max:2000'],
+            ['editingComment.required' => 'კომენტარი ცარიელია']
+        );
+
+        $comment = OrderComment::find($this->editingId);
+
+        if (!$comment || !$this->canManage($comment)) {
+            $this->dispatch('ui:error', message: 'რედაქტირების უფლება არ გაქვთ');
+            $this->cancelEdit();
+            return;
+        }
+
+        $comment->update(['comment' => trim($this->editingComment)]);
+
+        $this->cancelEdit();
+
+        $this->dispatch('ui:success', message: 'კომენტარი განახლდა!', title: 'შეტყობინება');
+    }
+
+    public function deleteComment(int $commentId): void
+    {
+        $comment = OrderComment::find($commentId);
+
+        if (!$comment || !$this->canManage($comment)) {
+            $this->dispatch('ui:error', message: 'წაშლის უფლება არ გაქვთ');
+            return;
+        }
+
+        $comment->delete(); // ✅ soft delete — ისტორია რჩება
+
+        $this->dispatch('ui:success', message: 'კომენტარი წაიშალა!', title: 'შეტყობინება');
+    }
+
+    /**
+     * ✅ ავტორს თავისი კომენტარი შეუძლია, ადმინს — ნებისმიერი.
+     *    ოპერატორი სხვისას ვერ შეეხება.
+     */
+    private function canManage(OrderComment $comment): bool
+    {
+        return $comment->user_id === auth()->id()
+            || in_array((int) auth()->user()?->role_id, [2, 3], true);
     }
 
     public function sendToDeliveryCompany()
@@ -170,6 +286,7 @@ class View extends Component
             'order_statuses' => OrderStatus::all(),
             'payment_statuses' => PaymentStatus::all(),
             'delivery_companies' => DeliveryCompany::where('active', 1)->get(),
+            'comments' => $this->loadComments(),
         ])->layout('livewire.dashboard.layout');
     }
 }
