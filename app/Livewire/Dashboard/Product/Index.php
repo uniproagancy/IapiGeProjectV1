@@ -871,22 +871,42 @@ class Index extends Component
         $this->validate(['comfoFile' => 'required|file|mimes:xlsx,xls|max:10240']);
 
         try {
-            $sheet      = IOFactory::load($this->comfoFile->getRealPath())->getActiveSheet();
-            $rows       = $sheet->getHighestRow();
-            $dispatched = 0;
-            $skipped    = 0;
+            $sheet        = IOFactory::load($this->comfoFile->getRealPath())->getActiveSheet();
+            $rows         = $sheet->getHighestRow();
+            $dispatched   = 0;
+            $skipped      = 0;
+            $uploadedSkus = [];
 
             for ($r = 2; $r <= $rows; $r++) {
                 $id    = trim((string) $sheet->getCell("A{$r}")->getValue());
                 $stock = $sheet->getCell("B{$r}")->getValue();
                 $url   = trim((string) $sheet->getCell("C{$r}")->getValue());
 
-                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) { $skipped++; continue; }
+                if (empty($id) || empty($url) || !str_starts_with($url, 'http')) {
+                    $skipped++;
+                    continue;
+                }
 
-                $stockInt = is_numeric($stock) ? (int) $stock : (int) preg_replace('/\D+/', '', (string) $stock);
+                $stockInt       = is_numeric($stock) ? (int) $stock : (int) preg_replace('/\D+/', '', (string) $stock);
+                $uploadedSkus[] = 'COMFO-' . $id;
 
                 \App\Jobs\ComfoImportJob::dispatch($id, $stockInt, $url)->onQueue('comfo');
                 $dispatched++;
+            }
+
+            // ექსელში არ არის → გათიშე
+            if (!empty($uploadedSkus)) {
+                $disabled = \App\Models\Product\Product::where('supplier_id', 9)
+                    ->whereNotIn('sku', $uploadedSkus)
+                    ->where('update_lock', 0)
+                    ->update([
+                        'show'     => 0,
+                        'active'   => 0,
+                        'quantity' => 0,
+                        'in_stock' => 0,
+                    ]);
+
+                \Illuminate\Support\Facades\Log::info("🚫 Comfo: {$disabled} პროდუქტი გაითიშა (ექსელში არ არის)");
             }
 
             $this->dispatch('uploadComfoModal_close');
