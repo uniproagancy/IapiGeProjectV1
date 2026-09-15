@@ -107,8 +107,7 @@ class QuickOrder extends Component
 
             $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
 
-            app(FacebookPixelService::class)->trackCheckoutWithTest(
-                testCode: 'TEST75703',
+            app(FacebookPixelService::class)->trackCheckout(
                 value:    $order->amount,
                 currency: 'GEL',
                 items:    [[
