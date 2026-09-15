@@ -28,6 +28,26 @@
         @script
         <script>
             if (typeof fbq !== 'undefined') {
+                fbq('track', 'InitiateCheckout', {
+                    value: {{ $price }},
+                    currency: 'GEL',
+                    content_ids: [{{ $product->id }}],
+                    content_type: 'product',
+                    contents: [{
+                        id: {{ $product->id }},
+                        quantity: {{ $this->quantity }}
+                    }],
+                    num_items: 1
+                }, {
+                    eventID: '{{ $this->checkoutEventId }}'
+                });
+            }
+        </script>
+        @endscript
+
+        @script
+        <script>
+            if (typeof fbq !== 'undefined') {
                 fbq('track', 'Lead', {
                     value: {{ $this->orderAmount }},
                     currency: 'GEL',
@@ -72,28 +92,6 @@
         @endif
 
     @else
-
-        {{-- ✅ InitiateCheckout — client-side --}}
-        @script
-        <script>
-            if (typeof fbq !== 'undefined') {
-                fbq('track', 'InitiateCheckout', {
-                    value: {{ $price }},
-                    currency: 'GEL',
-                    content_ids: [{{ $product->id }}],
-                    content_type: 'product',
-                    contents: [{
-                        id: {{ $product->id }},
-                        quantity: {{ $this->quantity }}
-                    }],
-                    num_items: 1
-                }, {
-                    eventID: '{{ $this->checkoutEventId }}'
-                });
-            }
-        </script>
-        @endscript
-
         <div class="text-center mb-3">
             <span class="fw-semibold" style="color: #e91e63; font-size: 14px;">
                 ✓ მიწოდება მთელი ქვეყნის მასშტაბით
