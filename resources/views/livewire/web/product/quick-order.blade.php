@@ -59,12 +59,40 @@
                     }, {
                         eventID: '{{ $this->purchaseEventId }}'
                     });
+
+                    {{--gaEvent('purchase', {--}}
+                    {{--    transaction_id: '{{ $this->orderId }}',--}}
+                    {{--    value: {{ $this->orderAmount }},--}}
+                    {{--    items: [gaItem('{{ $this->productId }}', '', {{ $this->orderAmount }} / {{ $this->quantity }}, {{ $this->quantity }})]--}}
+                    {{--});--}}
+                    {{--gaAdsPurchase('{{ $this->orderId }}', {{ $this->orderAmount }});--}}
                 }
             </script>
             @endscript
         @endif
 
     @else
+
+        {{-- ✅ InitiateCheckout — client-side --}}
+        @script
+        <script>
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'InitiateCheckout', {
+                    value: {{ $price }},
+                    currency: 'GEL',
+                    content_ids: [{{ $product->id }}],
+                    content_type: 'product',
+                    contents: [{
+                        id: {{ $product->id }},
+                        quantity: {{ $this->quantity }}
+                    }],
+                    num_items: 1
+                }, {
+                    eventID: '{{ $this->checkoutEventId }}'
+                });
+            }
+        </script>
+        @endscript
 
         <div class="text-center mb-3">
             <span class="fw-semibold" style="color: #e91e63; font-size: 14px;">
