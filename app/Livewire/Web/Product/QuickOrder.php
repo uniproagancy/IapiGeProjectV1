@@ -18,20 +18,21 @@ use Exception;
 class QuickOrder extends Component
 {
     public int    $productId;
-    public int    $quantity       = 1;
-    public int    $orderId        = 0;
+    public int    $quantity        = 1;
+    public int    $orderId         = 0;
 
     #[Validate('required|string|max:255', message: 'სახელი და გვარი აუცილებელია')]
-    public string $name           = '';
+    public string $name            = '';
 
     #[Validate('required|string|min:9|max:20', message: 'ტელეფონის ნომერი აუცილებელია')]
-    public string $phone          = '';
+    public string $phone           = '';
 
-    public string $delivery       = 'courier';
-    public string $comment        = '';
-    public bool   $success        = false;
-    public float  $orderAmount    = 0;
-    public string $leadEventId    = '';
+    public string $delivery        = 'courier';
+    public string $comment         = '';
+    public bool   $success         = false;
+    public float  $orderAmount     = 0;
+    public string $leadEventId     = '';
+    public string $checkoutEventId = '';
     public string $purchaseEventId = '';
 
     private function parseName(): array
@@ -100,9 +101,34 @@ class QuickOrder extends Component
 
             $this->orderId     = $order->id;
             $this->orderAmount = $order->amount;
-            $this->leadEventId = 'lead_' . time() . '_' . Str::random(6);
 
+            // ===== InitiateCheckout (server-side) =====
+            $this->checkoutEventId = 'ic_' . time() . '_' . Str::random(6);
+
+            $translation = $product->translation(app()->getLocale()) ?? $product->translation('ka');
+
+            app(FacebookPixelService::class)->trackCheckout(
+                value:    $order->amount,
+                currency: 'GEL',
+                items:    [[
+                    'id'       => $product->id,
+                    'quantity' => $this->quantity,
+                ]],
+                params:  [],
+                eventId: $this->checkoutEventId
+            );
+
+            Log::info('✅ InitiateCheckout tracked (QuickOrder)', [
+                'event_id'   => $this->checkoutEventId,
+                'order_id'   => $order->id,
+                'product_id' => $product->id,
+                'amount'     => $order->amount,
+            ]);
+
+            // ===== Lead (server-side) =====
+            $this->leadEventId = 'lead_' . time() . '_' . Str::random(6);
             $this->trackLead($order, $product);
+
             $this->success = true;
 
         } catch (Exception $e) {
@@ -124,7 +150,7 @@ class QuickOrder extends Component
                     'phone'       => $this->phone,
                     'first_name'  => $firstName,
                     'last_name'   => $lastName,
-                    'external_id' => $order->id, // ✅
+                    'external_id' => $order->id,
                 ],
                 customData: [
                     'value'            => $order->amount,
@@ -142,6 +168,12 @@ class QuickOrder extends Component
                 ],
                 eventId: $this->leadEventId
             );
+
+            Log::info('✅ Lead tracked (QuickOrder)', [
+                'event_id' => $this->leadEventId,
+                'order_id' => $order->id,
+                'amount'   => $order->amount,
+            ]);
 
             // ✅ pixel data ბაზაში — Purchase-ისთვის
             $pixelService->savePixelData($order->id, $this->leadEventId, [
