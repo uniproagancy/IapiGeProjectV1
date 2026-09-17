@@ -89,6 +89,11 @@ class IngcoProductJob implements ShouldQueue
             $data['discount_price'] = $ingcoProduct->discount_price ? (float) $ingcoProduct->discount_price : null;
             $data['stock']          = (int) ($ingcoProduct->stock ?? 1);
 
+            if ($data['price'] < 120) {
+                Log::info("⏭️ Ingco: ფასი 120₾-ზე ნაკლებია ({$data['price']}₾) | sku={$this->model}");
+                return;
+            }
+
             $this->saveProduct($data);
 
             Log::info("✅ Ingco: შენახულია | model={$this->model} | name={$data['name']}");
