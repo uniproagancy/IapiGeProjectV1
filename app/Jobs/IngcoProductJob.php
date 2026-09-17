@@ -70,7 +70,18 @@ class IngcoProductJob implements ShouldQueue
 
             $ingcoProduct = IngcoProduct::where('sku', $this->model)->first();
             if (!$ingcoProduct) {
-                Log::info("⏭️ Ingco: SKU არ არის ბაზაში | sku={$this->model}");
+                $existingProduct = Product::where('sku', 'INGCO-' . $this->model)->first();
+                if ($existingProduct && !$existingProduct->update_lock) {
+                    $existingProduct->update([
+                        'in_stock' => 0,
+                        'show'     => 0,
+                        'active'   => 0,
+                        'quantity' => 0,
+                    ]);
+                    Log::info("🚫 Ingco: გაითიშა (ექსელში არ არის) | sku=INGCO-{$this->model} | id={$existingProduct->id}");
+                } else {
+                    Log::info("⏭️ Ingco: SKU არ არის ბაზაში | sku={$this->model}");
+                }
                 return;
             }
 
@@ -209,9 +220,46 @@ class IngcoProductJob implements ShouldQueue
         $brand = $json['brand']['name'] ?? 'INGCO';
 
         // აღწერა
-        $description = $json['description'] ?? null;
-        if (!$description && preg_match('/<div[^>]+class="[^"]*product-description[^"]*"[^>]*>(.*?)<\/div>/s', $html, $m)) {
+        $description = null;
+
+        // 1) JSON-LD
+        if (!empty($json['description'])) {
+            $description = trim($json['description']);
+        }
+
+        // 2) ტაბის კონტენტი (.tab-pane, #description და სხვა)
+        if (!$description && preg_match('/<div[^>]+id=["\'](?:tab-)?description["\'][^>]*>(.*?)<\/div>/si', $html, $m)) {
             $description = trim(strip_tags($m[1]));
+        }
+
+        // 3) product-description კლასი (ნებისმიერი ტეგი)
+        if (!$description && preg_match('/<(?:div|section)[^>]+class="[^"]*product[-_]?description[^"]*"[^>]*>([\s\S]*?)<\/(?:div|section)>/si', $html, $m)) {
+            $description = trim(strip_tags($m[1]));
+        }
+
+        // 4) full-description კლასი
+        if (!$description && preg_match('/<div[^>]+class="[^"]*full[-_]?description[^"]*"[^>]*>([\s\S]*?)<\/div>/si', $html, $m)) {
+            $description = trim(strip_tags($m[1]));
+        }
+
+        // 5) short-description / overview
+        if (!$description && preg_match('/<div[^>]+class="[^"]*(?:short[-_]?description|overview|product[-_]?info[-_]?description)[^"]*"[^>]*>([\s\S]*?)<\/div>/si', $html, $m)) {
+            $description = trim(strip_tags($m[1]));
+        }
+
+        // 6) og:description meta
+        if (!$description && preg_match('/<meta\s+property=["\']og:description["\']\s+content=["\']([^"\']+)["\']/i', $html, $m)) {
+            $description = trim($m[1]);
+        }
+
+        // 7) meta description
+        if (!$description && preg_match('/<meta\s+name=["\']description["\']\s+content=["\']([^"\']+)["\']/i', $html, $m)) {
+            $description = trim($m[1]);
+        }
+
+        // ცარიელი სტრინგის გასუფთავება
+        if ($description && mb_strlen($description) < 5) {
+            $description = null;
         }
 
         // სურათები
@@ -248,7 +296,7 @@ class IngcoProductJob implements ShouldQueue
 
         return [
             'name'        => $name,
-            'sku' => 'INGCO-' . $this->model,
+            'sku'         => 'INGCO-' . $this->model,
             'brand'       => $brand,
             'description' => $description,
             'images'      => $images,
