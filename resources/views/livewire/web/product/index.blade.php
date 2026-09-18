@@ -44,23 +44,61 @@
     <style>
         [x-cloak] { display: none !important; }
 
+        /* ===== გვერდის რიტმი ===== */
+        /* ერთიანი ინტერვალების სკალა — 4 / 8 / 12 / 16 / 24 */
+        .catalog-head { margin-bottom: 20px; }
+        .catalog-head .breadcrumb {
+            margin-bottom: 10px;
+            font-size: 12.5px;
+        }
+        .catalog-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -.02em;
+            line-height: 1.25;
+            color: #17181a;
+            margin: 0 0 6px;
+        }
+        .catalog-count {
+            font-size: 13px;
+            color: #8b8f96;
+            margin: 0;
+        }
+        .catalog-count strong { color: #17181a; font-weight: 600; }
+
+        /* ხელსაწყოების ზოლი — თხელი გამყოფით, ჩარჩოს გარეშე */
+        .catalog-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #edeef1;
+            margin-bottom: 20px;
+        }
+
         /* ===== Sidebar ===== */
         .filter-sidebar {
             position: sticky;
-            top: 80px;
+            top: 84px;
+            padding-right: 4px;
         }
+
+        /* სათაური — ადრე 2px-იანი ხაზი მძიმედ ეხატებოდა */
         .filter-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f1f3;
-            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #edeef1;
+            margin-bottom: 4px;
         }
         .filter-header-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            color: #1a1a1a;
+            letter-spacing: -.01em;
+            color: #17181a;
         }
         .filter-clear-all {
             font-size: 12px;
@@ -68,65 +106,105 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 0;
+            padding: 2px 0;
             font-weight: 500;
             text-decoration: none;
+            transition: opacity .15s ease;
         }
-        .filter-clear-all:hover { text-decoration: underline; }
+        .filter-clear-all:hover { opacity: .7; text-decoration: none; }
 
-        .filter-block { margin-bottom: 2px; }
+        /* ბლოკებს შორის ინტერვალი — ყოველ რიგზე ხაზის ნაცვლად */
+        .filter-block { border-bottom: 1px solid #f3f4f6; }
+        .filter-block:last-child { border-bottom: none; }
+
         .filter-section-title {
-            border-bottom: 1px solid #f0f1f3;
-            padding: 10px 0;
+            padding: 13px 0;
             font-size: 13px;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
             cursor: pointer;
             user-select: none;
-            color: #1a1a1a;
+            color: #17181a;
             transition: color .15s ease;
+            border: none;
         }
         .filter-section-title:hover { color: #ff6900; }
         .filter-section-title.has-selected { color: #ff6900; }
-        .filter-section-title i { font-size: 11px; color: #bbb; transition: transform .2s; }
+        .filter-section-title i {
+            font-size: 10px;
+            color: #c3c6cc;
+            transition: transform .2s ease, color .15s ease;
+            flex-shrink: 0;
+        }
+        .filter-section-title:hover i { color: #ff6900; }
         .filter-section-title[aria-expanded="false"] i { transform: rotate(-90deg); }
 
-        .filter-body { padding: 8px 0 6px 0; }
-        .filter-body .form-check { padding: 3px 0 3px 1.6em; margin: 0; }
+        .filter-body { padding: 2px 0 14px; }
+        .filter-body .form-check {
+            padding: 0 0 0 1.75em;
+            margin: 0 0 2px;
+            min-height: 26px;
+            display: flex;
+            align-items: center;
+        }
+        .filter-body .form-check:last-of-type { margin-bottom: 0; }
         .filter-body .form-check-label {
             font-size: 13px;
+            line-height: 1.45;
             cursor: pointer;
-            color: #444;
+            color: #55595f;
             transition: color .15s ease;
         }
         .filter-body .form-check-label:hover { color: #ff6900; }
-        .filter-body .form-check-input { margin-top: 3px; border-color: #ddd; }
+        .filter-body .form-check-input {
+            margin-top: 0;
+            margin-left: -1.75em;
+            width: 15px;
+            height: 15px;
+            border-color: #d7d9de;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color .15s ease, background-color .15s ease;
+        }
+        .filter-body .form-check-input:hover { border-color: #ff6900; }
+        .filter-body .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(255,105,0,.12);
+            border-color: #ff6900;
+        }
         .filter-body .form-check-input:checked {
             background-color: #ff6900;
             border-color: #ff6900;
         }
 
         .filter-selected-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 17px;
+            height: 17px;
             font-size: 10px;
-            padding: 1px 6px;
-            border-radius: 10px;
+            padding: 0 5px;
+            border-radius: 9px;
             background: #ff6900;
             color: #fff;
             margin-left: 6px;
             font-weight: 700;
+            line-height: 1;
         }
         .filter-show-more {
             font-size: 12px;
             color: #ff6900;
             background: none;
             border: none;
-            padding: 3px 0;
+            padding: 6px 0 0;
             cursor: pointer;
             font-weight: 500;
+            transition: opacity .15s ease;
         }
-        .filter-show-more:hover { text-decoration: underline; }
+        .filter-show-more:hover { opacity: .7; text-decoration: none; }
 
         /* ===== Price Slider ===== */
         .price-inputs {
@@ -254,27 +332,30 @@
 
 <div>
     <main class="content-wrapper">
-        <nav class="container pt-3 my-3 my-md-4" aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">მთავარი</a></li>
-                @if($currentCategory)
-                    <li class="breadcrumb-item active" aria-current="page">{{ $catTitle }}</li>
-                @else
-                    <li class="breadcrumb-item active" aria-current="page">კატალოგი</li>
-                @endif
-            </ol>
-        </nav>
+        <div class="container catalog-head pt-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">მთავარი</a></li>
+                    @if($currentCategory)
+                        <li class="breadcrumb-item active" aria-current="page">{{ $catTitle }}</li>
+                    @else
+                        <li class="breadcrumb-item active" aria-current="page">კატალოგი</li>
+                    @endif
+                </ol>
+            </nav>
 
-        <h1 class="h3 container mb-3 font-neue">
-            {{ $currentCategory?->translation('ka')?->title ?? 'პროდუქციის ჩამონათვალი' }}
-        </h1>
+            <h1 class="catalog-title font-neue">
+                {{ $currentCategory?->translation('ka')?->title ?? 'პროდუქციის ჩამონათვალი' }}
+            </h1>
 
-        <section class="container mb-3">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="h6 fs-sm fw-normal text-nowrap mb-0 font-neue">
-                    ნაპოვნია <span class="fw-semibold">{{ $this->products->total() }}</span> პროდუქტი
-                </div>
-                <div class="d-flex align-items-center gap-2">
+            <p class="catalog-count font-neue">
+                ნაპოვნია <strong>{{ $this->products->total() }}</strong> პროდუქტი
+            </p>
+        </div>
+
+        <section class="container">
+            <div class="catalog-toolbar">
+                <div class="d-flex align-items-center gap-2 ms-auto">
                     {{-- მობილური ფილტრის ღილაკი --}}
                     <button type="button"
                             class="btn btn-sm btn-outline-secondary d-lg-none"
@@ -436,8 +517,9 @@
 
                         {{-- სპეციფიკაციები --}}
                         @if(!empty($specificationSections) && $specificationSections->count() > 0)
-                            @foreach($specificationSections as $specName => $values)
+                            @foreach($specificationSections as $specName => $section)
                                 @php
+                                    $values            = $section['values'];
                                     $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
                                     $hasSelected = $selectedInSection->count() > 0;
                                     $specKey     = 'spec_' . md5($specName);
@@ -459,16 +541,19 @@
                                     <div class="collapse {{ $hasSelected ? 'show' : '' }}" id="{{ $specKey }}">
                                         <div class="filter-body" x-data="{ open: {{ $hasSelected ? 'true' : 'false' }} }">
                                             @foreach($values as $i => $item)
-                                                @php $isSelected = $selectedInSection->contains($specName . '::' . $item->value); @endphp
+                                                @php
+                                                    $label      = $item['label'];
+                                                    $isSelected = $selectedInSection->contains($specName . '::' . $label);
+                                                    $inputId    = 'spec_' . md5($specName . $label);
+                                                @endphp
                                                 <div class="form-check"
                                                      @if($i >= 5) x-show="open || {{ $isSelected ? 'true' : 'false' }}" x-cloak @endif>
                                                     <input type="checkbox" class="form-check-input"
                                                            wire:model.live="selectedSpecs"
-                                                           value="{{ $specName }}::{{ $item->value }}"
-                                                           id="spec_{{ md5($specName . $item->value) }}">
-                                                    <label class="form-check-label"
-                                                           for="spec_{{ md5($specName . $item->value) }}">
-                                                        {{ $item->value }}
+                                                           value="{{ $specName }}::{{ $label }}"
+                                                           id="{{ $inputId }}">
+                                                    <label class="form-check-label" for="{{ $inputId }}">
+                                                        {{ $label }}
                                                     </label>
                                                 </div>
                                             @endforeach
@@ -633,8 +718,9 @@
 
                 {{-- სპეციფიკაციები --}}
                 @if(!empty($specificationSections) && $specificationSections->count() > 0)
-                    @foreach($specificationSections as $specName => $values)
+                    @foreach($specificationSections as $specName => $section)
                         @php
+                            $values            = $section['values'];
                             $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
                             $hasSelected       = $selectedInSection->count() > 0;
                             $valuesCount       = count($values);
@@ -650,16 +736,19 @@
                             </div>
                             <div class="filter-body" x-data="{ open: false }">
                                 @foreach($values as $i => $item)
-                                    @php $isSelected = $selectedInSection->contains($specName . '::' . $item->value); @endphp
+                                    @php
+                                        $label      = $item['label'];
+                                        $isSelected = $selectedInSection->contains($specName . '::' . $label);
+                                        $inputId    = 'm_spec_' . md5($specName . $label);
+                                    @endphp
                                     <div class="form-check"
                                          @if($i >= 5) x-show="open || {{ $isSelected ? 'true' : 'false' }}" x-cloak @endif>
                                         <input type="checkbox" class="form-check-input"
                                                wire:model.live="selectedSpecs"
-                                               value="{{ $specName }}::{{ $item->value }}"
-                                               id="m_spec_{{ md5($specName . $item->value) }}">
-                                        <label class="form-check-label"
-                                               for="m_spec_{{ md5($specName . $item->value) }}">
-                                            {{ $item->value }}
+                                               value="{{ $specName }}::{{ $label }}"
+                                               id="{{ $inputId }}">
+                                        <label class="form-check-label" for="{{ $inputId }}">
+                                            {{ $label }}
                                         </label>
                                     </div>
                                 @endforeach

@@ -7,6 +7,7 @@ use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductSection;
 use App\Models\Product\ProductFullSpecificationSection;
+use App\Support\SpecValue;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
@@ -17,6 +18,9 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+
+    /** რამდენ უნიკალურ რიცხვზე ვრთავთ სლაიდერს checkbox-ების ნაცვლად */
+    private const SPEC_SLIDER_THRESHOLD = 8;
 
     public $parentCategories = [];
     public $subCategories    = [];
@@ -175,10 +179,15 @@ class Index extends Component
 
     private function redirectToCategory(ProductCategory $category): void
     {
-        $params = $this->buildFilterParams();
-        $url    = route('web.products.index', [
+        $url = route('web.products.index', [
             'category_slug' => $category->translation('ka')->slug,
         ]);
+
+        // ✅ კატეგორიის შეცვლისას ფილტრები ნულდება.
+        //    წინა კატეგორიის ბრენდი ან სპეციფიკაცია („ფართი: 30-40 მ²") ახალში
+        //    არ არსებობს, ამიტომ მომხმარებელს ცარიელი კატეგორია ხვდებოდა.
+        //    ჩვენების პარამეტრები (დალაგება, გვერდზე რაოდენობა) რჩება.
+        $params = $this->buildDisplayParams();
 
         if (!empty($params)) {
             $url .= '?' . http_build_query($params);
@@ -187,17 +196,14 @@ class Index extends Component
         $this->redirect($url);
     }
 
-    private function buildFilterParams(): array
+    /**
+     * მხოლოდ ჩვენების პარამეტრები — პროდუქტების კრებულს არ ავიწროებს.
+     */
+    private function buildDisplayParams(): array
     {
         return array_filter([
-            'brands'         => !empty($this->selectedBrands) ? implode(',', $this->selectedBrands) : null,
-            'min'            => $this->priceMin,
-            'max'            => $this->priceMax,
-            'search'         => !empty($this->search) ? $this->search : null,
-            'specs'          => !empty($this->selectedSpecs) ? implode(',', $this->selectedSpecs) : null,
-            'onlyDiscounted' => $this->onlyDiscounted ? '1' : null,
-            'sort'           => $this->sort !== 'newest' ? $this->sort : null,
-            'show'           => $this->perPage !== 20 ? $this->perPage : null,
+            'sort' => $this->sort !== 'newest' ? $this->sort : null,
+            'show' => $this->perPage !== 20 ? $this->perPage : null,
         ]);
     }
 
@@ -426,7 +432,7 @@ class Index extends Component
 
         $categoryId = $this->currentCategory->id;
         $parentId   = $this->currentCategory->parent_id;
-        $cacheKey   = 'spec_sections_v2_' . $categoryId;
+        $cacheKey   = 'spec_sections_v3_' . $categoryId;
 
         return cache()->remember($cacheKey, 3600, function () use ($parentId) {
             $productIds = Product::query()
@@ -456,10 +462,118 @@ class Index extends Component
 
             return $items
                 ->groupBy('name')
-                ->map(fn ($group) => $group->unique('value')->map(fn ($item) => (object) ['value' => $item->value])->values())
-                ->filter(fn ($values) => $values->count() > 1)
-                ->filter(fn ($values, $name) => strtolower($name) !== 'ბრენდი' && strtolower($name) !== 'brand');
+                ->reject(fn ($group, $name) => in_array(mb_strtolower($name), ['ბრენდი', 'brand'], true))
+                ->map(fn ($group) => $this->buildSpecSection($group))
+                ->filter(fn ($section) => $section !== null && count($section['values']) > 1);
         });
+    }
+
+    /**
+     * ერთი სპეციფიკაციის ჯგუფი — ნორმალიზებული, ტიპით და ნედლი მნიშვნელობების რუკით.
+     *
+     * ნედლი მნიშვნელობები აუცილებელია: ბაზაში ისინი დაუმუშავებლად წევს,
+     * ამიტომ ფილტრის მოთხოვნა სწორედ მათზე უნდა გაეშვას.
+     */
+    private function buildSpecSection($group): ?array
+    {
+        $rawValues = $group->pluck('value')->map(fn ($v) => (string) $v)->unique()->values();
+
+        if ($rawValues->isEmpty()) return null;
+
+        $unit      = SpecValue::dominantUnit($rawValues);
+        $isNumeric = SpecValue::isNumericSpec($rawValues);
+
+        // ნედლი → კანონიკური, რომ „12000" და „12000 BTU" ერთ ვარიანტად გაერთიანდეს
+        $buckets = [];
+        foreach ($rawValues as $raw) {
+            $label = SpecValue::canonical($raw, $unit);
+            if ($label === '') continue;
+
+            $buckets[$label]['label']  = $label;
+            $buckets[$label]['raw'][]  = $raw;
+            $buckets[$label]['num']    = SpecValue::toNumber($raw);
+        }
+
+        if (empty($buckets)) return null;
+
+        $values = collect($buckets)->values();
+
+        // რიცხვითი — რიცხვით ვალაგებთ, თორემ „100-120" „15-20"-მდე მოდის
+        $values = $isNumeric
+            ? $values->sortBy(fn ($v) => $v['num'] ?? PHP_INT_MAX)->values()
+            : $values->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)->values();
+
+        // დიაპაზონები („30-40 მ²") უკვე დაჯგუფებულია — მათზე checkbox ჯობია.
+        // ერთეული რიცხვები („250 ლ") ბევრია — იქ სლაიდერი გვინდა.
+        $rangeLike = $rawValues->filter(fn ($v) => count(SpecValue::parse($v)['numbers']) >= 2)->count();
+        $mostlyRanges = $rawValues->count() > 0 && ($rangeLike / $rawValues->count()) >= 0.6;
+
+        // ბევრი ცალკეული რიცხვი (58 ლიტრაჟი 69 პროდუქტზე) checkbox-ად უსარგებლოა —
+        // ავტომატურად ვაჯგუფებთ მრგვალ დიაპაზონებად.
+        if ($isNumeric && !$mostlyRanges && $values->count() > self::SPEC_SLIDER_THRESHOLD) {
+            $values = $this->bucketNumericValues($values, $unit);
+        }
+
+        $nums = $values->pluck('num')->filter(fn ($n) => $n !== null);
+
+        return [
+            'type'   => 'choice',
+            'unit'   => $unit ? SpecValue::displayUnit($unit) : null,
+            'min'    => $nums->isNotEmpty() ? (float) $nums->min() : null,
+            'max'    => $nums->isNotEmpty() ? (float) $nums->max() : null,
+            'values' => $values->all(),
+        ];
+    }
+
+    /**
+     * რიცხვითი მნიშვნელობების დაჯგუფება მრგვალ დიაპაზონებად.
+     * „134 ლ, 194 ლ, 206 ლ …" → „100-200 L", „200-300 L" …
+     */
+    private function bucketNumericValues($values, ?string $unit)
+    {
+        $nums = $values->pluck('num')->filter(fn ($n) => $n !== null);
+
+        if ($nums->count() < 2) {
+            return $values;
+        }
+
+        $min = (float) $nums->min();
+        $max = (float) $nums->max();
+
+        if ($max <= $min) {
+            return $values;
+        }
+
+        // ~6 ჯგუფი, მრგვალ საფეხურზე დაყრდნობით (1/2/5 × 10^n)
+        $rawStep   = ($max - $min) / 6;
+        $magnitude = 10 ** floor(log10(max($rawStep, 0.0001)));
+        $step      = collect([1, 2, 5, 10])
+            ->map(fn ($m) => $m * $magnitude)
+            ->first(fn ($candidate) => $candidate >= $rawStep) ?? $magnitude * 10;
+
+        $label = fn ($from, $to) => rtrim(rtrim(number_format($from, 2, '.', ''), '0'), '.')
+            . '-' . rtrim(rtrim(number_format($to, 2, '.', ''), '0'), '.')
+            . ($unit ? ' ' . SpecValue::displayUnit($unit) : '');
+
+        $buckets = [];
+        foreach ($values as $v) {
+            if ($v['num'] === null) {
+                $buckets['__other'] ??= ['label' => $v['label'], 'raw' => [], 'num' => null];
+                $buckets['__other']['raw'] = array_merge($buckets['__other']['raw'], $v['raw']);
+                continue;
+            }
+
+            $from = floor($v['num'] / $step) * $step;
+            $to   = $from + $step;
+            $key  = (string) $from;
+
+            $buckets[$key] ??= ['label' => $label($from, $to), 'raw' => [], 'num' => $from];
+            $buckets[$key]['raw'] = array_merge($buckets[$key]['raw'], $v['raw']);
+        }
+
+        return collect($buckets)
+            ->sortBy(fn ($b) => $b['num'] ?? PHP_INT_MAX)
+            ->values();
     }
 
     private function buildProductQuery()
@@ -553,12 +667,36 @@ class Index extends Component
         $specs = array_filter((array) $this->selectedSpecs);
         if (empty($specs)) return;
 
+        $sections = $this->specificationSections;
+
+        // არჩეული კანონიკური მნიშვნელობები სპეციფიკაციების მიხედვით
+        $wanted = [];
         foreach ($specs as $spec) {
             if (!str_contains($spec, '::')) continue;
-            [$name, $value] = explode('::', $spec, 2);
-            $query->whereHas('fullSpecifications', function ($q) use ($name, $value) {
-                $q->whereHas('list', function ($item) use ($name, $value) {
-                    $item->where('name', $name)->where('value', $value);
+            [$name, $label] = explode('::', $spec, 2);
+            $wanted[$name][] = $label;
+        }
+
+        foreach ($wanted as $name => $labels) {
+            $section = $sections[$name] ?? null;
+            if (!$section) continue;
+
+            // ბაზაში მნიშვნელობები ნედლად წევს, ამიტომ კანონიკურს ნედლებში ვთარგმნით:
+            // „12000 BTU" → ['12000', '12000 BTU']
+            $rawValues = collect($section['values'])
+                ->whereIn('label', $labels)
+                ->flatMap(fn ($v) => $v['raw'])
+                ->unique()
+                ->values()
+                ->all();
+
+            if (empty($rawValues)) continue;
+
+            // ერთი სპეციფიკაციის შიგნით — OR (ან 12000, ან 18000)
+            // სხვადასხვა სპეციფიკაციას შორის — AND (ცალკე whereHas)
+            $query->whereHas('fullSpecifications', function ($q) use ($name, $rawValues) {
+                $q->whereHas('list', function ($item) use ($name, $rawValues) {
+                    $item->where('name', $name)->whereIn('value', $rawValues);
                 });
             });
         }
