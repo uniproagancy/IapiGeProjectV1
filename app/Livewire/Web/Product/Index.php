@@ -174,7 +174,16 @@ class Index extends Component
     public function resetCategories(): void
     {
         $this->isLoading = true;
-        $this->redirect(route('web.products.index'));
+
+        // ✅ იგივე წესი, რაც კატეგორიის შეცვლაზე — ფილტრები ნულდება, ჩვენება რჩება
+        $url    = route('web.products.index');
+        $params = $this->buildDisplayParams();
+
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
+
+        $this->redirect($url);
     }
 
     private function redirectToCategory(ProductCategory $category): void
