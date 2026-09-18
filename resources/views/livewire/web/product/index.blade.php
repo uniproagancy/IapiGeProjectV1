@@ -257,35 +257,55 @@
         }
 
         /* ===== Category Tree ===== */
+        /* რიგები ადრე 5px-იანი padding-ით იყო მიკრული — დაჭერაც ძნელი, კითხვაც */
         .cat-tree-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 5px 0;
+            gap: 8px;
+            padding: 7px 8px;
+            margin: 0 -8px;
+            border-radius: 7px;
             font-size: 13px;
-            color: #444;
+            line-height: 1.4;
+            color: #55595f;
             cursor: pointer;
             text-decoration: none;
-            transition: color .15s;
+            transition: color .15s ease, background-color .15s ease;
             border: none;
             background: none;
-            width: 100%;
+            width: calc(100% + 16px);
             text-align: left;
         }
-        .cat-tree-item:hover { color: #ff6900; }
-        .cat-tree-item.active { color: #ff6900; font-weight: 600; }
+        .cat-tree-item:hover {
+            color: #ff6900;
+            background: #fff6f0;
+        }
+        .cat-tree-item i { flex-shrink: 0; transition: transform .15s ease; }
+        .cat-tree-item:hover i { transform: translateX(2px); }
+        .cat-tree-item.active {
+            color: #ff6900;
+            font-weight: 600;
+            background: #fff6f0;
+        }
+        .cat-tree-item.active:hover i { transform: none; }
+
         .cat-tree-back {
             font-size: 12px;
-            color: #888;
+            font-weight: 500;
+            color: #8b8f96;
             background: none;
             border: none;
             cursor: pointer;
-            padding: 4px 0 6px;
+            padding: 6px 8px;
+            margin: 0 -8px 4px;
+            border-radius: 7px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            transition: color .15s ease, background-color .15s ease;
         }
-        .cat-tree-back:hover { color: #ff6900; }
+        .cat-tree-back:hover { color: #ff6900; background: #f7f8f9; }
 
         /* ===== Load More ===== */
         .load-more-btn {
@@ -591,14 +611,14 @@
                     @endif
 
                     @if($this->products->count() > 0)
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 pb-3 mb-3">
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 g-xl-4 mb-4">
                             @foreach($this->products as $product)
                                 <div class="col" wire:key="product-{{ $product->id }}">
                                     @include('livewire.web.product.product-card', ['product' => $product])
                                 </div>
                             @endforeach
                         </div>
-                        <div class="d-flex justify-content-center mt-2">
+                        <div class="d-flex justify-content-center">
                             <button wire:click="loadMore" wire:loading.attr="disabled" class="load-more-btn">
                                 <span wire:loading.remove>
                                     <i class="ci-refresh me-2"></i>მეტის ნახვა
@@ -610,12 +630,13 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <svg class="w-25 h-25 mx-auto text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="mx-auto text-muted mb-3 d-block" width="56" height="56"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:.35">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                       d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                             </svg>
-                            <h3 class="h5 mb-2">პროდუქტები არ მოიძებნა</h3>
-                            <p class="text-muted">სცადეთ სხვა ფილტრების გამოყენება</p>
+                            <h3 class="h6 mb-1 fw-semibold">პროდუქტები არ მოიძებნა</h3>
+                            <p class="text-muted mb-0" style="font-size:13px;">სცადეთ სხვა ფილტრების გამოყენება</p>
                             @if($selectedBrands || $priceMin || $priceMax || $selectedSpecs)
                                 <button wire:click="resetAllFilters" class="btn btn-primary mt-3">
                                     ყველა ფილტრის გასუფთავება
