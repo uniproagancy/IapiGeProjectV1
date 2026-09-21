@@ -39,7 +39,7 @@ class TBCInstallmentController extends Controller
     public function status(): void
     {
         $orders = Order::whereIn('payment_id', [7])
-            ->where('payment_status_id', 1)
+            ->whereIn('payment_status_id', [1,3])
             ->get();
 
         if ($orders->isEmpty()) {
