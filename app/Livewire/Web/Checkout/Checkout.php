@@ -519,7 +519,6 @@ class Checkout extends Component
                     break;
 
                 case '7':
-                    dd(round($order->amount + ($order->amount * 0.05)));
                     if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
@@ -532,9 +531,11 @@ class Checkout extends Component
 
                             $title = $translation?->title ?? ('Product #' . $item->product_id);
 
+                            $p = round(round($item->price) + round(($item->price * 0.05)) * $item->quantity);
+                            dd($p);
                             $products[] = [
                                 'name'     => $title,
-                                'price'    => round($item->price + ($item->price * 0.05)) * $item->quantity,
+                                'price'    => $p,
                                 'quantity' => $item->quantity,
                             ];
                         }
