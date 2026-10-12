@@ -526,7 +526,6 @@ class Checkout extends Component
                         $products       = [];
 
                         foreach ($order->items()->with(['product.translations'])->get() as $item) {
-                            // translation null-safe — ka → პირველი ნებისმიერი → fallback
                             $translation = $item->product?->translation('ka')
                                 ?? $item->product?->translations?->first();
 
@@ -581,7 +580,7 @@ class Checkout extends Component
             }
 
         } catch (Exception $e) {
-            Log::info('TBC products', ['products' => $response,]);
+            Log::info('TBC products', ['1' => $response, '2' => $products]);
             Log::error('Payment processing error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'გადახდის დამუშავება ვერ მოხერხდა');
         }
