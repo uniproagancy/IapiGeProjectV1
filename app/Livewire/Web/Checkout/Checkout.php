@@ -560,6 +560,7 @@ class Checkout extends Component
                             $this->dispatch('ui:error', message: 'TBC განვადება ვერ გამოიძახა, სცადეთ ისევ');
                         }
                     }
+                    Log::info('TBC products', ['products' => $products, 'items_count' => count($products)]);
                     break;
 
                 case '9':
