@@ -539,6 +539,8 @@ class Checkout extends Component
                             ];
                         }
 
+                        dd($products);
+
                         $tbcInstallment->addProducts($products);
                         $response = $tbcInstallment->applyInstallmentApplication(
                             $order->id,
