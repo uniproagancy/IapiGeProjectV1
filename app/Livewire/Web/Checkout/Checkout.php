@@ -545,8 +545,6 @@ class Checkout extends Component
                             round($order->amount + ($order->amount * 0.05))
                         );
 
-                        dd(round($order->amount + ($order->amount * 0.05)));
-
                         if ($response['status_code'] === 200) {
                             OrderTransaction::create([
                                 'order_id'         => $order->id,
@@ -583,6 +581,7 @@ class Checkout extends Component
             }
 
         } catch (Exception $e) {
+            Log::info('TBC products', ['products' => $response,]);
             Log::error('Payment processing error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'გადახდის დამუშავება ვერ მოხერხდა');
         }
