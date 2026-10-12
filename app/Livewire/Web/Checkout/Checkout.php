@@ -539,13 +539,13 @@ class Checkout extends Component
                             ];
                         }
 
-                        dd($products);
-
                         $tbcInstallment->addProducts($products);
                         $response = $tbcInstallment->applyInstallmentApplication(
                             $order->id,
                             round($order->amount + ($order->amount * 0.05))
                         );
+
+                        dd($response);
 
                         if ($response['status_code'] === 200) {
                             OrderTransaction::create([
