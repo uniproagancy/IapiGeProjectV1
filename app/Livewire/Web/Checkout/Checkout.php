@@ -490,6 +490,7 @@ class Checkout extends Component
 
     private function processPayment(Order $order): void
     {
+        dd($order);
         try {
             switch ($this->payment_id) {
                 case '3':
