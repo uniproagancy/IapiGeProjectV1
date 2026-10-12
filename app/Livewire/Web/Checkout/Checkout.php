@@ -525,9 +525,15 @@ class Checkout extends Component
                         $tbcInstallment = new LaravelTbcInstallment();
                         $products       = [];
 
-                        foreach ($order->items as $item) {
+                        foreach ($order->items()->with(['product.translations'])->get() as $item) {
+                            // translation null-safe — ka → პირველი ნებისმიერი → fallback
+                            $translation = $item->product?->translation('ka')
+                                ?? $item->product?->translations?->first();
+
+                            $title = $translation?->title ?? ('Product #' . $item->product_id);
+
                             $products[] = [
-                                'name'     => $item->product->translation('ka')->title,
+                                'name'     => $title,
                                 'price'    => round($item->price + ($item->price * 0.05)) * $item->quantity,
                                 'quantity' => $item->quantity,
                             ];
@@ -538,6 +544,7 @@ class Checkout extends Component
                             $order->id,
                             round($order->amount + ($order->amount * 0.05))
                         );
+
                         if ($response['status_code'] === 200) {
                             OrderTransaction::create([
                                 'order_id'         => $order->id,
@@ -548,6 +555,9 @@ class Checkout extends Component
                                 'type'             => 'tbc_installment',
                             ]);
                             $this->redirect($tbcInstallment->getRedirectUri());
+                        } else {
+                            Log::error('TBC installment failed', ['response' => $response]);
+                            $this->dispatch('ui:error', message: 'TBC განვადება ვერ გამოიძახა, სცადეთ ისევ');
                         }
                     }
                     break;
