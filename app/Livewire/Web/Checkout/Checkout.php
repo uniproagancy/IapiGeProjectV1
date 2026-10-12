@@ -524,26 +524,37 @@ class Checkout extends Component
                     } else {
                         $tbcInstallment = new LaravelTbcInstallment();
                         $products       = [];
+                        $totalAmount = 0;
 
                         foreach ($order->items()->with(['product.translations'])->get() as $item) {
                             $translation = $item->product?->translation('ka')
                                 ?? $item->product?->translations?->first();
 
-                            $title = $translation?->title ?? ('Product #' . $item->product_id);
+                            $title = $translation?->title
+                                ?? ('Product #' . $item->product_id);
 
-                            $p = round(round($item->price) + round(($item->price * 0.05)) * $item->quantity);
-                            dd($p);
+                            // ერთეულის ფასი 5%-იანი დანამატით
+                            $unitPrice = round($item->price * 1.05, 2);
+
+                            // რაოდენობის გათვალისწინებით
+                            $lineTotal = round($unitPrice * $item->quantity, 2);
+
                             $products[] = [
                                 'name'     => $title,
-                                'price'    => $p,
+                                'price'    => $lineTotal,
                                 'quantity' => $item->quantity,
                             ];
+
+                            $totalAmount += $lineTotal;
                         }
 
+                        $totalAmount = round($totalAmount, 2);
+
                         $tbcInstallment->addProducts($products);
+
                         $response = $tbcInstallment->applyInstallmentApplication(
                             $order->id,
-                            round($order->amount + ($order->amount * 0.05))
+                            $totalAmount
                         );
 
                         if ($response['status_code'] === 200) {
@@ -582,7 +593,6 @@ class Checkout extends Component
             }
 
         } catch (Exception $e) {
-            Log::info('TBC products', ['1' => $response, '2' => $products]);
             Log::error('Payment processing error: ' . $e->getMessage());
             $this->dispatch('ui:error', message: 'გადახდის დამუშავება ვერ მოხერხდა');
         }
