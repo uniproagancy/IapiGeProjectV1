@@ -490,7 +490,6 @@ class Checkout extends Component
 
     private function processPayment(Order $order): void
     {
-        dd($order);
         try {
             switch ($this->payment_id) {
                 case '3':
@@ -520,6 +519,7 @@ class Checkout extends Component
                     break;
 
                 case '7':
+                    dd(round($order->amount + ($order->amount * 0.05)));
                     if ($order->amount < 150) {
                         $this->dispatch('ui:error', message: 'TBC განვადების თანხა უნდა აღემატებოდეს 150 ლარს!');
                     } else {
