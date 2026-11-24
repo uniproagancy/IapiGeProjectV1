@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Order;
+use App\Models\Order\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -25,7 +25,7 @@ class InvoiceMail extends Mailable
     public function build()
     {
         return $this->subject("ინვოისი #{$this->order->id}")
-            ->view('livewire.dashboard.invoices.order', $this->data)
+            ->view('livewire.dashboard.invoices.invoice', $this->data)
             ->attachData($this->invoice, "invoice-{$this->order->id}.pdf", [
                 'mime' => 'application/pdf',
             ]);

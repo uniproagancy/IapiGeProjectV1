@@ -157,6 +157,15 @@ Route::prefix('/dashboard')->name('dashboard.')->group(function () {
                     ->name('order.invoice.send');
             });
 
+            //INVOICES — შეკვეთის გარეშე
+            Route::prefix('invoices')->group(function () {
+                Route::get('/', App\Livewire\Dashboard\Invoice\Index::class)->name('invoice.index');
+                Route::get('/create', App\Livewire\Dashboard\Invoice\Create::class)->name('invoice.create');
+                Route::get('/{id}/download', [InvoiceController::class, 'download'])
+                    ->whereNumber('id')
+                    ->name('invoice.download');
+            });
+
             Route::get('/logout', function (\Illuminate\Http\Request $request) {
                 \Illuminate\Support\Facades\Auth::logout();
                 $request->session()->invalidate();

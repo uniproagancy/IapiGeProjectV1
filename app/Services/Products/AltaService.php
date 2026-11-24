@@ -26,7 +26,7 @@ class AltaService
 
         Log::info("🚀 Alta Scan: დაიწყო | worker={$this->worker_url}");
 
-        $token = env('ALTA_ACCESS_TOKEN');
+        $token = urldecode(env('ALTA_ACCESS_TOKEN'));
         if (empty($token)) {
             Log::error("❌ Alta: ALTA_ACCESS_TOKEN არ არის .env-ში");
             return ['error' => 'Token missing'];

@@ -7,6 +7,8 @@ use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductBrand;
 use App\Models\Product\ProductSection;
 use App\Models\Product\ProductFullSpecificationSection;
+use App\Models\Product\CategoryFilter;
+use App\Services\Catalog\CategoryFilterSuggester;
 use App\Support\SpecValue;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -440,27 +442,31 @@ class Index extends Component
         }
 
         $categoryId = $this->currentCategory->id;
-        $parentId   = $this->currentCategory->parent_id;
-        $cacheKey   = 'spec_sections_v3_' . $categoryId;
+        $cacheKey   = 'spec_sections_v4_' . $categoryId;
 
-        return cache()->remember($cacheKey, 3600, function () use ($parentId) {
-            $productIds = Product::query()
-                ->where('show', 1)
-                ->where('active', 1)
-                ->when($parentId === 0, function ($q) {
-                    $childIds = $this->currentCategory->children()->pluck('id');
-                    $q->whereIn('category_id', $childIds);
-                }, function ($q) {
-                    $q->where('category_id', $this->currentCategory->id);
-                })
-                ->pluck('id');
+        return cache()->remember($cacheKey, 3600, function () use ($categoryId) {
+            $productIds = app(CategoryFilterSuggester::class)
+                ->productIds($this->currentCategory);
 
             if ($productIds->isEmpty()) return collect();
 
+            // ✅ რომელი სპეციფიკაცია არის ფილტრი — ამ კატეგორიისთვის.
+            //    ძველი გლობალური `filter` ფლაგი ამას ვერ გამოხატავდა.
+            $configured = $this->categoryFilterConfig($categoryId);
+
+            // კატეგორია ახალ სისტემაში ჯერ არ არის აწყობილი — ძველ ფლაგზე ვრჩებით,
+            // თორემ საიტზე არსებული ფილტრები ატვირთვისთანავე გაქრებოდა.
+            if ($configured->isEmpty()) {
+                $configured = $this->legacyFilterConfig($productIds);
+            }
+
+            if ($configured->isEmpty()) return collect();
+
             $items = \App\Models\Product\ProductFullSpecificationItem::query()
                 ->select('id', 'section_id', 'name', 'value')
+                ->whereIn('name', $configured->keys()->all())
+                ->whereNull('deleted_at')
                 ->whereNotNull('value')
-                ->where('filter', 1)
                 ->where('value', '!=', '')
                 ->whereHas('section', function ($q) use ($productIds) {
                     $q->whereIn('product_id', $productIds);
@@ -471,10 +477,65 @@ class Index extends Component
 
             return $items
                 ->groupBy('name')
-                ->reject(fn ($group, $name) => in_array(mb_strtolower($name), ['ბრენდი', 'brand'], true))
                 ->map(fn ($group) => $this->buildSpecSection($group))
-                ->filter(fn ($section) => $section !== null && count($section['values']) > 1);
+                ->filter(fn ($section) => $section !== null && count($section['values']) > 1)
+                // ადმინის მიერ განსაზღვრული რიგი და ჩვენების სახელი
+                ->map(function ($section, $name) use ($configured) {
+                    $section['label'] = $configured[$name]['label'] ?? $name;
+                    $section['order'] = $configured[$name]['order'] ?? 0;
+                    return $section;
+                })
+                ->sortBy('order');
         });
+    }
+
+    /**
+     * ძველი სისტემა: გლობალური `filter = 1` ფლაგი.
+     * მხოლოდ მანამდე, სანამ კატეგორია ადმინში „ფილტრებზე" არ აეწყობა.
+     */
+    private function legacyFilterConfig($productIds)
+    {
+        return \App\Models\Product\ProductFullSpecificationItem::query()
+            ->where('filter', 1)
+            ->whereNull('deleted_at')
+            ->whereHas('section', fn ($q) => $q->whereIn('product_id', $productIds))
+            ->distinct()
+            ->pluck('name')
+            ->reject(fn ($name) => in_array(mb_strtolower($name), ['ბრენდი', 'brand'], true))
+            ->mapWithKeys(fn ($name) => [$name => ['label' => $name, 'order' => 0]]);
+    }
+
+    /**
+     * კატეგორიის ფილტრების კონფიგურაცია. ქვეკატეგორიას თუ თავისი არ აქვს,
+     * მშობლისას იყენებს — რომ ყოველი შვილისთვის ხელახლა არ იწყობოდეს.
+     */
+    private function categoryFilterConfig(int $categoryId)
+    {
+        $map = fn ($rows) => $rows->mapWithKeys(fn ($r) => [
+            $r->spec_name => ['label' => $r->display_label, 'order' => $r->sort_order],
+        ]);
+
+        $own = CategoryFilter::where('category_id', $categoryId)
+            ->where('active', 1)
+            ->orderBy('sort_order')
+            ->get();
+
+        if ($own->isNotEmpty()) {
+            return $map($own);
+        }
+
+        $parentId = (int) ($this->currentCategory->parent_id ?? 0);
+
+        if ($parentId > 0) {
+            return $map(
+                CategoryFilter::where('category_id', $parentId)
+                    ->where('active', 1)
+                    ->orderBy('sort_order')
+                    ->get()
+            );
+        }
+
+        return collect();
     }
 
     /**
@@ -492,20 +553,32 @@ class Index extends Component
         $unit      = SpecValue::dominantUnit($rawValues);
         $isNumeric = SpecValue::isNumericSpec($rawValues);
 
-        // ნედლი → კანონიკური, რომ „12000" და „12000 BTU" ერთ ვარიანტად გაერთიანდეს
+        // ნედლი → კანონიკური, რომ „12000" და „12000 BTU" ერთ ვარიანტად გაერთიანდეს.
+        // ტექსტურზე რეგისტრსაც ვაიგნორებთ: „Side-by-side" და „Side-By-Side" ერთია.
         $buckets = [];
         foreach ($rawValues as $raw) {
             $label = SpecValue::canonical($raw, $unit);
             if ($label === '') continue;
 
-            $buckets[$label]['label']  = $label;
-            $buckets[$label]['raw'][]  = $raw;
-            $buckets[$label]['num']    = SpecValue::toNumber($raw);
+            $key = mb_strtolower($label);
+
+            $buckets[$key]['variants'][$label] = ($buckets[$key]['variants'][$label] ?? 0) + 1;
+            $buckets[$key]['raw'][]            = $raw;
+            $buckets[$key]['num']              = SpecValue::toNumber($raw);
         }
 
         if (empty($buckets)) return null;
 
-        $values = collect($buckets)->values();
+        // ჩვენებისთვის ყველაზე ხშირად შემხვედრი ჩაწერა ვირჩევთ
+        $values = collect($buckets)->map(function ($b) {
+            arsort($b['variants']);
+
+            return [
+                'label' => (string) array_key_first($b['variants']),
+                'raw'   => $b['raw'],
+                'num'   => $b['num'],
+            ];
+        })->values();
 
         // რიცხვითი — რიცხვით ვალაგებთ, თორემ „100-120" „15-20"-მდე მოდის
         $values = $isNumeric

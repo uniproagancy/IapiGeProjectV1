@@ -540,6 +540,7 @@
                             @foreach($specificationSections as $specName => $section)
                                 @php
                                     $values            = $section['values'];
+                                    $specLabel         = $section['label'] ?? $specName;
                                     $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
                                     $hasSelected = $selectedInSection->count() > 0;
                                     $specKey     = 'spec_' . md5($specName);
@@ -551,7 +552,7 @@
                                          data-bs-target="#{{ $specKey }}"
                                          aria-expanded="{{ $hasSelected ? 'true' : 'false' }}">
                                         <span>
-                                            {{ $specName }}
+                                            {{ $specLabel }}
                                             @if($hasSelected)
                                                 <span class="filter-selected-badge">{{ $selectedInSection->count() }}</span>
                                             @endif
@@ -742,6 +743,7 @@
                     @foreach($specificationSections as $specName => $section)
                         @php
                             $values            = $section['values'];
+                            $specLabel         = $section['label'] ?? $specName;
                             $selectedInSection = collect($selectedSpecs)->filter(fn($s) => str_starts_with($s, $specName . '::'));
                             $hasSelected       = $selectedInSection->count() > 0;
                             $valuesCount       = count($values);
@@ -749,7 +751,7 @@
                         <div class="filter-block">
                             <div class="filter-section-title {{ $hasSelected ? 'has-selected' : '' }}">
                                 <span>
-                                    {{ $specName }}
+                                    {{ $specLabel }}
                                     @if($hasSelected)
                                         <span class="filter-selected-badge">{{ $selectedInSection->count() }}</span>
                                     @endif

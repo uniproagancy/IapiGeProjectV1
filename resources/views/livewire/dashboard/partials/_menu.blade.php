@@ -59,6 +59,12 @@
                                 <span>ჩამონათვალი</span>
                             </a>
                         </li>
+                        <li data-menu="">
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('dashboard.category.filters') }}" data-bs-toggle="">
+                                <i data-feather="circle"></i>
+                                <span>ფილტრები</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="dropdown nav-item   @if(request()->segment(2) === "sections") active @endif">
@@ -71,6 +77,12 @@
                     <a class="nav-link d-flex align-items-center" href="{{ route('dashboard.order.index') }}">
                         <i data-feather="shopping-cart"></i>
                         <span>შეკვეთები</span>
+                    </a>
+                </li>
+                <li class="dropdown nav-item @if(request()->segment(2) === "invoices") active @endif">
+                    <a class="nav-link d-flex align-items-center" href="{{ route('dashboard.invoice.index') }}">
+                        <i data-feather="file-text"></i>
+                        <span>ინვოისები</span>
                     </a>
                 </li>
             </ul>
